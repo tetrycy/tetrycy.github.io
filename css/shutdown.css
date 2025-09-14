@@ -1,112 +1,202 @@
-/* Dialog Zamknij System */
-.shutdown-dialog {
-    padding: 16px !important;
-    text-align: center;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-    min-width: 300px;
-}
+// Dodaj te funkcje do js/apps/shutdown.js
 
-.shutdown-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-}
-
-.shutdown-text {
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 16px;
-}
-
-.shutdown-options {
-    text-align: left;
-    margin: 16px 0;
-}
-
-.shutdown-option {
-    display: block;
-    margin: 8px 0;
-    font-size: 11px;
-    cursor: pointer;
-    padding: 4px;
-}
-
-.shutdown-option input[type="radio"] {
-    margin-right: 8px;
-}
-
-.shutdown-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-.shutdown-btn {
-    width: 75px;
-    height: 24px;
-    background: #c0c0c0;
-    border: 2px outset #c0c0c0;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-}
-
-.shutdown-btn:hover {
-    background: #dfdfdf;
-}
-
-.shutdown-btn:active {
-    border: 2px inset #c0c0c0;
-}
-
-/* 3D Pipes Screensaver */
-.screensaver {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    z-index: 10000;
-    display: none;
-    overflow: hidden;
-}
-
-.screensaver.active {
-    display: block;
-}
-
-#pipes-canvas {
-    width: 100%;
-    height: 100%;
-    background: black;
-}
-
-.screensaver-text {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    color: white;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-    font-size: 12px;
-    text-align: right;
-    opacity: 0.8;
-}
-
-/* Responsywność */
-@media (max-width: 768px) {
-    .shutdown-dialog {
-        padding: 12px !important;
-        min-width: 250px;
+// Flying Toasters - klasa tostera
+class Toaster {
+    constructor() {
+        this.x = -100;
+        this.y = Math.random() * (pipesCanvas.height - 100);
+        this.speed = 2 + Math.random() * 3;
+        this.wingFlap = 0;
+        this.size = 30 + Math.random() * 20;
     }
     
-    .shutdown-icon {
-        font-size: 36px;
+    update() {
+        this.x += this.speed;
+        this.wingFlap += 0.3;
+        
+        if (this.x > pipesCanvas.width + 100) {
+            this.x = -100;
+            this.y = Math.random() * (pipesCanvas.height - 100);
+        }
     }
     
-    .screensaver-text {
-        font-size: 10px;
-        bottom: 15px;
-        right: 15px;
+    draw() {
+        pipesCtx.save();
+        pipesCtx.translate(this.x, this.y);
+        
+        // Toster
+        pipesCtx.fillStyle = '#c0c0c0';
+        pipesCtx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        pipesCtx.strokeStyle = '#404040';
+        pipesCtx.lineWidth = 2;
+        pipesCtx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+        
+        // Skrzydła
+        const wingOffset = Math.sin(this.wingFlap) * 10;
+        pipesCtx.fillStyle = '#ffff80';
+        
+        // Lewe skrzydło
+        pipesCtx.beginPath();
+        pipesCtx.ellipse(-this.size/2 - 15, wingOffset, 15, 8, 0, 0, Math.PI * 2);
+        pipesCtx.fill();
+        pipesCtx.stroke();
+        
+        // Prawe skrzydło
+        pipesCtx.beginPath();
+        pipesCtx.ellipse(this.size/2 + 15, wingOffset, 15, 8, 0, 0, Math.PI * 2);
+        pipesCtx.fill();
+        pipesCtx.stroke();
+        
+        // Grzanka wyskakująca
+        if (Math.random() < 0.1) {
+            pipesCtx.fillStyle = '#deb887';
+            pipesCtx.fillRect(-5, -this.size/2 - 15, 10, 10);
+            pipesCtx.strokeRect(-5, -this.size/2 - 15, 10, 10);
+        }
+        
+        pipesCtx.restore();
     }
+}
+
+// Starfield - klasa gwiazdy
+class Star {
+    constructor() {
+        this.x = Math.random() * pipesCanvas.width - pipesCanvas.width/2;
+        this.y = Math.random() * pipesCanvas.height - pipesCanvas.height/2;
+        this.z = Math.random() * 1000;
+        this.prevX = this.x;
+        this.prevY = this.y;
+    }
+    
+    update() {
+        this.prevX = this.x / this.z * 500 + pipesCanvas.width/2;
+        this.prevY = this.y / this.z * 500 + pipesCanvas.height/2;
+        
+        this.z -= 10;
+        
+        if (this.z <= 0) {
+            this.x = Math.random() * pipesCanvas.width - pipesCanvas.width/2;
+            this.y = Math.random() * pipesCanvas.height - pipesCanvas.height/2;
+            this.z = 1000;
+        }
+    }
+    
+    draw() {
+        const x = this.x / this.z * 500 + pipesCanvas.width/2;
+        const y = this.y / this.z * 500 + pipesCanvas.height/2;
+        
+        const size = (1 - this.z / 1000) * 3;
+        const opacity = 1 - this.z / 1000;
+        
+        pipesCtx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+        pipesCtx.lineWidth = size;
+        pipesCtx.beginPath();
+        pipesCtx.moveTo(this.prevX, this.prevY);
+        pipesCtx.lineTo(x, y);
+        pipesCtx.stroke();
+    }
+}
+
+// Funkcje screensaverów
+function showRestartScreensaver() {
+    const screensaver = document.getElementById('screensaver');
+    pipesCanvas = document.getElementById('pipes-canvas');
+    pipesCtx = pipesCanvas.getContext('2d');
+    
+    pipesCanvas.width = window.innerWidth;
+    pipesCanvas.height = window.innerHeight;
+    
+    screensaver.classList.add('active');
+    screensaver.querySelector('.screensaver-text').textContent = 'Restartowanie systemu...\nFlying Toasters';
+    
+    isScreensaverActive = true;
+    initToasters();
+    animateToasters();
+    
+    // Auto restart po 4 sekundach
+    setTimeout(() => {
+        location.reload();
+    }, 4000);
+}
+
+function showStandbyScreensaver() {
+    const screensaver = document.getElementById('screensaver');
+    pipesCanvas = document.getElementById('pipes-canvas');
+    pipesCtx = pipesCanvas.getContext('2d');
+    
+    pipesCanvas.width = window.innerWidth;
+    pipesCanvas.height = window.innerHeight;
+    
+    screensaver.classList.add('active');
+    screensaver.querySelector('.screensaver-text').textContent = 'Tryb oczekiwania\nStarfield';
+    
+    isScreensaverActive = true;
+    initStarfield();
+    animateStarfield();
+    
+    // Kliknięcie wyłącza
+    screensaver.addEventListener('click', hideScreensaver);
+    document.addEventListener('keydown', hideScreensaver);
+}
+
+// Inicjalizacja Flying Toasters
+function initToasters() {
+    toasters = [];
+    for (let i = 0; i < 8; i++) {
+        const toaster = new Toaster();
+        toaster.x = -100 - (i * 150); // rozłóż tostery
+        toasters.push(toaster);
+    }
+}
+
+// Animacja Flying Toasters
+function animateToasters() {
+    if (!isScreensaverActive) return;
+    
+    // Niebieskie tło
+    pipesCtx.fillStyle = '#0080ff';
+    pipesCtx.fillRect(0, 0, pipesCanvas.width, pipesCanvas.height);
+    
+    // Chmury
+    pipesCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    for (let i = 0; i < 5; i++) {
+        const x = (Date.now() * 0.1 + i * 200) % (pipesCanvas.width + 100);
+        const y = 100 + i * 50;
+        pipesCtx.beginPath();
+        pipesCtx.ellipse(x, y, 50, 25, 0, 0, Math.PI * 2);
+        pipesCtx.fill();
+    }
+    
+    // Aktualizuj i rysuj tostery
+    toasters.forEach(toaster => {
+        toaster.update();
+        toaster.draw();
+    });
+    
+    animationId = requestAnimationFrame(animateToasters);
+}
+
+// Inicjalizacja Starfield
+function initStarfield() {
+    stars = [];
+    for (let i = 0; i < 200; i++) {
+        stars.push(new Star());
+    }
+}
+
+// Animacja Starfield
+function animateStarfield() {
+    if (!isScreensaverActive) return;
+    
+    // Czarne tło z lekkim efektem śladu
+    pipesCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    pipesCtx.fillRect(0, 0, pipesCanvas.width, pipesCanvas.height);
+    
+    // Aktualizuj i rysuj gwiazdy
+    stars.forEach(star => {
+        star.update();
+        star.draw();
+    });
+    
+    animationId = requestAnimationFrame(animateStarfield);
 }
