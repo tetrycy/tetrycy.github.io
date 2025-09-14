@@ -112,9 +112,10 @@ function openCalculator() {
 }
 
 function showShutdownDialog() {
-    if (confirm('Czy chcesz zamknąć system Windows 98?')) {
-        alert('System został zamknięty. Możesz bezpiecznie wyłączyć komputer.');
-    }
+    openWindow('shutdown-dialog', {
+        width: 350,
+        height: 250
+    });
 }
 
 // Obsługa kliknięć na ikony pulpitu
