@@ -6,6 +6,7 @@
     <title>Windows 98</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/start-menu.css">
 </head>
 <body>
     <div class="desktop" id="desktop">
@@ -47,6 +48,78 @@
             <div class="system-icon" title="Głośność">🔊</div>
             <div class="system-icon" title="Sieć">🌐</div>
             <div class="taskbar-time" id="time"></div>
+        </div>
+    </div>
+
+    <!-- Menu Start -->
+    <div class="start-menu" id="startMenu">
+        <div class="start-menu-sidebar">
+            <div class="start-menu-title">Windows<br>98</div>
+        </div>
+        
+        <div class="start-menu-content">
+            <div class="start-menu-item" data-app="programs">
+                <span class="menu-icon">📁</span>
+                <span class="menu-text">Programy</span>
+                <span class="menu-arrow">▶</span>
+            </div>
+            
+            <div class="start-menu-item" data-app="documents">
+                <span class="menu-icon">📄</span>
+                <span class="menu-text">Dokumenty</span>
+            </div>
+            
+            <div class="start-menu-item" data-app="settings">
+                <span class="menu-icon">⚙️</span>
+                <span class="menu-text">Ustawienia</span>
+                <span class="menu-arrow">▶</span>
+            </div>
+            
+            <div class="start-menu-item" data-app="search">
+                <span class="menu-icon">🔍</span>
+                <span class="menu-text">Znajdź</span>
+            </div>
+            
+            <div class="start-menu-item" data-app="help">
+                <span class="menu-icon">❓</span>
+                <span class="menu-text">Pomoc</span>
+            </div>
+            
+            <div class="start-menu-item" data-app="run">
+                <span class="menu-icon">🏃</span>
+                <span class="menu-text">Uruchom...</span>
+            </div>
+            
+            <div class="start-menu-separator"></div>
+            
+            <div class="start-menu-item" data-app="shutdown">
+                <span class="menu-icon">🔌</span>
+                <span class="menu-text">Zamknij system...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submenu Programy -->
+    <div class="start-submenu" id="programsSubmenu">
+        <div class="start-menu-item" data-app="paint">
+            <span class="menu-icon">🎨</span>
+            <span class="menu-text">Paint</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="notepad">
+            <span class="menu-icon">📝</span>
+            <span class="menu-text">Notatnik</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="calculator">
+            <span class="menu-icon">🔢</span>
+            <span class="menu-text">Kalkulator</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="games">
+            <span class="menu-icon">🎮</span>
+            <span class="menu-text">Gry</span>
+            <span class="menu-arrow">▶</span>
         </div>
     </div>
 
