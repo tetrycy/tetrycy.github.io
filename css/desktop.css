@@ -2,8 +2,10 @@
 .desktop {
     width: 100%;
     height: calc(100vh - clamp(24px, 3.5vh, 32px));
-    background: url('../assets/wallpapers/tetrycy.jpg') center/cover;
-    background-color: #008080; /* fallback */
+    background: url('../assets/wallpapers/tetrycy.jpg') center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: #ffffff; /* fallback - biały wypełni puste obszary */
     background-attachment: fixed;
     position: relative;
     overflow: hidden;
