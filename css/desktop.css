@@ -60,56 +60,20 @@
     line-height: 1.2;
 }
 
-/* Windows 98 style ikony */
+/* Proste ikony Windows 98 */
 .icon-computer { 
-    background: linear-gradient(135deg, #c0c0c0 0%, #808080 50%, #404040 100%);
-    border: 1px outset #c0c0c0;
-    position: relative;
-}
-
-.icon-computer::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: linear-gradient(45deg, #e0e0e0 0%, #a0a0a0 100%);
-    border: 1px inset #c0c0c0;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
 }
 
 .icon-folder { 
-    background: linear-gradient(135deg, #ffff80 0%, #ffff40 50%, #c0c000 100%);
-    border: 1px outset #ffff80;
-    position: relative;
-}
-
-.icon-folder::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: linear-gradient(45deg, #ffffcc 0%, #ffff66 100%);
-    border: 1px inset #ffff80;
+    background: #ffff80;
+    border: 2px outset #ffff80;
 }
 
 .icon-trash { 
-    background: linear-gradient(135deg, #c0c0c0 0%, #808080 50%, #404040 100%);
-    border: 1px outset #c0c0c0;
-    position: relative;
-}
-
-.icon-trash::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: linear-gradient(45deg, #e0e0e0 0%, #a0a0a0 100%);
-    border: 1px inset #c0c0c0;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
 }
 
 /* Responsywność dla tabletów */
