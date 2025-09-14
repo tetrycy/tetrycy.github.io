@@ -12,14 +12,100 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 1000);
 
-// Obsługa przycisku Start
-document.getElementById('startBtn').addEventListener('click', function() {
-    this.classList.toggle('pressed');
-    alert('Menu Start - wkrótce więcej funkcji!');
-    setTimeout(() => {
-        this.classList.remove('pressed');
-    }, 100);
+// Obsługa przycisku Start i menu
+let startMenuOpen = false;
+
+document.getElementById('startBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    toggleStartMenu();
 });
+
+function toggleStartMenu() {
+    const startMenu = document.getElementById('startMenu');
+    const programsSubmenu = document.getElementById('programsSubmenu');
+    
+    startMenuOpen = !startMenuOpen;
+    
+    if (startMenuOpen) {
+        startMenu.classList.add('show');
+        document.getElementById('startBtn').classList.add('pressed');
+    } else {
+        startMenu.classList.remove('show');
+        programsSubmenu.classList.remove('show');
+        document.getElementById('startBtn').classList.remove('pressed');
+    }
+}
+
+// Zamknij menu po kliknięciu poza nim
+document.addEventListener('click', function(e) {
+    const startMenu = document.getElementById('startMenu');
+    const programsSubmenu = document.getElementById('programsSubmenu');
+    const startBtn = document.getElementById('startBtn');
+    
+    if (!startMenu.contains(e.target) && !programsSubmenu.contains(e.target) && e.target !== startBtn) {
+        startMenu.classList.remove('show');
+        programsSubmenu.classList.remove('show');
+        startBtn.classList.remove('pressed');
+        startMenuOpen = false;
+    }
+});
+
+// Obsługa elementów menu Start
+document.querySelectorAll('.start-menu-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const app = this.getAttribute('data-app');
+        
+        switch(app) {
+            case 'programs':
+                toggleProgramsSubmenu();
+                break;
+            case 'paint':
+                openPaint();
+                toggleStartMenu();
+                break;
+            case 'notepad':
+                openNotepad();
+                toggleStartMenu();
+                break;
+            case 'calculator':
+                openCalculator();
+                toggleStartMenu();
+                break;
+            case 'shutdown':
+                showShutdownDialog();
+                toggleStartMenu();
+                break;
+            default:
+                alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
+                toggleStartMenu();
+        }
+    });
+});
+
+function toggleProgramsSubmenu() {
+    const programsSubmenu = document.getElementById('programsSubmenu');
+    programsSubmenu.classList.toggle('show');
+}
+
+// Placeholder funkcje dla aplikacji (będziemy je rozwijać)
+function openPaint() {
+    alert('Paint - wkrótce dostępny!');
+}
+
+function openNotepad() {
+    alert('Notatnik - wkrótce dostępny!');
+}
+
+function openCalculator() {
+    alert('Kalkulator - wkrótce dostępny!');
+}
+
+function showShutdownDialog() {
+    if (confirm('Czy chcesz zamknąć system Windows 98?')) {
+        alert('System został zamknięty. Możesz bezpiecznie wyłączyć komputer.');
+    }
+}
 
 // Obsługa kliknięć na ikony pulpitu
 document.querySelectorAll('.desktop-icon').forEach(icon => {
@@ -34,23 +120,18 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         switch(iconId) {
             case 'my-computer':
                 console.log('Kliknięto: Mój komputer');
-                // Tutaj będzie otwieranie okna "Mój komputer"
                 break;
             case 'recycle-bin':
                 console.log('Kliknięto: Kosz');
-                // Tutaj będzie otwieranie kosza
                 break;
             case 'folder-kuba':
                 console.log('Kliknięto: Folder Kuby');
-                // Tutaj będzie otwieranie folderu Kuby
                 break;
             case 'folder-leszek':
                 console.log('Kliknięto: Folder Leszka');
-                // Tutaj będzie otwieranie folderu Leszka
                 break;
             case 'folder-mati':
                 console.log('Kliknięto: Folder Matiego');
-                // Tutaj będzie otwieranie folderu Matiego
                 break;
         }
     });
@@ -58,7 +139,6 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
 
 // Obsługa kliknięć na pulpit (odznacz ikony)
 document.getElementById('desktop').addEventListener('click', function(e) {
-    // Sprawdź czy kliknięto na pusty obszar pulpitu
     if (e.target === this) {
         document.querySelectorAll('.desktop-icon').forEach(icon => {
             icon.classList.remove('selected');
