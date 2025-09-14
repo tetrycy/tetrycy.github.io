@@ -241,6 +241,47 @@
     </div>
 </div>
 
+    <!-- Dialog Zamknij System -->
+<div class="window" id="shutdown-dialog">
+    <div class="window-header">
+        <span class="window-title">Zamknij system Windows</span>
+        <div class="window-controls">
+            <button class="window-btn close" data-action="close">×</button>
+        </div>
+    </div>
+    
+    <div class="window-content shutdown-dialog">
+        <div class="shutdown-icon">🖥️</div>
+        <div class="shutdown-text">Co chcesz zrobić?</div>
+        
+        <div class="shutdown-options">
+            <label class="shutdown-option">
+                <input type="radio" name="shutdown-type" value="shutdown" checked>
+                <span>Zamknij komputer</span>
+            </label>
+            <label class="shutdown-option">
+                <input type="radio" name="shutdown-type" value="restart">
+                <span>Uruchom ponownie komputer</span>
+            </label>
+            <label class="shutdown-option">
+                <input type="radio" name="shutdown-type" value="standby">
+                <span>Tryb oczekiwania</span>
+            </label>
+        </div>
+        
+        <div class="shutdown-buttons">
+            <button class="shutdown-btn ok" id="shutdown-ok">OK</button>
+            <button class="shutdown-btn cancel" id="shutdown-cancel">Anuluj</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3D Pipes Screensaver -->
+<div id="screensaver" class="screensaver">
+    <canvas id="pipes-canvas"></canvas>
+    <div class="screensaver-text">Windows 98<br>Wygaszacz ekranu: 3D Pipes</div>
+</div>
+
     
   <script src="js/windows.js"></script>
 <script src="js/script.js"></script>
