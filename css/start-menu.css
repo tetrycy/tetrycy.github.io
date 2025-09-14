@@ -1,0 +1,118 @@
+/* Menu Start Windows 98 */
+.start-menu {
+    position: fixed;
+    bottom: clamp(28px, 4vh, 40px);
+    left: 0;
+    width: clamp(200px, 25vw, 280px);
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    display: none;
+    z-index: 1001;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.start-menu.show {
+    display: flex;
+}
+
+/* Sidebar z napisem Windows 98 */
+.start-menu-sidebar {
+    width: clamp(24px, 3vw, 32px);
+    background: linear-gradient(180deg, #000080 0%, #000040 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-weight: bold;
+    font-size: clamp(10px, 1.2vw, 14px);
+    letter-spacing: 1px;
+    padding: clamp(4px, 1vw, 8px);
+}
+
+/* Zawartość menu */
+.start-menu-content {
+    flex: 1;
+    padding: 2px 0;
+}
+
+/* Elementy menu */
+.start-menu-item {
+    display: flex;
+    align-items: center;
+    padding: clamp(3px, 0.8vw, 6px) clamp(8px, 2vw, 12px);
+    cursor: pointer;
+    font-size: clamp(9px, 1.1vw, 11px);
+    gap: clamp(4px, 1vw, 8px);
+    color: #000000;
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.start-menu-item:hover {
+    background: #0000ff;
+    color: white;
+    border: 1px solid #ffffff;
+}
+
+.menu-icon {
+    width: clamp(14px, 2vw, 18px);
+    height: clamp(14px, 2vw, 18px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(10px, 1.3vw, 14px);
+    flex-shrink: 0;
+}
+
+.menu-text {
+    flex: 1;
+    white-space: nowrap;
+}
+
+.menu-arrow {
+    font-size: clamp(8px, 1vw, 10px);
+    margin-left: auto;
+}
+
+/* Separator */
+.start-menu-separator {
+    height: 1px;
+    background: #808080;
+    margin: 2px clamp(8px, 2vw, 12px);
+    border-top: 1px solid #ffffff;
+}
+
+/* Submenu */
+.start-submenu {
+    position: fixed;
+    bottom: clamp(28px, 4vh, 40px);
+    left: clamp(200px, 25vw, 280px);
+    width: clamp(160px, 20vw, 220px);
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    display: none;
+    z-index: 1002;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    padding: 2px 0;
+}
+
+.start-submenu.show {
+    display: block;
+}
+
+.start-submenu .start-menu-item {
+    padding: clamp(3px, 0.8vw, 6px) clamp(8px, 2vw, 12px);
+}
+
+/* Responsywność dla tabletów */
+@media (max-width: 768px) {
+    .start-menu {
+        width: clamp(180px, 35vw, 250px);
+        bottom: clamp(32px, 5vh, 44px);
+    }
+    
+    .start
