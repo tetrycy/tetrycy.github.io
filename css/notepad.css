@@ -1,0 +1,41 @@
+/* Notatnik Windows 98 */
+.notepad {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#notepad-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 8px;
+    background: white;
+    color: black;
+    resize: none;
+    line-height: 1.4;
+}
+
+#notepad-textarea::placeholder {
+    color: #808080;
+    font-style: italic;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    #notepad-textarea {
+        font-size: 11px;
+        padding: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    #notepad-textarea {
+        font-size: 10px;
+        padding: 4px;
+    }
+}
