@@ -5,63 +5,111 @@
     background: url('../assets/wallpapers/tetrycy.jpg') center center;
     background-size: contain;
     background-repeat: no-repeat;
-    background-color: #ffffff; /* fallback - biały wypełni puste obszary */
+    background-color: #ffffff;
     background-attachment: fixed;
     position: relative;
     overflow: hidden;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
 }
 
-/* Responsywne ikony pulpitu */
+/* Ikony pulpitu - styl Windows 98 */
 .desktop-icon {
     position: absolute;
-    width: clamp(60px, 8vw, 85px);
+    width: clamp(60px, 8vw, 75px);
     text-align: center;
-    color: white;
-    font-size: clamp(10px, 1.2vw, 12px);
     cursor: pointer;
-    padding: clamp(2px, 0.5vw, 6px);
+    padding: clamp(2px, 0.5vw, 4px);
     border: 1px solid transparent;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
-    word-wrap: break-word;
     user-select: none;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-size: clamp(9px, 1.1vw, 11px);
 }
 
 .desktop-icon:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 2px;
+    background: rgba(0, 0, 128, 0.3);
+    border: 1px dotted #ffffff;
 }
 
 .desktop-icon.selected {
-    background: rgba(0, 0, 128, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 2px;
+    background: #0000ff;
+    border: 1px dotted #ffffff;
+}
+
+.desktop-icon.selected .icon-label {
+    background: #0000ff;
+    color: white;
 }
 
 .icon-image {
-    width: clamp(24px, 4vw, 36px);
-    height: clamp(24px, 4vw, 36px);
-    margin: 0 auto clamp(2px, 0.5vw, 6px);
+    width: clamp(24px, 4vw, 32px);
+    height: clamp(24px, 4vw, 32px);
+    margin: 0 auto clamp(2px, 0.5vw, 4px);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border-radius: 2px;
 }
 
-/* Responsywne style ikon */
+.icon-label {
+    color: #000000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1px 2px;
+    border-radius: 0;
+    font-weight: normal;
+    text-shadow: none;
+    word-wrap: break-word;
+    line-height: 1.2;
+}
+
+/* Windows 98 style ikony */
 .icon-computer { 
-    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
-    border: 1px solid #404040;
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 50%, #404040 100%);
+    border: 1px outset #c0c0c0;
+    position: relative;
+}
+
+.icon-computer::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(45deg, #e0e0e0 0%, #a0a0a0 100%);
+    border: 1px inset #c0c0c0;
 }
 
 .icon-folder { 
-    background: linear-gradient(135deg, #ffff80 0%, #c0c000 100%);
-    border: 1px solid #808000;
+    background: linear-gradient(135deg, #ffff80 0%, #ffff40 50%, #c0c000 100%);
+    border: 1px outset #ffff80;
+    position: relative;
+}
+
+.icon-folder::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(45deg, #ffffcc 0%, #ffff66 100%);
+    border: 1px inset #ffff80;
 }
 
 .icon-trash { 
-    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
-    border: 1px solid #404040;
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 50%, #404040 100%);
+    border: 1px outset #c0c0c0;
+    position: relative;
+}
+
+.icon-trash::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(45deg, #e0e0e0 0%, #a0a0a0 100%);
+    border: 1px inset #c0c0c0;
 }
 
 /* Responsywność dla tabletów */
@@ -71,9 +119,9 @@
     }
     
     .desktop-icon {
-        width: clamp(50px, 12vw, 70px);
-        font-size: clamp(9px, 1.5vw, 11px);
-        padding: clamp(1px, 0.4vw, 5px);
+        width: clamp(50px, 12vw, 65px);
+        font-size: clamp(8px, 1.3vw, 10px);
+        padding: clamp(1px, 0.4vw, 3px);
     }
     
     .icon-image {
@@ -85,9 +133,9 @@
 /* Responsywność dla telefonów */
 @media (max-width: 480px) {
     .desktop-icon {
-        width: clamp(45px, 15vw, 60px);
-        padding: clamp(1px, 0.3vw, 4px);
-        font-size: clamp(8px, 1.8vw, 10px);
+        width: clamp(45px, 15vw, 55px);
+        padding: clamp(1px, 0.3vw, 2px);
+        font-size: clamp(7px, 1.6vw, 9px);
     }
     
     .icon-image {
