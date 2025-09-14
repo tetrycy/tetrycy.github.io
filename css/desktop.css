@@ -1,228 +1,109 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Windows 98 - Podgląd</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* Responsywny pulpit Windows 98 */
+.desktop {
+    width: 100%;
+    height: calc(100vh - clamp(24px, 3.5vh, 32px));
+    background: url('../assets/wallpapers/tetrycy.jpg') center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: #ffffff;
+    background-attachment: fixed;
+    position: relative;
+    overflow: hidden;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+}
 
-        body {
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-            font-size: clamp(10px, 1.1vw, 12px);
-            background: #008080;
-            height: 100vh;
-            overflow: hidden;
-        }
+/* Ikony pulpitu - styl Windows 98 */
+.desktop-icon {
+    position: absolute;
+    width: clamp(60px, 8vw, 75px);
+    text-align: center;
+    cursor: pointer;
+    padding: clamp(2px, 0.5vw, 4px);
+    border: 1px solid transparent;
+    user-select: none;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-size: clamp(9px, 1.1vw, 11px);
+}
 
-        .desktop {
-            width: 100%;
-            height: calc(100vh - clamp(24px, 3.5vh, 32px));
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="white"/><g stroke="black" stroke-width="2" fill="none"><path d="M50 250 Q200 200 350 250"/><circle cx="100" cy="100" r="30"/><circle cx="300" cy="80" r="25"/><path d="M80 250 L120 200 L180 220 L200 180 L250 200 L320 250"/></g><text x="200" y="50" text-anchor="middle" font-family="Arial" font-size="16">🚣‍♂️ Tetrycy 🚣‍♀️</text></svg>') center center;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-color: #ffffff;
-            background-attachment: fixed;
-            position: relative;
-            overflow: hidden;
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-        }
+.desktop-icon:hover {
+    background: rgba(0, 0, 128, 0.3);
+    border: 1px dotted #ffffff;
+}
 
-        .desktop-icon {
-            position: absolute;
-            width: clamp(60px, 8vw, 75px);
-            text-align: center;
-            cursor: pointer;
-            padding: clamp(2px, 0.5vw, 4px);
-            border: 1px solid transparent;
-            user-select: none;
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-            font-size: clamp(9px, 1.1vw, 11px);
-        }
+.desktop-icon.selected {
+    background: #0000ff;
+    border: 1px dotted #ffffff;
+}
 
-        .desktop-icon:hover {
-            background: rgba(0, 0, 128, 0.3);
-            border: 1px dotted #ffffff;
-        }
+.desktop-icon.selected .icon-label {
+    background: #0000ff;
+    color: white;
+}
 
-        .desktop-icon.selected {
-            background: #0000ff;
-            border: 1px dotted #ffffff;
-        }
+.icon-image {
+    width: clamp(24px, 4vw, 32px);
+    height: clamp(24px, 4vw, 32px);
+    margin: 0 auto clamp(2px, 0.5vw, 4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(16px, 3vw, 24px);
+    background: none;
+    border: none;
+}
 
-        .desktop-icon.selected .icon-label {
-            background: #0000ff;
-            color: white;
-        }
+.icon-label {
+    color: #000000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1px 2px;
+    border-radius: 0;
+    font-weight: normal;
+    text-shadow: none;
+    word-wrap: break-word;
+    line-height: 1.2;
+}
 
-        .icon-image {
-            width: clamp(24px, 4vw, 32px);
-            height: clamp(24px, 4vw, 32px);
-            margin: 0 auto clamp(2px, 0.5vw, 4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(16px, 3vw, 24px);
-            background: none;
-            border: none;
-        }
+/* Unicode ikony */
+.icon-computer .icon-image::before { 
+    content: "🖥️";
+}
 
-        .icon-label {
-            color: #000000;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 1px 2px;
-            border-radius: 0;
-            font-weight: normal;
-            text-shadow: none;
-            word-wrap: break-word;
-            line-height: 1.2;
-        }
+.icon-folder .icon-image::before { 
+    content: "📁";
+}
 
-        /* Unicode ikony */
-        .icon-computer .icon-image::before { 
-            content: "🖥️";
-        }
+.icon-trash .icon-image::before { 
+    content: "🗑️";
+}
 
-        .icon-folder .icon-image::before { 
-            content: "📁";
-        }
-
-        .icon-trash .icon-image::before { 
-            content: "🗑️";
-        }
-
-        .taskbar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: clamp(24px, 3.5vh, 32px);
-            background: #c0c0c0;
-            border-top: 2px outset #c0c0c0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2px;
-            z-index: 1000;
-        }
-
-        .start-button {
-            height: clamp(20px, 3vh, 28px);
-            padding: 0 clamp(8px, 2vw, 16px);
-            background: #c0c0c0;
-            border: 2px outset #c0c0c0;
-            font-size: clamp(9px, 1.1vw, 11px);
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-        }
-
-        .start-button:active {
-            border: 2px inset #c0c0c0;
-        }
-
-        .taskbar-time {
-            margin-right: clamp(4px, 1vw, 12px);
-            font-size: clamp(9px, 1vw, 11px);
-            padding: clamp(2px, 0.5vw, 4px);
-            border: 1px inset #c0c0c0;
-            background: #c0c0c0;
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-        }
-
-        @media (max-width: 768px) {
-            .desktop {
-                height: calc(100vh - clamp(28px, 4vh, 36px));
-            }
-            
-            .desktop-icon {
-                width: clamp(50px, 12vw, 65px);
-                font-size: clamp(8px, 1.3vw, 10px);
-                padding: clamp(1px, 0.4vw, 3px);
-            }
-            
-            .icon-image {
-                width: clamp(20px, 6vw, 28px);
-                height: clamp(20px, 6vw, 28px);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .desktop-icon {
-                width: clamp(45px, 15vw, 55px);
-                padding: clamp(1px, 0.3vw, 2px);
-                font-size: clamp(7px, 1.6vw, 9px);
-            }
-            
-            .icon-image {
-                width: clamp(18px, 7vw, 24px);
-                height: clamp(18px, 7vw, 24px);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="desktop" id="desktop">
-        <!-- Ikony pulpitu -->
-        <div class="desktop-icon icon-computer" id="my-computer" style="top: 20px; left: 20px;">
-            <div class="icon-image"></div>
-            <div class="icon-label">Mój komputer</div>
-        </div>
-        
-        <div class="desktop-icon icon-trash" id="recycle-bin" style="top: 20px; right: 20px;">
-            <div class="icon-image"></div>
-            <div class="icon-label">Kosz</div>
-        </div>
-        
-        <div class="desktop-icon icon-folder" id="folder-kuba" style="top: 120px; left: 20px;">
-            <div class="icon-image"></div>
-            <div class="icon-label">Folder Kuby</div>
-        </div>
-        
-        <div class="desktop-icon icon-folder" id="folder-leszek" style="top: 220px; left: 20px;">
-            <div class="icon-image"></div>
-            <div class="icon-label">Folder Leszka</div>
-        </div>
-        
-        <div class="desktop-icon icon-folder" id="folder-mati" style="top: 320px; left: 20px;">
-            <div class="icon-image"></div>
-            <div class="icon-label">Folder Matiego</div>
-        </div>
-    </div>
+/* Responsywność dla tabletów */
+@media (max-width: 768px) {
+    .desktop {
+        height: calc(100vh - clamp(28px, 4vh, 36px));
+    }
     
-    <div class="taskbar">
-        <button class="start-button" id="startBtn">Start</button>
-        <div class="taskbar-time" id="time">22:35</div>
-    </div>
+    .desktop-icon {
+        width: clamp(50px, 12vw, 65px);
+        font-size: clamp(8px, 1.3vw, 10px);
+        padding: clamp(1px, 0.4vw, 3px);
+    }
+    
+    .icon-image {
+        width: clamp(20px, 6vw, 28px);
+        height: clamp(20px, 6vw, 28px);
+    }
+}
 
-    <script>
-        // Aktualizacja czasu
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('pl-PL', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            document.getElementById('time').textContent = timeString;
-        }
-        
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Symulacja kliknięć
-        document.querySelectorAll('.desktop-icon').forEach(icon => {
-            icon.addEventListener('click', function() {
-                document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-        });
-
-        document.getElementById('startBtn').addEventListener('click', function() {
-            alert('Menu Start - wkrótce więcej funkcji!');
-        });
-    </script>
-</body>
-</html>
+/* Responsywność dla telefonów */
+@media (max-width: 480px) {
+    .desktop-icon {
+        width: clamp(45px, 15vw, 55px);
+        padding: clamp(1px, 0.3vw, 2px);
+        font-size: clamp(7px, 1.6vw, 9px);
+    }
+    
+    .icon-image {
+        width: clamp(18px, 7vw, 24px);
+        height: clamp(18px, 7vw, 24px);
+    }
+}
