@@ -1,0 +1,139 @@
+/* Kalkulator Windows 98 */
+.calculator {
+    padding: 4px !important;
+    background: #c0c0c0;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+}
+
+/* Wyświetlacz */
+.calculator-display {
+    margin-bottom: 4px;
+    border: 2px inset #c0c0c0;
+    background: #ffffff;
+    padding: 4px;
+}
+
+#calc-display {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    text-align: right;
+    padding: 2px 4px;
+    outline: none;
+    color: #000000;
+}
+
+/* Kontener przycisków */
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+}
+
+/* Podstawowe style przycisków */
+.calc-btn {
+    height: 24px;
+    border: 2px outset #c0c0c0;
+    background: #c0c0c0;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.calc-btn:hover {
+    background: #dfdfdf;
+}
+
+.calc-btn:active {
+    border: 2px inset #c0c0c0;
+    background: #a0a0a0;
+}
+
+/* Przyciski numerów */
+.calc-btn.number {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Przycisk zero (szerszy) */
+.calc-btn.zero {
+    grid-column: span 2;
+}
+
+/* Przyciski operatorów */
+.calc-btn.operator {
+    background: #dfdfdf;
+    font-weight: bold;
+}
+
+.calc-btn.operator:hover {
+    background: #f0f0f0;
+}
+
+/* Przycisk równa się */
+.calc-btn.equals {
+    background: #0000ff;
+    color: white;
+    font-weight: bold;
+    grid-row: span 2;
+    grid-column: 4;
+}
+
+.calc-btn.equals:hover {
+    background: #0000cc;
+}
+
+.calc-btn.equals:active {
+    background: #000088;
+}
+
+/* Przyciski clear */
+.calc-btn.clear {
+    background: #ff8080;
+    font-weight: bold;
+}
+
+.calc-btn.clear:hover {
+    background: #ffaaaa;
+}
+
+/* Przyciski pamięci */
+.calc-btn.memory {
+    background: #80ff80;
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.calc-btn.memory:hover {
+    background: #aaffaa;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .calc-btn {
+        height: 22px;
+        font-size: 10px;
+    }
+    
+    #calc-display {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calc-btn {
+        height: 20px;
+        font-size: 9px;
+    }
+    
+    #calc-display {
+        font-size: 12px;
+    }
+    
+    .calc-btn.memory {
+        font-size: 8px;
+    }
+}
