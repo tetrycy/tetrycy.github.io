@@ -115,4 +115,38 @@
         bottom: clamp(32px, 5vh, 44px);
     }
     
-    .start
+    .start-submenu {
+        left: clamp(180px, 35vw, 250px);
+        width: clamp(140px, 25vw, 200px);
+        bottom: clamp(32px, 5vh, 44px);
+    }
+    
+    .start-menu-sidebar {
+        width: clamp(20px, 4vw, 28px);
+        font-size: clamp(9px, 1.3vw, 12px);
+    }
+}
+
+/* Responsywność dla telefonów */
+@media (max-width: 480px) {
+    .start-menu {
+        width: clamp(160px, 45vw, 220px);
+        bottom: clamp(36px, 6vh, 48px);
+    }
+    
+    .start-submenu {
+        left: clamp(160px, 45vw, 220px);
+        width: clamp(120px, 35vw, 180px);
+        bottom: clamp(36px, 6vh, 48px);
+    }
+    
+    .start-menu-sidebar {
+        width: clamp(18px, 5vw, 24px);
+        font-size: clamp(8px, 1.4vw, 10px);
+    }
+    
+    .start-menu-item {
+        font-size: clamp(8px, 1.2vw, 9px);
+        gap: clamp(3px, 0.8vw, 6px);
+    }
+}
