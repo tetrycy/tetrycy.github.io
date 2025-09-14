@@ -88,7 +88,7 @@ function toggleProgramsSubmenu() {
     programsSubmenu.classList.toggle('show');
 }
 
-// Placeholder funkcje dla aplikacji (będziemy je rozwijać)
+// Funkcje aplikacji - używają systemu okien
 function openPaint() {
     alert('Paint - wkrótce dostępny!');
 }
@@ -98,7 +98,11 @@ function openNotepad() {
 }
 
 function openCalculator() {
-    alert('Kalkulator - wkrótce dostępny!');
+    // Używa systemu okien zamiast alertu
+    openWindow('calculator-window', {
+        width: 250,
+        height: 300
+    });
 }
 
 function showShutdownDialog() {
@@ -120,18 +124,23 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         switch(iconId) {
             case 'my-computer':
                 console.log('Kliknięto: Mój komputer');
+                // openWindow('my-computer-window');
                 break;
             case 'recycle-bin':
                 console.log('Kliknięto: Kosz');
+                // openWindow('recycle-bin-window');
                 break;
             case 'folder-kuba':
                 console.log('Kliknięto: Folder Kuby');
+                // openWindow('folder-kuba-window');
                 break;
             case 'folder-leszek':
                 console.log('Kliknięto: Folder Leszka');
+                // openWindow('folder-leszek-window');
                 break;
             case 'folder-mati':
                 console.log('Kliknięto: Folder Matiego');
+                // openWindow('folder-mati-window');
                 break;
         }
     });
