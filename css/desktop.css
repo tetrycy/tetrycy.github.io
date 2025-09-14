@@ -1,0 +1,57 @@
+/* Pulpit Windows 98 */
+.desktop {
+    width: 100%;
+    height: calc(100vh - 28px);
+    background: url('../assets/wallpapers/win98-clouds.jpg') center/cover;
+    background-color: #008080; /* fallback */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ikony pulpitu */
+.desktop-icon {
+    position: absolute;
+    width: 75px;
+    text-align: center;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px;
+    border: 1px solid transparent;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+}
+
+.desktop-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.desktop-icon.selected {
+    background: rgba(0, 0, 128, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.icon-image {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 4px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Ikony - kolory dla różnych typów */
+.icon-computer { 
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+    border: 1px solid #404040;
+}
+
+.icon-folder { 
+    background: linear-gradient(135deg, #ffff80 0%, #c0c000 100%);
+    border: 1px solid #808000;
+}
+
+.icon-trash { 
+    background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+    border: 1px solid #404040;
+}
