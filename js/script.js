@@ -97,7 +97,10 @@ function openPaint() {
 }
 
 function openNotepad() {
-    alert('Notatnik - wkrótce dostępny!');
+    openWindow('notepad-window', {
+        width: 400,
+        height: 350
+    });
 }
 
 function openCalculator() {
