@@ -90,7 +90,10 @@ function toggleProgramsSubmenu() {
 
 // Funkcje aplikacji - używają systemu okien
 function openPaint() {
-    alert('Paint - wkrótce dostępny!');
+    openWindow('paint-window', {
+        width: 500,
+        height: 450
+    });
 }
 
 function openNotepad() {
