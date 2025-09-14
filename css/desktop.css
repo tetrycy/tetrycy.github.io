@@ -1,46 +1,52 @@
-/* Pulpit Windows 98 */
+/* Responsywny pulpit Windows 98 */
 .desktop {
     width: 100%;
-    height: calc(100vh - 28px);
-    background: url('../assets/wallpapers/win98-clouds.jpg') center/cover;
+    height: calc(100vh - clamp(24px, 3.5vh, 32px));
+    background: url('../assets/wallpapers/tetrycy.jpg') center/cover;
     background-color: #008080; /* fallback */
+    background-attachment: fixed;
     position: relative;
     overflow: hidden;
 }
 
-/* Ikony pulpitu */
+/* Responsywne ikony pulpitu */
 .desktop-icon {
     position: absolute;
-    width: 75px;
+    width: clamp(60px, 8vw, 85px);
     text-align: center;
     color: white;
-    font-size: 11px;
+    font-size: clamp(10px, 1.2vw, 12px);
     cursor: pointer;
-    padding: 4px;
+    padding: clamp(2px, 0.5vw, 6px);
     border: 1px solid transparent;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
+    word-wrap: break-word;
+    user-select: none;
 }
 
 .desktop-icon:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
 }
 
 .desktop-icon.selected {
-    background: rgba(0, 0, 128, 0.5);
+    background: rgba(0, 0, 128, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
 }
 
 .icon-image {
-    width: 32px;
-    height: 32px;
-    margin: 0 auto 4px;
+    width: clamp(24px, 4vw, 36px);
+    height: clamp(24px, 4vw, 36px);
+    margin: 0 auto clamp(2px, 0.5vw, 6px);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    border-radius: 2px;
 }
 
-/* Ikony - kolory dla różnych typów */
+/* Responsywne style ikon */
 .icon-computer { 
     background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
     border: 1px solid #404040;
@@ -54,4 +60,36 @@
 .icon-trash { 
     background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
     border: 1px solid #404040;
+}
+
+/* Responsywność dla tabletów */
+@media (max-width: 768px) {
+    .desktop {
+        height: calc(100vh - clamp(28px, 4vh, 36px));
+    }
+    
+    .desktop-icon {
+        width: clamp(50px, 12vw, 70px);
+        font-size: clamp(9px, 1.5vw, 11px);
+        padding: clamp(1px, 0.4vw, 5px);
+    }
+    
+    .icon-image {
+        width: clamp(20px, 6vw, 28px);
+        height: clamp(20px, 6vw, 28px);
+    }
+}
+
+/* Responsywność dla telefonów */
+@media (max-width: 480px) {
+    .desktop-icon {
+        width: clamp(45px, 15vw, 60px);
+        padding: clamp(1px, 0.3vw, 4px);
+        font-size: clamp(8px, 1.8vw, 10px);
+    }
+    
+    .icon-image {
+        width: clamp(18px, 7vw, 24px);
+        height: clamp(18px, 7vw, 24px);
+    }
 }
