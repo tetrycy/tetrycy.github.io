@@ -245,28 +245,35 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         
         // Akcje dla konkretnych ikon
         const iconId = this.id;
+// Obsługa kliknięć na ikony pulpitu
+document.querySelectorAll('.desktop-icon').forEach(icon => {
+    icon.addEventListener('click', function() {
+        // Usuń zaznaczenie z innych ikon
+        document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+        // Zaznacz kliknięta ikonę
+        this.classList.add('selected');
+        
+        // Akcje dla konkretnych ikon
+        const iconId = this.id;
         switch(iconId) {
-      // Akcje dla konkretnych ikon
-const iconId = this.id;
-switch(iconId) {
-    case 'my-computer':
-        window.open('my-computer.html', '_blank', 'width=600,height=500,resizable=yes,scrollbars=yes');
-        break;
-    case 'recycle-bin':
-        window.open('recycle-bin.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
-        break;
-    case 'folder-kuba':
-        window.open('folder-kuba.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
-        break;
-    case 'folder-leszek':
-        window.open('folder-leszek.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
-        break;
-    case 'folder-mati':
-        window.open('folder-mati.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
-        break;
-}
+            case 'my-computer':
+                window.open('my-computer.html', '_blank', 'width=600,height=500,resizable=yes,scrollbars=yes');
+                break;
+            case 'recycle-bin':
+                window.open('recycle-bin.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+                break;
+            case 'folder-kuba':
+                window.open('folder-kuba.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+                break;
+            case 'folder-leszek':
+                window.open('folder-leszek.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+                break;
+            case 'folder-mati':
+                window.open('folder-mati.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+                break;
         }
     });
+});
 });
 
 // Obsługa kliknięć na pulpit (odznacz ikony)
