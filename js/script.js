@@ -92,6 +92,10 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 openRun();
                 toggleStartMenu();
                 break;
+            case 'settings':
+                openSettings();
+                toggleStartMenu();
+                break;
             default:
                 alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
                 toggleStartMenu();
@@ -150,6 +154,13 @@ function openRun() {
     showBSOD();
 }
 
+function openSettings() {
+    openWindow('settings-window', {
+        width: 300,
+        height: 220
+    });
+}
+
 // Blue Screen of Death
 function showBSOD() {
     const bsod = document.createElement('div');
@@ -178,6 +189,117 @@ function showBSOD() {
     
     bsod.addEventListener('click', removeBSOD);
     document.addEventListener('keydown', removeBSOD);
+}
+
+// Funkcje Ustawień
+let isDarkMode = false;
+
+function toggleDarkMode() {
+    isDarkMode = !isDarkMode;
+    
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    
+    // Aktualizuj checkbox
+    const checkbox = document.getElementById('dark-mode-toggle');
+    if (checkbox) {
+        checkbox.checked = isDarkMode;
+    }
+}
+
+function startDefragmentation() {
+    closeWindow('settings-window');
+    showDefragmentation();
+}
+
+function showDefragmentation() {
+    const defrag = document.createElement('div');
+    defrag.className = 'defrag-screen';
+    defrag.innerHTML = `
+        <div class="defrag-content">
+            <h2>Defragmentacja dysku (C:)</h2>
+            <div class="defrag-progress">
+                <div class="defrag-bar">
+                    <div class="defrag-fill" id="defrag-fill"></div>
+                </div>
+                <div class="defrag-percent" id="defrag-percent">0%</div>
+            </div>
+            <div class="defrag-blocks" id="defrag-blocks"></div>
+            <p class="defrag-status" id="defrag-status">Analizowanie dysku...</p>
+            <p class="defrag-help">Naciśnij dowolny klawisz aby anulować</p>
+        </div>
+    `;
+    
+    document.body.appendChild(defrag);
+    
+    // Animacja defragmentacji
+    animateDefragmentation();
+    
+    // Wyłączenie klawiszem
+    const removeDefrag = () => {
+        defrag.remove();
+        document.removeEventListener('keydown', removeDefrag);
+    };
+    
+    defrag.addEventListener('click', removeDefrag);
+    document.addEventListener('keydown', removeDefrag);
+}
+
+function animateDefragmentation() {
+    const blocks = document.getElementById('defrag-blocks');
+    const fill = document.getElementById('defrag-fill');
+    const percent = document.getElementById('defrag-percent');
+    const status = document.getElementById('defrag-status');
+    
+    // Stwórz bloki
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
+    for (let i = 0; i < 200; i++) {
+        const block = document.createElement('div');
+        block.className = 'defrag-block';
+        block.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        blocks.appendChild(block);
+    }
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 2;
+        if (progress > 100) progress = 100;
+        
+        fill.style.width = progress + '%';
+        percent.textContent = Math.floor(progress) + '%';
+        
+        // Zmień status
+        if (progress < 30) {
+            status.textContent = 'Analizowanie dysku...';
+        } else if (progress < 70) {
+            status.textContent = 'Defragmentowanie...';
+        } else if (progress < 95) {
+            status.textContent = 'Optymalizowanie...';
+        } else {
+            status.textContent = 'Finalizowanie...';
+        }
+        
+        // Poruszaj blokami
+        const blockElements = blocks.children;
+        for (let i = 0; i < 10; i++) {
+            const randomBlock = blockElements[Math.floor(Math.random() * blockElements.length)];
+            if (randomBlock) {
+                randomBlock.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                randomBlock.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    randomBlock.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            status.textContent = 'Defragmentacja zakończona pomyślnie';
+        }
+    }, 100);
 }
 
 // Obsługa kliknięć na ikony pulpitu
