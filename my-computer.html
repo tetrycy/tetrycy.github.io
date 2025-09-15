@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosz</title>
+    <title>Mój komputer</title>
     <style>
         body {
             margin: 0;
@@ -77,49 +77,95 @@
         }
         
         .content {
-            background: white;
-            height: calc(100% - 70px);
-            margin: 2px;
-            border: 2px inset #c0c0c0;
-            position: relative;
-            overflow: auto;
+            padding: 16px;
+            height: calc(100% - 80px);
+            overflow-y: auto;
         }
         
-        .empty-folder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
+        .drive-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #000080;
+            border-bottom: 1px solid #c0c0c0;
+            padding-bottom: 2px;
+        }
+        
+        .drive-item {
+            display: flex;
+            align-items: center;
+            padding: 6px;
+            margin-bottom: 4px;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        
+        .drive-item:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .drive-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .drive-info {
+            flex: 1;
+        }
+        
+        .drive-name {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .drive-details {
             color: #666;
-            font-size: 12px;
-        }
-        
-        .empty-folder-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        .status-bar {
-            background: #c0c0c0;
-            border-top: 1px solid #808080;
-            padding: 2px 8px;
             font-size: 10px;
+        }
+        
+        .system-info {
+            background: #f0f0f0;
+            border: 2px inset #c0c0c0;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        
+        .info-row {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 4px;
+            padding: 2px 0;
         }
         
-        .address-bar {
-            background: white;
-            border: 1px inset #c0c0c0;
-            padding: 2px 4px;
-            margin: 2px;
-            font-size: 10px;
+        .info-label {
+            font-weight: bold;
+            color: #000080;
         }
         
-        .path-text {
+        .info-value {
             color: #000;
+        }
+        
+        .progress-bar {
+            width: 120px;
+            height: 12px;
+            border: 1px inset #c0c0c0;
+            background: #ffffff;
+            margin-top: 4px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #008000, #00ff00);
         }
     </style>
 </head>
@@ -127,8 +173,8 @@
     <div class="window">
         <div class="window-header">
             <div class="window-title">
-                <span>📁</span>
-                <span>Kosz</span>
+                <span>💻</span>
+                <span>Mój komputer</span>
             </div>
             <div class="window-controls">
                 <button class="window-btn" onclick="window.close()">×</button>
@@ -139,23 +185,102 @@
             <span class="menubar-item">Plik</span>
             <span class="menubar-item">Edycja</span>
             <span class="menubar-item">Widok</span>
+            <span class="menubar-item">Narzędzia</span>
             <span class="menubar-item">Pomoc</span>
         </div>
         
-        <div class="address-bar">
-            <span class="path-text">C:\Kosz</span>
-        </div>
-        
         <div class="content">
-            <div class="empty-folder">
-                <div class="empty-folder-icon">📂</div>
-                <div>Kosz jest pusty.</div>
+            <div class="drive-section">
+                <div class="section-title">Dyski twarde</div>
+                
+                <div class="drive-item">
+                    <div class="drive-icon">💾</div>
+                    <div class="drive-info">
+                        <div class="drive-name">Dysk lokalny (C:)</div>
+                        <div class="drive-details">
+                            1,86 GB wolne z 2,13 GB
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 87%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="status-bar">
-            <span>0 obiektów</span>
-            <span>Mój komputer</span>
+            
+            <div class="drive-section">
+                <div class="section-title">Dyski wymienne</div>
+                
+                <div class="drive-item">
+                    <div class="drive-icon">💿</div>
+                    <div class="drive-info">
+                        <div class="drive-name">Dysk 3½ (A:)</div>
+                        <div class="drive-details">1,44 MB</div>
+                    </div>
+                </div>
+                
+                <div class="drive-item">
+                    <div class="drive-icon">💿</div>
+                    <div class="drive-info">
+                        <div class="drive-name">CD-ROM (D:)</div>
+                        <div class="drive-details">Brak dysku</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="system-info">
+                <div class="section-title">Informacje o systemie</div>
+                
+                <div class="info-row">
+                    <span class="info-label">System operacyjny:</span>
+                    <span class="info-value">Microsoft Windows 98</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Procesor:</span>
+                    <span class="info-value">Intel Pentium MMX 233 MHz</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Pamięć RAM:</span>
+                    <span class="info-value">64 MB</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Karta graficzna:</span>
+                    <span class="info-value">S3 Trio64V+ 4 MB</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Karta dźwiękowa:</span>
+                    <span class="info-value">Sound Blaster 16</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Modem:</span>
+                    <span class="info-value">US Robotics 56K</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Monitor:</span>
+                    <span class="info-value">15" CRT 1024x768</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Właściciel:</span>
+                    <span class="info-value">Użytkownik Windows</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Numer seryjny:</span>
+                    <span class="info-value">55274-640-2673064-23456</span>
+                </div>
+                
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #c0c0c0; font-size: 10px; color: #666;">
+                    <div style="margin-bottom: 4px;"><strong>Tetrycy</strong></div>
+                    <div style="margin-bottom: 2px;">Kanał YT: https://www.youtube.com/@Tetrycy</div>
+                    <div>Patronite: https://patronite.pl/tetrycy</div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
