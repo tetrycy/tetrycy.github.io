@@ -23,6 +23,7 @@ document.getElementById('startBtn').addEventListener('click', function(e) {
 function toggleStartMenu() {
     const startMenu = document.getElementById('startMenu');
     const programsSubmenu = document.getElementById('programsSubmenu');
+    const gamesSubmenu = document.getElementById('gamesSubmenu');
     
     startMenuOpen = !startMenuOpen;
     
@@ -32,6 +33,7 @@ function toggleStartMenu() {
     } else {
         startMenu.classList.remove('show');
         programsSubmenu.classList.remove('show');
+        gamesSubmenu.classList.remove('show');
         document.getElementById('startBtn').classList.remove('pressed');
     }
 }
@@ -40,11 +42,13 @@ function toggleStartMenu() {
 document.addEventListener('click', function(e) {
     const startMenu = document.getElementById('startMenu');
     const programsSubmenu = document.getElementById('programsSubmenu');
+    const gamesSubmenu = document.getElementById('gamesSubmenu');
     const startBtn = document.getElementById('startBtn');
     
-    if (!startMenu.contains(e.target) && !programsSubmenu.contains(e.target) && e.target !== startBtn) {
+    if (!startMenu.contains(e.target) && !programsSubmenu.contains(e.target) && !gamesSubmenu.contains(e.target) && e.target !== startBtn) {
         startMenu.classList.remove('show');
         programsSubmenu.classList.remove('show');
+        gamesSubmenu.classList.remove('show');
         startBtn.classList.remove('pressed');
         startMenuOpen = false;
     }
@@ -60,6 +64,9 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
             case 'programs':
                 toggleProgramsSubmenu();
                 break;
+            case 'games':
+                toggleGamesSubmenu();
+                break;
             case 'paint':
                 openPaint();
                 toggleStartMenu();
@@ -70,6 +77,14 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 break;
             case 'calculator':
                 openCalculator();
+                toggleStartMenu();
+                break;
+            case 'minesweeper':
+                openMinesweeper();
+                toggleStartMenu();
+                break;
+            case 'solitaire':
+                alert('Pasjans - w przygotowaniu');
                 toggleStartMenu();
                 break;
             case 'shutdown':
@@ -102,7 +117,23 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
 
 function toggleProgramsSubmenu() {
     const programsSubmenu = document.getElementById('programsSubmenu');
+    const gamesSubmenu = document.getElementById('gamesSubmenu');
+    
+    // Ukryj submenu gier jeśli otwarte
+    gamesSubmenu.classList.remove('show');
+    // Przełącz submenu programów
     programsSubmenu.classList.toggle('show');
+}
+
+function toggleGamesSubmenu() {
+    console.log('toggleGamesSubmenu wywołane!'); // debug
+    const programsSubmenu = document.getElementById('programsSubmenu');
+    const gamesSubmenu = document.getElementById('gamesSubmenu');
+    
+    // Ukryj submenu programów jeśli otwarte
+    programsSubmenu.classList.remove('show');
+    // Przełącz submenu gier
+    gamesSubmenu.classList.toggle('show');
 }
 
 // Funkcje aplikacji - używają systemu okien
@@ -127,6 +158,19 @@ function openCalculator() {
     });
 }
 
+function openMinesweeper() {
+    openWindow('minesweeper-window', {
+        width: 250,
+        height: 320
+    });
+    // Inicjalizuj grę po otwarciu okna
+    setTimeout(() => {
+        if (typeof initMinesweeper === 'function') {
+            initMinesweeper();
+        }
+    }, 100);
+}
+
 function showShutdownDialog() {
     openWindow('shutdown-dialog', {
         width: 350,
@@ -149,13 +193,6 @@ function openHelp() {
 
 function openRun() {
     showBSOD();
-}
-
-function openSettings() {
-    openWindow('settings-window', {
-        width: 300,
-        height: 220
-    });
 }
 
 // Blue Screen of Death
@@ -186,117 +223,6 @@ function showBSOD() {
     
     bsod.addEventListener('click', removeBSOD);
     document.addEventListener('keydown', removeBSOD);
-}
-
-// Funkcje Ustawień
-let isDarkMode = false;
-
-function toggleDarkMode() {
-    isDarkMode = !isDarkMode;
-    
-    if (isDarkMode) {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-    
-    // Aktualizuj checkbox
-    const checkbox = document.getElementById('dark-mode-toggle');
-    if (checkbox) {
-        checkbox.checked = isDarkMode;
-    }
-}
-
-function startDefragmentation() {
-    closeWindow('settings-window');
-    showDefragmentation();
-}
-
-function showDefragmentation() {
-    const defrag = document.createElement('div');
-    defrag.className = 'defrag-screen';
-    defrag.innerHTML = `
-        <div class="defrag-content">
-            <h2>Defragmentacja dysku (C:)</h2>
-            <div class="defrag-progress">
-                <div class="defrag-bar">
-                    <div class="defrag-fill" id="defrag-fill"></div>
-                </div>
-                <div class="defrag-percent" id="defrag-percent">0%</div>
-            </div>
-            <div class="defrag-blocks" id="defrag-blocks"></div>
-            <p class="defrag-status" id="defrag-status">Analizowanie dysku...</p>
-            <p class="defrag-help">Naciśnij dowolny klawisz aby anulować</p>
-        </div>
-    `;
-    
-    document.body.appendChild(defrag);
-    
-    // Animacja defragmentacji
-    animateDefragmentation();
-    
-    // Wyłączenie klawiszem
-    const removeDefrag = () => {
-        defrag.remove();
-        document.removeEventListener('keydown', removeDefrag);
-    };
-    
-    defrag.addEventListener('click', removeDefrag);
-    document.addEventListener('keydown', removeDefrag);
-}
-
-function animateDefragmentation() {
-    const blocks = document.getElementById('defrag-blocks');
-    const fill = document.getElementById('defrag-fill');
-    const percent = document.getElementById('defrag-percent');
-    const status = document.getElementById('defrag-status');
-    
-    // Stwórz bloki
-    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
-    for (let i = 0; i < 200; i++) {
-        const block = document.createElement('div');
-        block.className = 'defrag-block';
-        block.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        blocks.appendChild(block);
-    }
-    
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += Math.random() * 2;
-        if (progress > 100) progress = 100;
-        
-        fill.style.width = progress + '%';
-        percent.textContent = Math.floor(progress) + '%';
-        
-        // Zmień status
-        if (progress < 30) {
-            status.textContent = 'Analizowanie dysku...';
-        } else if (progress < 70) {
-            status.textContent = 'Defragmentowanie...';
-        } else if (progress < 95) {
-            status.textContent = 'Optymalizowanie...';
-        } else {
-            status.textContent = 'Finalizowanie...';
-        }
-        
-        // Poruszaj blokami
-        const blockElements = blocks.children;
-        for (let i = 0; i < 10; i++) {
-            const randomBlock = blockElements[Math.floor(Math.random() * blockElements.length)];
-            if (randomBlock) {
-                randomBlock.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                randomBlock.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    randomBlock.style.transform = 'scale(1)';
-                }, 100);
-            }
-        }
-        
-        if (progress >= 100) {
-            clearInterval(interval);
-            status.textContent = 'Defragmentacja zakończona pomyślnie';
-        }
-    }, 100);
 }
 
 // Obsługa kliknięć na ikony pulpitu
@@ -351,4 +277,52 @@ document.querySelectorAll('.system-icon').forEach(icon => {
     });
 });
 
+// Dodaj skróty klawiszowe
+document.addEventListener('keydown', function(e) {
+    // F2 = nowa gra Minesweeper (jeśli okno otwarte)
+    if (e.key === 'F2') {
+        const minesweeperWindow = document.getElementById('minesweeper-window');
+        if (minesweeperWindow && minesweeperWindow.classList.contains('show')) {
+            e.preventDefault();
+            if (typeof resetMinesweeper === 'function') {
+                resetMinesweeper();
+            }
+        }
+    }
+    
+    // Escape = zamknij wszystkie okna
+    if (e.key === 'Escape') {
+        const openWindows = document.querySelectorAll('.window.show');
+        openWindows.forEach(window => {
+            if (typeof closeWindow === 'function') {
+                closeWindow(window.id);
+            }
+        });
+        
+        // Zamknij też menu Start
+        const startMenu = document.getElementById('startMenu');
+        if (startMenu.classList.contains('show')) {
+            toggleStartMenu();
+        }
+    }
+});
+
+// Dodaj wsparcie dla dotknięć na urządzeniach mobilnych
+if ('ontouchstart' in window) {
+    document.addEventListener('touchstart', function(e) {
+        // Zamknij menu Start przy dotknięciu poza nim
+        const startMenu = document.getElementById('startMenu');
+        const programsSubmenu = document.getElementById('programsSubmenu');
+        const gamesSubmenu = document.getElementById('gamesSubmenu');
+        const startBtn = document.getElementById('startBtn');
+        
+        if (!startMenu.contains(e.target) && !programsSubmenu.contains(e.target) && !gamesSubmenu.contains(e.target) && e.target !== startBtn) {
+            if (startMenuOpen) {
+                toggleStartMenu();
+            }
+        }
+    });
+}
+
 console.log('Windows 98 Desktop załadowany!');
+console.log('Submenu gier dodane!');
