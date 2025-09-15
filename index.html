@@ -243,6 +243,33 @@
     </div>
 </div>
 
+    <!-- Okno Ustawień -->
+<div class="window" id="settings-window">
+    <div class="window-header">
+        <span class="window-title">Ustawienia</span>
+        <div class="window-controls">
+            <button class="window-btn minimize" data-action="minimize">_</button>
+            <button class="window-btn maximize" data-action="maximize">□</button>
+            <button class="window-btn close" data-action="close">×</button>
+        </div>
+    </div>
+    
+    <div class="window-content settings">
+        <div class="settings-group">
+            <label class="settings-option">
+                <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()">
+                <span>Tryb nocny</span>
+            </label>
+        </div>
+        
+        <div class="settings-group">
+            <button class="settings-btn" onclick="startDefragmentation()">
+                🖥️ Defragmentacja dysku
+            </button>
+        </div>
+    </div>
+</div>
+
     <!-- Dialog Zamknij System -->
 <div class="window" id="shutdown-dialog">
     <div class="window-header">
