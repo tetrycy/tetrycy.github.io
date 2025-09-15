@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/notepad.css">
     <link rel="stylesheet" href="css/shutdown.css">
     <link rel="stylesheet" href="css/bsod.css">
+     <link rel="stylesheet" href="css/minesweeper.css">
 </head>
 <body>
     <div class="desktop" id="desktop">
@@ -101,27 +102,34 @@
     </div>
 
     <!-- Submenu Programy -->
-    <div class="start-submenu" id="programsSubmenu">
-        <div class="start-menu-item" data-app="paint">
-            <span class="menu-icon">🎨</span>
-            <span class="menu-text">Paint</span>
-        </div>
-        
-        <div class="start-menu-item" data-app="notepad">
-            <span class="menu-icon">📝</span>
-            <span class="menu-text">Notatnik</span>
-        </div>
-        
-        <div class="start-menu-item" data-app="calculator">
-            <span class="menu-icon">🔢</span>
-            <span class="menu-text">Kalkulator</span>
-        </div>
-        
-        <div class="start-menu-item" data-app="games">
-            <span class="menu-icon">🎮</span>
-            <span class="menu-text">Gry</span>
-            <span class="menu-arrow">▶</span>
-        </div>
+<div class="start-submenu" id="programsSubmenu">
+    <div class="start-menu-item" data-app="paint">
+        <span class="menu-icon">🎨</span>
+        <span class="menu-text">Paint</span>
+    </div>
+    
+    <div class="start-menu-item" data-app="notepad">
+        <span class="menu-icon">📝</span>
+        <span class="menu-text">Notatnik</span>
+    </div>
+    
+    <div class="start-menu-item" data-app="calculator">
+        <span class="menu-icon">🔢</span>
+        <span class="menu-text">Kalkulator</span>
+    </div>
+    
+    <div class="start-menu-item" data-app="games">
+        <span class="menu-icon">🎮</span>
+        <span class="menu-text">Gry</span>
+        <span class="menu-arrow">▶</span>
+    </div>
+    
+    <!-- DODAJ TO SUBMENU GIER -->
+    <div class="start-menu-item" data-app="minesweeper">
+        <span class="menu-icon">💣</span>
+        <span class="menu-text">Saper</span>
+    </div>
+</div>
     </div>
 <!-- Test okno kalkulatora -->
 <div class="window" id="calculator-window">
@@ -306,12 +314,65 @@
     <div class="screensaver-text">Windows 98<br>Wygaszacz ekranu: 3D Pipes</div>
 </div>
 
+<!-- DODAJ TUTAJ OKNO MINESWEEPER -->
+<!-- Minesweeper Windows 98 -->
+<div class="window" id="minesweeper-window">
+    <div class="window-header">
+        <span class="window-title">Saper</span>
+        <div class="window-controls">
+            <button class="window-btn minimize" data-action="minimize">_</button>
+            <button class="window-btn maximize" data-action="maximize">□</button>
+            <button class="window-btn close" data-action="close">×</button>
+        </div>
+    </div>
     
-  <script src="js/windows.js"></script>
+    <!-- Menu Sapera -->
+    <div class="window-menu minesweeper-menu">
+        <div class="window-menu-item" onclick="showMinesweeperMenu('game')">Gra</div>
+        <div class="window-menu-item" onclick="showMinesweeperMenu('help')">Pomoc</div>
+    </div>
+    
+    <div class="window-content minesweeper">
+        <!-- Panel informacji -->
+        <div class="minesweeper-info">
+            <div class="mine-counter">
+                <div class="digit-display" id="mine-count">010</div>
+            </div>
+            
+            <button class="smiley-btn" id="smiley-btn" onclick="resetMinesweeper()">
+                😊
+            </button>
+            
+            <div class="time-counter">
+                <div class="digit-display" id="time-count">000</div>
+            </div>
+        </div>
+        
+        <!-- Plansza gry -->
+        <div class="minesweeper-board" id="minesweeper-board">
+            <!-- Pola będą generowane przez JavaScript -->
+        </div>
+        
+        <!-- Menu kontekstowe -->
+        <div class="minesweeper-context-menu" id="mine-context-menu">
+            <div class="context-item" onclick="newGame('beginner')">🟢 Początkujący (9x9, 10 min)</div>
+            <div class="context-item" onclick="newGame('intermediate')">🟡 Średniozaawansowany (16x16, 40 min)</div>
+            <div class="context-item" onclick="newGame('expert')">🔴 Ekspert (30x16, 99 min)</div>
+            <div class="context-separator"></div>
+            <div class="context-item" onclick="toggleMarks()">❓ Znaki zapytania</div>
+            <div class="context-item" onclick="showStatistics()">📊 Najlepsze czasy...</div>
+        </div>
+    </div>
+</div>
+
+<script src="js/windows.js"></script>
+
+    
 <script src="js/script.js"></script>
     <script src="js/apps/calculator.js"></script>
     <script src="js/apps/paint.js"></script>
     <script src="js/apps/notepad.js"></script>
     <script src="js/apps/shutdown.js"></script>
+    <script src="js/apps/minesweeper.js"></script>
 </body>
 </html>
