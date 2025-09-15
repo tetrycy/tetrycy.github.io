@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Folder Matiego</title>
+    <title>Folder matiego</title>
     <style>
         body {
             margin: 0;
@@ -76,33 +76,9 @@
             color: white;
         }
         
-        .toolbar {
-            background: #c0c0c0;
-            border-bottom: 1px solid #808080;
-            padding: 4px;
-            display: flex;
-            gap: 4px;
-        }
-        
-        .toolbar-btn {
-            padding: 4px 8px;
-            border: 1px outset #c0c0c0;
-            background: #c0c0c0;
-            cursor: pointer;
-            font-size: 10px;
-        }
-        
-        .toolbar-btn:hover {
-            background: #dfdfdf;
-        }
-        
-        .toolbar-btn:active {
-            border: 1px inset #c0c0c0;
-        }
-        
         .content {
             background: white;
-            height: calc(100% - 100px);
+            height: calc(100% - 70px);
             margin: 2px;
             border: 2px inset #c0c0c0;
             position: relative;
@@ -145,38 +121,6 @@
         .path-text {
             color: #000;
         }
-        
-        /* Style dla ikon plików - na przyszłość */
-        .file-icon {
-            display: inline-block;
-            width: 80px;
-            text-align: center;
-            margin: 8px;
-            cursor: pointer;
-            padding: 4px;
-            border: 1px solid transparent;
-        }
-        
-        .file-icon:hover {
-            background: #e0e0e0;
-            border: 1px solid #c0c0c0;
-        }
-        
-        .file-icon.selected {
-            background: #0078d4;
-            color: white;
-        }
-        
-        .icon {
-            font-size: 32px;
-            margin-bottom: 4px;
-        }
-        
-        .filename {
-            font-size: 10px;
-            word-wrap: break-word;
-            line-height: 1.2;
-        }
     </style>
 </head>
 <body>
@@ -195,23 +139,7 @@
             <span class="menubar-item">Plik</span>
             <span class="menubar-item">Edycja</span>
             <span class="menubar-item">Widok</span>
-            <span class="menubar-item">Przejdź</span>
-            <span class="menubar-item">Ulubione</span>
-            <span class="menubar-item">Narzędzia</span>
             <span class="menubar-item">Pomoc</span>
-        </div>
-        
-        <div class="toolbar">
-            <button class="toolbar-btn">Wstecz</button>
-            <button class="toolbar-btn">Dalej</button>
-            <button class="toolbar-btn">W górę</button>
-            <button class="toolbar-btn">Wytnij</button>
-            <button class="toolbar-btn">Kopiuj</button>
-            <button class="toolbar-btn">Wklej</button>
-            <button class="toolbar-btn">Cofnij</button>
-            <button class="toolbar-btn">Usuń</button>
-            <button class="toolbar-btn">Właściwości</button>
-            <button class="toolbar-btn">Widoki</button>
         </div>
         
         <div class="address-bar">
@@ -230,40 +158,5 @@
             <span>Mój komputer</span>
         </div>
     </div>
-    
-    <script>
-        // Funkcja do otwierania plików - na przyszłość
-        function openFile(filename) {
-            window.open(filename, '_blank', 'width=600,height=400,resizable=yes,scrollbars=yes');
-        }
-        
-        // Funkcja do zaznaczania ikon
-        function selectIcon(element) {
-            // Usuń zaznaczenie z innych ikon
-            document.querySelectorAll('.file-icon').forEach(icon => {
-                icon.classList.remove('selected');
-            });
-            // Zaznacz kliknięty element
-            element.classList.add('selected');
-        }
-        
-        // Obsługa kliknięć w toolbar (na przyszłość)
-        document.querySelectorAll('.toolbar-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const action = this.textContent;
-                console.log('Kliknięto:', action);
-                // Tutaj można dodać funkcjonalność przycisków
-            });
-        });
-        
-        // Obsługa menu (na przyszłość)
-        document.querySelectorAll('.menubar-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const menu = this.textContent;
-                console.log('Kliknięto menu:', menu);
-                // Tutaj można dodać funkcjonalność menu
-            });
-        });
-    </script>
 </body>
 </html>
