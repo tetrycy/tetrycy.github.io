@@ -127,13 +127,11 @@ function toggleProgramsSubmenu() {
 
 function toggleGamesSubmenu() {
     console.log('toggleGamesSubmenu wywołane!'); // debug
-    const programsSubmenu = document.getElementById('programsSubmenu');
     const gamesSubmenu = document.getElementById('gamesSubmenu');
     
-    // Ukryj submenu programów jeśli otwarte
-    programsSubmenu.classList.remove('show');
-    // Przełącz submenu gier
-    gamesSubmenu.classList.toggle('show');
+    // NIE ukrywaj submenu programów - zostaw je otwarte
+    // Pokaż submenu gier
+    gamesSubmenu.classList.add('show');
 }
 
 // Funkcje aplikacji - używają systemu okien
