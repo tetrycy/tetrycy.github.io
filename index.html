@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/notepad.css">
     <link rel="stylesheet" href="css/shutdown.css">
     <link rel="stylesheet" href="css/bsod.css">
-     <link rel="stylesheet" href="css/minesweeper.css">
+    <link rel="stylesheet" href="css/minesweeper.css">
 </head>
 <body>
     <div class="desktop" id="desktop">
@@ -76,7 +76,6 @@
                 <span class="menu-text">Dokumenty</span>
             </div>
             
-                
             <div class="start-menu-item" data-app="search">
                 <span class="menu-icon">🔍</span>
                 <span class="menu-text">Znajdź</span>
@@ -102,273 +101,248 @@
     </div>
 
     <!-- Submenu Programy -->
-<div class="start-submenu" id="programsSubmenu">
-    <div class="start-menu-item" data-app="paint">
-        <span class="menu-icon">🎨</span>
-        <span class="menu-text">Paint</span>
-    </div>
-    
-    <div class="start-menu-item" data-app="notepad">
-        <span class="menu-icon">📝</span>
-        <span class="menu-text">Notatnik</span>
-    </div>
-    
-    <div class="start-menu-item" data-app="calculator">
-        <span class="menu-icon">🔢</span>
-        <span class="menu-text">Kalkulator</span>
-    </div>
-    
-    <div class="start-menu-item" data-app="games">
-        <span class="menu-icon">🎮</span>
-        <span class="menu-text">Gry</span>
-        <span class="menu-arrow">▶</span>
-    </div>
-    
-    <!-- DODAJ TO SUBMENU GIER -->
-    <div class="start-menu-item" data-app="minesweeper">
-        <span class="menu-icon">💣</span>
-        <span class="menu-text">Saper</span>
-    </div>
-</div>
-    </div>
-<!-- Test okno kalkulatora -->
-<div class="window" id="calculator-window">
-    <div class="window-header">
-        <span class="window-title">Kalkulator</span>
-        <div class="window-controls">
-            <button class="window-btn minimize" data-action="minimize">_</button>
-            <button class="window-btn maximize" data-action="maximize">□</button>
-            <button class="window-btn close" data-action="close">×</button>
+    <div class="start-submenu" id="programsSubmenu">
+        <div class="start-menu-item" data-app="paint">
+            <span class="menu-icon">🎨</span>
+            <span class="menu-text">Paint</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="notepad">
+            <span class="menu-icon">📝</span>
+            <span class="menu-text">Notatnik</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="calculator">
+            <span class="menu-icon">🔢</span>
+            <span class="menu-text">Kalkulator</span>
+        </div>
+        
+        <div class="start-menu-item" data-app="games">
+            <span class="menu-icon">🎮</span>
+            <span class="menu-text">Gry</span>
+            <span class="menu-arrow">▶</span>
         </div>
     </div>
-    <div class="window-content calculator">
-    <div class="calculator-display">
-        <input type="text" id="calc-display" value="0" readonly>
-    </div>
-    
-    <div class="calculator-buttons">
-        <!-- Pierwszy rząd -->
-        <button class="calc-btn memory" data-action="mc">MC</button>
-        <button class="calc-btn memory" data-action="mr">MR</button>
-        <button class="calc-btn memory" data-action="ms">MS</button>
-        <button class="calc-btn memory" data-action="m+">M+</button>
+
+    <!-- Submenu Gier -->
+    <div class="start-submenu" id="gamesSubmenu">
+        <div class="start-menu-item" data-app="minesweeper">
+            <span class="menu-icon">💣</span>
+            <span class="menu-text">Saper</span>
+        </div>
         
-        <!-- Drugi rząd -->
-        <button class="calc-btn clear" data-action="clear">C</button>
-        <button class="calc-btn clear" data-action="ce">CE</button>
-        <button class="calc-btn operator" data-action="backspace">←</button>
-        <button class="calc-btn operator" data-action="divide">÷</button>
-        
-        <!-- Trzeci rząd -->
-        <button class="calc-btn number" data-value="7">7</button>
-        <button class="calc-btn number" data-value="8">8</button>
-        <button class="calc-btn number" data-value="9">9</button>
-        <button class="calc-btn operator" data-action="multiply">×</button>
-        
-        <!-- Czwarty rząd -->
-        <button class="calc-btn number" data-value="4">4</button>
-        <button class="calc-btn number" data-value="5">5</button>
-        <button class="calc-btn number" data-value="6">6</button>
-        <button class="calc-btn operator" data-action="subtract">-</button>
-        
-        <!-- Piąty rząd -->
-        <button class="calc-btn number" data-value="1">1</button>
-        <button class="calc-btn number" data-value="2">2</button>
-        <button class="calc-btn number" data-value="3">3</button>
-        <button class="calc-btn operator" data-action="add">+</button>
-        
-        <!-- Szósty rząd -->
-        <button class="calc-btn number zero" data-value="0">0</button>
-        <button class="calc-btn number" data-action="decimal">.</button>
-        <button class="calc-btn equals" data-action="equals">=</button>
+        <div class="start-menu-item" data-app="solitaire">
+            <span class="menu-icon">🃏</span>
+            <span class="menu-text">Pasjans</span>
+        </div>
     </div>
 
-        
-</div>
-</div>
+    <!-- Okno kalkulatora -->
+    <div class="window" id="calculator-window">
+        <div class="window-header">
+            <span class="window-title">Kalkulator</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" data-action="minimize">_</button>
+                <button class="window-btn maximize" data-action="maximize">□</button>
+                <button class="window-btn close" data-action="close">×</button>
+            </div>
+        </div>
+        <div class="window-content calculator">
+            <div class="calculator-display">
+                <input type="text" id="calc-display" value="0" readonly>
+            </div>
+            
+            <div class="calculator-buttons">
+                <!-- Pierwszy rząd -->
+                <button class="calc-btn memory" data-action="mc">MC</button>
+                <button class="calc-btn memory" data-action="mr">MR</button>
+                <button class="calc-btn memory" data-action="ms">MS</button>
+                <button class="calc-btn memory" data-action="m+">M+</button>
+                
+                <!-- Drugi rząd -->
+                <button class="calc-btn clear" data-action="clear">C</button>
+                <button class="calc-btn clear" data-action="ce">CE</button>
+                <button class="calc-btn operator" data-action="backspace">←</button>
+                <button class="calc-btn operator" data-action="divide">÷</button>
+                
+                <!-- Trzeci rząd -->
+                <button class="calc-btn number" data-value="7">7</button>
+                <button class="calc-btn number" data-value="8">8</button>
+                <button class="calc-btn number" data-value="9">9</button>
+                <button class="calc-btn operator" data-action="multiply">×</button>
+                
+                <!-- Czwarty rząd -->
+                <button class="calc-btn number" data-value="4">4</button>
+                <button class="calc-btn number" data-value="5">5</button>
+                <button class="calc-btn number" data-value="6">6</button>
+                <button class="calc-btn operator" data-action="subtract">-</button>
+                
+                <!-- Piąty rząd -->
+                <button class="calc-btn number" data-value="1">1</button>
+                <button class="calc-btn number" data-value="2">2</button>
+                <button class="calc-btn number" data-value="3">3</button>
+                <button class="calc-btn operator" data-action="add">+</button>
+                
+                <!-- Szósty rząd -->
+                <button class="calc-btn number zero" data-value="0">0</button>
+                <button class="calc-btn number" data-action="decimal">.</button>
+                <button class="calc-btn equals" data-action="equals">=</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Paint Windows 98 -->
-<div class="window" id="paint-window">
-    <div class="window-header">
-        <span class="window-title">Paint</span>
-        <div class="window-controls">
-            <button class="window-btn minimize" data-action="minimize">_</button>
-            <button class="window-btn maximize" data-action="maximize">□</button>
-            <button class="window-btn close" data-action="close">×</button>
-        </div>
-    </div>
-    
-    <div class="window-content paint">
-        <!-- Panel narzędzi -->
-        <div class="paint-toolbar">
-            <button class="paint-tool active" data-tool="brush">🖌</button>
-            <button class="paint-tool" data-tool="pencil">✏️</button>
-            <button class="paint-tool" data-tool="eraser">🧽</button>
+    <div class="window" id="paint-window">
+        <div class="window-header">
+            <span class="window-title">Paint</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" data-action="minimize">_</button>
+                <button class="window-btn maximize" data-action="maximize">□</button>
+                <button class="window-btn close" data-action="close">×</button>
+            </div>
         </div>
         
-        <!-- Paleta kolorów -->
-        <div class="paint-colors">
-            <div class="color-box active" data-color="#000000" style="background: #000000;"></div>
-            <div class="color-box" data-color="#ff0000" style="background: #ff0000;"></div>
-            <div class="color-box" data-color="#00ff00" style="background: #00ff00;"></div>
-            <div class="color-box" data-color="#0000ff" style="background: #0000ff;"></div>
-            <div class="color-box" data-color="#ffff00" style="background: #ffff00;"></div>
-            <div class="color-box" data-color="#ff00ff" style="background: #ff00ff;"></div>
-            <div class="color-box" data-color="#00ffff" style="background: #00ffff;"></div>
-            <div class="color-box" data-color="#ffffff" style="background: #ffffff;"></div>
+        <div class="window-content paint">
+            <!-- Panel narzędzi -->
+            <div class="paint-toolbar">
+                <button class="paint-tool active" data-tool="brush">🖌</button>
+                <button class="paint-tool" data-tool="pencil">✏️</button>
+                <button class="paint-tool" data-tool="eraser">🧽</button>
+            </div>
+            
+            <!-- Paleta kolorów -->
+            <div class="paint-colors">
+                <div class="color-box active" data-color="#000000" style="background: #000000;"></div>
+                <div class="color-box" data-color="#ff0000" style="background: #ff0000;"></div>
+                <div class="color-box" data-color="#00ff00" style="background: #00ff00;"></div>
+                <div class="color-box" data-color="#0000ff" style="background: #0000ff;"></div>
+                <div class="color-box" data-color="#ffff00" style="background: #ffff00;"></div>
+                <div class="color-box" data-color="#ff00ff" style="background: #ff00ff;"></div>
+                <div class="color-box" data-color="#00ffff" style="background: #00ffff;"></div>
+                <div class="color-box" data-color="#ffffff" style="background: #ffffff;"></div>
+            </div>
+            
+            <!-- Canvas -->
+            <canvas id="paint-canvas" width="400" height="300"></canvas>
         </div>
-        
-        <!-- Canvas -->
-        <canvas id="paint-canvas" width="400" height="300"></canvas>
     </div>
-</div>
 
     <!-- Notatnik Windows 98 -->
-<div class="window" id="notepad-window">
-    <div class="window-header">
-        <span class="window-title">Notatnik</span>
-        <div class="window-controls">
-            <button class="window-btn minimize" data-action="minimize">_</button>
-            <button class="window-btn maximize" data-action="maximize">□</button>
-            <button class="window-btn close" data-action="close">×</button>
-        </div>
-    </div>
-    
-    <!-- Menu Notatnika -->
-    <div class="window-menu">
-        <div class="window-menu-item">File</div>
-        <div class="window-menu-item">Edit</div>
-        <div class="window-menu-item">Help</div>
-    </div>
-    
-    <div class="window-content notepad">
-        <textarea id="notepad-textarea" placeholder="Wpisz tekst..."></textarea>
-    </div>
-</div>
-
-    <!-- Okno Ustawień -->
-<div class="window" id="settings-window">
-    <div class="window-header">
-        <span class="window-title">Ustawienia</span>
-        <div class="window-controls">
-            <button class="window-btn minimize" data-action="minimize">_</button>
-            <button class="window-btn maximize" data-action="maximize">□</button>
-            <button class="window-btn close" data-action="close">×</button>
-        </div>
-    </div>
-    
-    <div class="window-content settings">
-        <div class="settings-group">
-            <label class="settings-option">
-                <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()">
-                <span>Tryb nocny</span>
-            </label>
+    <div class="window" id="notepad-window">
+        <div class="window-header">
+            <span class="window-title">Notatnik</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" data-action="minimize">_</button>
+                <button class="window-btn maximize" data-action="maximize">□</button>
+                <button class="window-btn close" data-action="close">×</button>
+            </div>
         </div>
         
-        <div class="settings-group">
-            <button class="settings-btn" onclick="startDefragmentation()">
-                🖥️ Defragmentacja dysku
-            </button>
+        <!-- Menu Notatnika -->
+        <div class="window-menu">
+            <div class="window-menu-item">File</div>
+            <div class="window-menu-item">Edit</div>
+            <div class="window-menu-item">Help</div>
+        </div>
+        
+        <div class="window-content notepad">
+            <textarea id="notepad-textarea" placeholder="Wpisz tekst..."></textarea>
         </div>
     </div>
-</div>
 
     <!-- Dialog Zamknij System -->
-<div class="window" id="shutdown-dialog">
-    <div class="window-header">
-        <span class="window-title">Zamknij system Windows</span>
-        <div class="window-controls">
-            <button class="window-btn close" data-action="close">×</button>
-        </div>
-    </div>
-    
-    <div class="window-content shutdown-dialog">
-        <div class="shutdown-icon">🖥️</div>
-        <div class="shutdown-text">Co chcesz zrobić?</div>
-        
-        <div class="shutdown-options">
-            <label class="shutdown-option">
-                <input type="radio" name="shutdown-type" value="shutdown" checked>
-                <span>Zamknij komputer</span>
-            </label>
-            <label class="shutdown-option">
-                <input type="radio" name="shutdown-type" value="restart">
-                <span>Uruchom ponownie komputer</span>
-            </label>
-            <label class="shutdown-option">
-                <input type="radio" name="shutdown-type" value="standby">
-                <span>Tryb oczekiwania</span>
-            </label>
-        </div>
-        
-        <div class="shutdown-buttons">
-            <button class="shutdown-btn ok" id="shutdown-ok">OK</button>
-            <button class="shutdown-btn cancel" id="shutdown-cancel">Anuluj</button>
-        </div>
-    </div>
-</div>
-
-<!-- 3D Pipes Screensaver -->
-<div id="screensaver" class="screensaver">
-    <canvas id="pipes-canvas"></canvas>
-    <div class="screensaver-text">Windows 98<br>Wygaszacz ekranu: 3D Pipes</div>
-</div>
-
-<!-- DODAJ TUTAJ OKNO MINESWEEPER -->
-<!-- Minesweeper Windows 98 -->
-<div class="window" id="minesweeper-window">
-    <div class="window-header">
-        <span class="window-title">Saper</span>
-        <div class="window-controls">
-            <button class="window-btn minimize" data-action="minimize">_</button>
-            <button class="window-btn maximize" data-action="maximize">□</button>
-            <button class="window-btn close" data-action="close">×</button>
-        </div>
-    </div>
-    
-    <!-- Menu Sapera -->
-    <div class="window-menu minesweeper-menu">
-        <div class="window-menu-item" onclick="showMinesweeperMenu('game')">Gra</div>
-        <div class="window-menu-item" onclick="showMinesweeperMenu('help')">Pomoc</div>
-    </div>
-    
-    <div class="window-content minesweeper">
-        <!-- Panel informacji -->
-        <div class="minesweeper-info">
-            <div class="mine-counter">
-                <div class="digit-display" id="mine-count">010</div>
-            </div>
-            
-            <button class="smiley-btn" id="smiley-btn" onclick="resetMinesweeper()">
-                😊
-            </button>
-            
-            <div class="time-counter">
-                <div class="digit-display" id="time-count">000</div>
+    <div class="window" id="shutdown-dialog">
+        <div class="window-header">
+            <span class="window-title">Zamknij system Windows</span>
+            <div class="window-controls">
+                <button class="window-btn close" data-action="close">×</button>
             </div>
         </div>
         
-        <!-- Plansza gry -->
-        <div class="minesweeper-board" id="minesweeper-board">
-            <!-- Pola będą generowane przez JavaScript -->
-        </div>
-        
-        <!-- Menu kontekstowe -->
-        <div class="minesweeper-context-menu" id="mine-context-menu">
-            <div class="context-item" onclick="newGame('beginner')">🟢 Początkujący (9x9, 10 min)</div>
-            <div class="context-item" onclick="newGame('intermediate')">🟡 Średniozaawansowany (16x16, 40 min)</div>
-            <div class="context-item" onclick="newGame('expert')">🔴 Ekspert (30x16, 99 min)</div>
-            <div class="context-separator"></div>
-            <div class="context-item" onclick="toggleMarks()">❓ Znaki zapytania</div>
-            <div class="context-item" onclick="showStatistics()">📊 Najlepsze czasy...</div>
+        <div class="window-content shutdown-dialog">
+            <div class="shutdown-icon">🖥️</div>
+            <div class="shutdown-text">Co chcesz zrobić?</div>
+            
+            <div class="shutdown-options">
+                <label class="shutdown-option">
+                    <input type="radio" name="shutdown-type" value="shutdown" checked>
+                    <span>Zamknij komputer</span>
+                </label>
+                <label class="shutdown-option">
+                    <input type="radio" name="shutdown-type" value="restart">
+                    <span>Uruchom ponownie komputer</span>
+                </label>
+                <label class="shutdown-option">
+                    <input type="radio" name="shutdown-type" value="standby">
+                    <span>Tryb oczekiwania</span>
+                </label>
+            </div>
+            
+            <div class="shutdown-buttons">
+                <button class="shutdown-btn ok" id="shutdown-ok">OK</button>
+                <button class="shutdown-btn cancel" id="shutdown-cancel">Anuluj</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="js/windows.js"></script>
+    <!-- 3D Pipes Screensaver -->
+    <div id="screensaver" class="screensaver">
+        <canvas id="pipes-canvas"></canvas>
+        <div class="screensaver-text">Windows 98<br>Wygaszacz ekranu: 3D Pipes</div>
+    </div>
 
-    
-<script src="js/script.js"></script>
+    <!-- Minesweeper Windows 98 -->
+    <div class="window" id="minesweeper-window">
+        <div class="window-header">
+            <span class="window-title">Saper</span>
+            <div class="window-controls">
+                <button class="window-btn minimize" data-action="minimize">_</button>
+                <button class="window-btn maximize" data-action="maximize">□</button>
+                <button class="window-btn close" data-action="close">×</button>
+            </div>
+        </div>
+        
+        <!-- Menu Sapera -->
+        <div class="window-menu minesweeper-menu">
+            <div class="window-menu-item" onclick="showMinesweeperMenu('game')">Gra</div>
+            <div class="window-menu-item" onclick="showMinesweeperMenu('help')">Pomoc</div>
+        </div>
+        
+        <div class="window-content minesweeper">
+            <!-- Panel informacji -->
+            <div class="minesweeper-info">
+                <div class="mine-counter">
+                    <div class="digit-display" id="mine-count">010</div>
+                </div>
+                
+                <button class="smiley-btn" id="smiley-btn" onclick="resetMinesweeper()">
+                    😊
+                </button>
+                
+                <div class="time-counter">
+                    <div class="digit-display" id="time-count">000</div>
+                </div>
+            </div>
+            
+            <!-- Plansza gry -->
+            <div class="minesweeper-board" id="minesweeper-board">
+                <!-- Pola będą generowane przez JavaScript -->
+            </div>
+            
+            <!-- Menu kontekstowe -->
+            <div class="minesweeper-context-menu" id="mine-context-menu">
+                <div class="context-item" onclick="newGame('beginner')">🟢 Początkujący (9x9, 10 min)</div>
+                <div class="context-item" onclick="newGame('intermediate')">🟡 Średniozaawansowany (16x16, 40 min)</div>
+                <div class="context-item" onclick="newGame('expert')">🔴 Ekspert (30x16, 99 min)</div>
+                <div class="context-separator"></div>
+                <div class="context-item" onclick="toggleMarks()">❓ Znaki zapytania</div>
+                <div class="context-item" onclick="showStatistics()">📊 Najlepsze czasy...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/windows.js"></script>
+    <script src="js/script.js"></script>
     <script src="js/apps/calculator.js"></script>
     <script src="js/apps/paint.js"></script>
     <script src="js/apps/notepad.js"></script>
