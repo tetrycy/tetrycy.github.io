@@ -76,6 +76,22 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 showShutdownDialog();
                 toggleStartMenu();
                 break;
+            case 'documents':
+                openDocuments();
+                toggleStartMenu();
+                break;
+            case 'search':
+                openSearch();
+                toggleStartMenu();
+                break;
+            case 'help':
+                openHelp();
+                toggleStartMenu();
+                break;
+            case 'run':
+                openRun();
+                toggleStartMenu();
+                break;
             default:
                 alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
                 toggleStartMenu();
@@ -104,7 +120,6 @@ function openNotepad() {
 }
 
 function openCalculator() {
-    // Używa systemu okien zamiast alertu
     openWindow('calculator-window', {
         width: 250,
         height: 300
@@ -116,6 +131,53 @@ function showShutdownDialog() {
         width: 350,
         height: 250
     });
+}
+
+// Nowe funkcje menu Start
+function openDocuments() {
+    window.open('https://leszekmilewski.pl', '_blank');
+}
+
+function openSearch() {
+    window.open('https://www.youtube.com/@Tetrycy', '_blank');
+}
+
+function openHelp() {
+    window.open('https://patronite.pl/tetrycy', '_blank');
+}
+
+function openRun() {
+    showBSOD();
+}
+
+// Blue Screen of Death
+function showBSOD() {
+    const bsod = document.createElement('div');
+    bsod.className = 'bsod';
+    bsod.innerHTML = `
+        <div class="bsod-content">
+            <h1>Windows</h1>
+            <p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) +<br>
+            00010E36. The current application will be terminated.</p>
+            
+            <p>* Press any key to terminate the current application.<br>
+            * Press CTRL+ALT+DEL again to restart your computer. You will<br>
+            &nbsp;&nbsp;lose any unsaved information in all open applications.</p>
+            
+            <p>Press any key to continue _</p>
+        </div>
+    `;
+    
+    document.body.appendChild(bsod);
+    
+    // Kliknięcie lub klawisz usuwa BSOD
+    const removeBSOD = () => {
+        bsod.remove();
+        document.removeEventListener('keydown', removeBSOD);
+    };
+    
+    bsod.addEventListener('click', removeBSOD);
+    document.addEventListener('keydown', removeBSOD);
 }
 
 // Obsługa kliknięć na ikony pulpitu
