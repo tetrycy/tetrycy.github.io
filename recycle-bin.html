@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosz</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-size: 11px;
+            background: #c0c0c0;
+            overflow: hidden;
+        }
+        
+        .window {
+            width: 100%;
+            height: 100vh;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+        }
+        
+        .window-header {
+            background: linear-gradient(to right, #0a246a, #a6caf0);
+            color: white;
+            padding: 3px 6px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #808080;
+        }
+        
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .window-btn {
+            width: 16px;
+            height: 14px;
+            border: 1px outset #c0c0c0;
+            background: #c0c0c0;
+            font-size: 9px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .window-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .menubar {
+            background: #c0c0c0;
+            border-bottom: 1px solid #808080;
+            padding: 2px;
+        }
+        
+        .menubar-item {
+            display: inline-block;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+        
+        .menubar-item:hover {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .toolbar {
+            background: #c0c0c0;
+            border-bottom: 1px solid #808080;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+        }
+        
+        .toolbar-btn {
+            padding: 4px 8px;
+            border: 1px outset #c0c0c0;
+            background: #c0c0c0;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .toolbar-btn:hover {
+            background: #dfdfdf;
+        }
+        
+        .toolbar-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .toolbar-btn.disabled {
+            color: #808080;
+            cursor: default;
+        }
+        
+        .content {
+            background: white;
+            height: calc(100% - 100px);
+            margin: 2px;
+            border: 2px inset #c0c0c0;
+            position: relative;
+            overflow: auto;
+        }
+        
+        .empty-recycle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .empty-recycle-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .status-bar {
+            background: #c0c0c0;
+            border-top: 1px solid #808080;
+            padding: 2px 8px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .address-bar {
+            background: white;
+            border: 1px inset #c0c0c0;
+            padding: 2px 4px;
+            margin: 2px;
+            font-size: 10px;
+        }
+        
+        .path-text {
+            color: #000;
+        }
+        
+        /* Style dla usuniętych plików - na przyszłość */
+        .deleted-file {
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            margin: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border: 1px solid transparent;
+        }
+        
+        .deleted-file:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .deleted-file.selected {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+            position: relative;
+        }
+        
+        .filename {
+            font-size: 10px;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+        
+        .delete-date {
+            font-size: 9px;
+            color: #666;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="window-header">
+            <div class="window-title">
+                <span>🗑️</span>
+                <span>Kosz</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-btn" onclick="window.close()">×</button>
+            </div>
+        </div>
+        
+        <div class="menubar">
+            <span class="menubar-item">Plik</span>
+            <span class="menubar-item">Edycja</span>
+            <span class="menubar-item">Widok</span>
+            <span class="menubar-item">Przejdź</span>
+            <span class="menubar-item">Narzędzia</span>
+            <span class="menubar-item">Pomoc</span>
+        </div>
+        
+        <div class="toolbar">
+            <button class="toolbar-btn">Wstecz</button>
+            <button class="toolbar-btn">Dalej</button>
+            <button class="toolbar-btn">W górę</button>
+            <button class="toolbar-btn disabled">Przywróć</button>
+            <button class="toolbar-btn disabled">Usuń</button>
+            <button class="toolbar-btn disabled">Opróżnij kosz</button>
+            <button class="toolbar-btn">Właściwości</button>
+            <button class="toolbar-btn">Widoki</button>
+        </div>
+        
+        <div class="address-bar">
+            <span class="path-text">Kosz</span>
+        </div>
+        
+        <div class="content">
+            <div class="empty-recycle">
+                <div class="empty-recycle-icon">🗑️</div>
+                <div>Kosz jest pusty.</div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <span>0 obiektów</span>
+            <span>Kosz</span>
+        </div>
+    </div>
+    
+    <script>
+        // Funkcja do przywracania plików - na przyszłość
+        function restoreFile(filename) {
+            console.log('Przywracanie pliku:', filename);
+            // Tutaj logika przywracania
+        }
+        
+        // Funkcja do trwałego usuwania - na przyszłość
+        function deleteFile(filename) {
+            if (confirm('Czy na pewno chcesz trwale usunąć ten plik?')) {
+                console.log('Trwałe usuwanie:', filename);
+                // Tutaj logika trwałego usuwania
+            }
+        }
+        
+        // Funkcja opróżniania kosza - na przyszłość
+        function emptyRecycleBin() {
+            if (confirm('Czy na pewno chcesz opróżnić kosz?\n\nWszystkie pliki zostaną trwale usunięte.')) {
+                console.log('Opróżnianie kosza');
+                // Tutaj logika opróżniania kosza
+            }
+        }
+        
+        // Funkcja do zaznaczania usuniętych plików
+        function selectDeletedFile(element) {
+            // Usuń zaznaczenie z innych plików
+            document.querySelectorAll('.deleted-file').forEach(file => {
+                file.classList.remove('selected');
+            });
+            // Zaznacz kliknięty element
+            element.classList.add('selected');
+            
+            // Aktywuj przyciski toolbar
+            document.querySelectorAll('.toolbar-btn.disabled').forEach(btn => {
+                if (btn.textContent === 'Przywróć' || btn.textContent === 'Usuń') {
+                    btn.classList.remove('disabled');
+                }
+            });
+        }
+        
+        // Obsługa kliknięć w toolbar
+        document.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                
+                const action = this.textContent;
+                console.log('Kliknięto:', action);
+                
+                switch(action) {
+                    case 'Przywróć':
+                        // Przywróć zaznaczony plik
+                        break;
+                    case 'Usuń':
+                        // Trwale usuń zaznaczony plik
+                        break;
+                    case 'Opróżnij kosz':
+                        emptyRecycleBin();
+                        break;
+                }
+            });
+        });
+        
+        // Obsługa menu
+        document.querySelectorAll('.menubar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const menu = this.textContent;
+                console.log('Kliknięto menu:', menu);
+            });
+        });
+    </script>
+</body>
+</html>
