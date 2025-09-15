@@ -246,25 +246,25 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         // Akcje dla konkretnych ikon
         const iconId = this.id;
         switch(iconId) {
-         case 'my-computer':
-    window.open('my-computer.html', '_blank', 'width=600,height=500,resizable=yes,scrollbars=yes');
-    break;
-            case 'recycle-bin':
-                console.log('Kliknięto: Kosz');
-                // openWindow('recycle-bin-window');
-                break;
-            case 'folder-kuba':
-                console.log('Kliknięto: Folder Kuby');
-                // openWindow('folder-kuba-window');
-                break;
-            case 'folder-leszek':
-                console.log('Kliknięto: Folder Leszka');
-                // openWindow('folder-leszek-window');
-                break;
-            case 'folder-mati':
-                console.log('Kliknięto: Folder Matiego');
-                // openWindow('folder-mati-window');
-                break;
+      // Akcje dla konkretnych ikon
+const iconId = this.id;
+switch(iconId) {
+    case 'my-computer':
+        window.open('my-computer.html', '_blank', 'width=600,height=500,resizable=yes,scrollbars=yes');
+        break;
+    case 'recycle-bin':
+        window.open('recycle-bin.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+        break;
+    case 'folder-kuba':
+        window.open('folder-kuba.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+        break;
+    case 'folder-leszek':
+        window.open('folder-leszek.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+        break;
+    case 'folder-mati':
+        window.open('folder-mati.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+        break;
+}
         }
     });
 });
