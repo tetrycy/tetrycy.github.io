@@ -1,0 +1,322 @@
+/* === MINESWEEPER WINDOWS 98 === */
+
+.minesweeper {
+    background: #c0c0c0;
+    padding: 8px;
+    font-family: 'MS Sans Serif', sans-serif;
+    user-select: none;
+}
+
+/* Menu Sapera */
+.minesweeper-menu {
+    background: #c0c0c0;
+    border-bottom: 1px solid #808080;
+    padding: 2px 0;
+}
+
+/* Panel informacji */
+.minesweeper-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: #c0c0c0;
+    border: 2px inset #c0c0c0;
+    margin-bottom: 8px;
+}
+
+/* Liczniki */
+.mine-counter, .time-counter {
+    background: #000000;
+    border: 2px inset #808080;
+    padding: 4px 6px;
+}
+
+.digit-display {
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff0000;
+    background: #000000;
+    text-align: center;
+    min-width: 36px;
+    letter-spacing: 2px;
+}
+
+/* Przycisk uśmiech */
+.smiley-btn {
+    width: 32px;
+    height: 32px;
+    border: 2px outset #c0c0c0;
+    background: #c0c0c0;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.smiley-btn:hover {
+    background: #dfdfdf;
+}
+
+.smiley-btn:active {
+    border: 2px inset #c0c0c0;
+}
+
+/* Plansza gry */
+.minesweeper-board {
+    border: 2px inset #c0c0c0;
+    background: #c0c0c0;
+    display: inline-grid;
+    gap: 0;
+    padding: 4px;
+}
+
+/* Pojedyncze pole */
+.mine-cell {
+    width: 20px;
+    height: 20px;
+    border: 2px outset #c0c0c0;
+    background: #c0c0c0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: 'MS Sans Serif', sans-serif;
+    position: relative;
+}
+
+.mine-cell:hover {
+    background: #dfdfdf;
+}
+
+.mine-cell:active {
+    border: 1px inset #c0c0c0;
+}
+
+/* Odkryte pole */
+.mine-cell.revealed {
+    border: 1px solid #808080;
+    background: #e0e0e0;
+    cursor: default;
+}
+
+.mine-cell.revealed:hover {
+    background: #e0e0e0;
+}
+
+/* Oznaczone flagą */
+.mine-cell.flagged {
+    background: #c0c0c0;
+    color: #ff0000;
+}
+
+.mine-cell.flagged::after {
+    content: "🚩";
+    font-size: 10px;
+}
+
+/* Znak zapytania */
+.mine-cell.questioned {
+    background: #c0c0c0;
+    color: #000000;
+}
+
+.mine-cell.questioned::after {
+    content: "?";
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Kolory liczb */
+.mine-cell.revealed[data-count="1"] { color: #0000ff; }
+.mine-cell.revealed[data-count="2"] { color: #008000; }
+.mine-cell.revealed[data-count="3"] { color: #ff0000; }
+.mine-cell.revealed[data-count="4"] { color: #000080; }
+.mine-cell.revealed[data-count="5"] { color: #800000; }
+.mine-cell.revealed[data-count="6"] { color: #008080; }
+.mine-cell.revealed[data-count="7"] { color: #000000; }
+.mine-cell.revealed[data-count="8"] { color: #808080; }
+
+/* Mina */
+.mine-cell.mine {
+    background: #ff0000;
+    color: #000000;
+}
+
+.mine-cell.mine::after {
+    content: "💣";
+    font-size: 12px;
+}
+
+/* Źle oznaczona mina */
+.mine-cell.wrong-flag {
+    background: #ff0000;
+}
+
+.mine-cell.wrong-flag::after {
+    content: "❌";
+    font-size: 10px;
+}
+
+/* Wybuchnięta mina */
+.mine-cell.exploded {
+    background: #ff0000;
+    animation: mine-explosion 0.5s ease-out;
+}
+
+@keyframes mine-explosion {
+    0% { transform: scale(1); background: #ff0000; }
+    50% { transform: scale(1.2); background: #ffff00; }
+    100% { transform: scale(1); background: #ff0000; }
+}
+
+/* Menu kontekstowe */
+.minesweeper-context-menu {
+    position: fixed;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    z-index: 1000;
+    min-width: 200px;
+    display: none;
+}
+
+.context-item {
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.context-item:hover {
+    background: #0078d4;
+    color: #ffffff;
+}
+
+.context-separator {
+    height: 1px;
+    background: #808080;
+    margin: 2px 0;
+}
+
+/* Stany gry */
+.game-won .smiley-btn {
+    content: "😎";
+}
+
+.game-lost .smiley-btn {
+    content: "😵";
+}
+
+.game-active .smiley-btn:active {
+    content: "😮";
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .minesweeper-info {
+        padding: 6px;
+    }
+    
+    .mine-cell {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+    }
+    
+    .digit-display {
+        font-size: 18px;
+        min-width: 32px;
+    }
+    
+    .smiley-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .minesweeper {
+        padding: 4px;
+    }
+    
+    .mine-cell {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+    }
+    
+    .digit-display {
+        font-size: 16px;
+        min-width: 28px;
+    }
+    
+    .smiley-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .minesweeper-info {
+        padding: 4px;
+    }
+}
+
+/* Tryb nocny */
+body.dark-mode .minesweeper {
+    background: #404040;
+}
+
+body.dark-mode .minesweeper-info {
+    background: #404040;
+    border-color: #555;
+}
+
+body.dark-mode .mine-counter,
+body.dark-mode .time-counter {
+    border-color: #555;
+}
+
+body.dark-mode .smiley-btn {
+    background: #404040;
+    border-color: #555;
+}
+
+body.dark-mode .smiley-btn:hover {
+    background: #505050;
+}
+
+body.dark-mode .minesweeper-board {
+    background: #404040;
+    border-color: #555;
+}
+
+body.dark-mode .mine-cell {
+    background: #404040;
+    border-color: #555;
+}
+
+body.dark-mode .mine-cell:hover {
+    background: #505050;
+}
+
+body.dark-mode .mine-cell.revealed {
+    background: #353535;
+    border-color: #666;
+}
+
+body.dark-mode .minesweeper-context-menu {
+    background: #404040;
+    border-color: #555;
+}
+
+body.dark-mode .context-item {
+    border-color: #555;
+    color: #e0e0e0;
+}
