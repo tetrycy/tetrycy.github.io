@@ -5,28 +5,55 @@ function isMobileDevice() {
 }
 
 let originalOpenWindow = null;
+let originalCloseWindow = null;
+let mobileInitialized = false;
 
 function initMobileSupport() {
-    if (window.openWindow && !originalOpenWindow) {
-        originalOpenWindow = window.openWindow;
+    if (mobileInitialized) return;
+    
+    // Poczekaj aż wszystkie funkcje będą dostępne
+    if (!window.openWindow) {
+        setTimeout(initMobileSupport, 100);
+        return;
     }
     
-    window.openWindow = function(windowId, options = {}) {
-        if (isMobileDevice()) {
+    console.log('Inicjalizacja mobile support...');
+    
+    // Zachowaj oryginalne funkcje
+    if (!originalOpenWindow) {
+        originalOpenWindow = window.openWindow;
+    }
+    if (!originalCloseWindow && window.closeWindow) {
+        originalCloseWindow = window.closeWindow;
+    }
+    
+    // Nadpisz tylko na mobile
+    if (isMobileDevice()) {
+        window.openWindow = function(windowId, options = {}) {
             return openMobileWindow(windowId, options);
-        } else {
-            return originalOpenWindow(windowId, options);
+        };
+        
+        if (originalCloseWindow) {
+            window.closeWindow = function(windowId) {
+                closeMobileWindow(windowId);
+            };
         }
-    };
+    }
     
     window.addEventListener('orientationchange', handleOrientationChange);
     window.addEventListener('resize', handleResize);
+    
+    mobileInitialized = true;
+    console.log('Mobile support zainicjalizowany');
 }
 
 function openMobileWindow(windowId, options = {}) {
+    console.log('Otwieranie mobile window:', windowId);
+    
     const windowEl = document.getElementById(windowId);
     if (!windowEl) return false;
     
+    // Zamknij inne otwarte aplikacje na telefonie
     document.querySelectorAll('.window.mobile-fullscreen').forEach(win => {
         if (win.id !== windowId) {
             closeMobileWindow(win.id);
@@ -70,6 +97,8 @@ function closeMobileWindow(windowId) {
 function initMobilePaint() {
     const canvas = document.getElementById('paint-canvas');
     if (!canvas) return;
+    
+    console.log('Inicjalizacja mobile Paint');
     
     const container = canvas.parentElement;
     const rect = container.getBoundingClientRect();
@@ -135,22 +164,15 @@ function handleOrientationChange() {
 
 function handleResize() {
     // Obsługa przełączania desktop/mobile
-}
-
-// Nadpisz closeWindow
-let originalCloseWindow = window.closeWindow;
-window.closeWindow = function(windowId) {
-    if (isMobileDevice()) {
-        closeMobileWindow(windowId);
-    } else if (originalCloseWindow) {
-        originalCloseWindow(windowId);
+    const wasMobile = !isMobileDevice();
+    if (wasMobile !== isMobileDevice()) {
+        console.log('Zmiana trybu mobile/desktop');
     }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initMobileSupport, 100);
-});
-
-if (document.readyState !== 'loading') {
-    setTimeout(initMobileSupport, 100);
 }
+
+// Inicjalizacja - poczekaj na załadowanie wszystkich skryptów
+setTimeout(() => {
+    initMobileSupport();
+}, 200);
+
+console.log('Mobile script załadowany, device:', isMobileDevice());
