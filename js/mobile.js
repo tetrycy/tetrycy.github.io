@@ -7,6 +7,7 @@ function isMobileDevice() {
 let originalOpenWindow = null;
 let originalCloseWindow = null;
 let mobileInitialized = false;
+let originalTaskbarDisplay = null;
 
 function initMobileSupport() {
     if (mobileInitialized) return;
@@ -18,6 +19,13 @@ function initMobileSupport() {
     }
     
     console.log('Inicjalizacja mobile support...');
+    
+    // Zapamiętaj oryginalny display taskbara
+    const taskbar = document.querySelector('.taskbar');
+    if (taskbar) {
+        originalTaskbarDisplay = window.getComputedStyle(taskbar).display;
+        console.log('Oryginalny display taskbara:', originalTaskbarDisplay);
+    }
     
     // Zachowaj oryginalne funkcje
     if (!originalOpenWindow) {
@@ -79,21 +87,32 @@ function openMobileWindow(windowId, options = {}) {
     setTimeout(() => windowEl.classList.remove('opening'), 150);
     
     const taskbar = document.querySelector('.taskbar');
-    if (taskbar) taskbar.style.display = 'none';
+    if (taskbar) {
+        taskbar.style.display = 'none';
+        console.log('Taskbar ukryty');
+    }
     
     return true;
 }
 
 function closeMobileWindow(windowId) {
+    console.log('Zamykanie mobile window:', windowId);
+    
     const windowEl = document.getElementById(windowId);
     if (!windowEl) return;
     
     windowEl.classList.remove('mobile-fullscreen', 'paint-mobile', 'calculator-mobile', 'minesweeper-mobile', 'notepad-mobile', 'solitaire-mobile', 'show');
     
-    // Przywróć taskbar - usuń style display żeby wrócił do CSS
+    // Przywróć taskbar z oryginalnym display
     const taskbar = document.querySelector('.taskbar');
     if (taskbar) {
-        taskbar.style.removeProperty('display');
+        if (originalTaskbarDisplay) {
+            taskbar.style.display = originalTaskbarDisplay;
+        } else {
+            // Fallback - spróbuj najpopularniejsze wartości
+            taskbar.style.display = 'flex';
+        }
+        console.log('Taskbar przywrócony z display:', taskbar.style.display);
     }
 }
 
