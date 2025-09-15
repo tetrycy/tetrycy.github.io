@@ -1,162 +1,137 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Folder Kuby</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-            font-size: 11px;
-            background: #c0c0c0;
-            overflow: hidden;
-        }
-        
-        .window {
-            width: 100%;
-            height: 100vh;
-            background: #c0c0c0;
-            border: 2px outset #c0c0c0;
-        }
-        
-        .window-header {
-            background: linear-gradient(to right, #0a246a, #a6caf0);
-            color: white;
-            padding: 3px 6px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #808080;
-        }
-        
-        .window-title {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .window-controls {
-            display: flex;
-            gap: 2px;
-        }
-        
-        .window-btn {
-            width: 16px;
-            height: 14px;
-            border: 1px outset #c0c0c0;
-            background: #c0c0c0;
-            font-size: 9px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .window-btn:active {
-            border: 1px inset #c0c0c0;
-        }
-        
-        .menubar {
-            background: #c0c0c0;
-            border-bottom: 1px solid #808080;
-            padding: 2px;
-        }
-        
-        .menubar-item {
-            display: inline-block;
-            padding: 4px 8px;
-            cursor: pointer;
-        }
-        
-        .menubar-item:hover {
-            background: #0078d4;
-            color: white;
-        }
-        
-        .content {
-            background: white;
-            height: calc(100% - 70px);
-            margin: 2px;
-            border: 2px inset #c0c0c0;
-            position: relative;
-            overflow: auto;
-        }
-        
-        .empty-folder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-        }
-        
-        .empty-folder-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        .status-bar {
-            background: #c0c0c0;
-            border-top: 1px solid #808080;
-            padding: 2px 8px;
-            font-size: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .address-bar {
-            background: white;
-            border: 1px inset #c0c0c0;
-            padding: 2px 4px;
-            margin: 2px;
-            font-size: 10px;
-        }
-        
-        .path-text {
-            color: #000;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leszek Milewski</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Libre Baskerville', serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #fff;
+      color: #111;
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 0.5em;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    nav {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    nav a {
+      display: block;
+      margin: 0.3rem 0;
+      font-size: 1.2rem;
+      text-decoration: none;
+      color: #333;
+    }
+
+    nav a[href="/"] {
+      font-weight: bold;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+      margin: 2rem auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    time {
+      display: block;
+      color: #777;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    p {
+      margin-bottom: 1.2em;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 16px;
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      nav a {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="window">
-        <div class="window-header">
-            <div class="window-title">
-                <span>📁</span>
-                <span>Folder Kuby</span>
-            </div>
-            <div class="window-controls">
-                <button class="window-btn" onclick="window.close()">×</button>
-            </div>
-        </div>
-        
-        <div class="menubar">
-            <span class="menubar-item">Plik</span>
-            <span class="menubar-item">Edycja</span>
-            <span class="menubar-item">Widok</span>
-            <span class="menubar-item">Pomoc</span>
-        </div>
-        
-        <div class="address-bar">
-            <span class="path-text">C:\Moje dokumenty\Folder Kuby</span>
-        </div>
-        
-        <div class="content">
-            <div class="empty-folder">
-                <div class="empty-folder-icon">📂</div>
-                <div>Ten folder jest pusty.</div>
-            </div>
-        </div>
-        
-        <div class="status-bar">
-            <span>0 obiektów</span>
-            <span>Mój komputer</span>
-        </div>
-    </div>
+
+
+  <nav>
+    <a href="/">strona</a>
+    <a href="/dziewczyna.html">Dziewczyna o wyjątkowych dłoniach</a>
+    <a href="/za-darmo.html">za darmo</a>
+    <a href="/kontakt.html">kontakt</a>
+  </nav>
+
+  <h2>JAK CO ŚRODĘ... Jakub Olkiewicz</h2>
+  <time datetime="2025-07-30">30.7.2025</time>
+
+  <p>W dawnych czasach, jeszcze zanim Twitter zmienił nazwę na X, a może nawet i jeszcze dawniej, gdy Twittera w ogóle nie było, ludzie oglądali telewizje informacyjne. Większość osób z mojego pokolenia w kwestii telewizji informacyjnych ma jedno, bardzo konkretne wspomnienie - co robiłeś, gdzie byłeś, w jakich okolicznościach, zastała cię podawana na wszystkich stacjach wiadomość o ataku na World Trade Center. Niestety, skoro tutaj jesteście, to pewnie znacie mnie na tyle, by wiedzieć - ja jestem trochę inny. Nie pamiętam ani co robiłem, ani gdzie byłem 11 września 2001 roku, pamiętam za to doskonale inny urywek prosto ze Stanów Zjednoczonych.</p>
+
+  <p>Rzecz działa się na Florydzie, albo w Kalifornii, w każdym razie - gdzieś, gdzie jest ładnie, bogato, kwieciście i słonecznie. Niestety, już Biblia uczy nas, że w miejscach, gdzie jest ładnie, bogato, kwieciście i słonecznie czasem zdarza się huragan Katrina albo Ewa i na miejsce przyjeżdża nawet Marcin Wrona, korespondent TVN-u w Stanach. Dlaczego ten materiał był dla mnie taki ważny? Otóż przed kupą gruzu, połamanych desek, białych paneli, które stanowiły niegdyś stylowe ozdoby okazałego domostwa stał nieco rozczochrany, ale szeroko uśmiechnięty Amerykanin. Co więcej, Amerykanin bardzo czule głaskał kota, którego trzymał na rękach, żeby cała scena wydawała się jeszcze bardziej hollywoodzka (albo tandenta, zależy, w jakim humorze był akurat oglądający). Pan został zapytany: który to już raz, jak huragan zmiata z powierzchni ziemi jego dobytek, jego pieczołowicie układane na biurku zdjęcia rodziny, jego ulubiony pojemnik na karmę dla kota, bo zapewne każdy posiadacz kota ma też swój ulubiony pojemnik, w którym trzyma jego szamę. I pan uczciwie odpowiedział: trzeci.</p>
+
+  <p>Uśmiechnięty, rozczochrany pan, po raz trzeci pozował na tle zdewastowanego przez siły natury dobytku, nieprzerwanie głaszcząc uroczego kotka.</p>
+
+  <p>- Ale spokojnie, that's fine, odbuduję jeszcze raz, najważniejsze, że mnie się nic nie stało i kotek się uratował.</p>
+
+  <p>Nie ukrywam, jest mi trochę głupio - materiały zmieniające życie to często wielkie księgi najważniejszych filozofów czy poetów, oferowane uczniom już na poziomie języka polskiego w szkole podstawowej. Niektórym życie odmieniają potężne dzieła kinematografii, które zostawiają po sobie tak trwały ślad, jakby zamiast ekranu telewizora człowiek spotykał się z igłą w gabinecie tatuażu. Jeszcze inni zdarzenia definiujące swój światopogląd na kilkadziesiąt lat przeżywają na własnej skórze - w kościołach, w ekstremalnych sytuacjach życiowych, czekając na porodówce.</p>
+
+  <p>A ja od jakichś 25 lat bazuję na kilkusekundowej setce totalnie anonimowego Amerykanina w jednej z polskich telewizji informacyjnych, którzy o licznych ofiarach jednego z huraganów na Florydzie czy w innej Kalifornii powiedzieli pomiędzy rozmową z wicepremierem rolnictwa i materiałem o rosnących szansach na przystąpienie Polski do Unii Europejskiej.</p>
+
+  <p>Nie zawsze jest łatwo, nie zawsze to przychodzi od razu, ale generalnie staram się często być tym gościem z kotem. Przewiduję zawsze najgorsze, wieszczę kolejne klęski, w głowie mnożę czarne scenariusze, ale gdy już się wszystkie ziszczą, zazwyczaj uśmiecham się głupio jak ten pan Amerykanin i staram się odnaleźć w tych gruzach tę śmieszną piszczałkę, którą kot naprawdę lubił przed nadejściem huraganu.</p>
+
+  <p>Nie chcę oczywiście wiązać tak banalnej, normalnej rzeczy jak utrata roboty z wielką tragedią bezimiennego Kalifornijczyka (albo typa z Florydy). Ale mam wrażenie, że po raz drugi z naczelnym strony leszekmilewski.pl oraz Mateuszem i Jackiem będziemy odbudowywać dom po przejściu huraganu. Skok z ciepłego Weszło, gdzie obaj się wychowaliśmy, gdzie odnaleźliśmy nasze miejsce w życiu i gdzie poszerzyliśmy nasze rodziny w totalnie nieznane, nowe rejony świata był jednak skokiem z naszej inicjatywy. Zamienialiśmy rodzinną firmę na wielkie korpo z wszelkimi zaletami i wadami wielkiego korpo. Przez trzy lata korzystaliśmy z zalet, na końcu poznaliśmy też parę wad, których nie ma większego sensu roztrząsać.</p>
+
+  <p>Efekt jest taki sam. Dom, który zbudowaliśmy najpierw na Weszło, trzeba było odbudowywać na Goalu. Teraz po raz trzeci będziemy stawiać te fundamenty, licząc, że może jednak polski YouTube nie jest tak groźnym miejscem jak Floryda (albo Kalifornia, teraz już sam nie wiem). Po naszym wczorajszym komunikacie, że spróbujemy czegoś swoejgo... Kurczę, nie wiem, jak to dokładnie ubrać w słowa. Pewnie na potrzeby metafory dobrze byłoby iść w kierunku: dostarczyliście nam wszystkich potrzebnych materiałów budowlanych, rąk do pracy, a nawet prowiantu na czas budowy. Ale to mało, bo zgłaszaliście się do nas z tak abstrakcyjnymi propozycjami, że momentami oczy się szkliły. Ktoś chciał nam zrobić stronę za darmo, ktoś inny SEO, jeszcze ktoś kolejny zaoferował pomoc w montażu, ktoś chciał pośredniczyć w dealach reklamowych, ktoś dał znać, że jest niezły w prawne kwestie i może to dla nas poukładać. Nie wiem, gdzie był ubezpieczony Amerykanin, ale wy nam daliście polisę o wiele ważniejszą i cenniejszą, bo po prostu darmową. On pewnie ten swój dom ubezpieczał, rokrocznie wydając na to grube pieniądze - my po prostu dostajemy to wszystko od was na tacy. I za to przede wszystkim bardzo dziękuję, za to zawsze będę wdzięczny.</p>
+
+  <p>Natomiast - co będzie dalej, bo pewnie zadajecie sobie to pytanie razem z nami. Pożegnanie z Better Collective było dość szybkie i nie do końca planowane, ale już od dzisiaj możemy dalej tworzyć własne treści. Dlatego dzisiaj, po raz 574. z rzędu, daję środowy tekst. Dałem ich prawie 400 na Weszło, 178 na Goalu, to jest pierwszy na łamach portalu leszekmilewski.pl. Akurat jutro, 31 lipca, minie dokładnie 11 lat, jak tydzień w tydzień coś robię. Nie jest łatwo robić cokolwiek przez 11 lat tydzień w tydzień, więc tym bardziej zależało mi, by utrzymać tę ciągłość. Za tydzień też gdzieś dam, jeszcze zobaczymy - może nawet na stronie tetrycy.pl, bo Leszek ostatnio odnalazł w sobie informatyka i robi też proste strony internetowe.</p>
+
+  <p>Dzisiaj odbył się nasz pierwszy poranek na kanale Tetrycy. Jutro, czyli w czwartek, przeprowadzimy domówkę z meczów europejskich pucharów, a w piątek, jak właściwie w każdy piątek od czterech i pół roku, damy nowy odcinek. Będzie nam niezmiernie miło, jeśli spędzicie ten czas z nami. Wiadomo, że jeśli będzie was dużo, to z czasem pojawią się u nas sponsorzy, którzy pozwolą nam nagrywać filmy w ramach pracy, a nie tylko towarzysko, w przerwach między moimi lekcjami w szkole i działalnością zawodową Leszka, który ma przecież uprawnienia kierowcy wóżków widłowych. Może się nie pojawią i będzie trzeba zacząć żyć uczciwie, a może się pojawią i wszystko pozostanie tak jak zawsze - trudno mi w tej chwili powiedzieć, pan Amerykanin z Florydy (albo sami wiecie skąd) też chyba jeszcze nie wiedział, ile pokojów będzie w tym odbudowanym po raz trzeci domu.</p>
+
+  <p>Na pewno Leszek wydał książkę, możecie ją kupić i to będzie super ruch. Na pewno jesteśmy gdzieś w połowie, albo i trochę za połową pisania naszej wspólnej książki, którą pewnie spróbujemy wydać i za zarobione pieniądze pójść na kebaba. Ale to co najważniejsze - jesteśmy razem. Ja, Jakub Olkiewicz, felietonista strony leszekmilewski.pl, Leszek Milewski, redaktor naczelny strony leszekmilewski.pl i Mateusz, który już tyle czasu nas nie osierocił, że pewnie zostanie kiedyś świętym. W lokalu Jacka, na Piotrkowskiej 79, który już zapowiedział, że widzimy się w czwartek podczas nagrywania i nie ma mowy o żadnych zmianach. A po drugiej stronie wy, dzięki którym mogę teraz klepać ostatnie słowa tego felietonu ze spokojną głową, a nie gorączkowo otwierając nowe karty z ofertami pracy dla wuefistów.</p>
+
+  <p>Będziemy was rozczarowywać, to pewniejsze niż huragany na wybrzeżach oraz panga w roli dorsza nad morzem. Będziemy się mylić, będziemy narzekać, wy będziecie narzekać, że było lepiej, jest gorzej, będziemy pewni, że to już koniec, potem będzie się okazywało, że jednak jeszcze nie. Ale to co najważniejsze - na ten moment, na 30 lipca 2025 roku, wydaje się, że będziemy. Nie chcę zabrzmieć tandentnie, jak ten typ... Wiecie, który typ z której setki w których wiadomościach. Ale to już jest bardzo dużo, to jest więcej, niż mogliśmy oczekiwać.</p>
+
+  <p>I za tydzień już chyba o piłce, co? Historię o Florydzie i Kalifornii uznaję za w pełni wyeksploatowaną.</p>
+
+  
+  <div style="text-align: center; margin-top: 3rem; margin-bottom: 2rem;">
+    <a href="https://www.youtube.com/@Tetrycy" target="_blank" style="text-decoration: none; color: crimson; font-weight: bold; font-size: 1.5rem; display: block; padding: 1rem; border: 2px solid crimson; border-radius: 8px; transition: all 0.3s ease;">
+      OGLĄDAJ TETRYKÓW NA KANALE TETRYCY
+    </a>
+  </div>
+
 </body>
 </html>
