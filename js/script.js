@@ -84,7 +84,7 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 toggleStartMenu();
                 break;
             case 'solitaire':
-                alert('Pasjans - w przygotowaniu');
+                openSolitaire();
                 toggleStartMenu();
                 break;
             case 'shutdown':
@@ -165,6 +165,18 @@ function openMinesweeper() {
     setTimeout(() => {
         if (typeof initMinesweeper === 'function') {
             initMinesweeper();
+        }
+    }, 100);
+}
+
+function openSolitaire() {
+    openWindow('solitaire-window', {
+        width: 600,
+        height: 500
+    });
+    setTimeout(() => {
+        if (typeof initSolitaire === 'function') {
+            initSolitaire();
         }
     }, 100);
 }
