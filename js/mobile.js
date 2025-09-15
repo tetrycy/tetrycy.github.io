@@ -90,8 +90,11 @@ function closeMobileWindow(windowId) {
     
     windowEl.classList.remove('mobile-fullscreen', 'paint-mobile', 'calculator-mobile', 'minesweeper-mobile', 'notepad-mobile', 'solitaire-mobile', 'show');
     
+    // Przywróć taskbar - usuń style display żeby wrócił do CSS
     const taskbar = document.querySelector('.taskbar');
-    if (taskbar) taskbar.style.display = 'flex';
+    if (taskbar) {
+        taskbar.style.removeProperty('display');
+    }
 }
 
 function initMobilePaint() {
