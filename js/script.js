@@ -264,7 +264,6 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         }
     });
 });
-});
 
 // Obsługa kliknięć na pulpit (odznacz ikony)
 document.getElementById('desktop').addEventListener('click', function(e) {
