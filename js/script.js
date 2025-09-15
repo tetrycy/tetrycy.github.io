@@ -158,8 +158,8 @@ function openCalculator() {
 
 function openMinesweeper() {
     openWindow('minesweeper-window', {
-        width: 250,
-        height: 320
+        width: 350,  // zmień z 250
+        height: 400  // zmień z 320
     });
     // Inicjalizuj grę po otwarciu okna
     setTimeout(() => {
