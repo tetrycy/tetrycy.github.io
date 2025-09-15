@@ -246,10 +246,9 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
         // Akcje dla konkretnych ikon
         const iconId = this.id;
         switch(iconId) {
-            case 'my-computer':
-                console.log('Kliknięto: Mój komputer');
-                // openWindow('my-computer-window');
-                break;
+         case 'my-computer':
+    window.open('my-computer.html', '_blank', 'width=600,height=500,resizable=yes,scrollbars=yes');
+    break;
             case 'recycle-bin':
                 console.log('Kliknięto: Kosz');
                 // openWindow('recycle-bin-window');
