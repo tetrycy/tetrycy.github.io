@@ -92,10 +92,7 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 openRun();
                 toggleStartMenu();
                 break;
-            case 'settings':
-                openSettings();
-                toggleStartMenu();
-                break;
+           
             default:
                 alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
                 toggleStartMenu();
