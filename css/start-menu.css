@@ -11,7 +11,6 @@
     font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
     box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
-
 .start-menu.show {
     display: flex;
 }
@@ -50,7 +49,6 @@
     position: relative;
     border: 1px solid transparent;
 }
-
 .start-menu-item:hover {
     background: #0000ff;
     color: white;
@@ -85,7 +83,7 @@
     border-top: 1px solid #ffffff;
 }
 
-/* Submenu */
+/* Submenu - podstawowe pozycjonowanie */
 .start-submenu {
     position: fixed;
     bottom: clamp(28px, 4vh, 40px);
@@ -108,6 +106,12 @@
     padding: clamp(3px, 0.8vw, 6px) clamp(8px, 2vw, 12px);
 }
 
+/* Pozycjonowanie submenu gier - na prawo od submenu programów */
+#gamesSubmenu {
+    left: calc(clamp(200px, 25vw, 280px) + clamp(160px, 20vw, 220px));
+    z-index: 1003;
+}
+
 /* Responsywność dla tabletów */
 @media (max-width: 768px) {
     .start-menu {
@@ -119,6 +123,10 @@
         left: clamp(180px, 35vw, 250px);
         width: clamp(140px, 25vw, 200px);
         bottom: clamp(32px, 5vh, 44px);
+    }
+    
+    #gamesSubmenu {
+        left: calc(clamp(180px, 35vw, 250px) + clamp(140px, 25vw, 200px));
     }
     
     .start-menu-sidebar {
@@ -140,6 +148,10 @@
         bottom: clamp(36px, 6vh, 48px);
     }
     
+    #gamesSubmenu {
+        left: calc(clamp(160px, 45vw, 220px) + clamp(120px, 35vw, 180px));
+    }
+    
     .start-menu-sidebar {
         width: clamp(18px, 5vw, 24px);
         font-size: clamp(8px, 1.4vw, 10px);
@@ -148,5 +160,25 @@
     .start-menu-item {
         font-size: clamp(8px, 1.2vw, 9px);
         gap: clamp(3px, 0.8vw, 6px);
+    }
+}
+
+/* Animacje submenu */
+.start-submenu {
+    transition: opacity 0.1s ease;
+}
+
+.start-submenu.show {
+    animation: submenu-appear 0.1s ease-out;
+}
+
+@keyframes submenu-appear {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
