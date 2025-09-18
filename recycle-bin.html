@@ -151,7 +151,7 @@
             color: #000;
         }
         
-        /* Style dla usuniętych plików - na przyszłość */
+        /* Style dla usuniętych plików */
         .deleted-file {
             display: inline-block;
             width: 80px;
@@ -218,7 +218,7 @@
             <button class="toolbar-btn">W górę</button>
             <button class="toolbar-btn disabled">Przywróć</button>
             <button class="toolbar-btn disabled">Usuń</button>
-            <button class="toolbar-btn disabled">Opróżnij kosz</button>
+            <button class="toolbar-btn">Opróżnij kosz</button>
             <button class="toolbar-btn">Właściwości</button>
             <button class="toolbar-btn">Widoki</button>
         </div>
@@ -228,19 +228,38 @@
         </div>
         
         <div class="content">
-            <div class="empty-recycle">
-                <div class="empty-recycle-icon">🗑️</div>
-                <div>Kosz jest pusty.</div>
+            <div class="deleted-file" onclick="selectDeletedFile(this)" ondblclick="tryOpenDeletedFile(this)" oncontextmenu="return false;">
+                <div class="file-icon">🖼️</div>
+                <div class="filename">marzenia.jpg</div>
+                <div class="delete-date">Usunięto: 30.06.2016</div>
+            </div>
+            
+            <div class="deleted-file" onclick="selectDeletedFile(this)" ondblclick="tryOpenDeletedFile(this)" oncontextmenu="return false;">
+                <div class="file-icon">⚙️</div>
+                <div class="filename">nadzieje.exe</div>
+                <div class="delete-date">Usunięto: 16.06.2012</div>
+            </div>
+            
+            <div class="deleted-file" onclick="selectDeletedFile(this)" ondblclick="tryOpenDeletedFile(this)" oncontextmenu="return false;">
+                <div class="file-icon">🌐</div>
+                <div class="filename">młodosc_1.html</div>
+                <div class="delete-date">Usunięto: 09.09.2009</div>
             </div>
         </div>
         
         <div class="status-bar">
-            <span>0 obiektów</span>
+            <span>3 obiekty</span>
             <span>Kosz</span>
         </div>
     </div>
     
     <script>
+        // Funkcja próby otwarcia usuniętego pliku (nieotwieralny)
+        function tryOpenDeletedFile(element) {
+            const filename = element.querySelector('.filename').textContent;
+            alert('Nie można otworzyć pliku "' + filename + '".\n\nPlik znajduje się w koszu. Aby go otworzyć, najpierw przywróć go z kosza.');
+        }
+        
         // Funkcja do przywracania plików - na przyszłość
         function restoreFile(filename) {
             console.log('Przywracanie pliku:', filename);
