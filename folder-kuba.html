@@ -163,6 +163,61 @@
             color: #808080;
             cursor: default;
         }
+        
+        /* Responsywność dla telefonów */
+        @media (max-width: 768px) {
+            .file-item {
+                width: 60px;
+                margin: 4px;
+                font-size: 9px;
+            }
+            
+            .file-icon {
+                font-size: 24px;
+            }
+            
+            .file-name {
+                font-size: 8px;
+            }
+            
+            .window-header {
+                padding: 2px 4px;
+            }
+            
+            .menubar-item {
+                padding: 2px 4px;
+                font-size: 10px;
+            }
+            
+            .address-bar {
+                font-size: 9px;
+            }
+            
+            .back-btn {
+                padding: 1px 4px;
+                font-size: 9px;
+            }
+            
+            .status-bar {
+                font-size: 9px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .file-item {
+                width: 50px;
+                margin: 2px;
+            }
+            
+            .file-icon {
+                font-size: 20px;
+            }
+            
+            .file-name {
+                font-size: 7px;
+                line-height: 1.1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -194,7 +249,7 @@
         </div>
         
         <div class="status-bar">
-            <span id="status-count">10 obiektów</span>
+            <span id="status-count">11 obiektów</span>
             <span>Mój komputer</span>
         </div>
     </div>
@@ -212,16 +267,17 @@
                     // Podfoldery
                     { type: 'folder', icon: '📁', name: 'Moja muzyka', target: 'music' },
                     { type: 'folder', icon: '📁', name: 'Gry', target: 'games' },
+                    { type: 'folder', icon: '📁', name: 'Filmy', target: 'movies' },
                     
                     // Felietony
-                    { type: 'file', icon: '📄', name: 'Jak co środę #1', target: 'felietony-kuby/felieton-01.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #2', target: 'felietony-kuby/felieton-02.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #3', target: 'felietony-kuby/felieton-03.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #4', target: 'felietony-kuby/felieton-04.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #5', target: 'felietony-kuby/felieton-05.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #6', target: 'felietony-kuby/felieton-06.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #7', target: 'felietony-kuby/felieton-07.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #8', target: 'felietony-kuby/felieton-08.html' }
+                    { type: 'file', icon: '📄', name: 'Jak co środę #1', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #2', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz2.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #3', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz3.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #4', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz4.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #5', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz5.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #6', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz6.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #7', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz7.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #8', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz8.html' }
                 ]
             },
             
@@ -230,12 +286,21 @@
                 path: 'C:\\Moje dokumenty\\Folder Kuby\\Moja muzyka',
                 items: [
                     // 6 plików MP3 - miejsca na tytuły i odsyłacze do YT
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 1', target: 'https://youtube.com/watch?v=XXXXXX1' },
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 2', target: 'https://youtube.com/watch?v=XXXXXX2' },
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 3', target: 'https://youtube.com/watch?v=XXXXXX3' },
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 4', target: 'https://youtube.com/watch?v=XXXXXX4' },
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 5', target: 'https://youtube.com/watch?v=XXXXXX5' },
-                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 6', target: 'https://youtube.com/watch?v=XXXXXX6' }
+                    { type: 'music', icon: '🎵', name: 'Pro8l3m - Na ostatnią chwilę', target: 'https://www.youtube.com/watch?v=h4FJZCiIjqA&list=RDh4FJZCiIjqA&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'Avi/Louis Villain - Królestwo', target: 'https://www.youtube.com/watch?v=oj_ppt65nhE&list=RDoj_ppt65nhE&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'OSTR - Wierszokleta', target: 'https://www.youtube.com/watch?v=n11dpojCPMc&list=RDn11dpojCPMc&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'Eldo - Eternia', target: 'https://www.youtube.com/watch?v=6YeHvUt1lQw&list=RD6YeHvUt1lQw&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'The Libertines - What a waster', target: 'https://www.youtube.com/watch?v=R_c8aGMEjx4&list=RDR_c8aGMEjx4&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'The Streets - How to win at Rock Paper Scissors', target: 'https://www.youtube.com/watch?v=d9qoTN542uM&list=RDd9qoTN542uM&start_radio=1' }
+                ]
+            },
+            
+            movies: {
+                title: 'Filmy',
+                path: 'C:\\Moje dokumenty\\Folder Kuby\\Filmy',
+                items: [
+                    // Jeden film - odsyłacz do YouTube
+                    { type: 'movie', icon: '🎬', name: 'Snatch.avi', target: 'https://www.youtube.com/watch?v=2pIuncegdOc' }
                 ]
             },
             
@@ -244,7 +309,7 @@
                 path: 'C:\\Moje dokumenty\\Folder Kuby\\Gry',
                 items: [
                     // Jedna gra - miejsce na odsyłacz
-                    { type: 'game', icon: '⚽', name: 'Nazwa gry', target: 'https://link-do-gry.com' }
+                    { type: 'game', icon: '⚽', name: 'Goal3.exe', target: 'https://archive.org/details/kunio-kun-no-nekketsu-soccer-league-polska-wersja' }
                 ]
             }
         };
@@ -305,14 +370,17 @@
         
         function openItem(item) {
             if (item.type === 'file') {
-                // Otwórz felieton w nowym oknie
-                window.open(item.target, '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+                // Otwórz felieton w nowym oknie z panelem Windows
+                window.open(item.target, '_blank', 'width=800,height=600,toolbar=yes,menubar=yes,scrollbars=yes,resizable=yes,status=yes');
             } else if (item.type === 'music') {
                 // Otwórz YouTube w nowej karcie
                 window.open(item.target, '_blank');
-            } else if (item.type === 'game') {
-                // Otwórz grę w nowej karcie
+            } else if (item.type === 'movie') {
+                // Otwórz film w nowej karcie
                 window.open(item.target, '_blank');
+            } else if (item.type === 'game') {
+                // Otwórz grę na pełny ekran
+                window.open(item.target, '_blank', 'fullscreen=yes,scrollbars=yes,resizable=yes');
             }
         }
         
