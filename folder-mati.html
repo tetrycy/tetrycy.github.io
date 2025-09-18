@@ -85,22 +85,6 @@
             overflow: auto;
         }
         
-        .empty-folder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-        }
-        
-        .empty-folder-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
         .status-bar {
             background: #c0c0c0;
             border-top: 1px solid #808080;
@@ -120,6 +104,105 @@
         
         .path-text {
             color: #000;
+        }
+        
+        /* Modal dla hasła */
+        .password-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            width: 300px;
+            z-index: 1000;
+        }
+        
+        .modal-header {
+            background: linear-gradient(to right, #0a246a, #a6caf0);
+            color: white;
+            padding: 3px 6px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-content {
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .password-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .password-text {
+            margin-bottom: 16px;
+            font-size: 11px;
+        }
+        
+        .password-input {
+            width: 200px;
+            padding: 4px;
+            border: 1px inset #c0c0c0;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-size: 11px;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .modal-btn {
+            padding: 4px 16px;
+            border: 1px outset #c0c0c0;
+            background: #c0c0c0;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+        }
+        
+        .modal-btn:hover {
+            background: #dfdfdf;
+        }
+        
+        .modal-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .error-message {
+            color: red;
+            font-size: 10px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .folder-content {
+            display: none;
+            padding: 8px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        .protected-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .protected-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -147,16 +230,95 @@
         </div>
         
         <div class="content">
-            <div class="empty-folder">
-                <div class="empty-folder-icon">📂</div>
-                <div>Ten folder jest pusty.</div>
+            <!-- Komunikat o chronionym dostępie -->
+            <div class="protected-message" id="protected-message">
+                <div class="protected-icon">🔒</div>
+                <div>Folder chroniony hasłem.</div>
+                <div style="margin-top: 8px; font-size: 10px; color: #888;">Kliknij w obszar folderu, aby wprowadzić hasło.</div>
+            </div>
+            
+            <!-- Zawartość folderu (ukryta) -->
+            <div class="folder-content" id="folder-content">
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <div style="font-size: 32px; margin-bottom: 12px;">📄</div>
+                    <div>Gratulacje! Udało ci się odblokować folder Mateusza.</div>
+                    <div style="margin-top: 8px; font-size: 10px;">Tutaj mogą znajdować się prywatne pliki...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal z hasłem -->
+        <div class="password-modal" id="password-modal" style="display: none;">
+            <div class="modal-header">
+                <span>🔐 Dostęp chroniony hasłem</span>
+            </div>
+            <div class="modal-content">
+                <div class="password-icon">🔑</div>
+                <div class="password-text">
+                    Ten folder jest chroniony hasłem.<br>
+                    Wprowadź hasło, aby uzyskać dostęp:
+                </div>
+                <input type="password" id="password-field" class="password-input" placeholder="Wprowadź hasło...">
+                <div class="error-message" id="error-message">Nieprawidłowe hasło!</div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="checkPassword()">OK</button>
+                    <button class="modal-btn" onclick="closePasswordModal()">Anuluj</button>
+                </div>
             </div>
         </div>
         
         <div class="status-bar">
-            <span>0 obiektów</span>
+            <span>Folder chroniony</span>
             <span>Mój komputer</span>
         </div>
     </div>
+    
+    <script>
+        const correctPassword = "mateusz123"; // Hasło do folderu
+        
+        // Pokaż modal z hasłem po kliknięciu w obszar zawartości
+        document.querySelector('.content').addEventListener('click', function() {
+            if (document.getElementById('folder-content').style.display !== 'block') {
+                showPasswordModal();
+            }
+        });
+        
+        function showPasswordModal() {
+            document.getElementById('password-modal').style.display = 'block';
+            document.getElementById('password-field').focus();
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('password-modal').style.display = 'none';
+            document.getElementById('password-field').value = '';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function checkPassword() {
+            const enteredPassword = document.getElementById('password-field').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            if (enteredPassword === correctPassword) {
+                // Hasło poprawne - pokaż zawartość
+                document.getElementById('protected-message').style.display = 'none';
+                document.getElementById('folder-content').style.display = 'block';
+                document.querySelector('.status-bar span:first-child').textContent = '1 obiekt';
+                closePasswordModal();
+            } else {
+                // Hasło niepoprawne
+                errorMessage.style.display = 'block';
+                document.getElementById('password-field').value = '';
+                document.getElementById('password-field').focus();
+            }
+        }
+        
+        // Enter w polu hasła
+        document.getElementById('password-field').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
 </body>
 </html>
