@@ -84,34 +84,41 @@
             position: relative;
             overflow: auto;
             padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
         }
         
         .file-item {
-            display: flex;
-            align-items: center;
-            padding: 4px 8px;
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            margin: 8px;
             cursor: pointer;
-            border-radius: 0;
-            margin-bottom: 2px;
+            padding: 4px;
+            border: 1px solid transparent;
         }
         
         .file-item:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .file-item.selected {
             background: #0078d4;
             color: white;
         }
         
-        .file-item:active {
-            background: #004578;
-        }
-        
         .file-icon {
-            font-size: 16px;
-            margin-right: 8px;
-            width: 20px;
+            font-size: 32px;
+            margin-bottom: 4px;
+            display: block;
         }
         
         .file-name {
-            font-size: 11px;
+            font-size: 10px;
+            word-wrap: break-word;
+            line-height: 1.2;
         }
         
         .status-bar {
@@ -134,6 +141,28 @@
         .path-text {
             color: #000;
         }
+        
+        .back-btn {
+            background: #c0c0c0;
+            border: 1px outset #c0c0c0;
+            padding: 2px 6px;
+            margin-right: 4px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .back-btn:hover {
+            background: #dfdfdf;
+        }
+        
+        .back-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .back-btn.disabled {
+            color: #808080;
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -141,7 +170,7 @@
         <div class="window-header">
             <div class="window-title">
                 <span>📁</span>
-                <span>Folder Kuby</span>
+                <span id="window-title">Folder Kuby</span>
             </div>
             <div class="window-controls">
                 <button class="window-btn" onclick="window.close()">×</button>
@@ -156,27 +185,147 @@
         </div>
         
         <div class="address-bar">
-            <span class="path-text">C:\Moje dokumenty\Folder Kuby</span>
+            <button id="back-btn" class="back-btn disabled" onclick="goBack()">Wstecz</button>
+            <span id="path-text" class="path-text">C:\Moje dokumenty\Folder Kuby</span>
         </div>
         
-        <div class="content">
-            <div class="file-item" onclick="openFile('felietony-kuby/olkiewicz.html')">
-                <span class="file-icon">📄</span>
-                <span class="file-name">olkiewicz.html</span>
-            </div>
+        <div class="content" id="content">
+            <!-- Zawartość będzie ładowana dynamicznie -->
         </div>
         
         <div class="status-bar">
-            <span>1 obiekt</span>
+            <span id="status-count">10 obiektów</span>
             <span>Mój komputer</span>
         </div>
     </div>
     
     <script>
-        function openFile(filename) {
-            // Otwórz plik w nowym oknie
-            window.open(filename, '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+        let currentPath = 'main';
+        let pathHistory = [];
+        
+        // Definicja zawartości folderów
+        const folders = {
+            main: {
+                title: 'Folder Kuby',
+                path: 'C:\\Moje dokumenty\\Folder Kuby',
+                items: [
+                    // Podfoldery
+                    { type: 'folder', icon: '📁', name: 'Moja muzyka', target: 'music' },
+                    { type: 'folder', icon: '📁', name: 'Gry', target: 'games' },
+                    
+                    // Felietony
+                    { type: 'file', icon: '📄', name: 'Jak co środę #1', target: 'felietony-kuby/felieton-01.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #2', target: 'felietony-kuby/felieton-02.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #3', target: 'felietony-kuby/felieton-03.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #4', target: 'felietony-kuby/felieton-04.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #5', target: 'felietony-kuby/felieton-05.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #6', target: 'felietony-kuby/felieton-06.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #7', target: 'felietony-kuby/felieton-07.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #8', target: 'felietony-kuby/felieton-08.html' }
+                ]
+            },
+            
+            music: {
+                title: 'Moja muzyka',
+                path: 'C:\\Moje dokumenty\\Folder Kuby\\Moja muzyka',
+                items: [
+                    // 6 plików MP3 - miejsca na tytuły i odsyłacze do YT
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 1', target: 'https://youtube.com/watch?v=XXXXXX1' },
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 2', target: 'https://youtube.com/watch?v=XXXXXX2' },
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 3', target: 'https://youtube.com/watch?v=XXXXXX3' },
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 4', target: 'https://youtube.com/watch?v=XXXXXX4' },
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 5', target: 'https://youtube.com/watch?v=XXXXXX5' },
+                    { type: 'music', icon: '🎵', name: 'Tytuł piosenki 6', target: 'https://youtube.com/watch?v=XXXXXX6' }
+                ]
+            },
+            
+            games: {
+                title: 'Gry',
+                path: 'C:\\Moje dokumenty\\Folder Kuby\\Gry',
+                items: [
+                    // Jedna gra - miejsce na odsyłacz
+                    { type: 'game', icon: '⚽', name: 'Nazwa gry', target: 'https://link-do-gry.com' }
+                ]
+            }
+        };
+        
+        function loadFolder(folderKey) {
+            const folder = folders[folderKey];
+            if (!folder) return;
+            
+            // Aktualizuj historię ścieżki
+            if (folderKey !== currentPath) {
+                pathHistory.push(currentPath);
+            }
+            currentPath = folderKey;
+            
+            // Aktualizuj interfejs
+            document.getElementById('window-title').textContent = folder.title;
+            document.getElementById('path-text').textContent = folder.path;
+            document.getElementById('status-count').textContent = folder.items.length + ' obiektów';
+            
+            // Aktualizuj przycisk Wstecz
+            const backBtn = document.getElementById('back-btn');
+            if (pathHistory.length > 0) {
+                backBtn.classList.remove('disabled');
+            } else {
+                backBtn.classList.add('disabled');
+            }
+            
+            // Załaduj zawartość
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            
+            folder.items.forEach(item => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.onclick = () => selectItem(fileItem);
+                
+                if (item.type === 'folder') {
+                    fileItem.ondblclick = () => loadFolder(item.target);
+                } else {
+                    fileItem.ondblclick = () => openItem(item);
+                }
+                
+                fileItem.innerHTML = `
+                    <span class="file-icon">${item.icon}</span>
+                    <span class="file-name">${item.name}</span>
+                `;
+                
+                content.appendChild(fileItem);
+            });
         }
+        
+        function selectItem(element) {
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function openItem(item) {
+            if (item.type === 'file') {
+                // Otwórz felieton w nowym oknie
+                window.open(item.target, '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+            } else if (item.type === 'music') {
+                // Otwórz YouTube w nowej karcie
+                window.open(item.target, '_blank');
+            } else if (item.type === 'game') {
+                // Otwórz grę w nowej karcie
+                window.open(item.target, '_blank');
+            }
+        }
+        
+        function goBack() {
+            if (pathHistory.length > 0) {
+                const previousPath = pathHistory.pop();
+                currentPath = previousPath;
+                loadFolder(previousPath);
+            }
+        }
+        
+        // Załaduj główny folder przy starcie
+        loadFolder('main');
     </script>
 </body>
 </html>
