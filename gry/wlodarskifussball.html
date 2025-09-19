@@ -916,11 +916,9 @@
             const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
             const scale = currentTeamData.fieldScale || 1.0;
             
-            // Shake effect
-            const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
-            const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
-            const drawX = playerObj.x + shakeX;
-            const drawY = playerObj.y + shakeY;
+            // Bez shake effect
+            const drawX = playerObj.x;
+            const drawY = playerObj.y;
 
             // Skalowany promień gracza
             const scaledRadius = playerObj.radius * scale;
@@ -1031,10 +1029,9 @@
             const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
             const scale = currentTeamData.fieldScale || 1.0;
             
-            const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
-            const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
-            const drawX = ball.x + shakeX;
-            const drawY = ball.y + shakeY;
+            // Bez shake effect
+            const drawX = ball.x;
+            const drawY = ball.y;
 
             // Skalowany promień piłki
             const scaledRadius = ball.radius * scale;
@@ -1358,12 +1355,10 @@
             const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
             gameState.ballRotation += speed * 0.05;
 
-            // Odbicia od ścian z efektami
+            // Odbicia od ścian - bez efektów
             if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
                 ball.vy = -ball.vy;
                 ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
-                createParticles(ball.x, ball.y, '#ffffff', 5);
-                gameState.screenShake = 3;
             }
 
             // Sprawdzenie goli z bramkarzem gracza
@@ -1378,36 +1373,28 @@
                             // Bramkarz odbija piłkę
                             ball.vx = Math.abs(ball.vx) * 1.2; // Odbicie w przeciwną stronę
                             ball.vy += (Math.random() - 0.5) * 4;
-                            createParticles(ball.x, ball.y, playerGoalkeeper.color, 6);
-                            gameState.screenShake = 4;
                         }
                     }
                     
                     if (!goalBlocked) {
                         gameState.botScore++;
-                        createGoalEffect(15, canvas.height / 2);
                         updateScore();
                         resetBallAfterGoal();
                     }
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = ball.radius + 15;
-                    createParticles(ball.x, ball.y, '#ff4444', 3);
-                    gameState.screenShake = 2;
                 }
             }
 
             if (ball.x >= canvas.width - 15) {
                 if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
                     gameState.playerScore++;
-                    createGoalEffect(canvas.width - 15, canvas.height / 2);
                     updateScore();
                     resetBallAfterGoal();
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = canvas.width - ball.radius - 15;
-                    createParticles(ball.x, ball.y, '#ff4444', 3);
-                    gameState.screenShake = 2;
                 }
             }
 
@@ -1691,7 +1678,6 @@
                     updatePlayer();
                     updateBots();
                     updateBall();
-                    updateEffects();
                 }
                 
                 drawPlayer(player, 'MARIAN WŁODARSKI', false);
@@ -1702,7 +1688,6 @@
                     drawPlayer(bot, bot.name, true);
                 });
                 drawBall();
-                drawParticles();
             }
             
             requestAnimationFrame(gameLoop);
