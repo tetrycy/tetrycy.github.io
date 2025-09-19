@@ -273,7 +273,7 @@
             screenShake: 0
         };
 
-        // Gracz (Marian Włodarski)
+        // Gracz (Marian Włodarski) - bez cooldown
         const player = {
             x: 100,
             y: canvas.height / 2,
@@ -281,7 +281,6 @@
             color: '#ff0000',
             vx: 0,
             vy: 0,
-            kickCooldown: 0,
             kickRange: 35
         };
 
@@ -313,27 +312,33 @@
                 } else if (!gameState.ballInPlay && !gameState.gameWon) {
                     launchBall();
                 } else if (gameState.ballInPlay && canPlayerKick()) {
-                    // Kopnięcie!
+                    // Proste kopnięcie!
                     playerKick();
                 }
             }
         });
 
-        // System kopnięć
+        // Proste funkcje kopnięcia
         function canPlayerKick() {
-            if (player.kickCooldown > 0) return false;
             const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
             return distanceToBall <= player.kickRange;
         }
 
         function playerKick() {
-            if (!canPlayerKick()) return;
+            // Oblicz kierunek od gracza do piłki (fizyka!)
+            const dx = ball.x - player.x;
+            const dy = ball.y - player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Wzmocnij obecny kierunek piłki
-            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            if (ballSpeed > 0.5) { // Piłka musi się poruszać
-                ball.vx *= 1.8;
-                ball.vy *= 1.8;
+            if (distance > 0) {
+                // Normalizuj kierunek
+                const directionX = dx / distance;
+                const directionY = dy / distance;
+                
+                // Kopnij z mocą! (jak prawdziwe kopnięcie)
+                const kickPower = 12;
+                ball.vx = directionX * kickPower;
+                ball.vy = directionY * kickPower;
                 
                 // Ograniczenie maksymalnej prędkości
                 const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
@@ -341,40 +346,6 @@
                     ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
                     ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
                 }
-                
-                // Efekty wizualne
-                createParticles(ball.x, ball.y, '#00ff00', 8);
-                gameState.screenShake = Math.max(gameState.screenShake, 5);
-                
-                // Cooldown
-                player.kickCooldown = 60; // 1 sekunda przy 60 FPS
-            }
-        }
-
-        function canBotKick(bot) {
-            if (bot.kickCooldown > 0) return false;
-            const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
-            return distanceToBall <= 35;
-        }
-
-        function botKick(bot) {
-            if (!canBotKick(bot)) return;
-            
-            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            if (ballSpeed > 0.5) {
-                ball.vx *= 1.6; // Boty kopią trochę słabiej
-                ball.vy *= 1.6;
-                
-                const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                if (newSpeed > ball.maxSpeed) {
-                    ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
-                    ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
-                }
-                
-                createParticles(ball.x, ball.y, bot.color, 6);
-                gameState.screenShake = Math.max(gameState.screenShake, 3);
-                
-                bot.kickCooldown = 90; // Dłuższy cooldown dla botów
             }
         }
 
@@ -733,20 +704,12 @@
             ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
             ctx.fill();
 
-            // Aureola kopnięcia dla gracza
+            // PROSTA AUREOLA KOPNIĘCIA dla gracza
             if (!isBot && gameState.ballInPlay && canPlayerKick()) {
-                const pulse = Math.sin(Date.now() * 0.02) * 3 + 5;
                 ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(drawX, drawY, player.kickRange, 0, Math.PI * 2);
-                ctx.stroke();
-                
-                // Wewnętrzna aureola
-                ctx.strokeStyle = 'rgba(0,255,0,0.5)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
@@ -764,15 +727,6 @@
                 ctx.beginPath();
                 ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
                 ctx.stroke();
-                
-                // Aureola kopnięcia dla botów
-                if (canBotKick(playerObj)) {
-                    ctx.strokeStyle = 'rgba(255,255,0,0.6)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY, 35, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
             }
 
             // Wskaźnik ograniczenia dla Mariana w rundzie 1
@@ -917,14 +871,9 @@
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
         }
 
-        // AI Botów z kopnięciami
+        // AI Botów - bez kopnięć na razie
         function updateBots() {
             bots.forEach(bot => {
-                // Aktualizuj cooldown kopnięcia
-                if (bot.kickCooldown > 0) {
-                    bot.kickCooldown--;
-                }
-
                 if (!gameState.ballInPlay && !bot.isGoalkeeper) {
                     const readyX = bot.isGoalkeeper ? canvas.width - 40 : canvas.width / 2 + 80;
                     const readyY = bot.isGoalkeeper ? canvas.height / 2 : bot.startY || canvas.height / 2;
@@ -941,11 +890,6 @@
                     updateGoalkeeper(bot);
                 } else {
                     updateFieldBot(bot);
-                    
-                    // Boty mają szansę kopnąć piłkę
-                    if (canBotKick(bot) && Math.random() < 0.03) { // 3% szansy na kopnięcie co klatkę
-                        botKick(bot);
-                    }
                 }
             });
         }
@@ -1245,8 +1189,7 @@
                 reactionSpeed: 0.2,
                 startY: botData.y,
                 canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
-                isGoalkeeper: botData.isGoalkeeper || false,
-                kickCooldown: 0
+                isGoalkeeper: botData.isGoalkeeper || false
             }));
         }
 
@@ -1278,7 +1221,6 @@
             
             player.x = 100;
             player.y = canvas.height / 2;
-            player.kickCooldown = 0; // Reset cooldown kopnięcia
             
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
