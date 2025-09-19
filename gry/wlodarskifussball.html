@@ -191,8 +191,8 @@
     </div>
 
     <div class="controls">
-        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD | <strong>GEGNER:</strong> COMPUTER KI</p>
-        <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD + SPACJA (KOPNIĘCIE) | <strong>GEGNER:</strong> COMPUTER KI</p>
+        <p>LEERTASTE: START/RESET BALL | KOPNIĘCIE (zielona aureola) | ERSTER BIS 5 TORE GEWINNT!</p>
         <p style="font-size: 10px; color: #ffaa00;">*** RUNDE 1: BEIDE NUR EIGENE HÄLFTE | AB RUNDE 2: MARIAN FREI! ***</p>
         
         <button class="reset-btn" onclick="resetGame()">🔄 NEUES TURNIER</button>
@@ -280,7 +280,9 @@
             radius: 20,
             color: '#ff0000',
             vx: 0,
-            vy: 0
+            vy: 0,
+            kickCooldown: 0,
+            kickRange: 35
         };
 
         // Boty - będą ładowane z definicji rund
@@ -310,9 +312,71 @@
                     startGame();
                 } else if (!gameState.ballInPlay && !gameState.gameWon) {
                     launchBall();
+                } else if (gameState.ballInPlay && canPlayerKick()) {
+                    // Kopnięcie!
+                    playerKick();
                 }
             }
         });
+
+        // System kopnięć
+        function canPlayerKick() {
+            if (player.kickCooldown > 0) return false;
+            const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
+            return distanceToBall <= player.kickRange;
+        }
+
+        function playerKick() {
+            if (!canPlayerKick()) return;
+            
+            // Wzmocnij obecny kierunek piłki
+            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (ballSpeed > 0.5) { // Piłka musi się poruszać
+                ball.vx *= 1.8;
+                ball.vy *= 1.8;
+                
+                // Ograniczenie maksymalnej prędkości
+                const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (newSpeed > ball.maxSpeed) {
+                    ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
+                    ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
+                }
+                
+                // Efekty wizualne
+                createParticles(ball.x, ball.y, '#00ff00', 8);
+                gameState.screenShake = Math.max(gameState.screenShake, 5);
+                
+                // Cooldown
+                player.kickCooldown = 60; // 1 sekunda przy 60 FPS
+            }
+        }
+
+        function canBotKick(bot) {
+            if (bot.kickCooldown > 0) return false;
+            const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
+            return distanceToBall <= 35;
+        }
+
+        function botKick(bot) {
+            if (!canBotKick(bot)) return;
+            
+            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (ballSpeed > 0.5) {
+                ball.vx *= 1.6; // Boty kopią trochę słabiej
+                ball.vy *= 1.6;
+                
+                const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (newSpeed > ball.maxSpeed) {
+                    ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
+                    ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
+                }
+                
+                createParticles(ball.x, ball.y, bot.color, 6);
+                gameState.screenShake = Math.max(gameState.screenShake, 3);
+                
+                bot.kickCooldown = 90; // Dłuższy cooldown dla botów
+            }
+        }
 
         document.addEventListener('keyup', (e) => {
             keys[e.key.toLowerCase()] = false;
@@ -601,23 +665,23 @@
             ctx.fill();
         }
 
-        function drawPlayer(player, name, isBot = false) {
+        function drawPlayer(playerObj, name, isBot = false) {
             // Shake effect
             const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
             const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
-            const drawX = player.x + shakeX;
-            const drawY = player.y + shakeY;
+            const drawX = playerObj.x + shakeX;
+            const drawY = playerObj.y + shakeY;
 
             // Cień gracza
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.beginPath();
-            ctx.arc(drawX + 4, drawY + 4, player.radius, 0, Math.PI * 2);
+            ctx.arc(drawX + 4, drawY + 4, playerObj.radius, 0, Math.PI * 2);
             ctx.fill();
 
             // Koszulka
-            ctx.fillStyle = player.color;
+            ctx.fillStyle = playerObj.color;
             ctx.beginPath();
-            ctx.arc(drawX, drawY, player.radius, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, playerObj.radius, 0, Math.PI * 2);
             ctx.fill();
 
             // Paski na koszulce
@@ -640,7 +704,7 @@
             ctx.fill();
 
             // Nogi
-            ctx.fillStyle = player.color;
+            ctx.fillStyle = playerObj.color;
             ctx.beginPath();
             ctx.arc(drawX - 6, drawY + 15, 5, 0, Math.PI * 2);
             ctx.fill();
@@ -669,9 +733,26 @@
             ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
             ctx.fill();
 
-            // Aureola dla botów
+            // Aureola kopnięcia dla gracza
+            if (!isBot && gameState.ballInPlay && canPlayerKick()) {
+                const pulse = Math.sin(Date.now() * 0.02) * 3 + 5;
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, player.kickRange, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Wewnętrzna aureola
+                ctx.strokeStyle = 'rgba(0,255,0,0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Aureola dla botów (normalna)
             if (isBot && gameState.ballInPlay) {
-                const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
+                const distanceToBall = Math.sqrt((ball.x - playerObj.x) ** 2 + (ball.y - playerObj.y) ** 2);
                 let auraColor = '#00ff00';
                 
                 if (distanceToBall < 120) auraColor = '#ff4444';
@@ -681,28 +762,37 @@
                 ctx.strokeStyle = auraColor;
                 ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, player.radius + pulse, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
                 ctx.stroke();
+                
+                // Aureola kopnięcia dla botów
+                if (canBotKick(playerObj)) {
+                    ctx.strokeStyle = 'rgba(255,255,0,0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, 35, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
             }
 
             // Wskaźnik ograniczenia dla Mariana w rundzie 1
-            if (gameState.currentRound === 0) {
+            if (gameState.currentRound === 0 && !isBot) {
                 ctx.strokeStyle = '#ffaa00';
                 ctx.lineWidth = 3;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, player.radius + 12, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
 
             // Wskaźnik ograniczenia dla botów
-            if (isBot && !player.canCrossHalf && !player.isGoalkeeper) {
+            if (isBot && !playerObj.canCrossHalf && !playerObj.isGoalkeeper) {
                 ctx.strokeStyle = '#ff8800';
                 ctx.lineWidth = 3;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, player.radius + 12, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
@@ -718,11 +808,11 @@
             ctx.fillText(number, drawX, drawY + 4);
 
             // Nazwa gracza
-            const nameY = drawY + player.radius + 25;
+            const nameY = drawY + playerObj.radius + 25;
             ctx.fillStyle = 'rgba(0,0,0,0.8)';
             ctx.fillRect(drawX - 35, nameY - 8, 70, 12);
             
-            ctx.strokeStyle = isBot ? player.color : '#ff0000';
+            ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
             ctx.lineWidth = 2;
             ctx.strokeRect(drawX - 35, nameY - 8, 70, 12);
             
@@ -827,9 +917,14 @@
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
         }
 
-        // AI Botów
+        // AI Botów z kopnięciami
         function updateBots() {
             bots.forEach(bot => {
+                // Aktualizuj cooldown kopnięcia
+                if (bot.kickCooldown > 0) {
+                    bot.kickCooldown--;
+                }
+
                 if (!gameState.ballInPlay && !bot.isGoalkeeper) {
                     const readyX = bot.isGoalkeeper ? canvas.width - 40 : canvas.width / 2 + 80;
                     const readyY = bot.isGoalkeeper ? canvas.height / 2 : bot.startY || canvas.height / 2;
@@ -846,6 +941,11 @@
                     updateGoalkeeper(bot);
                 } else {
                     updateFieldBot(bot);
+                    
+                    // Boty mają szansę kopnąć piłkę
+                    if (canBotKick(bot) && Math.random() < 0.03) { // 3% szansy na kopnięcie co klatkę
+                        botKick(bot);
+                    }
                 }
             });
         }
@@ -1145,7 +1245,8 @@
                 reactionSpeed: 0.2,
                 startY: botData.y,
                 canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
-                isGoalkeeper: botData.isGoalkeeper || false
+                isGoalkeeper: botData.isGoalkeeper || false,
+                kickCooldown: 0
             }));
         }
 
@@ -1177,6 +1278,7 @@
             
             player.x = 100;
             player.y = canvas.height / 2;
+            player.kickCooldown = 0; // Reset cooldown kopnięcia
             
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
