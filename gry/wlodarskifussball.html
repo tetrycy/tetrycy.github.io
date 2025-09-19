@@ -43,6 +43,56 @@
             text-align: center;
         }
 
+        .main-menu {
+            background: linear-gradient(45deg, #000033, #000066);
+            border: 3px solid #ffff00;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(255,255,0,0.5);
+        }
+
+        .team-selection {
+            background: linear-gradient(45deg, #000033, #000066);
+            border: 3px solid #00ff00;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+            display: none;
+        }
+
+        .menu-btn, .team-btn {
+            background: linear-gradient(45deg, #ff0000, #ff4444);
+            color: #ffff00;
+            border: 3px solid #ffff00;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .team-btn {
+            background: linear-gradient(45deg, #00aa00, #00ff00);
+            color: #000033;
+            display: block;
+            width: 80%;
+            margin: 8px auto;
+            font-size: 14px;
+        }
+
+        .menu-btn:hover, .team-btn:hover {
+            box-shadow: 0 0 15px rgba(255,255,0,0.5);
+            transform: scale(1.05);
+        }
+
         .round-info {
             background: linear-gradient(45deg, #000033, #000066);
             border: 3px solid #ff4444;
@@ -79,6 +129,7 @@
             border-radius: 15px;
             background: #228B22;
             box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(139,69,19,0.5);
+            display: none;
         }
 
         #gameCanvas {
@@ -95,9 +146,10 @@
             text-align: center;
             font-size: 12px;
             box-shadow: 0 0 15px rgba(0,255,0,0.3);
+            display: none;
         }
 
-        .reset-btn, .next-btn, #retryRoundBtn {
+        .reset-btn, .next-btn, #retryRoundBtn, .back-btn {
             background: linear-gradient(45deg, #ff0000, #ff4444);
             color: #ffff00;
             border: 3px solid #ffff00;
@@ -118,12 +170,13 @@
             border-color: #ffff00;
         }
 
-        .reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover {
-            box-shadow: 0 0 15px rgba(255,255,0,0.5);
+        .back-btn {
+            background: linear-gradient(45deg, #666666, #999999);
+            color: #ffffff;
         }
 
-        .difficulty-btn {
-            display: none;
+        .reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover, .back-btn:hover {
+            box-shadow: 0 0 15px rgba(255,255,0,0.5);
         }
 
         .winner {
@@ -164,55 +217,81 @@
             color: #00ffff;
             font-weight: bold;
         }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <h1>🏆 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🏆</h1>
     <div class="subtitle">*** ZWEITE BUNDESLIGA EDITION 1995 ***</div>
     
-    <div class="round-info" id="roundInfo">
+    <!-- GŁÓWNE MENU -->
+    <div id="mainMenu" class="main-menu">
+        <h2 style="color: #ffff00; margin-bottom: 20px;">HAUPTMENÜ</h2>
+        <button class="menu-btn" onclick="startTournament()">🏆 TURNIER</button>
+        <button class="menu-btn" onclick="showTeamSelection()">⚽ FREUNDSCHAFTSSPIEL</button>
+    </div>
+
+    <!-- WYBÓR DRUŻYNY -->
+    <div id="teamSelection" class="team-selection">
+        <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
+        <button class="team-btn" onclick="startFriendly(0)">🟦 VFL OLDENBURG (Hans Jurgen)</button>
+        <button class="team-btn" onclick="startFriendly(1)">🟣 SV WALDORF MANNHEIM (Klaus Schmidt)</button>
+        <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz)</button>
+        <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
+        <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
+        <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
+    </div>
+    
+    <!-- INTERFEJS GRY -->
+    <div class="round-info hidden" id="roundInfo">
         RUNDE 1: SV BABELSBERG 04 vs VFL OLDENBURG
     </div>
     
-    <div class="score">
+    <div class="score hidden" id="scoreDisplay">
         <div class="team-name" id="playerTeam">SV BABELSBERG 04</div>
         <span id="playerScore">0</span> : <span id="botScore">0</span>
         <div class="team-name" id="botTeam">VFL OLDENBURG</div>
     </div>
     
-    <div class="game-container">
+    <div class="game-container" id="gameContainer">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="startMessage" class="start-message">
             <h3 id="startTitle">🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
-            <p class="retro-text">STRZAŁKI = STEUERUNG</p>
-            <p id="startSubtitle">*** ERSTE RUNDE BEGINNT! ***</p>
+            <p class="retro-text">WASD = STEUERUNG</p>
+            <p id="startSubtitle">*** SPIEL BEGINNT! ***</p>
         </div>
         <div id="winnerMessage" class="winner" style="display: none;"></div>
     </div>
 
-    <div class="controls">
-        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> STRZAŁKI STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
+    <div class="controls" id="gameControls">
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
         <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
-        <p style="font-size: 10px; color: #ffaa00;">*** RUNDE 1: BEIDE NUR EIGENE HÄLFTE | AB RUNDE 2: MARIAN FREI! ***</p>
         
-        <button class="reset-btn" onclick="resetGame()">🔄 NEUES TURNIER</button>
+        <button class="reset-btn" onclick="backToMenu()">🏠 HAUPTMENÜ</button>
         <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
-        <button class="reset-btn" id="retryRoundBtn" onclick="retryRound()" style="display: none;">🔄 RUNDE WIEDERHOLEN</button>
+        <button class="reset-btn" id="retryBtn" onclick="retryMatch()" style="display: none;">🔄 WIEDERHOLEN</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Definicje rund turniejowych
-        const rounds = [
+        // Stan gry
+        let gameMode = null; // 'tournament' or 'friendly'
+        let selectedTeam = null;
+
+        // Definicje drużyn
+        const teams = [
             {
                 number: 1,
                 playerTeam: "SV BABELSBERG 04",
                 opponentTeam: "VFL OLDENBURG",
                 field: "grass",
                 bots: [
-                    { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false }
+                    { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false, number: 7 }
                 ]
             },
             {
@@ -221,7 +300,7 @@
                 opponentTeam: "SV WALDORF MANNHEIM",
                 field: "muddy",
                 bots: [
-                    { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true }
+                    { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true, number: 9 }
                 ]
             },
             {
@@ -230,8 +309,8 @@
                 opponentTeam: "FC HANSA ROSTOCK",
                 field: "winter",
                 bots: [
-                    { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true },
-                    { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false }
+                    { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true, number: 8 },
+                    { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false, number: 11 }
                 ]
             },
             {
@@ -240,9 +319,9 @@
                 opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
                 field: "professional",
                 bots: [
-                    { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: true },
-                    { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: false },
-                    { name: "STEFAN BRAUN", x: 600, y: 280, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false }
+                    { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: true, number: 6 },
+                    { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: false, number: 4 },
+                    { name: "STEFAN BRAUN", x: 600, y: 280, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false, number: 3 }
                 ]
             },
             {
@@ -251,10 +330,10 @@
                 opponentTeam: "LOKOMOTIV LEIPZIG",
                 field: "stadium", 
                 bots: [
-                    { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: true },
-                    { name: "HERMANN FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false },
-                    { name: "RUDOLF BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: false },
-                    { name: "OTTO SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 3, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false }
+                    { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: true, number: 5 },
+                    { name: "HERMANN FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false, number: 2 },
+                    { name: "RUDOLF BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: false, number: 1 },
+                    { name: "OTTO SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 3, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false, number: 12 }
                 ]
             }
         ];
@@ -273,20 +352,21 @@
             screenShake: 0
         };
 
-        // Gracz (Marian Włodarski)
+        // Gracz (Marian Włodarski) - szybkość 8
         const player = {
             x: 100,
             y: canvas.height / 2,
             radius: 20,
             color: '#ff0000',
             vx: 0,
-            vy: 0
+            vy: 0,
+            number: 10
         };
 
-        // Boty - będą ładowane z definicji rund
+        // Boty - będą ładowane z definicji drużyn
         let bots = [];
 
-        // Piłka (mniejsza)
+        // Piłka
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
@@ -304,12 +384,8 @@
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
             
-            // Zapobiegamy przewijaniu strony strzałkami i spacją
-            if (e.key === ' ' || e.key.startsWith('Arrow')) {
-                e.preventDefault();
-            }
-            
             if (e.key === ' ') {
+                e.preventDefault();
                 if (!gameState.gameStarted) {
                     startGame();
                 } else if (!gameState.ballInPlay && !gameState.gameWon) {
@@ -321,6 +397,91 @@
         document.addEventListener('keyup', (e) => {
             keys[e.key.toLowerCase()] = false;
         });
+
+        // Funkcje menu
+        function startTournament() {
+            gameMode = 'tournament';
+            gameState.currentRound = 0;
+            showGame();
+            loadCurrentTeam();
+        }
+
+        function showTeamSelection() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('teamSelection').style.display = 'block';
+        }
+
+        function startFriendly(teamIndex) {
+            gameMode = 'friendly';
+            selectedTeam = teamIndex;
+            showGame();
+            loadFriendlyTeam(teamIndex);
+        }
+
+        function backToMenu() {
+            // Ukryj wszystkie ekrany gry
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('gameControls').style.display = 'none';
+            document.getElementById('roundInfo').classList.add('hidden');
+            document.getElementById('scoreDisplay').classList.add('hidden');
+            document.getElementById('teamSelection').style.display = 'none';
+            
+            // Pokaż menu główne
+            document.getElementById('mainMenu').style.display = 'block';
+            
+            // Reset stanu gry
+            resetGameState();
+        }
+
+        function showGame() {
+            // Ukryj menu
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('teamSelection').style.display = 'none';
+            
+            // Pokaż grę
+            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('gameControls').style.display = 'block';
+            document.getElementById('roundInfo').classList.remove('hidden');
+            document.getElementById('scoreDisplay').classList.remove('hidden');
+        }
+
+        function loadCurrentTeam() {
+            const currentTeamData = teams[gameState.currentRound];
+            loadTeamData(currentTeamData);
+            
+            if (gameMode === 'tournament') {
+                document.getElementById('roundInfo').textContent = 
+                    `RUNDE ${currentTeamData.number}: ${currentTeamData.playerTeam} vs ${currentTeamData.opponentTeam}`;
+                document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentTeamData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
+            }
+        }
+
+        function loadFriendlyTeam(teamIndex) {
+            const teamData = teams[teamIndex];
+            loadTeamData(teamData);
+            
+            document.getElementById('roundInfo').textContent = 
+                `FREUNDSCHAFTSSPIEL: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
+            document.getElementById('startTitle').textContent = `🚀 FREUNDSCHAFTSSPIEL - DRÜCKEN SIE LEERTASTE! 🚀`;
+        }
+
+        function loadTeamData(teamData) {
+            document.getElementById('playerTeam').textContent = teamData.playerTeam;
+            document.getElementById('botTeam').textContent = teamData.opponentTeam;
+            document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
+            
+            bots = teamData.bots.map(botData => ({
+                ...botData,
+                radius: 20,
+                vx: 0,
+                vy: 0,
+                shootPower: botData.shootPower || 1.2,
+                reactionSpeed: 0.2,
+                startY: botData.y,
+                canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
+                isGoalkeeper: botData.isGoalkeeper || false
+            }));
+        }
 
         // Efekty cząsteczkowe
         function createParticles(x, y, color, count) {
@@ -389,9 +550,9 @@
 
         // Funkcje rysowania różnych boisk
         function drawField() {
-            const currentRoundData = rounds[gameState.currentRound];
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
             
-            switch(currentRoundData.field) {
+            switch(currentTeamData.field) {
                 case 'grass':
                     drawGrassField();
                     break;
@@ -679,7 +840,7 @@
             ctx.textAlign = 'center';
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
-            const number = isBot ? '10' : '11';
+            const number = playerObj.number.toString();
             ctx.strokeText(number, drawX, drawY + 4);
             ctx.fillText(number, drawX, drawY + 4);
 
@@ -767,26 +928,26 @@
             ctx.fill();
         }
 
-        // Sterowanie graczem
+        // Sterowanie graczem - szybkość 8
         function updatePlayer() {
-            const speed = 6;
+            const speed = 8;
 
             player.vx = 0;
             player.vy = 0;
-            if (keys['arrowup']) player.vy = -speed;
-            if (keys['arrowdown']) player.vy = speed;
-            if (keys['arrowleft']) player.vx = -speed;
-            if (keys['arrowright']) player.vx = speed;
+            if (keys['w']) player.vy = -speed;
+            if (keys['s']) player.vy = speed;
+            if (keys['a']) player.vx = -speed;
+            if (keys['d']) player.vx = speed;
 
             player.x += player.vx;
             player.y += player.vy;
 
-            // Ograniczenia pozycji - od rundy 2 Marian może wszędzie!
-            if (gameState.currentRound === 0) {
-                // Runda 1 - tylko swoją połowę
+            // Ograniczenia pozycji - tylko w pierwszej rundzie turnieju
+            if (gameMode === 'tournament' && gameState.currentRound === 0) {
+                // Runda 1 turnieju - tylko swoją połowę
                 player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
             } else {
-                // Runda 2+ - całe boisko!
+                // Runda 2+ turnieju lub mecz towarzyski - całe boisko!
                 player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
             }
             
@@ -853,15 +1014,27 @@
                 }
             }
 
-            // System błędów dla różnych rund
+            // System błędów dla różnych przeciwników
             let errorChance;
-            switch(gameState.currentRound) {
-                case 0: errorChance = 0.15; break; // Hans - największe błędy
-                case 1: errorChance = 0.10; break; // Klaus
-                case 2: errorChance = 0.08; break; // Werner + Fritz
-                case 3: errorChance = 0.06; break; // Eintracht (3 boty)
-                case 4: errorChance = 0.04; break; // Leipzig (finał)
-                default: errorChance = 0.08;
+            if (gameMode === 'tournament') {
+                switch(gameState.currentRound) {
+                    case 0: errorChance = 0.15; break; // Hans - największe błędy
+                    case 1: errorChance = 0.10; break; // Klaus
+                    case 2: errorChance = 0.08; break; // Werner + Fritz
+                    case 3: errorChance = 0.06; break; // Eintracht (3 boty)
+                    case 4: errorChance = 0.04; break; // Leipzig (finał)
+                    default: errorChance = 0.08;
+                }
+            } else {
+                // W meczu towarzyskim błędy zależą od wybranej drużyny
+                switch(selectedTeam) {
+                    case 0: errorChance = 0.15; break; // VFL Oldenburg
+                    case 1: errorChance = 0.10; break; // Waldorf Mannheim
+                    case 2: errorChance = 0.08; break; // Hansa Rostock
+                    case 3: errorChance = 0.06; break; // Eintracht
+                    case 4: errorChance = 0.04; break; // Leipzig
+                    default: errorChance = 0.08;
+                }
             }
             
             if (Math.random() < errorChance) {
@@ -1042,95 +1215,103 @@
             if (gameState.playerScore >= 5) {
                 gameState.gameWon = true;
                 gameState.roundWon = true;
-                showRoundWinMessage();
+                showWinMessage();
             } else if (gameState.botScore >= 5) {
                 gameState.gameWon = true;
                 gameState.roundWon = false;
-                showGameOverMessage();
+                showLoseMessage();
             }
         }
 
-        function showRoundWinMessage() {
-            const currentRoundData = rounds[gameState.currentRound];
-            const isLastRound = gameState.currentRound >= rounds.length - 1;
+        function showWinMessage() {
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
             
-            document.getElementById('winnerMessage').innerHTML = `
-                <div>🎉 RUNDE ${currentRoundData.number} GEWONNEN! 🎉</div>
-                <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
-                    SV BABELSBERG 04 BESIEGT ${currentRoundData.opponentTeam}!
-                </div>
-                <div style="font-size: 12px; color: #ffff00;">
-                    ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
-                </div>
-            `;
-            document.getElementById('winnerMessage').style.display = 'block';
-            
-            if (!isLastRound) {
-                document.getElementById('nextRoundBtn').style.display = 'inline-block';
+            if (gameMode === 'tournament') {
+                const isLastRound = gameState.currentRound >= teams.length - 1;
+                
+                document.getElementById('winnerMessage').innerHTML = `
+                    <div>🎉 RUNDE ${currentTeamData.number} GEWONNEN! 🎉</div>
+                    <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
+                        SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
+                    </div>
+                    <div style="font-size: 12px; color: #ffff00;">
+                        ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
+                    </div>
+                `;
+                
+                if (!isLastRound) {
+                    document.getElementById('nextRoundBtn').style.display = 'inline-block';
+                }
+            } else {
+                document.getElementById('winnerMessage').innerHTML = `
+                    <div>🎉 FREUNDSCHAFTSSPIEL GEWONNEN! 🎉</div>
+                    <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
+                        SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
+                    </div>
+                    <div style="font-size: 12px; color: #ffff00;">
+                        Gut gespielt!
+                    </div>
+                `;
             }
-            document.getElementById('retryRoundBtn').style.display = 'none';
+            
+            document.getElementById('winnerMessage').style.display = 'block';
+            document.getElementById('retryBtn').style.display = 'inline-block';
         }
 
-        function showGameOverMessage() {
-            const currentRoundData = rounds[gameState.currentRound];
-            document.getElementById('winnerMessage').innerHTML = `
-                <div>💀 RUNDE ${currentRoundData.number} VERLOREN! 💀</div>
-                <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
-                    ${currentRoundData.opponentTeam} GEWINNT!
-                </div>
-                <div style="font-size: 12px; color: #ffff00;">
-                    Runde wiederholen oder neues Turnier?
-                </div>
-            `;
+        function showLoseMessage() {
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            
+            if (gameMode === 'tournament') {
+                document.getElementById('winnerMessage').innerHTML = `
+                    <div>💀 RUNDE ${currentTeamData.number} VERLOREN! 💀</div>
+                    <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
+                        ${currentTeamData.opponentTeam} GEWINNT!
+                    </div>
+                    <div style="font-size: 12px; color: #ffff00;">
+                        Runde wiederholen?
+                    </div>
+                `;
+            } else {
+                document.getElementById('winnerMessage').innerHTML = `
+                    <div>💀 FREUNDSCHAFTSSPIEL VERLOREN! 💀</div>
+                    <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
+                        ${currentTeamData.opponentTeam} GEWINNT!
+                    </div>
+                    <div style="font-size: 12px; color: #ffff00;">
+                        Nochmal versuchen?
+                    </div>
+                `;
+            }
+            
             document.getElementById('winnerMessage').style.display = 'block';
-            document.getElementById('retryRoundBtn').style.display = 'inline-block';
+            document.getElementById('retryBtn').style.display = 'inline-block';
             document.getElementById('nextRoundBtn').style.display = 'none';
-        }
-
-        function loadRound() {
-            const currentRoundData = rounds[gameState.currentRound];
-            
-            document.getElementById('roundInfo').textContent = 
-                `RUNDE ${currentRoundData.number}: ${currentRoundData.playerTeam} vs ${currentRoundData.opponentTeam}`;
-            document.getElementById('playerTeam').textContent = currentRoundData.playerTeam;
-            document.getElementById('botTeam').textContent = currentRoundData.opponentTeam;
-            document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentRoundData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
-            
-            // Informacja o ograniczeniach Mariana
-            const marianInfo = gameState.currentRound === 0 
-                ? "*** MARIAN: NUR EIGENE HÄLFTE! ***"
-                : "*** MARIAN: GANZES FELD FREI! ***";
-            document.getElementById('startSubtitle').textContent = marianInfo;
-            
-            bots = currentRoundData.bots.map(botData => ({
-                ...botData,
-                radius: 20,
-                vx: 0,
-                vy: 0,
-                shootPower: botData.shootPower || 1.2,
-                reactionSpeed: 0.2,
-                startY: botData.y,
-                canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
-                isGoalkeeper: botData.isGoalkeeper || false
-            }));
         }
 
         function nextRound() {
-            gameState.currentRound++;
-            resetRound();
-            loadRound();
+            if (gameMode === 'tournament') {
+                gameState.currentRound++;
+                resetMatch();
+                loadCurrentTeam();
+                
+                document.getElementById('nextRoundBtn').style.display = 'none';
+            }
+        }
+
+        function retryMatch() {
+            resetMatch();
             
+            if (gameMode === 'tournament') {
+                loadCurrentTeam();
+            } else {
+                loadFriendlyTeam(selectedTeam);
+            }
+            
+            document.getElementById('retryBtn').style.display = 'none';
             document.getElementById('nextRoundBtn').style.display = 'none';
         }
 
-        function retryRound() {
-            resetRound();
-            loadRound();
-            
-            document.getElementById('retryRoundBtn').style.display = 'none';
-        }
-
-        function resetRound() {
+        function resetMatch() {
             gameState.playerScore = 0;
             gameState.botScore = 0;
             gameState.gameWon = false;
@@ -1154,40 +1335,39 @@
             document.getElementById('startMessage').style.display = 'block';
         }
 
-        function resetGame() {
+        function resetGameState() {
+            gameMode = null;
+            selectedTeam = null;
             gameState.currentRound = 0;
-            resetRound();
-            loadRound();
-            
-            document.getElementById('nextRoundBtn').style.display = 'none';
-            document.getElementById('retryRoundBtn').style.display = 'none';
+            resetMatch();
         }
 
         // Główna pętla gry
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            drawField();
-            
-            if (gameState.gameStarted) {
-                updatePlayer();
-                updateBots();
-                updateBall();
-                updateEffects();
+            if (gameMode) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                drawField();
+                
+                if (gameState.gameStarted) {
+                    updatePlayer();
+                    updateBots();
+                    updateBall();
+                    updateEffects();
+                }
+                
+                drawPlayer(player, 'MARIAN WŁODARSKI', false);
+                bots.forEach(bot => {
+                    drawPlayer(bot, bot.name, true);
+                });
+                drawBall();
+                drawParticles();
             }
-            
-            drawPlayer(player, 'MARIAN WŁODARSKI', false);
-            bots.forEach(bot => {
-                drawPlayer(bot, bot.name, true);
-            });
-            drawBall();
-            drawParticles();
             
             requestAnimationFrame(gameLoop);
         }
 
-        // Inicjalizacja gry
-        loadRound();
+        // Inicjalizacja
         gameLoop();
     </script>
 </body>
