@@ -1100,7 +1100,7 @@
             ctx.fill();
         }
 
-        // Sterowanie graczem - szybkość zmniejszona o 25%
+        // Sterowanie graczem - z predykcją kolizji
         function updatePlayer() {
             const speed = 6;
 
@@ -1108,37 +1108,86 @@
             if (player.stunned > 0) {
                 player.stunned--;
             }
-            player.pushbackX *= 0.85;  // Stopniowo zmniejszaj odrzut
+            player.pushbackX *= 0.85;
             player.pushbackY *= 0.85;
 
-            player.vx = 0;
-            player.vy = 0;
+            // Oblicz ZAMIERZONY ruch
+            let intendedVx = 0;
+            let intendedVy = 0;
             
-            // Zredukuj responsywność jeśli gracz jest ogłuszony
             const responsiveness = player.stunned > 0 ? 0.3 : 1.0;
             
-            if (keys['w']) player.vy = -speed * responsiveness;
-            if (keys['s']) player.vy = speed * responsiveness;
-            if (keys['a']) player.vx = -speed * responsiveness;
-            if (keys['d']) player.vx = speed * responsiveness;
+            if (keys['w']) intendedVy = -speed * responsiveness;
+            if (keys['s']) intendedVy = speed * responsiveness;
+            if (keys['a']) intendedVx = -speed * responsiveness;
+            if (keys['d']) intendedVx = speed * responsiveness;
 
-            // Dodaj odrzut do ruchu
-            player.vx += player.pushbackX;
-            player.vy += player.pushbackY;
+            // Dodaj odrzut
+            intendedVx += player.pushbackX;
+            intendedVy += player.pushbackY;
 
-            player.x += player.vx;
-            player.y += player.vy;
+            // Oblicz NOWĄ pozycję gracza
+            const newPlayerX = player.x + intendedVx;
+            const newPlayerY = player.y + intendedVy;
 
-            // Ograniczenia pozycji - tylko w pierwszej rundzie turnieju
+            // SPRAWDŹ CZY NOWA POZYCJA SPOWODUJE KOLIZJĘ Z PIŁKĄ
+            const dx = ball.x - newPlayerX;
+            const dy = ball.y - newPlayerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDistance = ball.radius + player.radius;
+
+            if (distance < minDistance) {
+                // KOLIZJA! Nie pozwól na ruch, ale obsłuż kopnięcie
+                handleBallCollision();
+            } else {
+                // Bezpieczny ruch - wykonaj go
+                player.vx = intendedVx;
+                player.vy = intendedVy;
+                player.x = newPlayerX;
+                player.y = newPlayerY;
+            }
+
+            // Ograniczenia boiska
             if (gameMode === 'tournament' && gameState.currentRound === 0) {
-                // Runda 1 turnieju - tylko swoją połowę
                 player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
             } else {
-                // Runda 2+ turnieju lub mecz towarzyski - całe boisko!
                 player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
             }
             
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
+        }
+
+        function handleBallCollision() {
+            const currentTime = Date.now();
+            
+            // Sprawdź cooldown
+            if (currentTime - gameState.lastCollisionTime < 500) {
+                return;
+            }
+
+            // Oblicz kierunek od gracza do piłki
+            const dx = ball.x - player.x;
+            const dy = ball.y - player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+                const nx = dx / distance;
+                const ny = dy / distance;
+
+                // Kopnij piłkę w kierunku ruchu gracza
+                const playerSpeed = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+                if (playerSpeed > 0) {
+                    ball.vx = (player.vx / playerSpeed) * 8;
+                    ball.vy = (player.vy / playerSpeed) * 8;
+                } else {
+                    // Gracz nie rusza się - odbij piłkę od siebie
+                    ball.vx = nx * 5;
+                    ball.vy = ny * 5;
+                }
+
+                // Ustaw cooldown
+                gameState.lastCollisionTime = currentTime;
+            }
         }
 
         // AI Botów + bramkarz gracza
