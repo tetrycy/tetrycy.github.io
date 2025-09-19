@@ -273,7 +273,7 @@
             screenShake: 0
         };
 
-        // Gracz (Marian Włodarski) - bez cooldown
+        // Gracz (Marian Włodarski) - zasięg kopnięcia jak obwódka
         const player = {
             x: 100,
             y: canvas.height / 2,
@@ -281,7 +281,7 @@
             color: '#ff0000',
             vx: 0,
             vy: 0,
-            kickRange: 35
+            kickRange: 32  // Taki sam jak obwódka ograniczenia (radius + 12)
         };
 
         // Boty - będą ładowane z definicji rund
