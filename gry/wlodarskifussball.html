@@ -1107,12 +1107,27 @@
         function updatePlayer() {
             const speed = 6;
 
+            // Zmniejsz ogłuszenie i odrzut
+            if (player.stunned > 0) {
+                player.stunned--;
+            }
+            player.pushbackX *= 0.85;  // Stopniowo zmniejszaj odrzut
+            player.pushbackY *= 0.85;
+
             player.vx = 0;
             player.vy = 0;
-            if (keys['w']) player.vy = -speed;
-            if (keys['s']) player.vy = speed;
-            if (keys['a']) player.vx = -speed;
-            if (keys['d']) player.vx = speed;
+            
+            // Zredukuj responsywność jeśli gracz jest ogłuszony
+            const responsiveness = player.stunned > 0 ? 0.3 : 1.0;
+            
+            if (keys['w']) player.vy = -speed * responsiveness;
+            if (keys['s']) player.vy = speed * responsiveness;
+            if (keys['a']) player.vx = -speed * responsiveness;
+            if (keys['d']) player.vx = speed * responsiveness;
+
+            // Dodaj odrzut do ruchu
+            player.vx += player.pushbackX;
+            player.vy += player.pushbackY;
 
             player.x += player.vx;
             player.y += player.vy;
@@ -1441,7 +1456,7 @@
                         ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
                         ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
                     } else {
-                        // Dla gracza - specjalne zachowanie w zależności od stanu piłki
+                        // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
                         if (wasStationary) {
                             // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
                             const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
@@ -1458,6 +1473,14 @@
                             // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
                             ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.1; // Bardzo mały wpływ
                             ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
+                        }
+                        
+                        // KLUCZOWE: Odepchnij gracza od piłki
+                        if (p === player) {
+                            const pushPower = 3;
+                            player.pushbackX = -nx * pushPower;  // Przeciwny kierunek do piłki
+                            player.pushbackY = -ny * pushPower;
+                            player.stunned = 8;  // 8 klatek ograniczonej responsywności
                         }
                     }
 
@@ -1628,6 +1651,9 @@
             
             player.x = 100;
             player.y = canvas.height / 2;
+            player.stunned = 0;      // Reset ogłuszenia
+            player.pushbackX = 0;    // Reset odrzutu
+            player.pushbackY = 0;
             
             // Reset bramkarza gracza jeśli istnieje
             if (playerGoalkeeper) {
