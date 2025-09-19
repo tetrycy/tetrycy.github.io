@@ -39,8 +39,21 @@
             color: #00ffff;
             font-size: 12px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-align: center;
+        }
+
+        .round-info {
+            background: linear-gradient(45deg, #000033, #000066);
+            border: 3px solid #ff4444;
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: #ffff00;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255,68,68,0.5);
         }
 
         .score {
@@ -71,7 +84,6 @@
         #gameCanvas {
             display: block;
             border-radius: 8px;
-            background: radial-gradient(ellipse at center, #32CD32 0%, #228B22 70%, #1F7A1F 100%);
         }
 
         .controls {
@@ -85,7 +97,7 @@
             box-shadow: 0 0 15px rgba(0,255,0,0.3);
         }
 
-        .reset-btn {
+        .reset-btn, .next-btn, #retryRoundBtn {
             background: linear-gradient(45deg, #ff0000, #ff4444);
             color: #ffff00;
             border: 3px solid #ffff00;
@@ -94,41 +106,24 @@
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            margin: 5px;
             font-family: 'Orbitron', monospace;
             transition: all 0.3s;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
-        .reset-btn:hover {
-            background: linear-gradient(45deg, #ff4444, #ff6666);
+        .next-btn {
+            background: linear-gradient(45deg, #00aa00, #00ff00);
+            color: #000033;
+            border-color: #ffff00;
+        }
+
+        .reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover {
             box-shadow: 0 0 15px rgba(255,255,0,0.5);
         }
 
         .difficulty-btn {
-            background: linear-gradient(45deg, #000033, #000066);
-            color: #00ff00;
-            border: 2px solid #00ff00;
-            padding: 5px 10px;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 0 2px;
-            font-family: 'Orbitron', monospace;
-            transition: all 0.3s;
-        }
-
-        .difficulty-btn:hover {
-            background: linear-gradient(45deg, #000066, #000099);
-            box-shadow: 0 0 10px rgba(0,255,0,0.3);
-        }
-
-        .difficulty-btn.active {
-            background: linear-gradient(45deg, #00ff00, #44ff44);
-            color: #000033;
-            border-color: #ffff00;
-            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            display: none;
         }
 
         .winner {
@@ -173,53 +168,112 @@
 </head>
 <body>
     <h1>🏆 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🏆</h1>
-    <div class="subtitle">*** BUNDESLIGA EDITION 1995 ***</div>
+    <div class="subtitle">*** ZWEITE BUNDESLIGA EDITION 1995 ***</div>
+    
+    <div class="round-info" id="roundInfo">
+        RUNDE 1: SV BABELSBERG 04 vs VFL OLDENBURG
+    </div>
     
     <div class="score">
-        <div class="team-name">SV BABELSBERG 04</div>
+        <div class="team-name" id="playerTeam">SV BABELSBERG 04</div>
         <span id="playerScore">0</span> : <span id="botScore">0</span>
-        <div class="team-name">VFL OLDENBURG</div>
+        <div class="team-name" id="botTeam">VFL OLDENBURG</div>
     </div>
     
     <div class="game-container">
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="startMessage" class="start-message">
-            <h3>🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
+            <h3 id="startTitle">🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
             <p class="retro-text">WASD = STEUERUNG</p>
-            <p>*** ERSTES TOR GEWINNT 5 PUNKTE! ***</p>
+            <p id="startSubtitle">*** ERSTE RUNDE BEGINNT! ***</p>
         </div>
         <div id="winnerMessage" class="winner" style="display: none;"></div>
     </div>
 
     <div class="controls">
-        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD | <strong>HANS JURGEN:</strong> COMPUTER KI</p>
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD | <strong>GEGNER:</strong> COMPUTER KI</p>
         <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
+        <p style="font-size: 10px; color: #ffaa00;">*** RUNDE 1: BEIDE NUR EIGENE HÄLFTE | AB RUNDE 2: MARIAN FREI! ***</p>
         
-        <div style="margin: 10px 0;">
-            <span class="retro-text">SCHWIERIGKEIT: </span>
-            <button onclick="setDifficulty('easy')" id="easyBtn" class="difficulty-btn">EINFACH</button>
-            <button onclick="setDifficulty('normal')" id="normalBtn" class="difficulty-btn active">NORMAL</button>
-            <button onclick="setDifficulty('hard')" id="hardBtn" class="difficulty-btn">SCHWER</button>
-            <button onclick="setDifficulty('expert')" id="expertBtn" class="difficulty-btn">EXPERTE</button>
-        </div>
-        
-        <button class="reset-btn" onclick="resetGame()">🔄 NEUES SPIEL</button>
+        <button class="reset-btn" onclick="resetGame()">🔄 NEUES TURNIER</button>
+        <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
+        <button class="reset-btn" id="retryRoundBtn" onclick="retryRound()" style="display: none;">🔄 RUNDE WIEDERHOLEN</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Stan gry
+        // Definicje rund turniejowych
+        const rounds = [
+            {
+                number: 1,
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "VFL OLDENBURG",
+                field: "grass",
+                bots: [
+                    { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false }
+                ]
+            },
+            {
+                number: 2, 
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "SV WALDORF MANNHEIM",
+                field: "muddy",
+                bots: [
+                    { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true }
+                ]
+            },
+            {
+                number: 3,
+                playerTeam: "SV BABELSBERG 04", 
+                opponentTeam: "FC HANSA ROSTOCK",
+                field: "winter",
+                bots: [
+                    { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: true },
+                    { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 5, aggressiveness: 0.7, canCrossHalf: false }
+                ]
+            },
+            {
+                number: 4,
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
+                field: "professional",
+                bots: [
+                    { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: true },
+                    { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 6, aggressiveness: 0.8, canCrossHalf: false },
+                    { name: "STEFAN BRAUN", x: 600, y: 280, color: "#ff6600", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false }
+                ]
+            },
+            {
+                number: 5,
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "LOKOMOTIV LEIPZIG",
+                field: "stadium", 
+                bots: [
+                    { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: true },
+                    { name: "HERMANN FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 7, aggressiveness: 0.9, canCrossHalf: false },
+                    { name: "RUDOLF BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 8, aggressiveness: 1.0, canCrossHalf: false },
+                    { name: "OTTO SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 3, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false }
+                ]
+            }
+        ];
+
+        // Stan gry z efektami
         let gameState = {
             playerScore: 0,
             botScore: 0,
             gameWon: false,
             gameStarted: false,
-            ballInPlay: false
+            ballInPlay: false,
+            currentRound: 0,
+            roundWon: false,
+            particles: [],
+            ballRotation: 0,
+            screenShake: 0
         };
 
-        // Marian Włodarski (lewy)
+        // Gracz (Marian Włodarski)
         const player = {
             x: 100,
             y: canvas.height / 2,
@@ -229,25 +283,14 @@
             vy: 0
         };
 
-        // Hans Jurgen (prawy) - Agresywny napastnik
-        const bot = {
-            x: canvas.width - 100,
-            y: canvas.height / 2,
-            radius: 20,
-            color: '#0000ff',
-            vx: 0,
-            vy: 0,
-            maxSpeed: 7,
-            aggressiveness: 0.85, // Jak agresywnie atakuje (0-1)
-            reactionSpeed: 0.2,
-            shootPower: 1.2
-        };
+        // Boty - będą ładowane z definicji rund
+        let bots = [];
 
-        // Piłka
+        // Piłka (mniejsza)
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
-            radius: 10,
+            radius: 8,
             vx: 0,
             vy: 0,
             color: '#ffffff',
@@ -275,31 +318,229 @@
             keys[e.key.toLowerCase()] = false;
         });
 
-        // Funkcje rysowania
+        // Efekty cząsteczkowe
+        function createParticles(x, y, color, count) {
+            for(let i = 0; i < count; i++) {
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 30,
+                    maxLife: 30,
+                    color: color,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        function createGoalEffect(x, y) {
+            for(let i = 0; i < 20; i++) {
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 20,
+                    vy: (Math.random() - 0.5) * 20,
+                    life: 60,
+                    maxLife: 60,
+                    color: '#ffff00',
+                    size: Math.random() * 8 + 4
+                });
+            }
+            gameState.screenShake = 8;
+        }
+
+        function updateParticles() {
+            for(let i = gameState.particles.length - 1; i >= 0; i--) {
+                const particle = gameState.particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.95;
+                particle.vy *= 0.95;
+                particle.life--;
+                
+                if(particle.life <= 0) {
+                    gameState.particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            gameState.particles.forEach(particle => {
+                const alpha = particle.life / particle.maxLife;
+                ctx.fillStyle = `rgba(255,255,0,${alpha})`;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function updateEffects() {
+            updateParticles();
+            if(gameState.screenShake > 0) {
+                gameState.screenShake *= 0.9;
+                if(gameState.screenShake < 0.1) gameState.screenShake = 0;
+            }
+        }
+
+        // Funkcje rysowania różnych boisk
         function drawField() {
-            // Tło boiska - realistyczna trawa
+            const currentRoundData = rounds[gameState.currentRound];
+            
+            switch(currentRoundData.field) {
+                case 'grass':
+                    drawGrassField();
+                    break;
+                case 'muddy':
+                    drawMuddyField();
+                    break;
+                case 'winter':
+                    drawWinterField();
+                    break;
+                case 'professional':
+                    drawProfessionalField();
+                    break;
+                case 'stadium':
+                    drawStadiumField();
+                    break;
+            }
+        }
+
+        function drawGrassField() {
+            // Zielone boisko z realistycznymi zniszczeniami
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
             gradient.addColorStop(0, '#32CD32');
             gradient.addColorStop(0.7, '#228B22');
             gradient.addColorStop(1, '#1F7A1F');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Wzór trawy (paski)
-            ctx.strokeStyle = 'rgba(50, 205, 50, 0.3)';
+            
+            // Tekstura trawy
+            ctx.strokeStyle = 'rgba(50, 205, 50, 0.2)';
             ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 40) {
+            for (let i = 0; i < canvas.width; i += 20) {
                 ctx.beginPath();
                 ctx.moveTo(i, 0);
                 ctx.lineTo(i, canvas.height);
                 ctx.stroke();
             }
+            
+            // Błoto pod bramkami
+            ctx.fillStyle = 'rgba(139,69,19,0.6)';
+            ctx.beginPath();
+            ctx.ellipse(60, canvas.height/2, 50, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(canvas.width - 60, canvas.height/2, 50, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Starta murawa
+            ctx.fillStyle = 'rgba(101,67,33,0.4)';
+            const spots = [{x:300,y:100,w:25,h:15}, {x:500,y:320,w:30,h:20}, {x:150,y:250,w:20,h:25}, {x:650,y:150,w:35,h:18}];
+            spots.forEach(spot => {
+                ctx.beginPath();
+                ctx.ellipse(spot.x, spot.y, spot.w, spot.h, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            drawStandardFieldLines();
+        }
 
+        function drawMuddyField() {
+            // Błotniste boisko
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#8B4513');
+            gradient.addColorStop(0.5, '#654321');
+            gradient.addColorStop(1, '#2F1B0C');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Kałuże
+            ctx.fillStyle = 'rgba(0,100,150,0.7)';
+            [[200,100,40,20], [600,300,35,25], [400,150,30,15]].forEach(([x,y,w,h]) => {
+                ctx.beginPath();
+                ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            drawStandardFieldLines();
+        }
+
+        function drawWinterField() {
+            // Zimowe boisko
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#f8f8ff');
+            gradient.addColorStop(0.7, '#e6f3ff');
+            gradient.addColorStop(1, '#d0e8ff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Płatki śniegu
+            const time = Date.now() * 0.001;
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            for(let i = 0; i < 20; i++) {
+                const x = (i * 37 + Math.sin(time + i) * 10) % canvas.width;
+                const y = (i * 23 + time * 10) % canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2 + Math.sin(time + i), 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawStandardFieldLines();
+        }
+
+        function drawProfessionalField() {
+            // Profesjonalne boisko
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, '#228B22');
+            gradient.addColorStop(0.5, '#32CD32');
+            gradient.addColorStop(1, '#228B22');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Paski
+            ctx.fillStyle = 'rgba(50, 205, 50, 0.5)';
+            for (let i = 0; i < canvas.width; i += 80) {
+                ctx.fillRect(i, 0, 40, canvas.height);
+            }
+            
+            drawStandardFieldLines();
+        }
+
+        function drawStadiumField() {
+            // Stadionowe boisko finałowe
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#00FF00');
+            gradient.addColorStop(0.7, '#228B22');
+            gradient.addColorStop(1, '#006400');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Paski stadionowe
+            ctx.fillStyle = 'rgba(34, 139, 34, 0.3)';
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.fillRect(i, 0, 20, canvas.height);
+            }
+            
+            // Reflektory
+            const time = Date.now() * 0.001;
+            ctx.fillStyle = `rgba(255,255,255,${0.1 + Math.sin(time) * 0.05})`;
+            ctx.beginPath();
+            ctx.arc(canvas.width/4, 50, 80, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(3*canvas.width/4, 50, 80, 0, Math.PI * 2);
+            ctx.fill();
+            
+            drawStandardFieldLines();
+        }
+
+        function drawStandardFieldLines() {
             // Linie boiska
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 4;
 
-            // Obramowanie boiska
+            // Obramowanie
             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
             // Linia środkowa
@@ -319,105 +560,205 @@
             ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // Bramki
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 6;
+            drawGoalsAndBoxes();
+        }
+
+        function drawGoalsAndBoxes() {
+            // Wyraźniejsze bramki
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 10;
             
             // Lewa bramka
             ctx.beginPath();
-            ctx.moveTo(10, canvas.height * 0.3);
-            ctx.lineTo(10, canvas.height * 0.7);
+            ctx.moveTo(10, canvas.height * 0.35);
+            ctx.lineTo(10, canvas.height * 0.65);
             ctx.stroke();
-            
-            // Pole bramkowe lewe
-            ctx.lineWidth = 2;
-            ctx.strokeRect(10, canvas.height * 0.35, 40, canvas.height * 0.3);
             
             // Prawa bramka
-            ctx.lineWidth = 6;
             ctx.beginPath();
-            ctx.moveTo(canvas.width - 10, canvas.height * 0.3);
-            ctx.lineTo(canvas.width - 10, canvas.height * 0.7);
+            ctx.moveTo(canvas.width - 10, canvas.height * 0.35);
+            ctx.lineTo(canvas.width - 10, canvas.height * 0.65);
             ctx.stroke();
             
-            // Pole bramkowe prawe
+            // Pola bramkowe
+            ctx.strokeStyle = 'white';
             ctx.lineWidth = 2;
-            ctx.strokeRect(canvas.width - 50, canvas.height * 0.35, 40, canvas.height * 0.3);
+            ctx.strokeRect(10, canvas.height * 0.4, 40, canvas.height * 0.2);
+            ctx.strokeRect(canvas.width - 50, canvas.height * 0.4, 40, canvas.height * 0.2);
 
             // Pola karne
-            ctx.strokeRect(10, canvas.height * 0.2, 80, canvas.height * 0.6);
-            ctx.strokeRect(canvas.width - 90, canvas.height * 0.2, 80, canvas.height * 0.6);
+            ctx.strokeRect(10, canvas.height * 0.25, 80, canvas.height * 0.5);
+            ctx.strokeRect(canvas.width - 90, canvas.height * 0.25, 80, canvas.height * 0.5);
 
             // Punkty karne
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(70, canvas.height / 2, 3, 0, Math.PI * 2);
+            ctx.arc(70, canvas.height / 2, 4, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.beginPath();
-            ctx.arc(canvas.width - 70, canvas.height / 2, 3, 0, Math.PI * 2);
+            ctx.arc(canvas.width - 70, canvas.height / 2, 4, 0, Math.PI * 2);
             ctx.fill();
         }
 
         function drawPlayer(player, name, isBot = false) {
+            // Shake effect
+            const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
+            const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
+            const drawX = player.x + shakeX;
+            const drawY = player.y + shakeY;
+
             // Cień gracza
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.beginPath();
-            ctx.arc(player.x + 3, player.y + 3, player.radius, 0, Math.PI * 2);
+            ctx.arc(drawX + 4, drawY + 4, player.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Gracz (koszulka)
+            // Koszulka
             ctx.fillStyle = player.color;
             ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, player.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Aureola agresji dla bota
+            // Paski na koszulce
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 2;
+            for(let i = -15; i <= 15; i += 8) {
+                ctx.beginPath();
+                ctx.moveTo(drawX + i, drawY - 15);
+                ctx.lineTo(drawX + i, drawY + 15);
+                ctx.stroke();
+            }
+
+            // Ręce
+            ctx.fillStyle = '#ffdbac';
+            ctx.beginPath();
+            ctx.arc(drawX - 12, drawY - 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(drawX + 12, drawY - 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nogi
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(drawX - 6, drawY + 15, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(drawX + 6, drawY + 15, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Buty
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(drawX - 6, drawY + 18, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(drawX + 6, drawY + 18, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Głowa
+            ctx.fillStyle = '#ffdbac';
+            ctx.beginPath();
+            ctx.arc(drawX, drawY - 12, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Włosy
+            ctx.fillStyle = isBot ? '#8B4513' : '#FFD700';
+            ctx.beginPath();
+            ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
+            ctx.fill();
+
+            // Aureola dla botów
             if (isBot && gameState.ballInPlay) {
-                const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
-                let auraColor = '#00ff00'; // Zielony dla normalnego trybu
+                const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
+                let auraColor = '#00ff00';
                 
-                if (distanceToBall < 120) {
-                    auraColor = '#ff4444'; // Czerwony dla trybu ataku
-                }
+                if (distanceToBall < 120) auraColor = '#ff4444';
+                if (distanceToBall < 50) auraColor = '#ffff00';
                 
-                if (distanceToBall < 50) {
-                    auraColor = '#ffff00'; // Żółty dla bezpośredniej bliskości
-                }
-                
+                const pulse = Math.sin(Date.now() * 0.01) * 2 + 3;
                 ctx.strokeStyle = auraColor;
                 ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, player.radius + pulse, 0, Math.PI * 2);
                 ctx.stroke();
+            }
+
+            // Wskaźnik ograniczenia dla Mariana w rundzie 1
+            if (gameState.currentRound === 0) {
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, player.radius + 12, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Wskaźnik ograniczenia dla botów
+            if (isBot && !player.canCrossHalf && !player.isGoalkeeper) {
+                ctx.strokeStyle = '#ff8800';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, player.radius + 12, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
 
             // Numer na koszulce
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 12px Orbitron';
-            ctx.textAlign = 'center';
-            ctx.fillText(isBot ? '10' : '11', player.x, player.y + 4);
-
-            // Nazwa gracza
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 10px Orbitron';
+            ctx.font = 'bold 14px Orbitron';
             ctx.textAlign = 'center';
             ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            const number = isBot ? '10' : '11';
+            ctx.strokeText(number, drawX, drawY + 4);
+            ctx.fillText(number, drawX, drawY + 4);
+
+            // Nazwa gracza
+            const nameY = drawY + player.radius + 25;
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillRect(drawX - 35, nameY - 8, 70, 12);
+            
+            ctx.strokeStyle = isBot ? player.color : '#ff0000';
             ctx.lineWidth = 2;
-            ctx.strokeText(name, player.x, player.y + player.radius + 15);
-            ctx.fillText(name, player.x, player.y + player.radius + 15);
+            ctx.strokeRect(drawX - 35, nameY - 8, 70, 12);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 8px Orbitron';
+            ctx.fillText(name, drawX, nameY);
         }
 
         function drawBall() {
+            const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
+            const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
+            const drawX = ball.x + shakeX;
+            const drawY = ball.y + shakeY;
+
+            // Ślady za piłką
+            if (gameState.ballInPlay && (Math.abs(ball.vx) > 2 || Math.abs(ball.vy) > 2)) {
+                for(let i = 1; i <= 3; i++) {
+                    const alpha = 0.3 - (i * 0.1);
+                    const trailX = drawX - (ball.vx * i * 2);
+                    const trailY = drawY - (ball.vy * i * 2);
+                    
+                    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(trailX, trailY, ball.radius - i, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
             // Cień piłki
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.beginPath();
-            ctx.arc(ball.x + 2, ball.y + 2, ball.radius, 0, Math.PI * 2);
+            ctx.arc(drawX + 3, drawY + 3, ball.radius * 1.2, 0, Math.PI * 2);
             ctx.fill();
 
             // Piłka
             if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
-                // Migająca piłka
                 if (Math.floor(Date.now() / 200) % 2) {
                     ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 } else {
@@ -428,25 +769,36 @@
             }
             
             ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, ball.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wzór piłki piłkarskiej
+            // Wzór piłki z rotacją
+            ctx.save();
+            ctx.translate(drawX, drawY);
+            ctx.rotate(gameState.ballRotation);
+
             ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1.5;
+            
+            // Pentagramy
             ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            for(let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2 / 5);
+                const x = Math.cos(angle) * ball.radius * 0.6;
+                const y = Math.sin(angle) * ball.radius * 0.6;
+                if(i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
             ctx.stroke();
 
-            // Pentagramy na piłce
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
+            ctx.restore();
+
+            // Połysk
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
             ctx.beginPath();
-            ctx.moveTo(ball.x - 5, ball.y - 3);
-            ctx.lineTo(ball.x + 5, ball.y - 3);
-            ctx.moveTo(ball.x - 3, ball.y + 5);
-            ctx.lineTo(ball.x + 3, ball.y + 5);
-            ctx.stroke();
+            ctx.arc(drawX - ball.radius * 0.3, drawY - ball.radius * 0.3, ball.radius * 0.3, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         // Sterowanie graczem
@@ -463,62 +815,69 @@
             player.x += player.vx;
             player.y += player.vy;
 
-            // Ograniczenia pozycji
-            player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
+            // Ograniczenia pozycji - od rundy 2 Marian może wszędzie!
+            if (gameState.currentRound === 0) {
+                // Runda 1 - tylko swoją połowę
+                player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
+            } else {
+                // Runda 2+ - całe boisko!
+                player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
+            }
+            
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
         }
 
-        // AI Bota - Agresywny napastnik
-        function updateBot() {
-            if (!gameState.ballInPlay) {
-                // Pozycja startowa - gotowość do ataku
-                const readyX = canvas.width / 2 + 80;
-                const readyY = canvas.height / 2;
-                
-                bot.vx = (readyX - bot.x) * bot.reactionSpeed;
-                bot.vy = (readyY - bot.y) * bot.reactionSpeed;
-                
-                bot.x += bot.vx;
-                bot.y += bot.vy;
-                return;
-            }
+        // AI Botów
+        function updateBots() {
+            bots.forEach(bot => {
+                if (!gameState.ballInPlay && !bot.isGoalkeeper) {
+                    const readyX = bot.isGoalkeeper ? canvas.width - 40 : canvas.width / 2 + 80;
+                    const readyY = bot.isGoalkeeper ? canvas.height / 2 : bot.startY || canvas.height / 2;
+                    
+                    bot.vx = (readyX - bot.x) * 0.1;
+                    bot.vy = (readyY - bot.y) * 0.1;
+                    
+                    bot.x += bot.vx;
+                    bot.y += bot.vy;
+                    return;
+                }
 
-            // Oblicz odległość do piłki
+                if (bot.isGoalkeeper) {
+                    updateGoalkeeper(bot);
+                } else {
+                    updateFieldBot(bot);
+                }
+            });
+        }
+
+        function updateFieldBot(bot) {
             const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
             const ballInReach = distanceToBall < 120;
             
             let targetX, targetY;
 
             if (ballInReach || ball.x > canvas.width * 0.4) {
-                // ATAK! Idź agresywnie po piłkę
-                
-                // Przewiduj gdzie będzie piłka za chwilę
                 const predictTime = 8;
                 let futureX = ball.x + ball.vx * predictTime;
                 let futureY = ball.y + ball.vy * predictTime;
                 
-                // Sprawdź odbicia od ścian
                 if (futureY < 25) futureY = 50 - futureY;
                 if (futureY > canvas.height - 25) futureY = 2 * (canvas.height - 25) - futureY;
                 
                 targetX = futureX;
                 targetY = futureY;
                 
-                // Jeśli jesteś blisko piłki, pozycjonuj się żeby strzelić w kierunku bramki gracza
                 if (distanceToBall < 50) {
                     const goalCenterY = canvas.height / 2;
-                    const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x); // Cel: lewa bramka
+                    const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
                     
-                    // Pozycjonuj się za piłką (po stronie przeciwnej niż bramka)
                     targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 25;
                     targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 25;
                 }
                 
             } else {
-                // Piłka daleko - pozycjonuj się ofensywnie
                 targetX = canvas.width / 2 + 60;
                 
-                // Śledź piłkę w osi Y, ale zostań w pozycji ofensywnej
                 if (ball.y < canvas.height / 3) {
                     targetY = canvas.height / 3;
                 } else if (ball.y > canvas.height * 2/3) {
@@ -528,36 +887,62 @@
                 }
             }
 
-            // Oblicz kierunek i prędkość ruchu
+            // System błędów dla różnych rund
+            let errorChance;
+            switch(gameState.currentRound) {
+                case 0: errorChance = 0.15; break; // Hans - największe błędy
+                case 1: errorChance = 0.10; break; // Klaus
+                case 2: errorChance = 0.08; break; // Werner + Fritz
+                case 3: errorChance = 0.06; break; // Eintracht (3 boty)
+                case 4: errorChance = 0.04; break; // Leipzig (finał)
+                default: errorChance = 0.08;
+            }
+            
+            if (Math.random() < errorChance) {
+                targetX += (Math.random() - 0.5) * 80;
+                targetY += (Math.random() - 0.5) * 80;
+            }
+
             const dx = targetX - bot.x;
             const dy = targetY - bot.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance > 3) {
-                // Normalizuj wektor kierunku
                 const normalizedX = dx / distance;
                 const normalizedY = dy / distance;
                 
-                // Różne prędkości w zależności od sytuacji
                 let currentSpeed = bot.maxSpeed;
-                if (ballInReach) currentSpeed *= 1.3; // Szybciej gdy piłka blisko
-                if (distanceToBall < 30) currentSpeed *= 1.5; // Najszybciej gdy bardzo blisko
+                if (ballInReach) currentSpeed *= 1.2; // Mniej boost speed
+                if (distanceToBall < 30) currentSpeed *= 1.3; // Mniej boost speed
                 
                 bot.vx = normalizedX * currentSpeed;
                 bot.vy = normalizedY * currentSpeed;
             } else {
-                // Hamowanie gdy blisko celu
-                bot.vx *= 0.7;
-                bot.vy *= 0.7;
+                bot.vx *= 0.8; // Więcej hamowanie
+                bot.vy *= 0.8;
             }
 
-            // Aktualizuj pozycję
             bot.x += bot.vx;
             bot.y += bot.vy;
 
-            // Ograniczenia pozycji (może wyjść trochę za linię środkową dla agresji)
-            bot.x = Math.max(canvas.width / 2 - 30, Math.min(canvas.width - bot.radius - 15, bot.x));
+            // Ograniczenia pozycji
+            if (bot.canCrossHalf) {
+                bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
+            } else {
+                bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
+            }
+            
             bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+        }
+
+        function updateGoalkeeper(bot) {
+            let targetY = ball.y;
+            bot.x = Math.max(canvas.width - 50, Math.min(canvas.width - 20, bot.x));
+            targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+            
+            const dy = targetY - bot.y;
+            bot.vy = dy * 0.12; // Wolniejsza reakcja bramkarza
+            bot.y += bot.vy;
         }
 
         // Fizyka piłki
@@ -567,37 +952,50 @@
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Odbicia od ścian
+            // Rotacja piłki
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            gameState.ballRotation += speed * 0.05;
+
+            // Odbicia od ścian z efektami
             if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
                 ball.vy = -ball.vy;
                 ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
+                createParticles(ball.x, ball.y, '#ffffff', 5);
+                gameState.screenShake = 3;
             }
 
             // Sprawdzenie goli
             if (ball.x <= 15) {
-                if (ball.y > canvas.height * 0.3 && ball.y < canvas.height * 0.7) {
+                if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
                     gameState.botScore++;
+                    createGoalEffect(15, canvas.height / 2);
                     updateScore();
                     resetBallAfterGoal();
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = ball.radius + 15;
+                    createParticles(ball.x, ball.y, '#ff4444', 3);
+                    gameState.screenShake = 2;
                 }
             }
 
             if (ball.x >= canvas.width - 15) {
-                if (ball.y > canvas.height * 0.3 && ball.y < canvas.height * 0.7) {
+                if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
                     gameState.playerScore++;
+                    createGoalEffect(canvas.width - 15, canvas.height / 2);
                     updateScore();
                     resetBallAfterGoal();
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = canvas.width - ball.radius - 15;
+                    createParticles(ball.x, ball.y, '#ff4444', 3);
+                    gameState.screenShake = 2;
                 }
             }
 
             // Kolizje z graczami
-            [player, bot].forEach(p => {
+            const allPlayers = [player, ...bots];
+            allPlayers.forEach(p => {
                 const dx = ball.x - p.x;
                 const dy = ball.y - p.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -612,33 +1010,32 @@
 
                     const dotProduct = ball.vx * nx + ball.vy * ny;
                     
-                    if (p === bot) {
-                        // Bot strzela mocno w kierunku bramki gracza!
+                    createParticles(ball.x, ball.y, p.color, 4);
+                    gameState.screenShake = Math.max(gameState.screenShake, 2);
+                    
+                    if (p !== player) {
                         const goalCenterY = canvas.height / 2;
                         const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
                         
-                        // Kierunek strzału w stronę bramki gracza
-                        const shootPowerX = Math.cos(shootAngle) * bot.shootPower * 8;
-                        const shootPowerY = Math.sin(shootAngle) * bot.shootPower * 8;
+                        const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 8;
+                        const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 8;
                         
-                        // Kombinacja odbicia i celowego strzału
                         ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.6;
                         ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.6;
                     } else {
-                        // Normalne odbicie dla gracza
                         ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.8;
                         ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.8;
                     }
 
-                    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                    if (speed > ball.maxSpeed) {
-                        ball.vx = (ball.vx / speed) * ball.maxSpeed;
-                        ball.vy = (ball.vy / speed) * ball.maxSpeed;
+                    const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    if (newSpeed > ball.maxSpeed) {
+                        ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
+                        ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
                     }
                 }
             });
 
-            // Tarcie trawy
+            // Tarcie
             ball.vx *= 0.998;
             ball.vy *= 0.998;
 
@@ -676,32 +1073,110 @@
             document.getElementById('playerScore').textContent = gameState.playerScore;
             document.getElementById('botScore').textContent = gameState.botScore;
 
-            if (gameState.playerScore >= 5 || gameState.botScore >= 5) {
+            if (gameState.playerScore >= 5) {
                 gameState.gameWon = true;
-                const winner = gameState.playerScore >= 5 ? 
-                    '🎉 SV BABELSBERG 04 SIEGT! 🎉<br>*** MARIAN WŁODARSKI IST DER CHAMPION! ***' : 
-                    '🤖 VFL OLDENBURG GEWINNT! 🤖<br>*** HANS JURGEN TRIUMPHIERT! ***';
-                document.getElementById('winnerMessage').innerHTML = `
-                    <div>${winner}</div>
-                    <div style="font-size: 14px; margin-top: 10px; color: #00ffff;">
-                        DRÜCKEN SIE "NEUES SPIEL" FÜR REVANCHE!
-                    </div>
-                `;
-                document.getElementById('winnerMessage').style.display = 'block';
+                gameState.roundWon = true;
+                showRoundWinMessage();
+            } else if (gameState.botScore >= 5) {
+                gameState.gameWon = true;
+                gameState.roundWon = false;
+                showGameOverMessage();
             }
         }
 
-        function resetGame() {
+        function showRoundWinMessage() {
+            const currentRoundData = rounds[gameState.currentRound];
+            const isLastRound = gameState.currentRound >= rounds.length - 1;
+            
+            document.getElementById('winnerMessage').innerHTML = `
+                <div>🎉 RUNDE ${currentRoundData.number} GEWONNEN! 🎉</div>
+                <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
+                    SV BABELSBERG 04 BESIEGT ${currentRoundData.opponentTeam}!
+                </div>
+                <div style="font-size: 12px; color: #ffff00;">
+                    ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
+                </div>
+            `;
+            document.getElementById('winnerMessage').style.display = 'block';
+            
+            if (!isLastRound) {
+                document.getElementById('nextRoundBtn').style.display = 'inline-block';
+            }
+            document.getElementById('retryRoundBtn').style.display = 'none';
+        }
+
+        function showGameOverMessage() {
+            const currentRoundData = rounds[gameState.currentRound];
+            document.getElementById('winnerMessage').innerHTML = `
+                <div>💀 RUNDE ${currentRoundData.number} VERLOREN! 💀</div>
+                <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
+                    ${currentRoundData.opponentTeam} GEWINNT!
+                </div>
+                <div style="font-size: 12px; color: #ffff00;">
+                    Runde wiederholen oder neues Turnier?
+                </div>
+            `;
+            document.getElementById('winnerMessage').style.display = 'block';
+            document.getElementById('retryRoundBtn').style.display = 'inline-block';
+            document.getElementById('nextRoundBtn').style.display = 'none';
+        }
+
+        function loadRound() {
+            const currentRoundData = rounds[gameState.currentRound];
+            
+            document.getElementById('roundInfo').textContent = 
+                `RUNDE ${currentRoundData.number}: ${currentRoundData.playerTeam} vs ${currentRoundData.opponentTeam}`;
+            document.getElementById('playerTeam').textContent = currentRoundData.playerTeam;
+            document.getElementById('botTeam').textContent = currentRoundData.opponentTeam;
+            document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentRoundData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
+            
+            // Informacja o ograniczeniach Mariana
+            const marianInfo = gameState.currentRound === 0 
+                ? "*** MARIAN: NUR EIGENE HÄLFTE! ***"
+                : "*** MARIAN: GANZES FELD FREI! ***";
+            document.getElementById('startSubtitle').textContent = marianInfo;
+            
+            bots = currentRoundData.bots.map(botData => ({
+                ...botData,
+                radius: 20,
+                vx: 0,
+                vy: 0,
+                shootPower: botData.shootPower || 1.2,
+                reactionSpeed: 0.2,
+                startY: botData.y,
+                canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
+                isGoalkeeper: botData.isGoalkeeper || false
+            }));
+        }
+
+        function nextRound() {
+            gameState.currentRound++;
+            resetRound();
+            loadRound();
+            
+            document.getElementById('nextRoundBtn').style.display = 'none';
+        }
+
+        function retryRound() {
+            resetRound();
+            loadRound();
+            
+            document.getElementById('retryRoundBtn').style.display = 'none';
+        }
+
+        function resetRound() {
             gameState.playerScore = 0;
             gameState.botScore = 0;
             gameState.gameWon = false;
             gameState.gameStarted = false;
             gameState.ballInPlay = false;
+            gameState.roundWon = false;
+            gameState.particles = [];
+            gameState.ballRotation = 0;
+            gameState.screenShake = 0;
             
             player.x = 100;
             player.y = canvas.height / 2;
-            bot.x = canvas.width - 100;
-            bot.y = canvas.height / 2;
             
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
@@ -713,42 +1188,13 @@
             document.getElementById('startMessage').style.display = 'block';
         }
 
-        function setDifficulty(level) {
-            // Usuń aktywną klasę ze wszystkich przycisków
-            document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        function resetGame() {
+            gameState.currentRound = 0;
+            resetRound();
+            loadRound();
             
-            // Dodaj aktywną klasę do wybranego przycisku
-            document.getElementById(level + 'Btn').classList.add('active');
-            
-            // Ustaw parametry bota w zależności od poziomu
-            switch(level) {
-                case 'easy':
-                    bot.maxSpeed = 5;
-                    bot.aggressiveness = 0.6;
-                    bot.reactionSpeed = 0.15;
-                    bot.shootPower = 0.8;
-                    break;
-                case 'normal':
-                    bot.maxSpeed = 7;
-                    bot.aggressiveness = 0.85;
-                    bot.reactionSpeed = 0.2;
-                    bot.shootPower = 1.2;
-                    break;
-                case 'hard':
-                    bot.maxSpeed = 8;
-                    bot.aggressiveness = 1.0;
-                    bot.reactionSpeed = 0.25;
-                    bot.shootPower = 1.5;
-                    break;
-                case 'expert':
-                    bot.maxSpeed = 10;
-                    bot.aggressiveness = 1.2;
-                    bot.reactionSpeed = 0.3;
-                    bot.shootPower = 1.8;
-                    break;
-            }
+            document.getElementById('nextRoundBtn').style.display = 'none';
+            document.getElementById('retryRoundBtn').style.display = 'none';
         }
 
         // Główna pętla gry
@@ -759,18 +1205,23 @@
             
             if (gameState.gameStarted) {
                 updatePlayer();
-                updateBot();
+                updateBots();
                 updateBall();
+                updateEffects();
             }
             
             drawPlayer(player, 'MARIAN WŁODARSKI', false);
-            drawPlayer(bot, 'HANS JURGEN', true);
+            bots.forEach(bot => {
+                drawPlayer(bot, bot.name, true);
+            });
             drawBall();
+            drawParticles();
             
             requestAnimationFrame(gameLoop);
         }
 
-        // Start gry
+        // Inicjalizacja gry
+        loadRound();
         gameLoop();
     </script>
 </body>
