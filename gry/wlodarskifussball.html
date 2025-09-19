@@ -304,8 +304,12 @@
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
             
-            if (e.key === ' ') {
+            // Zapobiegamy przewijaniu strony strzałkami i spacją
+            if (e.key === ' ' || e.key.startsWith('Arrow')) {
                 e.preventDefault();
+            }
+            
+            if (e.key === ' ') {
                 if (!gameState.gameStarted) {
                     startGame();
                 } else if (!gameState.ballInPlay && !gameState.gameWon) {
