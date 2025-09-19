@@ -242,6 +242,7 @@
         <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz)</button>
         <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
         <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
+        <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
         <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
     </div>
     
@@ -290,6 +291,7 @@
                 playerTeam: "SV BABELSBERG 04",
                 opponentTeam: "VFL OLDENBURG",
                 field: "grass",
+                fieldScale: 1.0,
                 bots: [
                     { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200 }
                 ]
@@ -299,6 +301,7 @@
                 playerTeam: "SV BABELSBERG 04",
                 opponentTeam: "SV WALDORF MANNHEIM",
                 field: "muddy",
+                fieldScale: 1.0,
                 bots: [
                     { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
                 ]
@@ -308,6 +311,7 @@
                 playerTeam: "SV BABELSBERG 04", 
                 opponentTeam: "FC HANSA ROSTOCK",
                 field: "winter",
+                fieldScale: 1.0,
                 bots: [
                     { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150 },
                     { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250 }
@@ -318,6 +322,7 @@
                 playerTeam: "SV BABELSBERG 04",
                 opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
                 field: "professional",
+                fieldScale: 1.0,
                 bots: [
                     { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: true, number: 6, role: "attacker", preferredY: 120 },
                     { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: false, number: 4, role: "midfielder", preferredY: 200 },
@@ -329,11 +334,24 @@
                 playerTeam: "SV BABELSBERG 04",
                 opponentTeam: "LOKOMOTIV LEIPZIG",
                 field: "stadium", 
+                fieldScale: 1.0,
                 bots: [
                     { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: true, number: 5, role: "attacker", preferredY: 100 },
                     { name: "HERMANN FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 2, role: "midfielder", preferredY: 200 },
                     { name: "RUDOLF BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: false, number: 1, role: "defender", preferredY: 300 },
                     { name: "OTTO SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 2.25, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false, number: 12, role: "goalkeeper", preferredY: 200 }
+                ]
+            },
+            {
+                number: 6,
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "FC CARL ZEISS JENA",
+                field: "sandy",
+                fieldScale: 0.75, // Wszystko pomniejszone o 25% = efekt 4x większego boiska
+                bots: [
+                    { name: "BERND KOCH", x: 650, y: 130, color: "#0066ff", maxSpeed: 3.0, aggressiveness: 0.5, canCrossHalf: false, number: 14, role: "defender", preferredY: 130 },
+                    { name: "UWE KRAUSE", x: 680, y: 200, color: "#0066ff", maxSpeed: 2.8, aggressiveness: 0.4, canCrossHalf: false, number: 8, role: "midfielder", preferredY: 200 },
+                    { name: "THOMAS WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
                 ]
             }
         ];
@@ -571,7 +589,41 @@
                 case 'stadium':
                     drawStadiumField();
                     break;
+                case 'sandy':
+                    drawSandyField();
+                    break;
             }
+        }
+
+        function drawSandyField() {
+            // Piaszczyste boisko z pustynną teksturą
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#F4A460'); // Sandy brown
+            gradient.addColorStop(0.5, '#D2B48C'); // Tan
+            gradient.addColorStop(1, '#DEB887'); // Burlywood
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Wzory piasku
+            ctx.strokeStyle = 'rgba(210, 180, 140, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 15) {
+                for (let j = 0; j < canvas.height; j += 15) {
+                    ctx.beginPath();
+                    ctx.arc(i + Math.sin(i*j*0.01) * 3, j + Math.cos(i*j*0.01) * 3, 1, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            // Wydmy piasku
+            ctx.fillStyle = 'rgba(244, 164, 96, 0.4)';
+            [[150,80,60,20], [650,320,80,25], [300,350,50,15], [500,100,70,18]].forEach(([x,y,w,h]) => {
+                ctx.beginPath();
+                ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            drawStandardFieldLines();
         }
 
         function drawGrassField() {
@@ -704,9 +756,12 @@
         }
 
         function drawStandardFieldLines() {
-            // Linie boiska
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            const scale = currentTeamData.fieldScale || 1.0;
+            
+            // Linie boiska - skalowane
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 4 * scale;
 
             // Obramowanie
             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
@@ -717,157 +772,199 @@
             ctx.lineTo(canvas.width / 2, canvas.height - 10);
             ctx.stroke();
 
-            // Koło środkowe
+            // Koło środkowe - skalowane
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 60 * scale, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Punkt środkowy
+            // Punkt środkowy - skalowany
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
             ctx.fill();
 
-            drawGoalsAndBoxes();
+            drawGoalsAndBoxes(scale);
         }
 
-        function drawGoalsAndBoxes() {
-            // Wyraźniejsze bramki
+        function drawGoalsAndBoxes(scale = 1.0) {
+            // Wyraźniejsze bramki - skalowane
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 10;
+            ctx.lineWidth = 10 * scale;
+            
+            const goalHeight = canvas.height * 0.3 * scale;
+            const goalTop = canvas.height * 0.5 - goalHeight/2;
+            const goalBottom = canvas.height * 0.5 + goalHeight/2;
             
             // Lewa bramka
             ctx.beginPath();
-            ctx.moveTo(10, canvas.height * 0.35);
-            ctx.lineTo(10, canvas.height * 0.65);
+            ctx.moveTo(10, goalTop);
+            ctx.lineTo(10, goalBottom);
             ctx.stroke();
             
             // Prawa bramka
             ctx.beginPath();
-            ctx.moveTo(canvas.width - 10, canvas.height * 0.35);
-            ctx.lineTo(canvas.width - 10, canvas.height * 0.65);
+            ctx.moveTo(canvas.width - 10, goalTop);
+            ctx.lineTo(canvas.width - 10, goalBottom);
             ctx.stroke();
             
-            // Pola bramkowe
+            // Pola bramkowe - skalowane
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(10, canvas.height * 0.4, 40, canvas.height * 0.2);
-            ctx.strokeRect(canvas.width - 50, canvas.height * 0.4, 40, canvas.height * 0.2);
+            ctx.lineWidth = 2 * scale;
+            const boxWidth = 40 * scale;
+            const boxHeight = canvas.height * 0.2 * scale;
+            const boxTop = canvas.height * 0.5 - boxHeight/2;
+            
+            ctx.strokeRect(10, boxTop, boxWidth, boxHeight);
+            ctx.strokeRect(canvas.width - 10 - boxWidth, boxTop, boxWidth, boxHeight);
 
-            // Pola karne
-            ctx.strokeRect(10, canvas.height * 0.25, 80, canvas.height * 0.5);
-            ctx.strokeRect(canvas.width - 90, canvas.height * 0.25, 80, canvas.height * 0.5);
+            // Pola karne - skalowane
+            const penaltyWidth = 80 * scale;
+            const penaltyHeight = canvas.height * 0.5 * scale;
+            const penaltyTop = canvas.height * 0.5 - penaltyHeight/2;
+            
+            ctx.strokeRect(10, penaltyTop, penaltyWidth, penaltyHeight);
+            ctx.strokeRect(canvas.width - 10 - penaltyWidth, penaltyTop, penaltyWidth, penaltyHeight);
 
-            // Punkty karne
+            // Punkty karne - skalowane
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(70, canvas.height / 2, 4, 0, Math.PI * 2);
+            ctx.arc(70 * scale, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.beginPath();
-            ctx.arc(canvas.width - 70, canvas.height / 2, 4, 0, Math.PI * 2);
+            ctx.arc(canvas.width - 70 * scale, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
             ctx.fill();
         }
 
         function drawPlayer(playerObj, name, isBot = false) {
+            // Pobierz skalę dla obecnego boiska
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            const scale = currentTeamData.fieldScale || 1.0;
+            
             // Shake effect
             const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
             const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
             const drawX = playerObj.x + shakeX;
             const drawY = playerObj.y + shakeY;
 
+            // Skalowany promień gracza
+            const scaledRadius = playerObj.radius * scale;
+
             // Cień gracza
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.beginPath();
-            ctx.arc(drawX + 4, drawY + 4, playerObj.radius, 0, Math.PI * 2);
+            ctx.arc(drawX + 4, drawY + 4, scaledRadius, 0, Math.PI * 2);
             ctx.fill();
 
             // Koszulka
             ctx.fillStyle = playerObj.color;
             ctx.beginPath();
-            ctx.arc(drawX, drawY, playerObj.radius, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Paski na koszulce
+            // Paski na koszulce - skalowane
             ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 2;
-            for(let i = -15; i <= 15; i += 8) {
+            ctx.lineWidth = 2 * scale;
+            const stripeSpacing = 8 * scale;
+            const stripeLength = 15 * scale;
+            for(let i = -stripeLength; i <= stripeLength; i += stripeSpacing) {
                 ctx.beginPath();
-                ctx.moveTo(drawX + i, drawY - 15);
-                ctx.lineTo(drawX + i, drawY + 15);
+                ctx.moveTo(drawX + i, drawY - stripeLength);
+                ctx.lineTo(drawX + i, drawY + stripeLength);
                 ctx.stroke();
             }
 
-            // Ręce
+            // Ręce - skalowane
             ctx.fillStyle = '#ffdbac';
+            const armDistance = 12 * scale;
+            const armRadius = 4 * scale;
+            const armHeight = 8 * scale;
             ctx.beginPath();
-            ctx.arc(drawX - 12, drawY - 8, 4, 0, Math.PI * 2);
+            ctx.arc(drawX - armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(drawX + 12, drawY - 8, 4, 0, Math.PI * 2);
+            ctx.arc(drawX + armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Nogi
+            // Nogi - skalowane
             ctx.fillStyle = playerObj.color;
+            const legDistance = 6 * scale;
+            const legRadius = 5 * scale;
+            const legHeight = 15 * scale;
             ctx.beginPath();
-            ctx.arc(drawX - 6, drawY + 15, 5, 0, Math.PI * 2);
+            ctx.arc(drawX - legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(drawX + 6, drawY + 15, 5, 0, Math.PI * 2);
+            ctx.arc(drawX + legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Buty
+            // Buty - skalowane
             ctx.fillStyle = '#000000';
+            const shoeRadius = 3 * scale;
+            const shoeHeight = 18 * scale;
             ctx.beginPath();
-            ctx.arc(drawX - 6, drawY + 18, 3, 0, Math.PI * 2);
+            ctx.arc(drawX - legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(drawX + 6, drawY + 18, 3, 0, Math.PI * 2);
+            ctx.arc(drawX + legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Głowa
+            // Głowa - skalowana
             ctx.fillStyle = '#ffdbac';
+            const headRadius = 8 * scale;
+            const headHeight = 12 * scale;
             ctx.beginPath();
-            ctx.arc(drawX, drawY - 12, 8, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY - headHeight, headRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Włosy
+            // Włosy - skalowane
             ctx.fillStyle = isBot ? '#8B4513' : '#FFD700';
+            const hairRadius = 6 * scale;
+            const hairHeight = 16 * scale;
             ctx.beginPath();
-            ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
+            ctx.arc(drawX, drawY - hairHeight, hairRadius, 0, Math.PI);
             ctx.fill();
 
-            // Numer na koszulce
+            // Numer na koszulce - skalowany
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 14px Orbitron';
+            ctx.font = `bold ${14 * scale}px Orbitron`;
             ctx.textAlign = 'center';
             ctx.strokeStyle = 'black';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 3 * scale;
             const number = playerObj.number.toString();
-            ctx.strokeText(number, drawX, drawY + 4);
-            ctx.fillText(number, drawX, drawY + 4);
+            ctx.strokeText(number, drawX, drawY + 4 * scale);
+            ctx.fillText(number, drawX, drawY + 4 * scale);
 
-            // Nazwa gracza
-            const nameY = drawY + playerObj.radius + 25;
+            // Nazwa gracza - skalowana
+            const nameY = drawY + scaledRadius + 25 * scale;
+            const nameWidth = 70 * scale;
+            const nameHeight = 12 * scale;
             ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            ctx.fillRect(drawX - 35, nameY - 8, 70, 12);
+            ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
             
             ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(drawX - 35, nameY - 8, 70, 12);
+            ctx.lineWidth = 2 * scale;
+            ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
             
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 8px Orbitron';
-            ctx.fillText(name, drawX, nameY);
+            ctx.font = `bold ${8 * scale}px Orbitron`;
+            ctx.fillText(name, drawX, nameY + 2 * scale);
         }
 
         function drawBall() {
+            // Pobierz skalę dla obecnego boiska
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            const scale = currentTeamData.fieldScale || 1.0;
+            
             const shakeX = gameState.screenShake * (Math.random() - 0.5) * 2;
             const shakeY = gameState.screenShake * (Math.random() - 0.5) * 2;
             const drawX = ball.x + shakeX;
             const drawY = ball.y + shakeY;
 
-            // Ślady za piłką
+            // Skalowany promień piłki
+            const scaledRadius = ball.radius * scale;
+
+            // Ślady za piłką - skalowane
             if (gameState.ballInPlay && (Math.abs(ball.vx) > 2 || Math.abs(ball.vy) > 2)) {
                 for(let i = 1; i <= 3; i++) {
                     const alpha = 0.3 - (i * 0.1);
@@ -876,15 +973,15 @@
                     
                     ctx.fillStyle = `rgba(255,255,255,${alpha})`;
                     ctx.beginPath();
-                    ctx.arc(trailX, trailY, ball.radius - i, 0, Math.PI * 2);
+                    ctx.arc(trailX, trailY, (scaledRadius - i) * scale, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
 
-            // Cień piłki
+            // Cień piłki - skalowany
             ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.beginPath();
-            ctx.arc(drawX + 3, drawY + 3, ball.radius * 1.2, 0, Math.PI * 2);
+            ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
             ctx.fill();
 
             // Piłka
@@ -899,23 +996,23 @@
             }
             
             ctx.beginPath();
-            ctx.arc(drawX, drawY, ball.radius, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Wzór piłki z rotacją
+            // Wzór piłki z rotacją - skalowany
             ctx.save();
             ctx.translate(drawX, drawY);
             ctx.rotate(gameState.ballRotation);
 
             ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.5 * scale;
             
-            // Pentagramy
+            // Pentagramy - skalowane
             ctx.beginPath();
             for(let i = 0; i < 5; i++) {
                 const angle = (i * Math.PI * 2 / 5);
-                const x = Math.cos(angle) * ball.radius * 0.6;
-                const y = Math.sin(angle) * ball.radius * 0.6;
+                const x = Math.cos(angle) * scaledRadius * 0.6;
+                const y = Math.sin(angle) * scaledRadius * 0.6;
                 if(i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -924,10 +1021,10 @@
 
             ctx.restore();
 
-            // Połysk
+            // Połysk - skalowany
             ctx.fillStyle = 'rgba(255,255,255,0.7)';
             ctx.beginPath();
-            ctx.arc(drawX - ball.radius * 0.3, drawY - ball.radius * 0.3, ball.radius * 0.3, 0, Math.PI * 2);
+            ctx.arc(drawX - scaledRadius * 0.3, drawY - scaledRadius * 0.3, scaledRadius * 0.3, 0, Math.PI * 2);
             ctx.fill();
         }
 
@@ -1076,6 +1173,7 @@
                     case 2: errorChance = 0.08; break;
                     case 3: errorChance = 0.06; break;
                     case 4: errorChance = 0.04; break;
+                    case 5: errorChance = 0.20; break; // Carl Zeiss Jena - najkiepsi
                     default: errorChance = 0.08;
                 }
             }
