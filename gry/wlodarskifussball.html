@@ -184,15 +184,15 @@
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="startMessage" class="start-message">
             <h3 id="startTitle">🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
-            <p class="retro-text">WASD = STEUERUNG</p>
+            <p class="retro-text">STRZAŁKI = STEUERUNG</p>
             <p id="startSubtitle">*** ERSTE RUNDE BEGINNT! ***</p>
         </div>
         <div id="winnerMessage" class="winner" style="display: none;"></div>
     </div>
 
     <div class="controls">
-        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD + SPACJA (KOPNIĘCIE) | <strong>GEGNER:</strong> COMPUTER KI</p>
-        <p>LEERTASTE: START/RESET BALL | KOPNIĘCIE (zielona aureola) | ERSTER BIS 5 TORE GEWINNT!</p>
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> STRZAŁKI STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
+        <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
         <p style="font-size: 10px; color: #ffaa00;">*** RUNDE 1: BEIDE NUR EIGENE HÄLFTE | AB RUNDE 2: MARIAN FREI! ***</p>
         
         <button class="reset-btn" onclick="resetGame()">🔄 NEUES TURNIER</button>
@@ -273,15 +273,14 @@
             screenShake: 0
         };
 
-        // Gracz (Marian Włodarski) - zasięg kopnięcia jak obwódka
+        // Gracz (Marian Włodarski)
         const player = {
             x: 100,
             y: canvas.height / 2,
             radius: 20,
             color: '#ff0000',
             vx: 0,
-            vy: 0,
-            kickRange: 32  // Taki sam jak obwódka ograniczenia (radius + 12)
+            vy: 0
         };
 
         // Boty - będą ładowane z definicji rund
@@ -311,47 +310,9 @@
                     startGame();
                 } else if (!gameState.ballInPlay && !gameState.gameWon) {
                     launchBall();
-                } else if (gameState.ballInPlay && canPlayerKick()) {
-                    // Proste kopnięcie!
-                    playerKick();
                 }
             }
         });
-
-        // Proste funkcje kopnięcia - piłka dotyka aureoli
-        function canPlayerKick() {
-            const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
-            const aureoleRadius = player.radius + 12;  // 32 - promień pomarańczowej aureoli
-            const ballRadius = ball.radius;             // 8 - promień piłki
-            
-            // Piłka może dotykać aureoli z zewnątrz lub być w środku
-            return distanceToBall <= (aureoleRadius + ballRadius);
-        }
-
-        function playerKick() {
-            // Oblicz kierunek od gracza do piłki (fizyka!)
-            const dx = ball.x - player.x;
-            const dy = ball.y - player.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-                // Normalizuj kierunek
-                const directionX = dx / distance;
-                const directionY = dy / distance;
-                
-                // MOCNE kopnięcie! (niemal maksymalna prędkość)
-                const kickPower = 16;
-                ball.vx = directionX * kickPower;
-                ball.vy = directionY * kickPower;
-                
-                // Ograniczenie maksymalnej prędkości
-                const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                if (newSpeed > ball.maxSpeed) {
-                    ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
-                    ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
-                }
-            }
-        }
 
         document.addEventListener('keyup', (e) => {
             keys[e.key.toLowerCase()] = false;
@@ -708,53 +669,6 @@
             ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
             ctx.fill();
 
-            // NAJPIERW: Wskaźnik ograniczenia dla Mariana w rundzie 1 (POMARAŃCZOWA)
-            if (gameState.currentRound === 0 && !isBot) {
-                ctx.strokeStyle = '#ffaa00';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([8, 4]);
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // POTEM: AUREOLA KOPNIĘCIA (ZIELONA) - nakładka na pomarańczową!
-            if (!isBot && gameState.ballInPlay && canPlayerKick()) {
-                ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 4;  // Grubsza żeby była bardziej widoczna
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-
-            // Aureola dla botów (normalna)
-            if (isBot && gameState.ballInPlay) {
-                const distanceToBall = Math.sqrt((ball.x - playerObj.x) ** 2 + (ball.y - playerObj.y) ** 2);
-                let auraColor = '#00ff00';
-                
-                if (distanceToBall < 120) auraColor = '#ff4444';
-                if (distanceToBall < 50) auraColor = '#ffff00';
-                
-                const pulse = Math.sin(Date.now() * 0.01) * 2 + 3;
-                ctx.strokeStyle = auraColor;
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-
-            // Wskaźnik ograniczenia dla botów
-            if (isBot && !playerObj.canCrossHalf && !playerObj.isGoalkeeper) {
-                ctx.strokeStyle = '#ff8800';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([8, 4]);
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
             // Numer na koszulce
             ctx.fillStyle = 'white';
             ctx.font = 'bold 14px Orbitron';
@@ -855,10 +769,10 @@
 
             player.vx = 0;
             player.vy = 0;
-            if (keys['w']) player.vy = -speed;
-            if (keys['s']) player.vy = speed;
-            if (keys['a']) player.vx = -speed;
-            if (keys['d']) player.vx = speed;
+            if (keys['arrowup']) player.vy = -speed;
+            if (keys['arrowdown']) player.vy = speed;
+            if (keys['arrowleft']) player.vx = -speed;
+            if (keys['arrowright']) player.vx = speed;
 
             player.x += player.vx;
             player.y += player.vy;
@@ -875,7 +789,7 @@
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
         }
 
-        // AI Botów - bez kopnięć na razie
+        // AI Botów
         function updateBots() {
             bots.forEach(bot => {
                 if (!gameState.ballInPlay && !bot.isGoalkeeper) {
@@ -960,13 +874,13 @@
                 const normalizedY = dy / distance;
                 
                 let currentSpeed = bot.maxSpeed;
-                if (ballInReach) currentSpeed *= 1.2; // Mniej boost speed
-                if (distanceToBall < 30) currentSpeed *= 1.3; // Mniej boost speed
+                if (ballInReach) currentSpeed *= 1.2;
+                if (distanceToBall < 30) currentSpeed *= 1.3;
                 
                 bot.vx = normalizedX * currentSpeed;
                 bot.vy = normalizedY * currentSpeed;
             } else {
-                bot.vx *= 0.8; // Więcej hamowanie
+                bot.vx *= 0.8;
                 bot.vy *= 0.8;
             }
 
@@ -989,7 +903,7 @@
             targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
             
             const dy = targetY - bot.y;
-            bot.vy = dy * 0.12; // Wolniejsza reakcja bramkarza
+            bot.vy = dy * 0.12;
             bot.y += bot.vy;
         }
 
