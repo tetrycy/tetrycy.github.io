@@ -243,6 +243,7 @@
         <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
         <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
         <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
+        <button class="team-btn" onclick="startFriendly(6)">🟤 SPVGG UNTERHACHING (2 Gegner + IHR TORWART!)</button>
         <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
     </div>
     
@@ -353,6 +354,19 @@
                     { name: "UWE KRAUSE", x: 680, y: 200, color: "#0066ff", maxSpeed: 2.8, aggressiveness: 0.4, canCrossHalf: false, number: 8, role: "midfielder", preferredY: 200 },
                     { name: "THOMAS WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
                 ]
+            },
+            {
+                number: 7,
+                playerTeam: "SV BABELSBERG 04",
+                opponentTeam: "SPVGG UNTERHACHING",
+                field: "asphalt",
+                fieldScale: 0.75, // Duże boisko jak Carl Zeiss
+                hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
+                bots: [
+                    { name: "RALF MULLER", x: 500, y: 200, color: "#800040", maxSpeed: 2.5, aggressiveness: 0.3, canCrossHalf: true, number: 10, role: "attacker", preferredY: 200 },
+                    { name: "JOSEF KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, aggressiveness: 0.2, isGoalkeeper: true, canCrossHalf: false, number: 1, role: "goalkeeper", preferredY: 200 }
+                ],
+                playerGoalkeeper: { name: "PETER NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
             }
         ];
 
@@ -384,6 +398,9 @@
 
         // Boty - będą ładowane z definicji drużyn
         let bots = [];
+        
+        // Bramkarz gracza (opcjonalny)
+        let playerGoalkeeper = null;
 
         // Piłka - prędkość zmniejszona o 25%
         const ball = {
@@ -502,6 +519,20 @@
                 role: botData.role || "midfielder",
                 preferredY: botData.preferredY || botData.y
             }));
+            
+            // Ładuj bramkarza gracza jeśli istnieje
+            if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
+                playerGoalkeeper = {
+                    ...teamData.playerGoalkeeper,
+                    radius: 20,
+                    vx: 0,
+                    vy: 0,
+                    startX: teamData.playerGoalkeeper.x,
+                    startY: teamData.playerGoalkeeper.y
+                };
+            } else {
+                playerGoalkeeper = null;
+            }
         }
 
         // Efekty cząsteczkowe
@@ -592,6 +623,9 @@
                 case 'sandy':
                     drawSandyField();
                     break;
+                case 'asphalt':
+                    drawAsphaltField();
+                    break;
             }
         }
 
@@ -618,6 +652,47 @@
             // Wydmy piasku
             ctx.fillStyle = 'rgba(244, 164, 96, 0.4)';
             [[150,80,60,20], [650,320,80,25], [300,350,50,15], [500,100,70,18]].forEach(([x,y,w,h]) => {
+                ctx.beginPath();
+                ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            drawStandardFieldLines();
+        }
+
+        function drawAsphaltField() {
+            // Asfaltowe boisko z miejskim charakterem
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#404040'); // Ciemny szary
+            gradient.addColorStop(0.5, '#333333'); // Grafitowy
+            gradient.addColorStop(1, '#1a1a1a'); // Prawie czarny
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Tekstura asfaltu - cząstki
+            ctx.fillStyle = 'rgba(80, 80, 80, 0.3)';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Pęknięcia w asfalcie
+            ctx.strokeStyle = 'rgba(20, 20, 20, 0.8)';
+            ctx.lineWidth = 2;
+            [[100,50,200,80], [600,300,650,350], [300,100,320,200], [500,250,550,280]].forEach(([x1,y1,x2,y2]) => {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            });
+            
+            // Plamy oleju
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.6)';
+            [[250,150,15,10], [550,280,20,12], [400,320,18,14]].forEach(([x,y,w,h]) => {
                 ctx.beginPath();
                 ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
                 ctx.fill();
@@ -1054,7 +1129,7 @@
             player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
         }
 
-        // AI Botów
+        // AI Botów + bramkarz gracza
         function updateBots() {
             bots.forEach(bot => {
                 if (!gameState.ballInPlay && !bot.isGoalkeeper) {
@@ -1075,6 +1150,30 @@
                     updateFieldBot(bot);
                 }
             });
+            
+            // Aktualizuj bramkarza gracza jeśli istnieje
+            if (playerGoalkeeper) {
+                updatePlayerGoalkeeper();
+            }
+        }
+
+        function updatePlayerGoalkeeper() {
+            if (!gameState.ballInPlay) {
+                // Wróć do pozycji startowej
+                playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
+                playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
+            } else {
+                // Śledź piłkę ale tylko w bramce
+                let targetY = ball.y;
+                playerGoalkeeper.x = Math.max(20, Math.min(50, playerGoalkeeper.x));
+                targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+                
+                const dy = targetY - playerGoalkeeper.y;
+                playerGoalkeeper.vy = dy * 0.08; // Nieco wolniejszy niż przeciwny bramkarz
+            }
+            
+            playerGoalkeeper.x += playerGoalkeeper.vx;
+            playerGoalkeeper.y += playerGoalkeeper.vy;
         }
 
         function updateFieldBot(bot) {
@@ -1174,6 +1273,7 @@
                     case 3: errorChance = 0.06; break;
                     case 4: errorChance = 0.04; break;
                     case 5: errorChance = 0.20; break; // Carl Zeiss Jena - najkiepsi
+                    case 6: errorChance = 0.18; break; // SpVgg Unterhaching - bardzo słabi
                     default: errorChance = 0.08;
                 }
             }
@@ -1251,13 +1351,29 @@
                 gameState.screenShake = 3;
             }
 
-            // Sprawdzenie goli
+            // Sprawdzenie goli z bramkarzem gracza
             if (ball.x <= 15) {
                 if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-                    gameState.botScore++;
-                    createGoalEffect(15, canvas.height / 2);
-                    updateScore();
-                    resetBallAfterGoal();
+                    // Sprawdź czy bramkarz gracza nie zablokował
+                    let goalBlocked = false;
+                    if (playerGoalkeeper) {
+                        const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
+                        if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
+                            goalBlocked = true;
+                            // Bramkarz odbija piłkę
+                            ball.vx = Math.abs(ball.vx) * 1.2; // Odbicie w przeciwną stronę
+                            ball.vy += (Math.random() - 0.5) * 4;
+                            createParticles(ball.x, ball.y, playerGoalkeeper.color, 6);
+                            gameState.screenShake = 4;
+                        }
+                    }
+                    
+                    if (!goalBlocked) {
+                        gameState.botScore++;
+                        createGoalEffect(15, canvas.height / 2);
+                        updateScore();
+                        resetBallAfterGoal();
+                    }
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = ball.radius + 15;
@@ -1280,28 +1396,35 @@
                 }
             }
 
-            // Kolizje z graczami - z cooldown
+            // Kolizje z graczami - ulepszona wersja anty-chaos
             const currentTime = Date.now();
             const allPlayers = [player, ...bots];
+            if (playerGoalkeeper) {
+                allPlayers.push(playerGoalkeeper);
+            }
             allPlayers.forEach(p => {
                 const dx = ball.x - p.x;
                 const dy = ball.y - p.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance < ball.radius + p.radius) {
-                    // Cooldown kolizji - zapobiega wielokrotnym kolizjom
-                    if (currentTime - gameState.lastCollisionTime < 150) {
-                        return; // Pomiń kolizję jeśli za wcześnie
+                    // Dłuższy cooldown kolizji - zapobiega wielokrotnym kolizjom
+                    if (currentTime - gameState.lastCollisionTime < 300) {
+                        return; // Pomiń kolizję jeśli za wcześnie (zwiększone z 150ms)
                     }
                     
                     const nx = dx / distance;
                     const ny = dy / distance;
 
-                    // Lepsze rozdzielenie obiektów
+                    // Znacznie większe rozdzielenie obiektów
                     const overlap = ball.radius + p.radius - distance;
-                    const separationDistance = overlap + 2; // +2 piksele bufora
+                    const separationDistance = overlap + 8; // Zwiększone z 2 do 8 pikseli bufora
                     ball.x += nx * separationDistance;
                     ball.y += ny * separationDistance;
+
+                    // Sprawdź czy piłka była praktycznie nieruchoma
+                    const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    const wasStationary = ballSpeed < 1;
 
                     const dotProduct = ball.vx * nx + ball.vy * ny;
                     
@@ -1312,19 +1435,39 @@
                         const goalCenterY = canvas.height / 2;
                         const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
                         
-                        const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6; // Zmniejszone z 8
+                        const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
                         const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
                         
-                        ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.4; // Zmniejszone z 0.6
-                        ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.4;
+                        ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
+                        ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
                     } else {
-                        // Dla gracza - mniejszy wpływ prędkości gracza
-                        ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.4; // Zmniejszone z 0.8
-                        ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.4;
+                        // Dla gracza - specjalne zachowanie w zależności od stanu piłki
+                        if (wasStationary) {
+                            // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
+                            const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                            if (playerSpeed > 0) {
+                                const kickPower = 8; // Stała siła kopnięcia
+                                ball.vx = (p.vx / playerSpeed) * kickPower;
+                                ball.vy = (p.vy / playerSpeed) * kickPower;
+                            } else {
+                                // Gracz stoi - delikatne odbicie
+                                ball.vx = nx * 3;
+                                ball.vy = ny * 3;
+                            }
+                        } else {
+                            // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
+                            ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.1; // Bardzo mały wpływ
+                            ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
+                        }
                     }
 
+                    // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
                     const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                    if (newSpeed > ball.maxSpeed) {
+                    if (newSpeed < 2) {
+                        // Jeśli piłka za wolna, nadaj jej minimalną prędkość
+                        ball.vx = nx * 2;
+                        ball.vy = ny * 2;
+                    } else if (newSpeed > ball.maxSpeed) {
                         ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
                         ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
                     }
@@ -1486,6 +1629,14 @@
             player.x = 100;
             player.y = canvas.height / 2;
             
+            // Reset bramkarza gracza jeśli istnieje
+            if (playerGoalkeeper) {
+                playerGoalkeeper.x = playerGoalkeeper.startX;
+                playerGoalkeeper.y = playerGoalkeeper.startY;
+                playerGoalkeeper.vx = 0;
+                playerGoalkeeper.vy = 0;
+            }
+            
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
             ball.vx = 0;
@@ -1518,6 +1669,9 @@
                 }
                 
                 drawPlayer(player, 'MARIAN WŁODARSKI', false);
+                if (playerGoalkeeper) {
+                    drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
+                }
                 bots.forEach(bot => {
                     drawPlayer(bot, bot.name, true);
                 });
