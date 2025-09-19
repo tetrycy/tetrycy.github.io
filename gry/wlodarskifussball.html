@@ -1142,9 +1142,10 @@
                 ball.x = player.x + nx * minDistance;
                 ball.y = player.y + ny * minDistance;
                 
-                // Nadaj piłce prędkość
-                ball.vx = nx * 8;
-                ball.vy = ny * 8;
+                // Nadaj piłce prędkość - MINIMUM 8 px/frame
+                const kickPower = Math.max(8, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 5);
+                ball.vx = nx * kickPower;
+                ball.vy = ny * kickPower;
             }
         }
 
