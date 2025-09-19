@@ -762,6 +762,10 @@
         }
 
         function drawWinterField() {
+            // Pobierz skalę dla obecnego boiska
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            const scale = currentTeamData.fieldScale || 1.0;
+            
             // Zimowe boisko
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
             gradient.addColorStop(0, '#f8f8ff');
@@ -770,14 +774,14 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Płatki śniegu
+            // Płatki śniegu - SKALOWANE
             const time = Date.now() * 0.001;
             ctx.fillStyle = 'rgba(255,255,255,0.9)';
             for(let i = 0; i < 20; i++) {
                 const x = (i * 37 + Math.sin(time + i) * 10) % canvas.width;
                 const y = (i * 23 + time * 10) % canvas.height;
                 ctx.beginPath();
-                ctx.arc(x, y, 2 + Math.sin(time + i), 0, Math.PI * 2);
+                ctx.arc(x, y, (2 + Math.sin(time + i)) * scale, 0, Math.PI * 2); // SKALOWANE
                 ctx.fill();
             }
             
@@ -1378,9 +1382,12 @@
                         const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
                         if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
                             goalBlocked = true;
-                            // Bramkarz odbija piłkę
-                            ball.vx = Math.abs(ball.vx) * 1.2; // Odbicie w przeciwną stronę
-                            ball.vy += (Math.random() - 0.5) * 4;
+                            // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
+                            ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
+                            ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
+                            
+                            // Upewnij się że piłka leci od bramki
+                            if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
                         }
                     }
                     
