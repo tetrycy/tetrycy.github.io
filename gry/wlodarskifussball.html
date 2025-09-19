@@ -238,8 +238,8 @@
     <div id="teamSelection" class="team-selection">
         <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
         <button class="team-btn" onclick="startFriendly(0)">🟦 VFL OLDENBURG (Hans Jurgen)</button>
-        <button class="team-btn" onclick="startFriendly(1)">🟣 SV WALDORF MANNHEIM (Klaus Schmidt)</button>
-        <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz)</button>
+        <button class="team-btn" onclick="startFriendly(1)">🟣 SV WALDORF MANNHEIM (Klaus Schmidt - GONIO PIŁKĘ!)</button>
+        <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz - GROßES FELD!)</button>
         <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
         <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
         <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
@@ -402,7 +402,7 @@
         // Bramkarz gracza (opcjonalny)
         let playerGoalkeeper = null;
 
-        // Piłka - prędkość zmniejszona o 25%
+        // Piłka - prędkość zmniejszona o 15%
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
@@ -410,8 +410,8 @@
             vx: 0,
             vy: 0,
             color: '#ffffff',
-            maxSpeed: 13.5,
-            startSpeed: 6.75
+            maxSpeed: 11.5,
+            startSpeed: 5.7
         };
 
         // Sterowanie
@@ -1100,9 +1100,9 @@
             ctx.fill();
         }
 
-        // Sterowanie graczem + natychmiastowa kolizja
+        // Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
         function updatePlayer() {
-            const speed = 6;
+            const speed = 5.1;
 
             player.vx = 0;
             player.vy = 0;
@@ -1142,8 +1142,8 @@
                 ball.x = player.x + nx * minDistance;
                 ball.y = player.y + ny * minDistance;
                 
-                // Nadaj piłce prędkość - MINIMUM 8 px/frame
-                const kickPower = Math.max(8, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 5);
+                // Nadaj piłce prędkość - MINIMUM 7 px/frame (zmniejszone o 15%)
+                const kickPower = Math.max(7, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 4);
                 ball.vx = nx * kickPower;
                 ball.vy = ny * kickPower;
             }
@@ -1287,13 +1287,13 @@
                 }
             } else {
                 switch(selectedTeam) {
-                    case 0: errorChance = 0.15; break;
-                    case 1: errorChance = 0.10; break;
-                    case 2: errorChance = 0.08; break;
-                    case 3: errorChance = 0.06; break;
-                    case 4: errorChance = 0.04; break;
-                    case 5: errorChance = 0.20; break; // Carl Zeiss Jena - najkiepsi
-                    case 6: errorChance = 0.18; break; // SpVgg Unterhaching - bardzo słabi
+                    case 0: errorChance = 0.15; break; // VFL Oldenburg
+                    case 1: errorChance = 0.10; break; // SV Waldorf Mannheim  
+                    case 2: errorChance = 0.12; break; // FC Hansa Rostock - zwiększone błędy
+                    case 3: errorChance = 0.06; break; // Eintracht Braunschweig
+                    case 4: errorChance = 0.04; break; // Lokomotiv Leipzig
+                    case 5: errorChance = 0.20; break; // FC Carl Zeiss Jena
+                    case 6: errorChance = 0.18; break; // SpVgg Unterhaching
                     default: errorChance = 0.08;
                 }
             }
