@@ -318,10 +318,14 @@
             }
         });
 
-        // Proste funkcje kopnięcia
+        // Proste funkcje kopnięcia - piłka dotyka aureoli
         function canPlayerKick() {
             const distanceToBall = Math.sqrt((ball.x - player.x) ** 2 + (ball.y - player.y) ** 2);
-            return distanceToBall <= player.kickRange;
+            const aureoleRadius = player.radius + 12;  // 32 - promień pomarańczowej aureoli
+            const ballRadius = ball.radius;             // 8 - promień piłki
+            
+            // Piłka może dotykać aureoli z zewnątrz lub być w środku
+            return distanceToBall <= (aureoleRadius + ballRadius);
         }
 
         function playerKick() {
@@ -335,8 +339,8 @@
                 const directionX = dx / distance;
                 const directionY = dy / distance;
                 
-                // Kopnij z mocą! (jak prawdziwe kopnięcie)
-                const kickPower = 12;
+                // MOCNE kopnięcie! (niemal maksymalna prędkość)
+                const kickPower = 16;
                 ball.vx = directionX * kickPower;
                 ball.vy = directionY * kickPower;
                 
@@ -704,12 +708,23 @@
             ctx.arc(drawX, drawY - 16, 6, 0, Math.PI);
             ctx.fill();
 
-            // PROSTA AUREOLA KOPNIĘCIA dla gracza
+            // NAJPIERW: Wskaźnik ograniczenia dla Mariana w rundzie 1 (POMARAŃCZOWA)
+            if (gameState.currentRound === 0 && !isBot) {
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // POTEM: AUREOLA KOPNIĘCIA (ZIELONA) - nakładka na pomarańczową!
             if (!isBot && gameState.ballInPlay && canPlayerKick()) {
                 ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4;  // Grubsza żeby była bardziej widoczna
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, player.kickRange, 0, Math.PI * 2);
+                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
@@ -727,17 +742,6 @@
                 ctx.beginPath();
                 ctx.arc(drawX, drawY, playerObj.radius + pulse, 0, Math.PI * 2);
                 ctx.stroke();
-            }
-
-            // Wskaźnik ograniczenia dla Mariana w rundzie 1
-            if (gameState.currentRound === 0 && !isBot) {
-                ctx.strokeStyle = '#ffaa00';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([8, 4]);
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, playerObj.radius + 12, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
             }
 
             // Wskaźnik ograniczenia dla botów
