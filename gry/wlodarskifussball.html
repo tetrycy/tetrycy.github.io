@@ -1,1 +1,777 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #0d4a2d, #1a5c36, #0d4a2d);
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #00ff00;
+        }
 
+        h1 {
+            color: #ffff00;
+            text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8);
+            margin-bottom: 5px;
+            font-weight: 900;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 20px #ffff00; }
+            to { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 40px #ffff00, 0 0 60px #ffff00; }
+        }
+
+        .subtitle {
+            color: #00ffff;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .score {
+            background: linear-gradient(45deg, #000033, #000066);
+            border: 3px solid #00ff00;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,255,0,0.3);
+        }
+
+        .team-name {
+            font-size: 12px;
+            color: #ffff00;
+        }
+
+        .game-container {
+            position: relative;
+            border: 8px solid #8B4513;
+            border-radius: 15px;
+            background: #228B22;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(139,69,19,0.5);
+        }
+
+        #gameCanvas {
+            display: block;
+            border-radius: 8px;
+            background: radial-gradient(ellipse at center, #32CD32 0%, #228B22 70%, #1F7A1F 100%);
+        }
+
+        .controls {
+            background: linear-gradient(45deg, #000033, #000066);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.3);
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #ff0000, #ff4444);
+            color: #ffff00;
+            border: 3px solid #ffff00;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+            box-shadow: 0 0 15px rgba(255,255,0,0.5);
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(45deg, #000033, #000066);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 2px;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s;
+        }
+
+        .difficulty-btn:hover {
+            background: linear-gradient(45deg, #000066, #000099);
+            box-shadow: 0 0 10px rgba(0,255,0,0.3);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, #00ff00, #44ff44);
+            color: #000033;
+            border-color: #ffff00;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+        }
+
+        .winner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #000066, #000099);
+            border: 4px solid #ffff00;
+            color: #00ff00;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            box-shadow: 0 0 30px rgba(255,255,0,0.5);
+        }
+
+        .start-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #000066, #000099);
+            border: 4px solid #00ff00;
+            color: #ffff00;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 10;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+        }
+
+        .retro-text {
+            color: #00ffff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏆 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🏆</h1>
+    <div class="subtitle">*** BUNDESLIGA EDITION 1995 ***</div>
+    
+    <div class="score">
+        <div class="team-name">SV BABELSBERG 04</div>
+        <span id="playerScore">0</span> : <span id="botScore">0</span>
+        <div class="team-name">VFL OLDENBURG</div>
+    </div>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div id="startMessage" class="start-message">
+            <h3>🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
+            <p class="retro-text">WASD = STEUERUNG</p>
+            <p>*** ERSTES TOR GEWINNT 5 PUNKTE! ***</p>
+        </div>
+        <div id="winnerMessage" class="winner" style="display: none;"></div>
+    </div>
+
+    <div class="controls">
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD | <strong>HANS JURGEN:</strong> COMPUTER KI</p>
+        <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
+        
+        <div style="margin: 10px 0;">
+            <span class="retro-text">SCHWIERIGKEIT: </span>
+            <button onclick="setDifficulty('easy')" id="easyBtn" class="difficulty-btn">EINFACH</button>
+            <button onclick="setDifficulty('normal')" id="normalBtn" class="difficulty-btn active">NORMAL</button>
+            <button onclick="setDifficulty('hard')" id="hardBtn" class="difficulty-btn">SCHWER</button>
+            <button onclick="setDifficulty('expert')" id="expertBtn" class="difficulty-btn">EXPERTE</button>
+        </div>
+        
+        <button class="reset-btn" onclick="resetGame()">🔄 NEUES SPIEL</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Stan gry
+        let gameState = {
+            playerScore: 0,
+            botScore: 0,
+            gameWon: false,
+            gameStarted: false,
+            ballInPlay: false
+        };
+
+        // Marian Włodarski (lewy)
+        const player = {
+            x: 100,
+            y: canvas.height / 2,
+            radius: 20,
+            color: '#ff0000',
+            vx: 0,
+            vy: 0
+        };
+
+        // Hans Jurgen (prawy) - Agresywny napastnik
+        const bot = {
+            x: canvas.width - 100,
+            y: canvas.height / 2,
+            radius: 20,
+            color: '#0000ff',
+            vx: 0,
+            vy: 0,
+            maxSpeed: 7,
+            aggressiveness: 0.85, // Jak agresywnie atakuje (0-1)
+            reactionSpeed: 0.2,
+            shootPower: 1.2
+        };
+
+        // Piłka
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            vx: 0,
+            vy: 0,
+            color: '#ffffff',
+            maxSpeed: 18,
+            startSpeed: 9
+        };
+
+        // Sterowanie
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (!gameState.gameStarted) {
+                    startGame();
+                } else if (!gameState.ballInPlay && !gameState.gameWon) {
+                    launchBall();
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Funkcje rysowania
+        function drawField() {
+            // Tło boiska - realistyczna trawa
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+            gradient.addColorStop(0, '#32CD32');
+            gradient.addColorStop(0.7, '#228B22');
+            gradient.addColorStop(1, '#1F7A1F');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Wzór trawy (paski)
+            ctx.strokeStyle = 'rgba(50, 205, 50, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+
+            // Linie boiska
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 4;
+
+            // Obramowanie boiska
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Linia środkowa
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 10);
+            ctx.lineTo(canvas.width / 2, canvas.height - 10);
+            ctx.stroke();
+
+            // Koło środkowe
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Punkt środkowy
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Bramki
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 6;
+            
+            // Lewa bramka
+            ctx.beginPath();
+            ctx.moveTo(10, canvas.height * 0.3);
+            ctx.lineTo(10, canvas.height * 0.7);
+            ctx.stroke();
+            
+            // Pole bramkowe lewe
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, canvas.height * 0.35, 40, canvas.height * 0.3);
+            
+            // Prawa bramka
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 10, canvas.height * 0.3);
+            ctx.lineTo(canvas.width - 10, canvas.height * 0.7);
+            ctx.stroke();
+            
+            // Pole bramkowe prawe
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width - 50, canvas.height * 0.35, 40, canvas.height * 0.3);
+
+            // Pola karne
+            ctx.strokeRect(10, canvas.height * 0.2, 80, canvas.height * 0.6);
+            ctx.strokeRect(canvas.width - 90, canvas.height * 0.2, 80, canvas.height * 0.6);
+
+            // Punkty karne
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(70, canvas.height / 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(canvas.width - 70, canvas.height / 2, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawPlayer(player, name, isBot = false) {
+            // Cień gracza
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.arc(player.x + 3, player.y + 3, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gracz (koszulka)
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Aureola agresji dla bota
+            if (isBot && gameState.ballInPlay) {
+                const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
+                let auraColor = '#00ff00'; // Zielony dla normalnego trybu
+                
+                if (distanceToBall < 120) {
+                    auraColor = '#ff4444'; // Czerwony dla trybu ataku
+                }
+                
+                if (distanceToBall < 50) {
+                    auraColor = '#ffff00'; // Żółty dla bezpośredniej bliskości
+                }
+                
+                ctx.strokeStyle = auraColor;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Numer na koszulce
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText(isBot ? '10' : '11', player.x, player.y + 4);
+
+            // Nazwa gracza
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 10px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.strokeText(name, player.x, player.y + player.radius + 15);
+            ctx.fillText(name, player.x, player.y + player.radius + 15);
+        }
+
+        function drawBall() {
+            // Cień piłki
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.arc(ball.x + 2, ball.y + 2, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Piłka
+            if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
+                // Migająca piłka
+                if (Math.floor(Date.now() / 200) % 2) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                } else {
+                    ctx.fillStyle = ball.color;
+                }
+            } else {
+                ctx.fillStyle = ball.color;
+            }
+            
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wzór piłki piłkarskiej
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Pentagramy na piłce
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(ball.x - 5, ball.y - 3);
+            ctx.lineTo(ball.x + 5, ball.y - 3);
+            ctx.moveTo(ball.x - 3, ball.y + 5);
+            ctx.lineTo(ball.x + 3, ball.y + 5);
+            ctx.stroke();
+        }
+
+        // Sterowanie graczem
+        function updatePlayer() {
+            const speed = 6;
+
+            player.vx = 0;
+            player.vy = 0;
+            if (keys['w']) player.vy = -speed;
+            if (keys['s']) player.vy = speed;
+            if (keys['a']) player.vx = -speed;
+            if (keys['d']) player.vx = speed;
+
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Ograniczenia pozycji
+            player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
+            player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
+        }
+
+        // AI Bota - Agresywny napastnik
+        function updateBot() {
+            if (!gameState.ballInPlay) {
+                // Pozycja startowa - gotowość do ataku
+                const readyX = canvas.width / 2 + 80;
+                const readyY = canvas.height / 2;
+                
+                bot.vx = (readyX - bot.x) * bot.reactionSpeed;
+                bot.vy = (readyY - bot.y) * bot.reactionSpeed;
+                
+                bot.x += bot.vx;
+                bot.y += bot.vy;
+                return;
+            }
+
+            // Oblicz odległość do piłki
+            const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
+            const ballInReach = distanceToBall < 120;
+            
+            let targetX, targetY;
+
+            if (ballInReach || ball.x > canvas.width * 0.4) {
+                // ATAK! Idź agresywnie po piłkę
+                
+                // Przewiduj gdzie będzie piłka za chwilę
+                const predictTime = 8;
+                let futureX = ball.x + ball.vx * predictTime;
+                let futureY = ball.y + ball.vy * predictTime;
+                
+                // Sprawdź odbicia od ścian
+                if (futureY < 25) futureY = 50 - futureY;
+                if (futureY > canvas.height - 25) futureY = 2 * (canvas.height - 25) - futureY;
+                
+                targetX = futureX;
+                targetY = futureY;
+                
+                // Jeśli jesteś blisko piłki, pozycjonuj się żeby strzelić w kierunku bramki gracza
+                if (distanceToBall < 50) {
+                    const goalCenterY = canvas.height / 2;
+                    const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x); // Cel: lewa bramka
+                    
+                    // Pozycjonuj się za piłką (po stronie przeciwnej niż bramka)
+                    targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 25;
+                    targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 25;
+                }
+                
+            } else {
+                // Piłka daleko - pozycjonuj się ofensywnie
+                targetX = canvas.width / 2 + 60;
+                
+                // Śledź piłkę w osi Y, ale zostań w pozycji ofensywnej
+                if (ball.y < canvas.height / 3) {
+                    targetY = canvas.height / 3;
+                } else if (ball.y > canvas.height * 2/3) {
+                    targetY = canvas.height * 2/3;
+                } else {
+                    targetY = ball.y;
+                }
+            }
+
+            // Oblicz kierunek i prędkość ruchu
+            const dx = targetX - bot.x;
+            const dy = targetY - bot.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 3) {
+                // Normalizuj wektor kierunku
+                const normalizedX = dx / distance;
+                const normalizedY = dy / distance;
+                
+                // Różne prędkości w zależności od sytuacji
+                let currentSpeed = bot.maxSpeed;
+                if (ballInReach) currentSpeed *= 1.3; // Szybciej gdy piłka blisko
+                if (distanceToBall < 30) currentSpeed *= 1.5; // Najszybciej gdy bardzo blisko
+                
+                bot.vx = normalizedX * currentSpeed;
+                bot.vy = normalizedY * currentSpeed;
+            } else {
+                // Hamowanie gdy blisko celu
+                bot.vx *= 0.7;
+                bot.vy *= 0.7;
+            }
+
+            // Aktualizuj pozycję
+            bot.x += bot.vx;
+            bot.y += bot.vy;
+
+            // Ograniczenia pozycji (może wyjść trochę za linię środkową dla agresji)
+            bot.x = Math.max(canvas.width / 2 - 30, Math.min(canvas.width - bot.radius - 15, bot.x));
+            bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+        }
+
+        // Fizyka piłki
+        function updateBall() {
+            if (!gameState.ballInPlay || gameState.gameWon) return;
+
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Odbicia od ścian
+            if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
+                ball.vy = -ball.vy;
+                ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
+            }
+
+            // Sprawdzenie goli
+            if (ball.x <= 15) {
+                if (ball.y > canvas.height * 0.3 && ball.y < canvas.height * 0.7) {
+                    gameState.botScore++;
+                    updateScore();
+                    resetBallAfterGoal();
+                } else {
+                    ball.vx = -ball.vx;
+                    ball.x = ball.radius + 15;
+                }
+            }
+
+            if (ball.x >= canvas.width - 15) {
+                if (ball.y > canvas.height * 0.3 && ball.y < canvas.height * 0.7) {
+                    gameState.playerScore++;
+                    updateScore();
+                    resetBallAfterGoal();
+                } else {
+                    ball.vx = -ball.vx;
+                    ball.x = canvas.width - ball.radius - 15;
+                }
+            }
+
+            // Kolizje z graczami
+            [player, bot].forEach(p => {
+                const dx = ball.x - p.x;
+                const dy = ball.y - p.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < ball.radius + p.radius) {
+                    const nx = dx / distance;
+                    const ny = dy / distance;
+
+                    const overlap = ball.radius + p.radius - distance;
+                    ball.x += nx * overlap;
+                    ball.y += ny * overlap;
+
+                    const dotProduct = ball.vx * nx + ball.vy * ny;
+                    
+                    if (p === bot) {
+                        // Bot strzela mocno w kierunku bramki gracza!
+                        const goalCenterY = canvas.height / 2;
+                        const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
+                        
+                        // Kierunek strzału w stronę bramki gracza
+                        const shootPowerX = Math.cos(shootAngle) * bot.shootPower * 8;
+                        const shootPowerY = Math.sin(shootAngle) * bot.shootPower * 8;
+                        
+                        // Kombinacja odbicia i celowego strzału
+                        ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.6;
+                        ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.6;
+                    } else {
+                        // Normalne odbicie dla gracza
+                        ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.8;
+                        ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.8;
+                    }
+
+                    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    if (speed > ball.maxSpeed) {
+                        ball.vx = (ball.vx / speed) * ball.maxSpeed;
+                        ball.vy = (ball.vy / speed) * ball.maxSpeed;
+                    }
+                }
+            });
+
+            // Tarcie trawy
+            ball.vx *= 0.998;
+            ball.vy *= 0.998;
+
+            if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
+                ball.vx = 0;
+                ball.vy = 0;
+                gameState.ballInPlay = false;
+            }
+        }
+
+        function startGame() {
+            gameState.gameStarted = true;
+            document.getElementById('startMessage').style.display = 'none';
+            launchBall();
+        }
+
+        function launchBall() {
+            gameState.ballInPlay = true;
+            const angle = (Math.random() - 0.5) * Math.PI * 0.4;
+            const direction = Math.random() < 0.5 ? 1 : -1;
+            
+            ball.vx = Math.cos(angle) * ball.startSpeed * direction;
+            ball.vy = Math.sin(angle) * ball.startSpeed;
+        }
+
+        function resetBallAfterGoal() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = 0;
+            ball.vy = 0;
+            gameState.ballInPlay = false;
+        }
+
+        function updateScore() {
+            document.getElementById('playerScore').textContent = gameState.playerScore;
+            document.getElementById('botScore').textContent = gameState.botScore;
+
+            if (gameState.playerScore >= 5 || gameState.botScore >= 5) {
+                gameState.gameWon = true;
+                const winner = gameState.playerScore >= 5 ? 
+                    '🎉 SV BABELSBERG 04 SIEGT! 🎉<br>*** MARIAN WŁODARSKI IST DER CHAMPION! ***' : 
+                    '🤖 VFL OLDENBURG GEWINNT! 🤖<br>*** HANS JURGEN TRIUMPHIERT! ***';
+                document.getElementById('winnerMessage').innerHTML = `
+                    <div>${winner}</div>
+                    <div style="font-size: 14px; margin-top: 10px; color: #00ffff;">
+                        DRÜCKEN SIE "NEUES SPIEL" FÜR REVANCHE!
+                    </div>
+                `;
+                document.getElementById('winnerMessage').style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            gameState.playerScore = 0;
+            gameState.botScore = 0;
+            gameState.gameWon = false;
+            gameState.gameStarted = false;
+            gameState.ballInPlay = false;
+            
+            player.x = 100;
+            player.y = canvas.height / 2;
+            bot.x = canvas.width - 100;
+            bot.y = canvas.height / 2;
+            
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.vx = 0;
+            ball.vy = 0;
+            
+            updateScore();
+            document.getElementById('winnerMessage').style.display = 'none';
+            document.getElementById('startMessage').style.display = 'block';
+        }
+
+        function setDifficulty(level) {
+            // Usuń aktywną klasę ze wszystkich przycisków
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Dodaj aktywną klasę do wybranego przycisku
+            document.getElementById(level + 'Btn').classList.add('active');
+            
+            // Ustaw parametry bota w zależności od poziomu
+            switch(level) {
+                case 'easy':
+                    bot.maxSpeed = 5;
+                    bot.aggressiveness = 0.6;
+                    bot.reactionSpeed = 0.15;
+                    bot.shootPower = 0.8;
+                    break;
+                case 'normal':
+                    bot.maxSpeed = 7;
+                    bot.aggressiveness = 0.85;
+                    bot.reactionSpeed = 0.2;
+                    bot.shootPower = 1.2;
+                    break;
+                case 'hard':
+                    bot.maxSpeed = 8;
+                    bot.aggressiveness = 1.0;
+                    bot.reactionSpeed = 0.25;
+                    bot.shootPower = 1.5;
+                    break;
+                case 'expert':
+                    bot.maxSpeed = 10;
+                    bot.aggressiveness = 1.2;
+                    bot.reactionSpeed = 0.3;
+                    bot.shootPower = 1.8;
+                    break;
+            }
+        }
+
+        // Główna pętla gry
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawField();
+            
+            if (gameState.gameStarted) {
+                updatePlayer();
+                updateBot();
+                updateBall();
+            }
+            
+            drawPlayer(player, 'MARIAN WŁODARSKI', false);
+            drawPlayer(bot, 'HANS JURGEN', true);
+            drawBall();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start gry
+        gameLoop();
+    </script>
+</body>
+</html>
