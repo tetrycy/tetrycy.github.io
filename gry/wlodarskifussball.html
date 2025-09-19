@@ -630,6 +630,10 @@
         }
 
         function drawSandyField() {
+            // Pobierz skalę dla obecnego boiska
+            const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+            const scale = currentTeamData.fieldScale || 1.0;
+            
             // Piaszczyste boisko z pustynną teksturą
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
             gradient.addColorStop(0, '#F4A460'); // Sandy brown
@@ -638,22 +642,22 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Wzory piasku
+            // Wzory piasku - SKALOWANE
             ctx.strokeStyle = 'rgba(210, 180, 140, 0.3)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 15) {
-                for (let j = 0; j < canvas.height; j += 15) {
+            ctx.lineWidth = 1 * scale;
+            for (let i = 0; i < canvas.width; i += 15 * scale) {
+                for (let j = 0; j < canvas.height; j += 15 * scale) {
                     ctx.beginPath();
-                    ctx.arc(i + Math.sin(i*j*0.01) * 3, j + Math.cos(i*j*0.01) * 3, 1, 0, Math.PI * 2);
+                    ctx.arc(i + Math.sin(i*j*0.01) * 3 * scale, j + Math.cos(i*j*0.01) * 3 * scale, 1 * scale, 0, Math.PI * 2);
                     ctx.stroke();
                 }
             }
             
-            // Wydmy piasku
+            // Wydmy piasku - SKALOWANE
             ctx.fillStyle = 'rgba(244, 164, 96, 0.4)';
             [[150,80,60,20], [650,320,80,25], [300,350,50,15], [500,100,70,18]].forEach(([x,y,w,h]) => {
                 ctx.beginPath();
-                ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+                ctx.ellipse(x, y, w * scale, h * scale, 0, 0, Math.PI * 2);
                 ctx.fill();
             });
             
