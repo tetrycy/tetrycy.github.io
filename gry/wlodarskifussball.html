@@ -1373,15 +1373,13 @@
                 ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
             }
 
-            // Sprawdzenie goli z bramkarzem gracza
-            if (ball.x <= 15) {
+            // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
+            if (ball.x <= 60 && ball.vx < 0) { // Sprawdź wcześniej, gdy piłka leci w lewo
                 if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-                    // Sprawdź czy bramkarz gracza nie zablokował
-                    let goalBlocked = false;
+                    // Sprawdź czy bramkarz gracza może zablokować
                     if (playerGoalkeeper) {
                         const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
                         if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
-                            goalBlocked = true;
                             // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
                             ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
                             ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
@@ -1390,12 +1388,15 @@
                             if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
                         }
                     }
-                    
-                    if (!goalBlocked) {
-                        gameState.botScore++;
-                        updateScore();
-                        resetBallAfterGoal();
-                    }
+                }
+            }
+
+            if (ball.x <= 15) {
+                if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+                    // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
+                    gameState.botScore++;
+                    updateScore();
+                    resetBallAfterGoal();
                 } else {
                     ball.vx = -ball.vx;
                     ball.x = ball.radius + 15;
