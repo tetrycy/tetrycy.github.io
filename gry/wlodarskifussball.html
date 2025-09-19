@@ -349,7 +349,8 @@
             roundWon: false,
             particles: [],
             ballRotation: 0,
-            screenShake: 0
+            screenShake: 0,
+            lastCollisionTime: 0  // Cooldown kolizji
         };
 
         // Gracz (Marian Włodarski) - szybkość 8
@@ -1181,7 +1182,8 @@
                 }
             }
 
-            // Kolizje z graczami
+            // Kolizje z graczami - z cooldown
+            const currentTime = Date.now();
             const allPlayers = [player, ...bots];
             allPlayers.forEach(p => {
                 const dx = ball.x - p.x;
@@ -1189,12 +1191,19 @@
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance < ball.radius + p.radius) {
+                    // Cooldown kolizji - zapobiega wielokrotnym kolizjom
+                    if (currentTime - gameState.lastCollisionTime < 150) {
+                        return; // Pomiń kolizję jeśli za wcześnie
+                    }
+                    
                     const nx = dx / distance;
                     const ny = dy / distance;
 
+                    // Lepsze rozdzielenie obiektów
                     const overlap = ball.radius + p.radius - distance;
-                    ball.x += nx * overlap;
-                    ball.y += ny * overlap;
+                    const separationDistance = overlap + 2; // +2 piksele bufora
+                    ball.x += nx * separationDistance;
+                    ball.y += ny * separationDistance;
 
                     const dotProduct = ball.vx * nx + ball.vy * ny;
                     
@@ -1205,14 +1214,15 @@
                         const goalCenterY = canvas.height / 2;
                         const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
                         
-                        const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 8;
-                        const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 8;
+                        const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6; // Zmniejszone z 8
+                        const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
                         
-                        ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.6;
-                        ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.6;
+                        ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.4; // Zmniejszone z 0.6
+                        ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.4;
                     } else {
-                        ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.8;
-                        ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.8;
+                        // Dla gracza - mniejszy wpływ prędkości gracza
+                        ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.4; // Zmniejszone z 0.8
+                        ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.4;
                     }
 
                     const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
@@ -1220,6 +1230,9 @@
                         ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
                         ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
                     }
+                    
+                    // Ustaw cooldown
+                    gameState.lastCollisionTime = currentTime;
                 }
             });
 
@@ -1370,6 +1383,7 @@
             gameState.particles = [];
             gameState.ballRotation = 0;
             gameState.screenShake = 0;
+            gameState.lastCollisionTime = 0; // Reset cooldown
             
             player.x = 100;
             player.y = canvas.height / 2;
