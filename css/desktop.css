@@ -107,3 +107,33 @@
         height: clamp(18px, 7vw, 24px);
     }
 }
+
+/* Ikona dokumentu */
+.icon-document .icon-image::before { 
+    content: "📄";
+}
+
+/* Ikona piłki niemieckiej z cyfrą 2 */
+.icon-football .icon-image::before { 
+    content: "⚽";
+    position: relative;
+}
+
+.icon-football .icon-image::after {
+    content: "2";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: linear-gradient(45deg, #000000 33%, #dd0000 33%, #dd0000 66%, #ffce00 66%);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #000;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+}
