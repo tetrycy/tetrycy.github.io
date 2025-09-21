@@ -654,34 +654,44 @@
             
             var text = rtf;
             
-            // NAJPIERW oznacz miejsca podziału akapitów PRZED konwersją znaków
+            // NAJPIERW oznacz miejsca podziału akapitów
             text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
             text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
             
-            // Konwertuj polskie znaki (zarówno z backslashem jak i bez)
+            // Konwertuj polskie znaki - WSZYSTKIE możliwe warianty!
             text = text
-                .replace(/\\'b1|'b1/g, 'ą')
-                .replace(/\\'a1|'a1/g, 'Ą')
-                .replace(/\\'e6|'e6/g, 'ć')
-                .replace(/\\'c6|'c6/g, 'Ć')
-                .replace(/\\'ea|'ea/g, 'ę')
-                .replace(/\\'ca|'ca/g, 'Ę')
-                .replace(/\\'b3|'b3/g, 'ł')
-                .replace(/\\'a3|'a3/g, 'Ł')
-                .replace(/\\'f1|'f1/g, 'ń')
-                .replace(/\\'d1|'d1/g, 'Ń')
-                .replace(/\\'f3|'f3/g, 'ó')
-                .replace(/\\'d3|'d3/g, 'Ó')
-                .replace(/\\'9c|'9c/g, 'ś')
-                .replace(/\\'8c|'8c/g, 'Ś')
-                .replace(/\\'9f|'9f/g, 'ź')
-                .replace(/\\'8f|'8f/g, 'Ź')
-                .replace(/\\'bf|'bf/g, 'ż')
-                .replace(/\\'af|'af/g, 'Ż')
-                .replace(/\\'84|'84/g, '"')
-                .replace(/\\'94|'94/g, '"')
-                .replace(/\\'96|'96/g, '–')
-                .replace(/\\'97|'97/g, '—');
+                // ą/Ą
+                .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
+                .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
+                // ć/Ć  
+                .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
+                .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
+                // ę/Ę
+                .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
+                .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
+                // ł/Ł
+                .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
+                .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
+                // ń/Ń
+                .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
+                .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
+                // ó/Ó
+                .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
+                .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
+                // ś/Ś
+                .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
+                .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
+                // ź/Ź
+                .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
+                .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
+                // ż/Ż
+                .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
+                .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
+                // Znaki interpunkcyjne
+                .replace(/\\'84/g, '"').replace(/'84/g, '"')
+                .replace(/\\'94/g, '"').replace(/'94/g, '"')
+                .replace(/\\'96/g, '–').replace(/'96/g, '–')
+                .replace(/\\'97/g, '—').replace(/'97/g, '—');
             
             // Usuń główne znaczniki RTF
             text = text.replace(/^\{\\rtf[^{}]*/, '');
@@ -698,7 +708,7 @@
             // Usuń nawiasy klamrowe
             text = text.replace(/^\{+/, '').replace(/\}+$/, '');
             
-            // TERAZ podziel na akapity używając naszych markerów
+            // Podziel na akapity używając markerów
             var paragraphs = text.split('|||PARAGRAPH|||');
             var html = '';
             
@@ -711,37 +721,44 @@
                 }
             }
             
-            // Jeśli nie udało się podzielić na akapity, spróbuj heurystyk
+            // Fallback - jeśli nie ma markerów akapitów
             if (!html || paragraphs.length < 2) {
-                // Usuwamy markery
                 text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
                 
-                // Próbuj podzielić na podstawie wielkich liter na początku zdań
-                var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
-                var currentPara = '';
-                
-                for (var j = 0; j < sentences.length; j++) {
-                    var sentence = sentences[j].trim();
-                    if (sentence) {
-                        currentPara += sentence + (j < sentences.length - 1 ? '. ' : '');
-                        
-                        // Jeśli akapit ma więcej niż 200 znaków, zakończ go
-                        if (currentPara.length > 200) {
-                            html += '<p>' + currentPara + '</p>';
-                            currentPara = '';
+                // Podziel na dwóch enterach 
+                var sections = text.split(/\n\s*\n/);
+                if (sections.length > 1) {
+                    for (var j = 0; j < sections.length; j++) {
+                        var section = sections[j].trim();
+                        if (section) {
+                            html += '<p>' + section + '</p>';
                         }
                     }
-                }
-                
-                // Dodaj ostatni akapit jeśli pozostał
-                if (currentPara.trim()) {
-                    html += '<p>' + currentPara + '</p>';
+                } else {
+                    // Ostatnia opcja - podział na zdania
+                    var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
+                    var currentPara = '';
+                    
+                    for (var k = 0; k < sentences.length; k++) {
+                        var sentence = sentences[k].trim();
+                        if (sentence) {
+                            currentPara += sentence + (k < sentences.length - 1 ? '. ' : '');
+                            
+                            if (currentPara.length > 300) {
+                                html += '<p>' + currentPara + '</p>';
+                                currentPara = '';
+                            }
+                        }
+                    }
+                    
+                    if (currentPara.trim()) {
+                        html += '<p>' + currentPara + '</p>';
+                    }
                 }
             }
             
             // Ostatnia deska ratunku
             if (!html) {
-                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, '</p><p>').replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
                 html = '<p>' + text + '</p>';
             }
             
