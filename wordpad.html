@@ -152,6 +152,12 @@
             line-height: 1.5;
         }
         
+        /* Podświetlenie wyszukiwania */
+        mark {
+            background: yellow;
+            padding: 0 2px;
+        }
+        
         /* TRYB FOCUS */
         .focus-mode {
             position: fixed;
@@ -160,7 +166,7 @@
             width: 100vw;
             height: 100vh;
             background: #1a1a1a;
-            z-index: 9999; /* Wyższy z-index */
+            z-index: 9999;
             display: none;
             align-items: center;
             justify-content: center;
@@ -173,16 +179,12 @@
         }
         
         /* Ukryj wszystko inne w trybie focus */
-        .focus-mode.active ~ * {
+        body.focus-active > *:not(.focus-mode) {
             display: none !important;
         }
         
         body.focus-active {
             overflow: hidden;
-        }
-        
-        body.focus-active > *:not(.focus-mode) {
-            display: none !important;
         }
         
         .focus-editor {
@@ -198,7 +200,7 @@
             padding: 2rem;
             resize: none;
             font-family: inherit;
-            overflow: hidden;
+            overflow: auto;
         }
         
         .focus-editor::placeholder {
@@ -230,6 +232,25 @@
         
         .hidden {
             display: none;
+        }
+        
+        /* Wskaźnik zapisu */
+        .save-indicator {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background: #10b981;
+            color: white;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .save-indicator.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -331,6 +352,8 @@
         <div class="search-panel" id="searchPanel">
             <input type="text" class="search-input" id="searchInput" placeholder="Wyszukaj...">
             <button class="search-btn primary" id="findBtn">Znajdź</button>
+            <button class="search-btn primary" id="findNextBtn">Następny</button>
+            <button class="search-btn secondary" id="clearSearchBtn">Wyczyść</button>
             <button class="search-btn secondary" id="closeSearchBtn">Zamknij</button>
         </div>
         
@@ -340,22 +363,27 @@
             </div>
         </div>
         
-        <input type="file" class="hidden" id="fileInput" accept=".rtf">
+        <input type="file" class="hidden" id="fileInput" accept=".rtf,.txt">
     </div>
 
     <!-- TRYB FOCUS -->
     <div class="focus-mode" id="focusMode">
-        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
+        <div class="focus-hint">ESC aby wyjść</div>
+        <textarea class="focus-editor" id="focusEditor" placeholder="Pisz swobodnie..."></textarea>
     </div>
+    
+    <!-- Wskaźnik zapisu -->
+    <div class="save-indicator" id="saveIndicator">Zapisano</div>
 
     <script>
-        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex;
+        let editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex;
+        let saveStateTimeout, currentSearchIndex = -1, searchMatches = [];
         
         function init() {
             editor = document.getElementById('editor');
             fileName = 'dokument.rtf';
             isReading = false;
-            fontFamily = 'Libre Baskerville'; // Zmienione na domyślne
+            fontFamily = 'Libre Baskerville';
             fontSize = 12;
             speechRate = 1.0;
             isFocusMode = false;
@@ -365,6 +393,7 @@
             // Zapisz początkowy stan
             saveState();
             
+            // Przypisz event handlers
             document.getElementById('newBtn').onclick = newDoc;
             document.getElementById('openBtn').onclick = openDoc;
             document.getElementById('saveBtn').onclick = saveDoc;
@@ -386,28 +415,55 @@
             };
             
             document.getElementById('findBtn').onclick = doSearch;
+            document.getElementById('findNextBtn').onclick = findNext;
+            document.getElementById('clearSearchBtn').onclick = clearSearch;
             document.getElementById('closeSearchBtn').onclick = toggleSearch;
             document.getElementById('searchInput').onkeydown = function(e) {
-                if (e.key === 'Enter') doSearch();
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (searchMatches.length > 0) {
+                        findNext();
+                    } else {
+                        doSearch();
+                    }
+                }
             };
             
             document.getElementById('fileInput').onchange = loadFile;
             document.onkeydown = keyHandler;
             
-            // Nasłuchuj zmian w edytorze
-            editor.addEventListener('input', function() {
-                saveState();
-            });
+            // Nasłuchuj zmian w edytorze z debouncingiem
+            editor.addEventListener('input', debouncedSaveState);
+            
+            // Załaduj głosy Text-to-Speech
+            if (window.speechSynthesis) {
+                speechSynthesis.onvoiceschanged = function() {
+                    console.log('Głosy TTS załadowane:', speechSynthesis.getVoices().length);
+                };
+                // Wymuś załadowanie głosów
+                speechSynthesis.getVoices();
+            }
+            
+            // Obsługa fullscreen events
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
             
             updateStyle();
         }
         
+        function debouncedSaveState() {
+            clearTimeout(saveStateTimeout);
+            saveStateTimeout = setTimeout(saveState, 300);
+        }
+        
         function saveState() {
-            var currentState = editor.innerHTML;
+            const currentState = editor.innerHTML;
             
             // Jeśli to jest nowy stan (różny od poprzedniego)
             if (undoHistory.length === 0 || undoHistory[historyIndex] !== currentState) {
-                // Usuń wszystkie stany po aktualnym indeksie (jeśli robimy undo, a potem zmiany)
+                // Usuń wszystkie stany po aktualnym indeksie
                 undoHistory = undoHistory.slice(0, historyIndex + 1);
                 
                 // Dodaj nowy stan
@@ -431,8 +487,8 @@
                 editor.focus();
                 
                 // Umieść kursor na końcu
-                var range = document.createRange();
-                var sel = window.getSelection();
+                const range = document.createRange();
+                const sel = window.getSelection();
                 range.selectNodeContents(editor);
                 range.collapse(false);
                 sel.removeAllRanges();
@@ -442,12 +498,14 @@
         
         function keyHandler(e) {
             if (e.ctrlKey) {
-                if (e.key === 'n') { e.preventDefault(); newDoc(); }
-                if (e.key === 's') { e.preventDefault(); saveDoc(); }
-                if (e.key === 'o') { e.preventDefault(); openDoc(); }
-                if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
-                if (e.key === 'r') { e.preventDefault(); toggleReading(); }
-                if (e.key === 'z') { e.preventDefault(); undo(); }
+                switch(e.key.toLowerCase()) {
+                    case 'n': e.preventDefault(); newDoc(); break;
+                    case 's': e.preventDefault(); saveDoc(); break;
+                    case 'o': e.preventDefault(); openDoc(); break;
+                    case 'f': e.preventDefault(); toggleSearch(); break;
+                    case 'r': e.preventDefault(); toggleReading(); break;
+                    case 'z': e.preventDefault(); undo(); break;
+                }
             }
             if (e.key === 'F11') {
                 e.preventDefault();
@@ -464,14 +522,16 @@
         }
         
         function newDoc() {
-            editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
-            fileName = 'dokument.rtf';
-            document.getElementById('fileName').textContent = fileName;
-            
-            // Reset historii
-            undoHistory = [];
-            historyIndex = -1;
-            saveState();
+            if (confirm('Czy na pewno chcesz utworzyć nowy dokument? Niezapisane zmiany zostaną utracone.')) {
+                editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
+                fileName = 'dokument.rtf';
+                document.getElementById('fileName').textContent = fileName;
+                
+                // Reset historii
+                undoHistory = [];
+                historyIndex = -1;
+                saveState();
+            }
         }
         
         function openDoc() {
@@ -479,80 +539,170 @@
         }
         
         function saveDoc() {
-            var html = editor.innerHTML;
-            var rtf = toRTF(html);
-            var blob = new Blob([rtf], { type: 'application/rtf' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
+            const html = editor.innerHTML;
+            const rtf = toRTF(html);
+            const blob = new Blob([rtf], { type: 'application/rtf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
             a.href = url;
             a.download = fileName;
             a.click();
             URL.revokeObjectURL(url);
+            
+            // Pokaż wskaźnik zapisu
+            showSaveIndicator();
+        }
+        
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
         }
         
         function loadFile(e) {
-            var file = e.target.files[0];
-            if (file) {
-                fileName = file.name;
-                document.getElementById('fileName').textContent = fileName;
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var rtf = e.target.result;
-                    var html = fromRTF(rtf);
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Sprawdź rozmiar pliku
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Plik jest zbyt duży (maksymalnie 10MB)');
+                e.target.value = '';
+                return;
+            }
+            
+            fileName = file.name;
+            document.getElementById('fileName').textContent = fileName;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const html = fileName.endsWith('.rtf') ? fromRTF(content) : textToHtml(content);
                     editor.innerHTML = html;
                     
                     // Reset historii i zapisz nowy stan
                     undoHistory = [];
                     historyIndex = -1;
                     saveState();
-                };
-                reader.readAsText(file);
-            }
+                } catch (error) {
+                    console.error('Błąd wczytywania pliku:', error);
+                    alert('Wystąpił błąd podczas wczytywania pliku');
+                }
+            };
+            reader.onerror = function() {
+                alert('Błąd odczytu pliku');
+            };
+            reader.readAsText(file, 'utf-8');
+            
+            // Reset input
+            e.target.value = '';
+        }
+        
+        function textToHtml(text) {
+            return '<p>' + text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
         }
         
         function toggleSearch() {
-            var panel = document.getElementById('searchPanel');
-            var btn = document.getElementById('searchBtn');
+            const panel = document.getElementById('searchPanel');
+            const btn = document.getElementById('searchBtn');
             if (panel.classList.contains('show')) {
                 closeSearch();
             } else {
                 panel.classList.add('show');
                 btn.classList.add('active');
                 document.getElementById('searchInput').focus();
+                document.getElementById('searchInput').select();
             }
         }
         
         function closeSearch() {
             document.getElementById('searchPanel').classList.remove('show');
             document.getElementById('searchBtn').classList.remove('active');
+            clearSearch();
+        }
+        
+        function clearSearch() {
+            // Usuń wszystkie znaczniki
+            let content = editor.innerHTML;
+            content = content.replace(/<mark[^>]*>/gi, '').replace(/<\/mark>/gi, '');
+            editor.innerHTML = content;
+            searchMatches = [];
+            currentSearchIndex = -1;
         }
         
         function doSearch() {
-            var term = document.getElementById('searchInput').value;
-            if (term && window.find) {
-                window.find(term, false, false, true);
+            const term = document.getElementById('searchInput').value;
+            if (!term) return;
+            
+            clearSearch();
+            
+            const text = editor.innerText || '';
+            const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            let match;
+            
+            while ((match = regex.exec(text)) !== null) {
+                searchMatches.push(match.index);
+            }
+            
+            if (searchMatches.length > 0) {
+                highlightSearchResults(term);
+                currentSearchIndex = 0;
+                scrollToMatch(0);
+                alert(`Znaleziono ${searchMatches.length} wyników`);
+            } else {
+                alert('Nie znaleziono wyników');
+            }
+        }
+        
+        function highlightSearchResults(term) {
+            let content = editor.innerHTML;
+            const regex = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+            content = content.replace(regex, '<mark>$1</mark>');
+            editor.innerHTML = content;
+        }
+        
+        function findNext() {
+            if (searchMatches.length === 0) {
+                doSearch();
+                return;
+            }
+            
+            currentSearchIndex = (currentSearchIndex + 1) % searchMatches.length;
+            scrollToMatch(currentSearchIndex);
+        }
+        
+        function scrollToMatch(index) {
+            const marks = editor.querySelectorAll('mark');
+            if (marks[index]) {
+                marks[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Podświetl aktualny wynik
+                marks.forEach(m => m.style.background = 'yellow');
+                marks[index].style.background = 'orange';
             }
         }
         
         function updateStyle() {
-            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            const family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
             editor.style.fontFamily = family;
             editor.style.fontSize = fontSize + 'pt';
         }
         
         function getCursor() {
-            var sel = window.getSelection();
+            const sel = window.getSelection();
             if (sel.rangeCount === 0) return 0;
-            var range = sel.getRangeAt(0);
-            var pre = range.cloneRange();
+            const range = sel.getRangeAt(0);
+            const pre = range.cloneRange();
             pre.selectNodeContents(editor);
             pre.setEnd(range.startContainer, range.startOffset);
             return pre.toString().length;
         }
         
         function getTextFromCursor() {
-            var fullText = editor.innerText || '';
-            var cursorPos = getCursor();
+            const fullText = editor.innerText || '';
+            const cursorPos = getCursor();
             return fullText.substring(cursorPos);
         }
         
@@ -565,49 +715,54 @@
         }
         
         function startReading() {
-            if (!speechSynthesis) {
-                alert('Brak obsługi czytania.');
+            if (!window.speechSynthesis) {
+                alert('Twoja przeglądarka nie obsługuje czytania tekstu.');
                 return;
             }
             
-            var text = getTextFromCursor();
+            const text = getTextFromCursor();
             if (!text.trim()) {
                 alert('Brak tekstu do czytania od pozycji kursora.');
                 return;
             }
             
-            var utterance = new SpeechSynthesisUtterance(text);
+            const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'pl-PL';
             utterance.rate = speechRate;
             utterance.pitch = 1;
             
-            var voices = speechSynthesis.getVoices();
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
-                    utterance.voice = voices[i];
-                    console.log('Używam głosu:', voices[i].name);
-                    break;
-                }
+            // Wybierz polski głos
+            const voices = speechSynthesis.getVoices();
+            const polishVoice = voices.find(voice => voice.lang.includes('pl'));
+            if (polishVoice) {
+                utterance.voice = polishVoice;
+                console.log('Używam głosu:', polishVoice.name);
             }
             
-            var btn = document.getElementById('readBtn');
+            const btn = document.getElementById('readBtn');
             
             utterance.onstart = function() {
                 isReading = true;
                 btn.classList.add('active');
-                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
             };
             
             utterance.onend = function() {
                 stopReading();
             };
             
-            utterance.onerror = function() {
+            utterance.onerror = function(e) {
+                console.error('Błąd TTS:', e);
                 stopReading();
-                alert('Błąd podczas czytania.');
+                alert('Wystąpił błąd podczas czytania tekstu.');
             };
             
-            speechSynthesis.speak(utterance);
+            try {
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Błąd rozpoczęcia czytania:', error);
+                alert('Nie udało się rozpocząć czytania.');
+            }
         }
         
         function stopReading() {
@@ -615,16 +770,18 @@
                 speechSynthesis.cancel();
             }
             isReading = false;
-            var btn = document.getElementById('readBtn');
+            const btn = document.getElementById('readBtn');
             btn.classList.remove('active');
             btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
         }
         
         function toRTF(html) {
-            var font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
-            var rtf = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
+            const font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
+            let rtf = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
             
-            var cleanText = html
+            let cleanText = html
+                .replace(/<mark[^>]*>/gi, '') // Usuń znaczniki wyszukiwania
+                .replace(/<\/mark>/gi, '')
                 .replace(/<br\s*\/?>/gi, '\\line ')
                 .replace(/<\/p>/gi, '\\par ')
                 .replace(/<p[^>]*>/gi, '')
@@ -635,6 +792,7 @@
                 .replace(/<u[^>]*>(.*?)<\/u>/gi, '{\\ul $1}')
                 .replace(/<[^>]+>/g, '');
             
+            // Konwersja polskich znaków
             cleanText = cleanText
                 .replace(/ą/g, "\\'b1")
                 .replace(/Ą/g, "\\'a1")
@@ -660,122 +818,94 @@
         }
         
         function fromRTF(rtf) {
-            // Jeśli nie jest to plik RTF, zwróć jako zwykły tekst
-            if (rtf.indexOf('\\rtf') === -1) {
-                return '<p>' + rtf.replace(/\n/g, '</p><p>') + '</p>';
-            }
-            
-            var text = rtf;
-            
-            // NAJPIERW oznacz miejsca podziału akapitów
-            text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
-            text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
-            
-            // Konwertuj polskie znaki - WSZYSTKIE możliwe warianty!
-            text = text
-                // ą/Ą
-                .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
-                .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
-                // ć/Ć  
-                .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
-                .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
-                // ę/Ę
-                .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
-                .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
-                // ł/Ł
-                .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
-                .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
-                // ń/Ń
-                .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
-                .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
-                // ó/Ó
-                .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
-                .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
-                // ś/Ś
-                .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
-                .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
-                // ź/Ź
-                .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
-                .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
-                // ż/Ż
-                .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
-                .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
-                // Znaki interpunkcyjne
-                .replace(/\\'84/g, '"').replace(/'84/g, '"')
-                .replace(/\\'94/g, '"').replace(/'94/g, '"')
-                .replace(/\\'96/g, '–').replace(/'96/g, '–')
-                .replace(/\\'97/g, '—').replace(/'97/g, '—');
-            
-            // Usuń główne znaczniki RTF
-            text = text.replace(/^\{\\rtf[^{}]*/, '');
-            text = text.replace(/\}$/, '');
-            
-            // Usuń wszystkie pozostałe kody sterujące RTF
-            text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
-            text = text.replace(/\{[^}]*\}/g, '');
-            text = text.replace(/\\/g, '');
-            
-            // Wyczyść dodatkowe spacje
-            text = text.replace(/\s+/g, ' ').trim();
-            
-            // Usuń nawiasy klamrowe
-            text = text.replace(/^\{+/, '').replace(/\}+$/, '');
-            
-            // Podziel na akapity używając markerów
-            var paragraphs = text.split('|||PARAGRAPH|||');
-            var html = '';
-            
-            for (var i = 0; i < paragraphs.length; i++) {
-                var para = paragraphs[i].trim();
-                if (para && para.length > 3) {
-                    // Obsłuż line breaks wewnątrz akapitu
-                    para = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
-                    html += '<p>' + para + '</p>';
+            try {
+                // Sprawdź czy to rzeczywiście RTF
+                if (!rtf || rtf.indexOf('{\\rtf') !== 0) {
+                    // Traktuj jako zwykły tekst
+                    return textToHtml(rtf || '');
                 }
-            }
-            
-            // Fallback - jeśli nie ma markerów akapitów
-            if (!html || paragraphs.length < 2) {
-                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
                 
-                // Podziel na dwóch enterach 
-                var sections = text.split(/\n\s*\n/);
-                if (sections.length > 1) {
-                    for (var j = 0; j < sections.length; j++) {
-                        var section = sections[j].trim();
-                        if (section) {
-                            html += '<p>' + section + '</p>';
-                        }
-                    }
-                } else {
-                    // Ostatnia opcja - podział na zdania
-                    var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
-                    var currentPara = '';
-                    
-                    for (var k = 0; k < sentences.length; k++) {
-                        var sentence = sentences[k].trim();
-                        if (sentence) {
-                            currentPara += sentence + (k < sentences.length - 1 ? '. ' : '');
-                            
-                            if (currentPara.length > 300) {
-                                html += '<p>' + currentPara + '</p>';
-                                currentPara = '';
-                            }
-                        }
-                    }
-                    
-                    if (currentPara.trim()) {
-                        html += '<p>' + currentPara + '</p>';
+                let text = rtf;
+                
+                // Oznacz miejsca podziału akapitów
+                text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
+                text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
+                
+                // Konwertuj polskie znaki - wszystkie warianty
+                text = text
+                    // ą/Ą
+                    .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
+                    .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
+                    // ć/Ć  
+                    .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
+                    .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
+                    // ę/Ę
+                    .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
+                    .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
+                    // ł/Ł
+                    .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
+                    .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
+                    // ń/Ń
+                    .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
+                    .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
+                    // ó/Ó
+                    .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
+                    .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
+                    // ś/Ś
+                    .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
+                    .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
+                    // ź/Ź
+                    .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
+                    .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
+                    // ż/Ż
+                    .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
+                    .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
+                    // Znaki interpunkcyjne
+                    .replace(/\\'84/g, '"').replace(/'84/g, '"')
+                    .replace(/\\'94/g, '"').replace(/'94/g, '"')
+                    .replace(/\\'96/g, '–').replace(/'96/g, '–')
+                    .replace(/\\'97/g, '—').replace(/'97/g, '—');
+                
+                // Usuń główne znaczniki RTF
+                text = text.replace(/^\{\\rtf[^{}]*/, '');
+                text = text.replace(/\}$/, '');
+                
+                // Usuń wszystkie pozostałe kody sterujące RTF
+                text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
+                text = text.replace(/\{[^}]*\}/g, '');
+                text = text.replace(/\\/g, '');
+                
+                // Wyczyść dodatkowe spacje
+                text = text.replace(/\s+/g, ' ').trim();
+                
+                // Usuń nawiasy klamrowe
+                text = text.replace(/^\{+/, '').replace(/\}+$/, '');
+                
+                // Podziel na akapity używając markerów
+                const paragraphs = text.split('|||PARAGRAPH|||');
+                let html = '';
+                
+                for (let i = 0; i < paragraphs.length; i++) {
+                    let para = paragraphs[i].trim();
+                    if (para && para.length > 3) {
+                        // Obsłuż line breaks wewnątrz akapitu
+                        para = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
+                        html += '<p>' + para + '</p>';
                     }
                 }
+                
+                // Jeśli nie udało się przetworzyć, zwróć jako tekst
+                if (!html) {
+                    html = textToHtml(text.replace(/\|\|\|PARAGRAPH\|\|\|/g, '\n').replace(/\|\|\|LINEBREAK\|\|\|/g, '\n'));
+                }
+                
+                return html;
+                
+            } catch (error) {
+                console.error('Błąd parsowania RTF:', error);
+                // W przypadku błędu zwróć jako zwykły tekst
+                return textToHtml(rtf.replace(/[{}\\\n]/g, ' '));
             }
-            
-            // Ostatnia deska ratunku
-            if (!html) {
-                html = '<p>' + text + '</p>';
-            }
-            
-            return html;
         }
         
         function toggleFocusMode() {
@@ -789,21 +919,29 @@
         function enterFocusMode() {
             isFocusMode = true;
             
-            var focusEditor = document.getElementById('focusEditor');
+            // Dodaj klasę do body
+            document.body.classList.add('focus-active');
+            
+            const focusEditor = document.getElementById('focusEditor');
             focusEditor.value = editor.innerText || '';
             
-            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            // Ustaw styl czcionki
+            const family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
             focusEditor.style.fontFamily = family;
             
-            var focusMode = document.getElementById('focusMode');
+            const focusMode = document.getElementById('focusMode');
             focusMode.classList.add('active');
             
+            // Listener dla synchronizacji
+            focusEditor.addEventListener('input', focusInputHandler);
+            
+            // Spróbuj wejść w tryb pełnoekranowy
             setTimeout(function() {
-                var elem = document.documentElement;
+                const elem = document.documentElement;
                 
                 if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(function(err) {
-                        console.log('Fullscreen error:', err);
+                    elem.requestFullscreen().catch(err => {
+                        console.log('Nie można wejść w tryb pełnoekranowy:', err);
                     });
                 } else if (elem.webkitRequestFullscreen) {
                     elem.webkitRequestFullscreen();
@@ -813,26 +951,23 @@
                     elem.mozRequestFullScreen();
                 }
                 
-                setTimeout(function() {
-                    focusEditor.focus();
-                }, 100);
+                // Focus na edytorze
+                setTimeout(() => focusEditor.focus(), 100);
                 
             }, 50);
-            
-            focusEditor.oninput = function() {
-                editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
-                saveState();
-            };
-            
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        }
+        
+        function focusInputHandler() {
+            const focusEditor = document.getElementById('focusEditor');
+            const lines = focusEditor.value.split('\n');
+            const html = lines.map(line => line.trim() ? `<p>${line}</p>` : '<p><br></p>').join('');
+            editor.innerHTML = html || '<p><br></p>';
+            debouncedSaveState();
         }
         
         function handleFullscreenChange() {
-            var isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                                document.mozFullScreenElement || document.msFullscreenElement);
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                  document.mozFullScreenElement || document.msFullscreenElement);
             
             if (!isFullscreen && isFocusMode) {
                 exitFocusMode();
@@ -847,10 +982,14 @@
             // Usuń klasę z body
             document.body.classList.remove('focus-active');
             
+            // Usuń listener
+            const focusEditor = document.getElementById('focusEditor');
+            focusEditor.removeEventListener('input', focusInputHandler);
+            
             // Wyjście z fullscreen
             if (document.exitFullscreen) {
-                document.exitFullscreen().catch(function(err) {
-                    console.log('Exit fullscreen error:', err);
+                document.exitFullscreen().catch(err => {
+                    console.log('Błąd wyjścia z fullscreen:', err);
                 });
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
@@ -864,19 +1003,17 @@
             document.getElementById('focusMode').classList.remove('active');
             
             // Ostatnia synchronizacja
-            var focusEditor = document.getElementById('focusEditor');
             if (focusEditor.value.trim()) {
-                var htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                const htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
                 editor.innerHTML = htmlContent;
                 saveState();
             }
             
             // Przywróć focus do głównego edytora
-            setTimeout(function() {
-                editor.focus();
-            }, 200);
+            setTimeout(() => editor.focus(), 200);
         }
         
+        // Inicjalizacja po załadowaniu DOM
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
