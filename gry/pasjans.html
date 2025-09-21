@@ -21,6 +21,10 @@
             padding: 8px;
             user-select: none;
             cursor: default;
+            overflow-x: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         .game-window {
@@ -46,11 +50,16 @@
             cursor: pointer;
             padding: 2px 6px;
             border: 1px solid transparent;
+            user-select: none;
         }
 
         .close-btn:hover {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .close-btn:active {
+            background: rgba(255,255,255,0.4);
         }
 
         .menu-bar {
@@ -291,34 +300,7 @@
             color: #000000;
         }
 
-        .drop-zone {
-            background: rgba(255, 255, 0, 0.4) !important;
-            border: 3px solid #ffff00 !important;
-            animation: pulse 0.8s infinite;
-        }
 
-        .invalid-drop {
-            background: rgba(255, 0, 0, 0.4) !important;
-            border: 3px solid #ff0000 !important;
-            animation: shake 0.3s;
-        }
-
-        @keyframes pulse {
-            0%, 100% { 
-                border-color: #ffff00;
-                background: rgba(255, 255, 0, 0.3);
-            }
-            50% { 
-                border-color: #ffaa00;
-                background: rgba(255, 255, 0, 0.5);
-            }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
-        }
 
         .score-display {
             background: #c0c0c0;
@@ -844,11 +826,33 @@
                 document.addEventListener('mousemove', this.handleMouseMove.bind(this));
                 document.addEventListener('mouseup', this.handleMouseUp.bind(this));
                 
-                document.addEventListener('touchstart', this.handleTouchStart.bind(this));
-                document.addEventListener('touchmove', this.handleTouchMove.bind(this));
-                document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+                document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+                document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+                document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
                 
                 document.addEventListener('dblclick', this.handleDoubleClick.bind(this));
+                
+                // Close button handler
+                document.querySelector('.close-btn').addEventListener('click', () => {
+                    if (window.close) {
+                        window.close();
+                    } else {
+                        window.history.back();
+                    }
+                });
+                
+                // Prevent default touch behaviors on mobile
+                document.addEventListener('touchmove', (e) => {
+                    if (this.dragElement) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                document.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('.card')) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
             }
 
             handleMouseDown(e) {
@@ -914,7 +918,7 @@
                 this.dragElement.style.transition = 'none';
                 
                 this.draggedCards.forEach((dragCard, index) => {
-                    const cardEl = this.createCardElement(dragCard, true);
+                    const cardEl = this.createCardElement(dragCard, true); // Always show front
                     cardEl.style.position = 'absolute';
                     cardEl.style.top = `${index * 20}px`;
                     cardEl.style.left = '0px';
@@ -950,7 +954,6 @@
             handleMouseMove(e) {
                 if (this.dragElement) {
                     this.updateDragPosition(e.clientX, e.clientY);
-                    this.highlightDropZones(e.clientX, e.clientY);
                 }
             }
 
@@ -958,7 +961,6 @@
                 if (this.dragElement) {
                     const touch = e.touches[0];
                     this.updateDragPosition(touch.clientX, touch.clientY);
-                    this.highlightDropZones(touch.clientX, touch.clientY);
                     e.preventDefault();
                 }
             }
@@ -968,21 +970,6 @@
                     this.dragElement.style.left = `${x + this.dragOffset.x}px`;
                     this.dragElement.style.top = `${y + this.dragOffset.y}px`;
                     this.dragElement.style.cursor = 'grabbing';
-                }
-            }
-
-            highlightDropZones(x, y) {
-                document.querySelectorAll('.drop-zone, .invalid-drop').forEach(el => {
-                    el.classList.remove('drop-zone', 'invalid-drop');
-                });
-
-                const element = document.elementFromPoint(x, y);
-                const dropZone = element?.closest('.card-space, .tableau-column');
-                
-                if (dropZone && this.isValidMove(dropZone)) {
-                    dropZone.classList.add('drop-zone');
-                } else if (dropZone) {
-                    dropZone.classList.add('invalid-drop');
                 }
             }
 
@@ -1007,10 +994,6 @@
                 if (dropZone && this.isValidMove(dropZone)) {
                     this.executeMove(null, dropZone);
                 }
-                
-                document.querySelectorAll('.drop-zone, .invalid-drop').forEach(el => {
-                    el.classList.remove('drop-zone', 'invalid-drop');
-                });
                 
                 document.querySelectorAll('.card').forEach(card => {
                     card.style.opacity = '';
