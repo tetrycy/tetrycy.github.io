@@ -83,22 +83,42 @@
             border: 2px inset #c0c0c0;
             position: relative;
             overflow: auto;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
         }
         
-        .empty-folder {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .file-item {
+            display: inline-block;
+            width: 80px;
             text-align: center;
-            color: #666;
-            font-size: 12px;
+            margin: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border: 1px solid transparent;
         }
         
-        .empty-folder-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+        .file-item:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .file-item.selected {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .file-name {
+            font-size: 10px;
+            word-wrap: break-word;
+            line-height: 1.2;
         }
         
         .status-bar {
@@ -121,6 +141,83 @@
         .path-text {
             color: #000;
         }
+        
+        .back-btn {
+            background: #c0c0c0;
+            border: 1px outset #c0c0c0;
+            padding: 2px 6px;
+            margin-right: 4px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .back-btn:hover {
+            background: #dfdfdf;
+        }
+        
+        .back-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .back-btn.disabled {
+            color: #808080;
+            cursor: default;
+        }
+        
+        /* Responsywność dla telefonów */
+        @media (max-width: 768px) {
+            .file-item {
+                width: 60px;
+                margin: 4px;
+                font-size: 9px;
+            }
+            
+            .file-icon {
+                font-size: 24px;
+            }
+            
+            .file-name {
+                font-size: 8px;
+            }
+            
+            .window-header {
+                padding: 2px 4px;
+            }
+            
+            .menubar-item {
+                padding: 2px 4px;
+                font-size: 10px;
+            }
+            
+            .address-bar {
+                font-size: 9px;
+            }
+            
+            .back-btn {
+                padding: 1px 4px;
+                font-size: 9px;
+            }
+            
+            .status-bar {
+                font-size: 9px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .file-item {
+                width: 50px;
+                margin: 2px;
+            }
+            
+            .file-icon {
+                font-size: 20px;
+            }
+            
+            .file-name {
+                font-size: 7px;
+                line-height: 1.1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -128,7 +225,7 @@
         <div class="window-header">
             <div class="window-title">
                 <span>📁</span>
-                <span>Folder Leszka</span>
+                <span id="window-title">Folder Leszka</span>
             </div>
             <div class="window-controls">
                 <button class="window-btn" onclick="window.close()">×</button>
@@ -143,20 +240,217 @@
         </div>
         
         <div class="address-bar">
-            <span class="path-text">C:\Moje dokumenty\Folder Kuby</span>
+            <button id="back-btn" class="back-btn disabled" onclick="goBack()">Wstecz</button>
+            <span id="path-text" class="path-text">C:\Moje dokumenty\Folder Leszka</span>
         </div>
         
-        <div class="content">
-            <div class="empty-folder">
-                <div class="empty-folder-icon">📂</div>
-                <div>Ten folder jest pusty.</div>
-            </div>
+        <div class="content" id="content">
+            <!-- Zawartość będzie ładowana dynamicznie -->
         </div>
         
         <div class="status-bar">
-            <span>0 obiektów</span>
+            <span id="status-count">4 obiekty</span>
             <span>Mój komputer</span>
         </div>
     </div>
+    
+    <script>
+        let currentPath = 'main';
+        let pathHistory = [];
+        
+        // Definicja zawartości folderów
+        const folders = {
+            main: {
+                title: 'Folder Leszka',
+                path: 'C:\\Moje dokumenty\\Folder Leszka',
+                items: [
+                    { type: 'folder', icon: '📁', name: 'Muzyka', target: 'muzyka' },
+                    { type: 'folder', icon: '📁', name: 'Filmiki', target: 'filmiki' },
+                    { type: 'folder', icon: '📁', name: 'Teksty', target: 'teksty' },
+                    { type: 'folder', icon: '📁', name: 'Gry', target: 'gry' }
+                ]
+            },
+            
+            muzyka: {
+                title: 'Muzyka',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka',
+                items: [
+                    { type: 'folder', icon: '📁', name: 'Smutne piosenki', target: 'smutne_piosenki' },
+                    { type: 'folder', icon: '📁', name: 'Zwykłe piosenki', target: 'zwykle_piosenki' }
+                ]
+            },
+            
+            smutne_piosenki: {
+                title: 'Smutne piosenki',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki',
+                items: [
+                    // 8 smutnych piosenek
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 1.mp3', target: 'https://youtube.com/watch?v=LINK1' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 2.mp3', target: 'https://youtube.com/watch?v=LINK2' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 3.mp3', target: 'https://youtube.com/watch?v=LINK3' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 4.mp3', target: 'https://youtube.com/watch?v=LINK4' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 5.mp3', target: 'https://youtube.com/watch?v=LINK5' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 6.mp3', target: 'https://youtube.com/watch?v=LINK6' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 7.mp3', target: 'https://youtube.com/watch?v=LINK7' },
+                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 8.mp3', target: 'https://youtube.com/watch?v=LINK8' },
+                    { type: 'folder', icon: '📁', name: 'Najsmutniejsze piosenki', target: 'najsmutniejsze' }
+                ]
+            },
+            
+            najsmutniejsze: {
+                title: 'Najsmutniejsze piosenki',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki',
+                items: [
+                    { type: 'mp3', icon: '🎵', name: 'Najsmutniejsza.mp3', target: 'https://youtube.com/watch?v=NAJSMUTNIEJSZA' },
+                    { type: 'folder', icon: '📁', name: 'NIE OTWIERAĆ', target: 'nie_otwierac', style: 'color: red; font-weight: bold;' }
+                ]
+            },
+            
+            nie_otwierac: {
+                title: 'NIE OTWIERAĆ',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki\\NIE OTWIERAĆ',
+                items: [
+                    { type: 'mp3', icon: '🎵', name: 'Sekretna_piosenka.mp3', target: 'https://youtube.com/watch?v=SEKRETNA' }
+                ]
+            },
+            
+            zwykle_piosenki: {
+                title: 'Zwykłe piosenki',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Zwykłe piosenki',
+                items: [
+                    // Pusty folder na razie
+                ]
+            },
+            
+            filmiki: {
+                title: 'Filmiki',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Filmiki',
+                items: [
+                    { type: 'avi', icon: '🎬', name: 'Film1.avi', target: 'https://youtube.com/watch?v=FILM1' },
+                    { type: 'avi', icon: '🎬', name: 'Film2.avi', target: 'https://youtube.com/watch?v=FILM2' },
+                    { type: 'avi', icon: '🎬', name: 'Film3.avi', target: 'https://youtube.com/watch?v=FILM3' },
+                    { type: 'avi', icon: '🎬', name: 'Film4.avi', target: 'https://youtube.com/watch?v=FILM4' },
+                    { type: 'avi', icon: '🎬', name: 'Film5.avi', target: 'https://youtube.com/watch?v=FILM5' }
+                ]
+            },
+            
+            teksty: {
+                title: 'Teksty',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Teksty',
+                items: [
+                    { type: 'doc', icon: '📄', name: 'Dokument1.doc', target: 'https://link-do-dokumentu1.com' },
+                    { type: 'doc', icon: '📄', name: 'Dokument2.doc', target: 'https://link-do-dokumentu2.com' },
+                    { type: 'doc', icon: '📄', name: 'Dokument3.doc', target: 'https://link-do-dokumentu3.com' },
+                    { type: 'doc', icon: '📄', name: 'Dokument4.doc', target: 'https://link-do-dokumentu4.com' },
+                    { type: 'doc', icon: '📄', name: 'Dokument5.doc', target: 'https://link-do-dokumentu5.com' },
+                    { type: 'doc', icon: '📄', name: 'Dokument6.doc', target: 'https://link-do-dokumentu6.com' }
+                ]
+            },
+            
+            gry: {
+                title: 'Gry',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\Gry',
+                items: [
+                    { type: 'exe', icon: '🎮', name: 'Gra1.exe', target: 'https://link-do-gry1.com' },
+                    { type: 'exe', icon: '🎮', name: 'Gra2.exe', target: 'https://link-do-gry2.com' },
+                    { type: 'exe', icon: '🎮', name: 'Gra3.exe', target: 'https://link-do-gry3.com' },
+                    { type: 'exe', icon: '🎮', name: 'Gra4.exe', target: 'https://link-do-gry4.com' }
+                ]
+            }
+        };
+        
+        function loadFolder(folderKey) {
+            const folder = folders[folderKey];
+            if (!folder) return;
+            
+            // Aktualizuj historię ścieżki
+            if (folderKey !== currentPath) {
+                pathHistory.push(currentPath);
+            }
+            currentPath = folderKey;
+            
+            // Aktualizuj interfejs
+            document.getElementById('window-title').textContent = folder.title;
+            document.getElementById('path-text').textContent = folder.path;
+            document.getElementById('status-count').textContent = folder.items.length + ' obiektów';
+            
+            // Aktualizuj przycisk Wstecz
+            const backBtn = document.getElementById('back-btn');
+            if (pathHistory.length > 0) {
+                backBtn.classList.remove('disabled');
+            } else {
+                backBtn.classList.add('disabled');
+            }
+            
+            // Załaduj zawartość
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            
+            folder.items.forEach(item => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.onclick = () => selectItem(fileItem);
+                
+                if (item.type === 'folder') {
+                    fileItem.ondblclick = () => loadFolder(item.target);
+                } else {
+                    fileItem.ondblclick = () => openItem(item);
+                }
+                
+                const nameSpan = `<span class="file-name" ${item.style ? 'style="' + item.style + '"' : ''}>${item.name}</span>`;
+                
+                fileItem.innerHTML = `
+                    <span class="file-icon">${item.icon}</span>
+                    ${nameSpan}
+                `;
+                
+                content.appendChild(fileItem);
+            });
+            
+            // Jeśli folder jest pusty, pokaż komunikat
+            if (folder.items.length === 0) {
+                content.innerHTML = `
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #666; font-size: 12px;">
+                        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📂</div>
+                        <div>Ten folder jest pusty.</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function selectItem(element) {
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function openItem(item) {
+            if (item.type === 'mp3') {
+                // Otwórz YouTube w nowej karcie
+                window.open(item.target, '_blank');
+            } else if (item.type === 'avi') {
+                // Otwórz film w nowej karcie
+                window.open(item.target, '_blank');
+            } else if (item.type === 'doc') {
+                // Otwórz dokument w nowej karcie
+                window.open(item.target, '_blank');
+            } else if (item.type === 'exe') {
+                // Otwórz grę na pełny ekran
+                window.open(item.target, '_blank', 'fullscreen=yes,scrollbars=yes,resizable=yes');
+            }
+        }
+        
+        function goBack() {
+            if (pathHistory.length > 0) {
+                const previousPath = pathHistory.pop();
+                currentPath = previousPath;
+                loadFolder(previousPath);
+            }
+        }
+        
+        // Załaduj główny folder przy starcie
+        loadFolder('main');
+    </script>
 </body>
 </html>
