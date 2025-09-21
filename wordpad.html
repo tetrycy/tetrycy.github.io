@@ -152,6 +152,52 @@
             line-height: 1.5;
         }
         
+        /* TRYB FOCUS */
+        .focus-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a1a;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .focus-mode.active {
+            display: flex;
+        }
+        
+        .focus-editor {
+            width: 100%;
+            max-width: 50rem;
+            min-height: 60vh;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e5e5e5;
+            font-size: 18px;
+            line-height: 1.8;
+            padding: 2rem;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .focus-editor::placeholder {
+            color: #666;
+        }
+        
+        .focus-hint {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: #666;
+            font-size: 0.875rem;
+        }
+        
         .hidden {
             display: none;
         }
@@ -182,6 +228,14 @@
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                     <polyline points="17,21 17,13 7,13 7,21"/>
                     <polyline points="7,3 7,8 15,8"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="focusBtn" title="Tryb Focus (F11)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
             </button>
             
@@ -252,8 +306,14 @@
         <input type="file" class="hidden" id="fileInput" accept=".rtf">
     </div>
 
+    <!-- TRYB FOCUS -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-hint">ESC lub F11 - wyjście z trybu focus</div>
+        <textarea class="focus-editor" id="focusEditor" placeholder="Zacznij pisać w trybie focus..."></textarea>
+    </div>
+
     <script>
-        var editor, fileName, isReading, fontFamily, fontSize, speechRate;
+        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode;
         
         function init() {
             editor = document.getElementById('editor');
@@ -262,12 +322,14 @@
             fontFamily = 'Times New Roman';
             fontSize = 12;
             speechRate = 1.0;
+            isFocusMode = false;
             
             document.getElementById('newBtn').onclick = newDoc;
             document.getElementById('openBtn').onclick = openDoc;
             document.getElementById('saveBtn').onclick = saveDoc;
             document.getElementById('searchBtn').onclick = toggleSearch;
             document.getElementById('readBtn').onclick = toggleReading;
+            document.getElementById('focusBtn').onclick = toggleFocusMode;
             
             document.getElementById('fontSelect').onchange = function() { 
                 fontFamily = this.value; 
@@ -301,9 +363,17 @@
                 if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
                 if (e.key === 'r') { e.preventDefault(); toggleReading(); }
             }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                toggleFocusMode();
+            }
             if (e.key === 'Escape') {
-                closeSearch();
-                if (isReading) stopReading();
+                if (isFocusMode) {
+                    exitFocusMode();
+                } else {
+                    closeSearch();
+                    if (isReading) stopReading();
+                }
             }
         }
         
@@ -485,6 +555,49 @@
                 .replace(/\{[^}]*\}/g, '')
                 .replace(/\\[a-z]+\d*\s*/g, '');
             return '<p>' + html + '</p>';
+        }
+        
+        function toggleFocusMode() {
+            if (isFocusMode) {
+                exitFocusMode();
+            } else {
+                enterFocusMode();
+            }
+        }
+        
+        function enterFocusMode() {
+            isFocusMode = true;
+            
+            // Skopiuj zawartość z głównego edytora do focus editora
+            var focusEditor = document.getElementById('focusEditor');
+            focusEditor.value = editor.innerText || '';
+            
+            // Ustaw styl czcionki w focus editorze
+            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            focusEditor.style.fontFamily = family;
+            
+            // Pokaż tryb focus
+            document.getElementById('focusMode').classList.add('active');
+            focusEditor.focus();
+            
+            // Synchronizuj zawartość w czasie rzeczywistym
+            focusEditor.oninput = function() {
+                editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
+            };
+        }
+        
+        function exitFocusMode() {
+            isFocusMode = false;
+            
+            // Ukryj tryb focus
+            document.getElementById('focusMode').classList.remove('active');
+            
+            // Ostatnia synchronizacja
+            var focusEditor = document.getElementById('focusEditor');
+            editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
+            
+            // Przywróć focus do głównego edytora
+            editor.focus();
         }
         
         document.addEventListener('DOMContentLoaded', init);
