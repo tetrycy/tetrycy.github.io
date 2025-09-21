@@ -148,10 +148,15 @@ function toggleGamesSubmenu() {
 
 // Funkcje aplikacji - używają systemu okien
 function openPaint() {
-    openWindow('paint-window', {
-        width: 500,
-        height: 450
-    });
+    const paintWindow = window.open(
+        'paint.html', 
+        'MSPaint',
+        'width=850,height=650,resizable=yes,menubar=no,toolbar=no,location=no,scrollbars=no'
+    );
+    
+    if (paintWindow) {
+        paintWindow.focus();
+    }
 }
 
 function openNotepad() {
