@@ -213,6 +213,19 @@ function openRun() {
     showBSOD();
 }
 
+// Menu Start - dodatkowe funkcje
+function openMaps() {
+    window.open('https://maps.google.com', '_blank');
+}
+
+function openOutlook() {
+    document.getElementById('outlook-window').style.display = 'block';
+}
+
+function closeOutlook() {
+    document.getElementById('outlook-window').style.display = 'none';
+}
+
 // Blue Screen of Death
 function showBSOD() {
     const bsod = document.createElement('div');
