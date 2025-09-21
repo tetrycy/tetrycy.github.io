@@ -160,7 +160,7 @@
             width: 100vw;
             height: 100vh;
             background: #1a1a1a;
-            z-index: 1000;
+            z-index: 9999; /* Wyższy z-index */
             display: none;
             align-items: center;
             justify-content: center;
@@ -170,6 +170,19 @@
         
         .focus-mode.active {
             display: flex;
+        }
+        
+        /* Ukryj wszystko inne w trybie focus */
+        .focus-mode.active ~ * {
+            display: none !important;
+        }
+        
+        body.focus-active {
+            overflow: hidden;
+        }
+        
+        body.focus-active > *:not(.focus-mode) {
+            display: none !important;
         }
         
         .focus-editor {
@@ -831,6 +844,10 @@
             
             isFocusMode = false;
             
+            // Usuń klasę z body
+            document.body.classList.remove('focus-active');
+            
+            // Wyjście z fullscreen
             if (document.exitFullscreen) {
                 document.exitFullscreen().catch(function(err) {
                     console.log('Exit fullscreen error:', err);
@@ -843,14 +860,18 @@
                 document.mozCancelFullScreen();
             }
             
+            // Ukryj tryb focus
             document.getElementById('focusMode').classList.remove('active');
             
+            // Ostatnia synchronizacja
             var focusEditor = document.getElementById('focusEditor');
             if (focusEditor.value.trim()) {
-                editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
+                var htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                editor.innerHTML = htmlContent;
                 saveState();
             }
             
+            // Przywróć focus do głównego edytora
             setTimeout(function() {
                 editor.focus();
             }, 200);
