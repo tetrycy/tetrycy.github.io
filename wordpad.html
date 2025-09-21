@@ -652,58 +652,96 @@
                 return '<p>' + rtf.replace(/\n/g, '</p><p>') + '</p>';
             }
             
-            // Wyciągnij tekst z RTF, ignorując wszystkie kody sterujące
             var text = rtf;
             
-            // Usuń główny blok RTF
-            text = text.replace(/^\{\\rtf[^}]*\}?/, '');
+            // NAJPIERW oznacz miejsca podziału akapitów PRZED konwersją znaków
+            text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
+            text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
+            
+            // Konwertuj polskie znaki (zarówno z backslashem jak i bez)
+            text = text
+                .replace(/\\'b1|'b1/g, 'ą')
+                .replace(/\\'a1|'a1/g, 'Ą')
+                .replace(/\\'e6|'e6/g, 'ć')
+                .replace(/\\'c6|'c6/g, 'Ć')
+                .replace(/\\'ea|'ea/g, 'ę')
+                .replace(/\\'ca|'ca/g, 'Ę')
+                .replace(/\\'b3|'b3/g, 'ł')
+                .replace(/\\'a3|'a3/g, 'Ł')
+                .replace(/\\'f1|'f1/g, 'ń')
+                .replace(/\\'d1|'d1/g, 'Ń')
+                .replace(/\\'f3|'f3/g, 'ó')
+                .replace(/\\'d3|'d3/g, 'Ó')
+                .replace(/\\'9c|'9c/g, 'ś')
+                .replace(/\\'8c|'8c/g, 'Ś')
+                .replace(/\\'9f|'9f/g, 'ź')
+                .replace(/\\'8f|'8f/g, 'Ź')
+                .replace(/\\'bf|'bf/g, 'ż')
+                .replace(/\\'af|'af/g, 'Ż')
+                .replace(/\\'84|'84/g, '"')
+                .replace(/\\'94|'94/g, '"')
+                .replace(/\\'96|'96/g, '–')
+                .replace(/\\'97|'97/g, '—');
+            
+            // Usuń główne znaczniki RTF
+            text = text.replace(/^\{\\rtf[^{}]*/, '');
             text = text.replace(/\}$/, '');
             
-            // Usuń wszystkie kody sterujące RTF
-            text = text.replace(/\\[a-z]+\d*\s*/g, ' ');
+            // Usuń wszystkie pozostałe kody sterujące RTF
+            text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
             text = text.replace(/\{[^}]*\}/g, '');
             text = text.replace(/\\/g, '');
             
-            // Konwertuj polskie znaki z kodów Windows-1250
-            text = text
-                .replace(/\\'b1/g, 'ą')
-                .replace(/\\'a1/g, 'Ą')
-                .replace(/\\'e6/g, 'ć')
-                .replace(/\\'c6/g, 'Ć')
-                .replace(/\\'ea/g, 'ę')
-                .replace(/\\'ca/g, 'Ę')
-                .replace(/\\'b3/g, 'ł')
-                .replace(/\\'a3/g, 'Ł')
-                .replace(/\\'f1/g, 'ń')
-                .replace(/\\'d1/g, 'Ń')
-                .replace(/\\'f3/g, 'ó')
-                .replace(/\\'d3/g, 'Ó')
-                .replace(/\\'9c/g, 'ś')
-                .replace(/\\'8c/g, 'Ś')
-                .replace(/\\'9f/g, 'ź')
-                .replace(/\\'8f/g, 'Ź')
-                .replace(/\\'bf/g, 'ż')
-                .replace(/\\'af/g, 'Ż');
-            
-            // Wyczyść dodatkowe spacje i znaki
+            // Wyczyść dodatkowe spacje
             text = text.replace(/\s+/g, ' ').trim();
             
-            // Usuń początkowe i końcowe nawiasy klamrowe
+            // Usuń nawiasy klamrowe
             text = text.replace(/^\{+/, '').replace(/\}+$/, '');
             
-            // Konwertuj na akapity HTML
-            var paragraphs = text.split(/\s*(?:par|line)\s*/);
+            // TERAZ podziel na akapity używając naszych markerów
+            var paragraphs = text.split('|||PARAGRAPH|||');
             var html = '';
             
             for (var i = 0; i < paragraphs.length; i++) {
                 var para = paragraphs[i].trim();
-                if (para) {
+                if (para && para.length > 3) {
+                    // Obsłuż line breaks wewnątrz akapitu
+                    para = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
                     html += '<p>' + para + '</p>';
                 }
             }
             
-            // Jeśli nie ma akapitów, utwórz jeden
+            // Jeśli nie udało się podzielić na akapity, spróbuj heurystyk
+            if (!html || paragraphs.length < 2) {
+                // Usuwamy markery
+                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
+                
+                // Próbuj podzielić na podstawie wielkich liter na początku zdań
+                var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
+                var currentPara = '';
+                
+                for (var j = 0; j < sentences.length; j++) {
+                    var sentence = sentences[j].trim();
+                    if (sentence) {
+                        currentPara += sentence + (j < sentences.length - 1 ? '. ' : '');
+                        
+                        // Jeśli akapit ma więcej niż 200 znaków, zakończ go
+                        if (currentPara.length > 200) {
+                            html += '<p>' + currentPara + '</p>';
+                            currentPara = '';
+                        }
+                    }
+                }
+                
+                // Dodaj ostatni akapit jeśli pozostał
+                if (currentPara.trim()) {
+                    html += '<p>' + currentPara + '</p>';
+                }
+            }
+            
+            // Ostatnia deska ratunku
             if (!html) {
+                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, '</p><p>').replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
                 html = '<p>' + text + '</p>';
             }
             
