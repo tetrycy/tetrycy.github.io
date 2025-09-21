@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/minesweeper.css">
     <link rel="stylesheet" href="css/solitaire.css">
     <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/outlook.css">
 </head>
 <body>
     <div class="desktop" id="desktop">
@@ -72,6 +73,16 @@
                 <span class="menu-text">Programy</span>
                 <span class="menu-arrow">▶</span>
             </div>
+
+            <div class="start-menu-item" onclick="openMaps()">
+    <span class="menu-icon">🗺️</span>
+    <span class="menu-text">Mapy...</span>
+</div>
+
+<div class="start-menu-item" onclick="openOutlook()">
+    <span class="menu-icon">📧</span>
+    <span class="menu-text">Outlook</span>
+</div>
             
             <div class="start-menu-item" data-app="documents">
                 <span class="menu-icon">📄</span>
@@ -433,5 +444,30 @@
     <script src="js/apps/minesweeper.js"></script>
     <script src="js/apps/solitaire.js"></script>
     <script src="js/mobile.js"></script>
+
+<!-- Okno Outlook -->
+<div class="window" id="outlook-window" style="display: none;">
+    <div class="window-header">
+        <span class="window-title">Microsoft Outlook</span>
+        <div class="window-controls">
+            <button class="window-btn close" onclick="closeOutlook()">×</button>
+        </div>
+    </div>
+    
+    <div class="window-content outlook-content">
+        <div class="outlook-icon">📧</div>
+        <div class="outlook-message">
+            <p><strong>Masz sprawę? Chcesz u nas wykupić reklamę?</strong></p>
+            <p><strong>Potrzebujesz przepisu na gołąbki?</strong></p>
+            <br>
+            <p>Napisz do nas na <strong>Tetrycyyt@gmail.com</strong></p>
+            <p>Odpisujemy. Zawsze.</p>
+        </div>
+        <div class="outlook-buttons">
+            <button class="outlook-btn" onclick="closeOutlook()">OK</button>
+        </div>
+    </div>
+</div>
+    
 </body>
 </html>
