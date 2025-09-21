@@ -1,0 +1,49 @@
+<style>
+.outlook-content {
+    padding: 20px;
+    text-align: center;
+    min-width: 300px;
+    background: #c0c0c0;
+}
+
+.outlook-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.outlook-message {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+
+.outlook-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.outlook-btn {
+    padding: 4px 16px;
+    border: 1px outset #c0c0c0;
+    background: #c0c0c0;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+}
+
+.outlook-btn:hover {
+    background: #dfdfdf;
+}
+
+.outlook-btn:active {
+    border: 1px inset #c0c0c0;
+}
+
+#outlook-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+</style>
