@@ -165,6 +165,7 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            overflow: hidden; /* Ukryj scrollbar */
         }
         
         .focus-mode.active {
@@ -184,10 +185,27 @@
             padding: 2rem;
             resize: none;
             font-family: inherit;
+            overflow: hidden; /* Ukryj scrollbar w textarea */
         }
         
         .focus-editor::placeholder {
             color: #666;
+        }
+        
+        /* Ukryj scrollbar w całym trybie focus */
+        .focus-mode::-webkit-scrollbar,
+        .focus-editor::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .focus-mode {
+            -ms-overflow-style: none;  /* IE i Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .focus-editor {
+            -ms-overflow-style: none;  /* IE i Edge */
+            scrollbar-width: none;  /* Firefox */
         }
         
         .focus-hint {
@@ -308,8 +326,7 @@
 
     <!-- TRYB FOCUS -->
     <div class="focus-mode" id="focusMode">
-        <div class="focus-hint">ESC lub F11 - wyjście z trybu focus</div>
-        <textarea class="focus-editor" id="focusEditor" placeholder="Zacznij pisać w trybie focus..."></textarea>
+        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
     </div>
 
     <script>
@@ -580,40 +597,67 @@
             var focusMode = document.getElementById('focusMode');
             focusMode.classList.add('active');
             
-            // PRAWDZIWY PEŁNY EKRAN - ukryje pasek zadań Windows i pasek przeglądarki
-            if (focusMode.requestFullscreen) {
-                focusMode.requestFullscreen();
-            } else if (focusMode.webkitRequestFullscreen) {
-                focusMode.webkitRequestFullscreen(); // Safari
-            } else if (focusMode.msRequestFullscreen) {
-                focusMode.msRequestFullscreen(); // IE/Edge
-            }
-            
-            focusEditor.focus();
+            // PRAWDZIWY PEŁNY EKRAN - próba z różnymi metodami
+            setTimeout(function() {
+                var elem = document.documentElement; // Cały dokument zamiast tylko elementu
+                
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(function(err) {
+                        console.log('Fullscreen error:', err);
+                    });
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen(); // Safari
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen(); // IE/Edge
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen(); // Firefox
+                }
+                
+                // Focus na edytor po próbie fullscreen
+                setTimeout(function() {
+                    focusEditor.focus();
+                }, 100);
+                
+            }, 50); // Krótkie opóźnienie
             
             // Synchronizuj zawartość w czasie rzeczywistym
             focusEditor.oninput = function() {
                 editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
             };
             
-            // Nasłuchuj wyjście z fullscreen (gdy user naciśnie ESC)
-            document.onfullscreenchange = function() {
-                if (!document.fullscreenElement) {
-                    exitFocusMode();
-                }
-            };
+            // Nasłuchuj wyjście z fullscreen
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        }
+        
+        function handleFullscreenChange() {
+            var isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                document.mozFullScreenElement || document.msFullscreenElement);
+            
+            if (!isFullscreen && isFocusMode) {
+                // Fullscreen został wyłączony, wyłącz tryb focus
+                exitFocusMode();
+            }
         }
         
         function exitFocusMode() {
+            if (!isFocusMode) return;
+            
             isFocusMode = false;
             
             // Wyjście z fullscreen
             if (document.exitFullscreen) {
-                document.exitFullscreen();
+                document.exitFullscreen().catch(function(err) {
+                    console.log('Exit fullscreen error:', err);
+                });
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
             }
             
             // Ukryj tryb focus
@@ -621,12 +665,14 @@
             
             // Ostatnia synchronizacja
             var focusEditor = document.getElementById('focusEditor');
-            editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
+            if (focusEditor.value.trim()) {
+                editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
+            }
             
             // Przywróć focus do głównego edytora
             setTimeout(function() {
                 editor.focus();
-            }, 100);
+            }, 200);
         }
         
         document.addEventListener('DOMContentLoaded', init);
