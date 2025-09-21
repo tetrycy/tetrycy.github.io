@@ -164,7 +164,6 @@
             cursor: default;
         }
         
-        /* Responsywność dla telefonów */
         @media (max-width: 768px) {
             .file-item {
                 width: 60px;
@@ -178,44 +177,6 @@
             
             .file-name {
                 font-size: 8px;
-            }
-            
-            .window-header {
-                padding: 2px 4px;
-            }
-            
-            .menubar-item {
-                padding: 2px 4px;
-                font-size: 10px;
-            }
-            
-            .address-bar {
-                font-size: 9px;
-            }
-            
-            .back-btn {
-                padding: 1px 4px;
-                font-size: 9px;
-            }
-            
-            .status-bar {
-                font-size: 9px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .file-item {
-                width: 50px;
-                margin: 2px;
-            }
-            
-            .file-icon {
-                font-size: 20px;
-            }
-            
-            .file-name {
-                font-size: 7px;
-                line-height: 1.1;
             }
         }
     </style>
@@ -258,7 +219,6 @@
         let currentPath = 'main';
         let pathHistory = [];
         
-        // Definicja zawartości folderów
         const folders = {
             main: {
                 title: 'Folder Leszka',
@@ -268,7 +228,7 @@
                     { type: 'folder', icon: '📁', name: 'ZDCP', target: 'zdcp' },
                     { type: 'folder', icon: '📁', name: 'Teksty', target: 'teksty' },
                     { type: 'folder', icon: '📁', name: 'Gry', target: 'gry' },
-                    { type: 'mp3', icon: '🎵', name: 'Zidane.mp3', target: 'https://www.youtube.com/watch?v=nrOLGifnMJk&list=RDnrOLGifnMJk&start_radio=1' }
+                    { type: 'mp3', icon: '🎵', name: 'Zidane.mp3', target: 'https://www.youtube.com/watch?v=nrOLGifnMJk' }
                 ]
             },
             
@@ -278,7 +238,7 @@
                 items: [
                     { type: 'folder', icon: '📁', name: 'Smutne piosenki', target: 'smutne_piosenki' },
                     { type: 'folder', icon: '📁', name: 'Zwykłe piosenki', target: 'zwykle_piosenki' },
-                    { type: 'mp3', icon: '🎵', name: 'BlackBoy - Pabianice 2000.mp3', target: 'https://www.youtube.com/watch?v=7TYljTJIagg&list=RD7TYljTJIagg&start_radio=1' }
+                    { type: 'mp3', icon: '🎵', name: 'BlackBoy - Pabianice 2000.mp3', target: 'https://www.youtube.com/watch?v=7TYljTJIagg' }
                 ]
             },
             
@@ -286,21 +246,22 @@
                 title: 'Smutne piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Maleńczuk - Mirek Jankowski.mp3', target: 'https://www.youtube.com/watch?v=fSyP0e3DadM&list=FLAcVgkhP1bCIEdCANmp_Jhg&index=64' },
-                     { type: 'mp3', icon: '🎵', name: 'Świetliki - Chmurka.mp3', target: 'https://www.youtube.com/watch?v=wzIRmRC55CA&list=RDwzIRmRC55CA&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'Dyjak stary.mp3', target: 'https://www.youtube.com/watch?v=KSIGzCtWlH4&list=RDKSIGzCtWlH4&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'VAST - Sunday I\'ll Be Gone.mp3', target: 'https://www.youtube.com/watch?v=0yc_5uuakfM&list=RD0yc_5uuakfM&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'Bohren and the Club of Gore - Constant Fear.mp3', target: 'https://www.youtube.com/watch?v=W2zkN74s72M&list=RDW2zkN74s72M&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'Chromatics - Shadow.mp3', target: 'https://www.youtube.com/watch?v=IGUboLZx3Tk&list=RDIGUboLZx3Tk&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'Quantic - Time is the Enemy.mp3', target: 'https://www.youtube.com/watch?v=nvUeo5sagkA&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=174' },
-                    { type: 'mp3', icon: '🎵', name: 'Godspeed You Black Emperor - East Hastings.mp3', target: 'https://www.youtube.com/watch?v=V9Ty3YnWN80&list=RDV9Ty3YnWN80&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'KDZKW - Chłopcy z dynamitu.mp3', target: 'https://www.youtube.com/watch?v=KURIXKHAd2o&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=161' },
-                    { type: 'mp3', icon: '🎵', name: 'David Lynch - Pinky\'s Dream.mp3', target: 'https://www.youtube.com/watch?v=pMbxSENOXG0&list=RDpMbxSENOXG0&start_radio=1' },
-                    { type: 'mp3', icon: '🎵', name: 'Unkle - When Things Explode.mp3', target: 'https://www.youtube.com/watch?v=rjwAbXCfbBc&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=95' },
-                    { type: 'mp3', icon: '🎵', name: 'Radiohead - Talk Show Host.mp3', target: 'https://www.youtube.com/watch?v=HBUh5wnAGHk&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=66' },
-                    { type: 'mp3', icon: '🎵', name: 'Muse - Con-Science.mp3', target: 'https://www.youtube.com/watch?v=rHZbtOSBEdw&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=63' },
-                    { type: 'mp3', icon: '🎵', name: 'UNKLE - Burn My Shadow Away.mp3', target: 'https://www.youtube.com/watch?v=IDleI-vm7z4&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=9' },
-                    { type: 'mp3', icon: '🎵', name: 'Deadmau5 - Right This Second.mp3', target: 'https://www.youtube.com/watch?v=A67GQgoiinM&list=RDA67GQgoiinM&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Maleńczuk - Mirek Jankowski.mp3', target: 'https://www.youtube.com/watch?v=fSyP0e3DadM' },
+                    { type: 'mp3', icon: '🎵', name: 'Interpol - Roland.mp3', target: 'https://www.youtube.com/watch?v=ysWs-Z-HhsM' },
+                    { type: 'mp3', icon: '🎵', name: 'Świetliki - Chmurka.mp3', target: 'https://www.youtube.com/watch?v=wzIRmRC55CA' },
+                    { type: 'mp3', icon: '🎵', name: 'Dyjak stary.mp3', target: 'https://www.youtube.com/watch?v=KSIGzCtWlH4' },
+                    { type: 'mp3', icon: '🎵', name: 'VAST - Sunday Ill Be Gone.mp3', target: 'https://www.youtube.com/watch?v=0yc_5uuakfM' },
+                    { type: 'mp3', icon: '🎵', name: 'Bohren - Constant Fear.mp3', target: 'https://www.youtube.com/watch?v=W2zkN74s72M' },
+                    { type: 'mp3', icon: '🎵', name: 'Chromatics - Shadow.mp3', target: 'https://www.youtube.com/watch?v=IGUboLZx3Tk' },
+                    { type: 'mp3', icon: '🎵', name: 'Quantic - Time is the Enemy.mp3', target: 'https://www.youtube.com/watch?v=nvUeo5sagkA' },
+                    { type: 'mp3', icon: '🎵', name: 'Godspeed - East Hastings.mp3', target: 'https://www.youtube.com/watch?v=V9Ty3YnWN80' },
+                    { type: 'mp3', icon: '🎵', name: 'KDZKW - Chłopcy z dynamitu.mp3', target: 'https://www.youtube.com/watch?v=KURIXKHAd2o' },
+                    { type: 'mp3', icon: '🎵', name: 'David Lynch - Pinkys Dream.mp3', target: 'https://www.youtube.com/watch?v=pMbxSENOXG0' },
+                    { type: 'mp3', icon: '🎵', name: 'Unkle - When Things Explode.mp3', target: 'https://www.youtube.com/watch?v=rjwAbXCfbBc' },
+                    { type: 'mp3', icon: '🎵', name: 'Radiohead - Talk Show Host.mp3', target: 'https://www.youtube.com/watch?v=HBUh5wnAGHk' },
+                    { type: 'mp3', icon: '🎵', name: 'Muse - Con-Science.mp3', target: 'https://www.youtube.com/watch?v=rHZbtOSBEdw' },
+                    { type: 'mp3', icon: '🎵', name: 'UNKLE - Burn My Shadow Away.mp3', target: 'https://www.youtube.com/watch?v=IDleI-vm7z4' },
+                    { type: 'mp3', icon: '🎵', name: 'Deadmau5 - Right This Second.mp3', target: 'https://www.youtube.com/watch?v=A67GQgoiinM' },
                     { type: 'folder', icon: '📁', name: 'Najsmutniejsze piosenki', target: 'najsmutniejsze' }
                 ]
             },
@@ -309,7 +270,7 @@
                 title: 'Najsmutniejsze piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Sivert Hoyem - Prisoner of the Road.mp3', target: 'https://www.youtube.com/watch?v=8G9_oqVEEos&list=RD8G9_oqVEEos&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Sivert Hoyem - Prisoner of the Road.mp3', target: 'https://www.youtube.com/watch?v=8G9_oqVEEos' },
                     { type: 'folder', icon: '📁', name: 'NIE OTWIERAĆ', target: 'nie_otwierac', style: 'color: red; font-weight: bold;' }
                 ]
             },
@@ -318,7 +279,7 @@
                 title: 'NIE OTWIERAĆ',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki\\NIE OTWIERAĆ',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Sleep Party People - I'm Not Human At All.mp3', target: 'https://www.youtube.com/watch?v=aFUzvbkEvRk&list=RDaFUzvbkEvRk&start_radio=1' }
+                    { type: 'mp3', icon: '🎵', name: 'Sleep Party People - Im Not Human At All.mp3', target: 'https://www.youtube.com/watch?v=aFUzvbkEvRk' }
                 ]
             },
             
@@ -326,7 +287,7 @@
                 title: 'Zwykłe piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Zwykłe piosenki',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Diablo 2 - The Wilderness.mp3', target: 'https://www.youtube.com/watch?v=Uxg5W5wKvLE&list=RDUxg5W5wKvLE&start_radio=1' }
+                    { type: 'mp3', icon: '🎵', name: 'Diablo 2 - The Wilderness.mp3', target: 'https://www.youtube.com/watch?v=Uxg5W5wKvLE' }
                 ]
             },
             
@@ -351,8 +312,8 @@
                     { type: 'doc', icon: '📄', name: 'Chomontek - wywiad.doc', target: 'https://weszlo.com/2017/03/06/maradona-powiedzial-ze-taki-talent-jak-ja-rodzi-raz-na-kilka-miliardow/' },
                     { type: 'doc', icon: '📄', name: 'Wiedziałem tylko jak wypłacić pieniądze z bankomatu.doc', target: 'https://weszlo.com/2018/03/19/wiedzialem-wyplacic-pieniadze-bankomatu-powiekszyc-limit-wyplat/' },
                     { type: 'doc', icon: '📄', name: 'Felieton o prezentach.doc', target: 'https://weszlo.com/2021/12/23/jak-co-czwartek-leszek-milewski-174/' },
-                    { type: 'doc', icon: '📄', name: 'Wiedziałem, że sędzia był nawalony, bo sam z nim piłem.doc', target: 'https://weszlo.com/2017/04/10/wiedzialem-ze-sedzia-nawalony-nim-pilem/' },
-                    { type: 'doc', icon: '📄', name: 'Polska - Niemcy 2:0, Mila. Prosto z boiska.doc', target: 'https://weszlo.com/2019/10/11/piec-lat-od-polska-niemcy-20-przeczytaj-rozdzial-biografii-sebastiana-mili/' },
+                    { type: 'doc', icon: '📄', name: 'Wiedziałem, że sędzia był nawalony.doc', target: 'https://weszlo.com/2017/04/10/wiedzialem-ze-sedzia-nawalony-nim-pilem/' },
+                    { type: 'doc', icon: '📄', name: 'Polska - Niemcy 2-0, Mila.doc', target: 'https://weszlo.com/2019/10/11/piec-lat-od-polska-niemcy-20-przeczytaj-rozdzial-biografii-sebastiana-mili/' },
                     { type: 'doc', icon: '📄', name: 'Felieton po śmierci Pilcha.rtf', target: 'https://weszlo.com/2020/06/04/jak-co-czwartek-leszek-milewski-99/' }
                 ]
             },
@@ -373,18 +334,15 @@
             const folder = folders[folderKey];
             if (!folder) return;
             
-            // Aktualizuj historię ścieżki
             if (folderKey !== currentPath) {
                 pathHistory.push(currentPath);
             }
             currentPath = folderKey;
             
-            // Aktualizuj interfejs
             document.getElementById('window-title').textContent = folder.title;
             document.getElementById('path-text').textContent = folder.path;
             document.getElementById('status-count').textContent = folder.items.length + ' obiektów';
             
-            // Aktualizuj przycisk Wstecz
             const backBtn = document.getElementById('back-btn');
             if (pathHistory.length > 0) {
                 backBtn.classList.remove('disabled');
@@ -392,7 +350,6 @@
                 backBtn.classList.add('disabled');
             }
             
-            // Załaduj zawartość
             const content = document.getElementById('content');
             content.innerHTML = '';
             
@@ -407,24 +364,15 @@
                     fileItem.ondblclick = () => openItem(item);
                 }
                 
-                const nameSpan = `<span class="file-name" ${item.style ? 'style="' + item.style + '"' : ''}>${item.name}</span>`;
+                const nameSpan = '<span class="file-name"' + (item.style ? ' style="' + item.style + '"' : '') + '>' + item.name + '</span>';
                 
-                fileItem.innerHTML = `
-                    <span class="file-icon">${item.icon}</span>
-                    ${nameSpan}
-                `;
+                fileItem.innerHTML = '<span class="file-icon">' + item.icon + '</span>' + nameSpan;
                 
                 content.appendChild(fileItem);
             });
             
-            // Jeśli folder jest pusty, pokaż komunikat
             if (folder.items.length === 0) {
-                content.innerHTML = `
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #666; font-size: 12px;">
-                        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📂</div>
-                        <div>Ten folder jest pusty.</div>
-                    </div>
-                `;
+                content.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #666; font-size: 12px;"><div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📂</div><div>Ten folder jest pusty.</div></div>';
             }
         }
         
@@ -436,19 +384,7 @@
         }
         
         function openItem(item) {
-            if (item.type === 'mp3') {
-                // Otwórz YouTube w nowej karcie
-                window.open(item.target, '_blank');
-            } else if (item.type === 'avi') {
-                // Otwórz film w nowej karcie
-                window.open(item.target, '_blank');
-            } else if (item.type === 'doc') {
-                // Otwórz dokument w nowej karcie
-                window.open(item.target, '_blank');
-            } else if (item.type === 'exe') {
-                // Otwórz grę na pełny ekran
-                window.open(item.target, '_blank', 'fullscreen=yes,scrollbars=yes,resizable=yes');
-            }
+            window.open(item.target, '_blank');
         }
         
         function goBack() {
@@ -459,7 +395,6 @@
             }
         }
         
-        // Załaduj główny folder przy starcie
         loadFolder('main');
     </script>
 </body>
