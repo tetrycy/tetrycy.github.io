@@ -61,6 +61,14 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
         const app = this.getAttribute('data-app');
         
         switch(app) {
+            case 'maps':
+                openMaps();
+                toggleStartMenu();
+                break;
+            case 'outlook':
+                openOutlook();
+                toggleStartMenu();
+                break;
             case 'programs':
                 toggleProgramsSubmenu();
                 break;
