@@ -577,17 +577,44 @@
             focusEditor.style.fontFamily = family;
             
             // Pokaż tryb focus
-            document.getElementById('focusMode').classList.add('active');
+            var focusMode = document.getElementById('focusMode');
+            focusMode.classList.add('active');
+            
+            // PRAWDZIWY PEŁNY EKRAN - ukryje pasek zadań Windows i pasek przeglądarki
+            if (focusMode.requestFullscreen) {
+                focusMode.requestFullscreen();
+            } else if (focusMode.webkitRequestFullscreen) {
+                focusMode.webkitRequestFullscreen(); // Safari
+            } else if (focusMode.msRequestFullscreen) {
+                focusMode.msRequestFullscreen(); // IE/Edge
+            }
+            
             focusEditor.focus();
             
             // Synchronizuj zawartość w czasie rzeczywistym
             focusEditor.oninput = function() {
                 editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
             };
+            
+            // Nasłuchuj wyjście z fullscreen (gdy user naciśnie ESC)
+            document.onfullscreenchange = function() {
+                if (!document.fullscreenElement) {
+                    exitFocusMode();
+                }
+            };
         }
         
         function exitFocusMode() {
             isFocusMode = false;
+            
+            // Wyjście z fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
             
             // Ukryj tryb focus
             document.getElementById('focusMode').classList.remove('active');
@@ -597,7 +624,9 @@
             editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
             
             // Przywróć focus do głównego edytora
-            editor.focus();
+            setTimeout(function() {
+                editor.focus();
+            }, 100);
         }
         
         document.addEventListener('DOMContentLoaded', init);
