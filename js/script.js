@@ -213,9 +213,8 @@ function openRun() {
     showBSOD();
 }
 
-// Menu Start - dodatkowe funkcje
 function openMaps() {
-    window.open('https://maps.google.com', '_blank');
+    window.open('https://www.google.com/maps/place/O+TO+CHODZI!/@51.7671389,19.4523337,17z/data=!3m1!4b1!4m6!3m5!1s0x471bcad51bc962b5:0xf3661e318553f31d!8m2!3d51.7671356!4d19.454914!16s%2Fg%2F11c208tmdy?entry=ttu&g_ep=EgoyMDI1MDkxNy4wIKXMDSoASAFQAw%3D%3D', '_blank');
 }
 
 function openOutlook() {
