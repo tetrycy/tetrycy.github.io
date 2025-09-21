@@ -790,14 +790,22 @@
             isFocusMode = true;
             
             var focusEditor = document.getElementById('focusEditor');
-            focusEditor.value = editor.innerText || '';
+            // Pobierz czysty tekst z głównego edytora
+            var mainText = editor.innerText || editor.textContent || '';
+            focusEditor.value = mainText;
             
+            // Ustaw styl czcionki w focus editorze
             var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
             focusEditor.style.fontFamily = family;
             
+            // Dodaj klasę do body żeby ukryć wszystkie inne elementy
+            document.body.classList.add('focus-active');
+            
+            // Pokaż tryb focus
             var focusMode = document.getElementById('focusMode');
             focusMode.classList.add('active');
             
+            // Pełny ekran
             setTimeout(function() {
                 var elem = document.documentElement;
                 
@@ -815,15 +823,28 @@
                 
                 setTimeout(function() {
                     focusEditor.focus();
+                    // Umieść kursor na POCZĄTKU zamiast na końcu
+                    focusEditor.setSelectionRange(0, 0);
+                    focusEditor.scrollTop = 0; // Przewiń do góry
                 }, 100);
                 
             }, 50);
             
+            // Synchronizuj zawartość - usuń stary listener i dodaj nowy
+            focusEditor.oninput = null;
             focusEditor.oninput = function() {
-                editor.innerHTML = '<p>' + focusEditor.value.replace(/\n/g, '</p><p>') + '</p>';
-                saveState();
+                var newContent = focusEditor.value;
+                if (newContent.trim()) {
+                    // Konwertuj tekst z textarea na HTML z akapitami - ZACHOWAJ FORMATOWANIE
+                    var htmlContent = '<p>' + newContent.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                    editor.innerHTML = htmlContent;
+                    saveState();
+                } else {
+                    editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
+                }
             };
             
+            // Nasłuchuj wyjście z fullscreen
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
