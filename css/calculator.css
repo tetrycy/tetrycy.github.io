@@ -141,7 +141,7 @@
 /* Easter egg button - przycisk 711 */
 .calc-btn.easter-egg {
     grid-column: span 4; /* Rozciąga się na wszystkie 4 kolumny */
-    background: #ffff80; /* Żółtawy kolor dla easter egga */
+   background: #c0c0c0;
     font-weight: bold;
     font-size: 12px;
     color: #000080; /* Ciemnoniebieski tekst */
