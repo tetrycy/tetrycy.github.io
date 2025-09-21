@@ -137,3 +137,34 @@
         font-size: 8px;
     }
 }
+
+/* Easter egg button - przycisk 711 */
+.calc-btn.easter-egg {
+    grid-column: span 4; /* Rozciąga się na wszystkie 4 kolumny */
+    background: #ffff80; /* Żółtawy kolor dla easter egga */
+    font-weight: bold;
+    font-size: 12px;
+    color: #000080; /* Ciemnoniebieski tekst */
+}
+
+.calc-btn.easter-egg:hover {
+    background: #ffff99;
+}
+
+.calc-btn.easter-egg:active {
+    border: 2px inset #c0c0c0;
+    background: #ffff60;
+}
+
+/* Responsywność dla easter egg */
+@media (max-width: 768px) {
+    .calc-btn.easter-egg {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calc-btn.easter-egg {
+        font-size: 10px;
+    }
+}
