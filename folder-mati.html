@@ -204,6 +204,34 @@
             margin-bottom: 16px;
             opacity: 0.5;
         }
+        
+        /* Style dla ikon plików */
+        .file-item {
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            margin: 12px;
+            cursor: default;
+            padding: 4px;
+            vertical-align: top;
+        }
+        
+        .file-item:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+        
+        .filename {
+            font-size: 10px;
+            word-wrap: break-word;
+            line-height: 1.2;
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -237,12 +265,16 @@
                 <div style="margin-top: 8px; font-size: 10px; color: #888;">Kliknij w obszar folderu, aby wprowadzić hasło.</div>
             </div>
             
-            <!-- Zawartość folderu (ukryta) -->
+            <!-- Zawartość folderu (ukryta) - TU SĄ HAKI -->
             <div class="folder-content" id="folder-content">
-                <div style="text-align: center; padding: 20px; color: #666;">
-                    <div style="font-size: 32px; margin-bottom: 12px;">📄</div>
-                    <div>Gratulacje! Udało ci się odblokować folder Mateusza.</div>
-                    <div style="margin-top: 8px; font-size: 10px;">Tutaj mogą znajdować się prywatne pliki...</div>
+                <div class="file-item" onclick="return false;">
+                    <div class="file-icon">🪝</div>
+                    <div class="filename">Haki na Leszka</div>
+                </div>
+                
+                <div class="file-item" onclick="return false;">
+                    <div class="file-icon">🪝</div>
+                    <div class="filename">Haki na Kubę</div>
                 </div>
             </div>
         </div>
@@ -303,7 +335,7 @@
                 // Hasło poprawne - pokaż zawartość
                 document.getElementById('protected-message').style.display = 'none';
                 document.getElementById('folder-content').style.display = 'block';
-                document.querySelector('.status-bar span:first-child').textContent = '1 obiekt';
+                document.querySelector('.status-bar span:first-child').textContent = '2 obiekty';
                 closePasswordModal();
             } else {
                 // Hasło niepoprawne
