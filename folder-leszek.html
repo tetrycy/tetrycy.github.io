@@ -249,7 +249,7 @@
         </div>
         
         <div class="status-bar">
-            <span id="status-count">4 obiekty</span>
+            <span id="status-count">5 obiektów</span>
             <span>Mój komputer</span>
         </div>
     </div>
@@ -265,9 +265,10 @@
                 path: 'C:\\Moje dokumenty\\Folder Leszka',
                 items: [
                     { type: 'folder', icon: '📁', name: 'Muzyka', target: 'muzyka' },
-                    { type: 'folder', icon: '📁', name: 'Filmiki', target: 'filmiki' },
+                    { type: 'folder', icon: '📁', name: 'ZDCP', target: 'zdcp' },
                     { type: 'folder', icon: '📁', name: 'Teksty', target: 'teksty' },
-                    { type: 'folder', icon: '📁', name: 'Gry', target: 'gry' }
+                    { type: 'folder', icon: '📁', name: 'Gry', target: 'gry' },
+                    { type: 'mp3', icon: '🎵', name: 'Zidane.mp3', target: 'https://www.youtube.com/watch?v=nrOLGifnMJk&list=RDnrOLGifnMJk&start_radio=1' }
                 ]
             },
             
@@ -276,7 +277,8 @@
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka',
                 items: [
                     { type: 'folder', icon: '📁', name: 'Smutne piosenki', target: 'smutne_piosenki' },
-                    { type: 'folder', icon: '📁', name: 'Zwykłe piosenki', target: 'zwykle_piosenki' }
+                    { type: 'folder', icon: '📁', name: 'Zwykłe piosenki', target: 'zwykle_piosenki' },
+                    { type: 'mp3', icon: '🎵', name: 'BlackBoy - Pabianice 2000.mp3', target: 'https://www.youtube.com/watch?v=7TYljTJIagg&list=RD7TYljTJIagg&start_radio=1' }
                 ]
             },
             
@@ -284,15 +286,19 @@
                 title: 'Smutne piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki',
                 items: [
-                    // 8 smutnych piosenek
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 1.mp3', target: 'https://youtube.com/watch?v=LINK1' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 2.mp3', target: 'https://youtube.com/watch?v=LINK2' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 3.mp3', target: 'https://youtube.com/watch?v=LINK3' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 4.mp3', target: 'https://youtube.com/watch?v=LINK4' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 5.mp3', target: 'https://youtube.com/watch?v=LINK5' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 6.mp3', target: 'https://youtube.com/watch?v=LINK6' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 7.mp3', target: 'https://youtube.com/watch?v=LINK7' },
-                    { type: 'mp3', icon: '🎵', name: 'Smutna piosenka 8.mp3', target: 'https://youtube.com/watch?v=LINK8' },
+                    { type: 'mp3', icon: '🎵', name: 'Maleńczuk - Mirek Jankowski.mp3', target: 'https://www.youtube.com/watch?v=fSyP0e3DadM&list=FLAcVgkhP1bCIEdCANmp_Jhg&index=64' },
+                    { type: 'mp3', icon: '🎵', name: 'VAST - Sunday I\'ll Be Gone.mp3', target: 'https://www.youtube.com/watch?v=0yc_5uuakfM&list=RD0yc_5uuakfM&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Bohren and the Club of Gore - Constant Fear.mp3', target: 'https://www.youtube.com/watch?v=W2zkN74s72M&list=RDW2zkN74s72M&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Chromatics - Shadow.mp3', target: 'https://www.youtube.com/watch?v=IGUboLZx3Tk&list=RDIGUboLZx3Tk&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Quantic - Time is the Enemy.mp3', target: 'https://www.youtube.com/watch?v=nvUeo5sagkA&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=174' },
+                    { type: 'mp3', icon: '🎵', name: 'Godspeed You Black Emperor - East Hastings.mp3', target: 'https://www.youtube.com/watch?v=V9Ty3YnWN80&list=RDV9Ty3YnWN80&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'KDZKW - Chłopcy z dynamitu.mp3', target: 'https://www.youtube.com/watch?v=KURIXKHAd2o&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=161' },
+                    { type: 'mp3', icon: '🎵', name: 'David Lynch - Pinky\'s Dream.mp3', target: 'https://www.youtube.com/watch?v=pMbxSENOXG0&list=RDpMbxSENOXG0&start_radio=1' },
+                    { type: 'mp3', icon: '🎵', name: 'Unkle - When Things Explode.mp3', target: 'https://www.youtube.com/watch?v=rjwAbXCfbBc&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=95' },
+                    { type: 'mp3', icon: '🎵', name: 'Radiohead - Talk Show Host.mp3', target: 'https://www.youtube.com/watch?v=HBUh5wnAGHk&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=66' },
+                    { type: 'mp3', icon: '🎵', name: 'Muse - Con-Science.mp3', target: 'https://www.youtube.com/watch?v=rHZbtOSBEdw&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=63' },
+                    { type: 'mp3', icon: '🎵', name: 'UNKLE - Burn My Shadow Away.mp3', target: 'https://www.youtube.com/watch?v=IDleI-vm7z4&list=PLfjgojzlICWivcpqn5OrO0MLxBZ8wuyqH&index=9' },
+                    { type: 'mp3', icon: '🎵', name: 'Deadmau5 - Right This Second.mp3', target: 'https://www.youtube.com/watch?v=A67GQgoiinM&list=RDA67GQgoiinM&start_radio=1' },
                     { type: 'folder', icon: '📁', name: 'Najsmutniejsze piosenki', target: 'najsmutniejsze' }
                 ]
             },
@@ -301,7 +307,7 @@
                 title: 'Najsmutniejsze piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Najsmutniejsza.mp3', target: 'https://youtube.com/watch?v=NAJSMUTNIEJSZA' },
+                    { type: 'mp3', icon: '🎵', name: 'Sivert Hoyem - Prisoner of the Road.mp3', target: 'https://www.youtube.com/watch?v=8G9_oqVEEos&list=RD8G9_oqVEEos&start_radio=1' },
                     { type: 'folder', icon: '📁', name: 'NIE OTWIERAĆ', target: 'nie_otwierac', style: 'color: red; font-weight: bold;' }
                 ]
             },
@@ -310,7 +316,7 @@
                 title: 'NIE OTWIERAĆ',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Smutne piosenki\\Najsmutniejsze piosenki\\NIE OTWIERAĆ',
                 items: [
-                    { type: 'mp3', icon: '🎵', name: 'Sekretna_piosenka.mp3', target: 'https://youtube.com/watch?v=SEKRETNA' }
+                    { type: 'mp3', icon: '🎵', name: 'Sleep Party People - I\'m Not Human At All.mp3', target: 'https://www.youtube.com/watch?v=aFUzvbkEvRk&list=RDaFUzvbkEvRk&start_radio=1' }
                 ]
             },
             
@@ -318,19 +324,20 @@
                 title: 'Zwykłe piosenki',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Muzyka\\Zwykłe piosenki',
                 items: [
-                    // Pusty folder na razie
+                    { type: 'mp3', icon: '🎵', name: 'Diablo 2 - The Wilderness.mp3', target: 'https://www.youtube.com/watch?v=Uxg5W5wKvLE&list=RDUxg5W5wKvLE&start_radio=1' }
                 ]
             },
             
-            filmiki: {
-                title: 'Filmiki',
-                path: 'C:\\Moje dokumenty\\Folder Leszka\\Filmiki',
+            zdcp: {
+                title: 'ZDCP',
+                path: 'C:\\Moje dokumenty\\Folder Leszka\\ZDCP',
                 items: [
-                    { type: 'avi', icon: '🎬', name: 'Film1.avi', target: 'https://youtube.com/watch?v=FILM1' },
-                    { type: 'avi', icon: '🎬', name: 'Film2.avi', target: 'https://youtube.com/watch?v=FILM2' },
-                    { type: 'avi', icon: '🎬', name: 'Film3.avi', target: 'https://youtube.com/watch?v=FILM3' },
-                    { type: 'avi', icon: '🎬', name: 'Film4.avi', target: 'https://youtube.com/watch?v=FILM4' },
-                    { type: 'avi', icon: '🎬', name: 'Film5.avi', target: 'https://youtube.com/watch?v=FILM5' }
+                    { type: 'avi', icon: '🎬', name: 'Twarz roku 1993.avi', target: 'https://www.youtube.com/watch?v=D7NXOW_EtzM' },
+                    { type: 'avi', icon: '🎬', name: 'Teatrzyk dla dzieci.avi', target: 'https://www.youtube.com/watch?v=mfXpGH4-Mzs' },
+                    { type: 'avi', icon: '🎬', name: 'Protest rodziców.avi', target: 'https://www.youtube.com/watch?v=9jSkix1JPLw' },
+                    { type: 'avi', icon: '🎬', name: 'Olimpiada w Warszawie.avi', target: 'https://www.youtube.com/watch?v=Ic-cSIOV1kY' },
+                    { type: 'avi', icon: '🎬', name: 'Rozmowy kwalifikacyjne.avi', target: 'https://www.youtube.com/watch?v=WDCqzDY1Cek' },
+                    { type: 'avi', icon: '🎬', name: 'Spotkania w mroku.avi', target: 'https://www.youtube.com/watch?v=b4CSzrqpXDk' }
                 ]
             },
             
@@ -338,12 +345,13 @@
                 title: 'Teksty',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Teksty',
                 items: [
-                    { type: 'doc', icon: '📄', name: 'Dokument1.doc', target: 'https://link-do-dokumentu1.com' },
-                    { type: 'doc', icon: '📄', name: 'Dokument2.doc', target: 'https://link-do-dokumentu2.com' },
-                    { type: 'doc', icon: '📄', name: 'Dokument3.doc', target: 'https://link-do-dokumentu3.com' },
-                    { type: 'doc', icon: '📄', name: 'Dokument4.doc', target: 'https://link-do-dokumentu4.com' },
-                    { type: 'doc', icon: '📄', name: 'Dokument5.doc', target: 'https://link-do-dokumentu5.com' },
-                    { type: 'doc', icon: '📄', name: 'Dokument6.doc', target: 'https://link-do-dokumentu6.com' }
+                    { type: 'doc', icon: '📄', name: 'Dziewczyna o wyjątkowych dłoniach.doc', target: 'https://leszekmilewski.pl/dziewczyna.html' },
+                    { type: 'doc', icon: '📄', name: 'Chomontek - wywiad.doc', target: 'https://weszlo.com/2017/03/06/maradona-powiedzial-ze-taki-talent-jak-ja-rodzi-raz-na-kilka-miliardow/' },
+                    { type: 'doc', icon: '📄', name: 'Wiedziałem tylko jak wypłacić pieniądze z bankomatu.doc', target: 'https://weszlo.com/2018/03/19/wiedzialem-wyplacic-pieniadze-bankomatu-powiekszyc-limit-wyplat/' },
+                    { type: 'doc', icon: '📄', name: 'Felieton o prezentach.doc', target: 'https://weszlo.com/2021/12/23/jak-co-czwartek-leszek-milewski-174/' },
+                    { type: 'doc', icon: '📄', name: 'Wiedziałem, że sędzia był nawalony, bo sam z nim piłem.doc', target: 'https://weszlo.com/2017/04/10/wiedzialem-ze-sedzia-nawalony-nim-pilem/' },
+                    { type: 'doc', icon: '📄', name: 'Polska - Niemcy 2:0, Mila. Prosto z boiska.doc', target: 'https://weszlo.com/2019/10/11/piec-lat-od-polska-niemcy-20-przeczytaj-rozdzial-biografii-sebastiana-mili/' },
+                    { type: 'doc', icon: '📄', name: 'Felieton po śmierci Pilcha.rtf', target: 'https://weszlo.com/2020/06/04/jak-co-czwartek-leszek-milewski-99/' }
                 ]
             },
             
@@ -351,10 +359,10 @@
                 title: 'Gry',
                 path: 'C:\\Moje dokumenty\\Folder Leszka\\Gry',
                 items: [
-                    { type: 'exe', icon: '🎮', name: 'Gra1.exe', target: 'https://link-do-gry1.com' },
-                    { type: 'exe', icon: '🎮', name: 'Gra2.exe', target: 'https://link-do-gry2.com' },
-                    { type: 'exe', icon: '🎮', name: 'Gra3.exe', target: 'https://link-do-gry3.com' },
-                    { type: 'exe', icon: '🎮', name: 'Gra4.exe', target: 'https://link-do-gry4.com' }
+                    { type: 'exe', icon: '🎮', name: 'Arnie.exe', target: 'https://archive.org/details/Arnie_1992_Zeppelin' },
+                    { type: 'exe', icon: '🎮', name: 'SWOS 16-17 crack.exe', target: 'https://archive.org/details/sensible-world-of-soccer-1617' },
+                    { type: 'exe', icon: '🎮', name: 'Centurion.exe', target: 'https://archive.org/details/Centurion_Defender_of_Rome_UE_o1' },
+                    { type: 'exe', icon: '🎮', name: 'Golden Axe.exe', target: 'https://archive.org/details/Golden_Axe' }
                 ]
             }
         };
