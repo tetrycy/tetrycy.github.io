@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="css/start-menu.css">
     <link rel="stylesheet" href="css/windows.css">
     <link rel="stylesheet" href="css/calculator.css">
-    <link rel="stylesheet" href="css/paint.css">
     <link rel="stylesheet" href="css/notepad.css">
     <link rel="stylesheet" href="css/shutdown.css">
     <link rel="stylesheet" href="css/bsod.css">
@@ -224,41 +223,6 @@
         </div>
     </div>
 
-    <!-- Paint Windows 98 -->
-    <div class="window" id="paint-window">
-        <div class="window-header">
-            <span class="window-title">Paint</span>
-            <div class="window-controls">
-                <button class="window-btn minimize" data-action="minimize">_</button>
-                <button class="window-btn maximize" data-action="maximize">□</button>
-                <button class="window-btn close" data-action="close">×</button>
-            </div>
-        </div>
-        
-        <div class="window-content paint">
-            <!-- Panel narzędzi -->
-            <div class="paint-toolbar">
-                <button class="paint-tool active" data-tool="brush">🖌</button>
-                <button class="paint-tool" data-tool="pencil">✏️</button>
-                <button class="paint-tool" data-tool="eraser">🧽</button>
-            </div>
-            
-            <!-- Paleta kolorów -->
-            <div class="paint-colors">
-                <div class="color-box active" data-color="#000000" style="background: #000000;"></div>
-                <div class="color-box" data-color="#ff0000" style="background: #ff0000;"></div>
-                <div class="color-box" data-color="#00ff00" style="background: #00ff00;"></div>
-                <div class="color-box" data-color="#0000ff" style="background: #0000ff;"></div>
-                <div class="color-box" data-color="#ffff00" style="background: #ffff00;"></div>
-                <div class="color-box" data-color="#ff00ff" style="background: #ff00ff;"></div>
-                <div class="color-box" data-color="#00ffff" style="background: #00ffff;"></div>
-                <div class="color-box" data-color="#ffffff" style="background: #ffffff;"></div>
-            </div>
-            
-            <!-- Canvas -->
-            <canvas id="paint-canvas" width="400" height="300"></canvas>
-        </div>
-    </div>
 
     <!-- Notatnik Windows 98 -->
     <div class="window" id="notepad-window">
@@ -379,7 +343,6 @@
     <script src="js/windows.js"></script>
     <script src="js/script.js"></script>
     <script src="js/apps/calculator.js"></script>
-    <script src="js/apps/paint.js"></script>
     <script src="js/apps/notepad.js"></script>
     <script src="js/apps/shutdown.js"></script>
     <script src="js/apps/minesweeper.js"></script>
