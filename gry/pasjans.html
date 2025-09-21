@@ -42,6 +42,17 @@
             align-items: center;
         }
 
+        .close-btn {
+            cursor: pointer;
+            padding: 2px 6px;
+            border: 1px solid transparent;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
         .menu-bar {
             background: #c0c0c0;
             border-bottom: 1px solid #808080;
@@ -169,7 +180,6 @@
 
         .card.face-down {
             border: 1px solid #000040;
-            /* Default will be overridden by specific back styles */
         }
 
         .card.face-down.back-blue {
@@ -360,34 +370,39 @@
         .card-back-options {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 15px;
             margin: 15px 0;
             max-height: 300px;
             overflow-y: auto;
         }
 
         .card-back-preview {
-            width: 60px;
-            height: 80px;
+            width: 70px;
+            height: 90px;
             border: 2px solid #808080;
             border-radius: 4px;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .card-back-preview:hover {
             border-color: #0078d4;
+            transform: scale(1.05);
         }
 
         .card-back-preview.selected {
             border: 3px solid #0078d4;
-            box-shadow: 0 0 5px rgba(0, 120, 212, 0.5);
+            box-shadow: 0 0 8px rgba(0, 120, 212, 0.5);
+            transform: scale(1.1);
         }
 
-        .card-back-preview .preview-card {
-            width: 100%;
-            height: 100%;
+        .preview-card {
+            width: 90%;
+            height: 90%;
             border-radius: 2px;
             border: 1px solid #000040;
             position: relative;
@@ -465,25 +480,22 @@
             background-size: 12px 12px;
         }
 
-        .win-title {
-            background: linear-gradient(90deg, #0a246a 0%, #a6caf0 100%);
-            color: white;
-            padding: 4px 8px;
-            margin: -20px -20px 15px -20px;
-            font-weight: bold;
-        }
-
         .dialog-button {
             background: #c0c0c0;
             border: 1px outset #c0c0c0;
-            padding: 4px 12px;
-            margin: 0 4px;
+            padding: 6px 16px;
+            margin: 0 6px;
             cursor: pointer;
             font-size: 11px;
         }
 
+        .dialog-button:hover {
+            background: #e0e0e0;
+        }
+
         .dialog-button:active {
             border: 1px inset #c0c0c0;
+            background: #a0a0a0;
         }
 
         .stock-count {
@@ -534,6 +546,16 @@
             .suit {
                 font-size: 12px;
             }
+            
+            .card-back-options {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .card-back-preview {
+                width: 60px;
+                height: 75px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -565,18 +587,9 @@
                 font-size: 8px;
             }
             
-            .card-top .rank, .card-bottom .rank {
-                font-size: 6px;
-            }
-            
             .card-back-dialog {
                 min-width: 280px;
                 padding: 15px;
-            }
-            
-            .card-back-options {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
             }
             
             .card-back-preview {
@@ -615,7 +628,7 @@
     <div class="game-window">
         <div class="title-bar">
             <span>Pasjans</span>
-            <span>×</span>
+            <span class="close-btn" onclick="window.close()">×</span>
         </div>
         
         <div class="menu-bar">
@@ -680,7 +693,8 @@
                 this.draggedFrom = null;
                 this.dragElement = null;
                 
-                this.cardBackStyle = 'back-blue'; // Default card back
+                this.cardBackStyle = 'back-blue';
+                this.selectedCardBack = 'back-blue';
                 
                 this.init();
             }
@@ -722,7 +736,6 @@
                 this.foundations = [[], [], [], []];
                 this.tableau = [[], [], [], [], [], [], []];
 
-                // Deal to tableau
                 for (let col = 0; col < 7; col++) {
                     for (let row = 0; row <= col; row++) {
                         const card = this.stock.pop();
@@ -753,7 +766,6 @@
                 const stockEl = document.getElementById('stock');
                 const countEl = document.getElementById('stock-count');
                 
-                // Clear previous content except counter
                 Array.from(stockEl.children).forEach(child => {
                     if (!child.classList.contains('stock-count')) {
                         child.remove();
@@ -832,12 +844,10 @@
                 document.addEventListener('mousemove', this.handleMouseMove.bind(this));
                 document.addEventListener('mouseup', this.handleMouseUp.bind(this));
                 
-                // Touch events
                 document.addEventListener('touchstart', this.handleTouchStart.bind(this));
                 document.addEventListener('touchmove', this.handleTouchMove.bind(this));
                 document.addEventListener('touchend', this.handleTouchEnd.bind(this));
                 
-                // Double click for auto-move to foundation
                 document.addEventListener('dblclick', this.handleDoubleClick.bind(this));
             }
 
@@ -868,11 +878,12 @@
             autoMoveToFoundation(cardEl) {
                 const card = this.getCardFromElement(cardEl);
                 
-                // Find appropriate foundation
                 for (let i = 0; i < 4; i++) {
                     const foundation = this.foundations[i];
                     
                     if (foundation.length === 0 && card.rank === 'A') {
+                        this.draggedCards = [card];
+                        this.draggedFrom = this.findCardLocation(cardEl);
                         this.executeMove(cardEl, document.getElementById(`foundation-${i}`));
                         return;
                     }
@@ -883,6 +894,8 @@
                         const topValue = this.getCardValue(topCard.rank);
                         
                         if (card.suit === topCard.suit && cardValue === topValue + 1) {
+                            this.draggedCards = [card];
+                            this.draggedFrom = this.findCardLocation(cardEl);
                             this.executeMove(cardEl, document.getElementById(`foundation-${i}`));
                             return;
                         }
@@ -891,11 +904,9 @@
             }
 
             startDrag(card, x, y) {
-                // Get cards to drag (card + all cards below it in tableau)
                 this.draggedCards = this.getCardsToMove(card);
                 this.draggedFrom = this.findCardLocation(card);
                 
-                // Create drag element
                 this.dragElement = document.createElement('div');
                 this.dragElement.style.position = 'fixed';
                 this.dragElement.style.pointerEvents = 'none';
@@ -921,7 +932,6 @@
                 
                 this.updateDragPosition(x, y);
                 
-                // Add subtle animation to original position
                 card.style.opacity = '0.3';
                 card.style.transform = 'scale(0.95)';
             }
@@ -1002,7 +1012,6 @@
                     el.classList.remove('drop-zone', 'invalid-drop');
                 });
                 
-                // Reset any card effects
                 document.querySelectorAll('.card').forEach(card => {
                     card.style.opacity = '';
                     card.style.transform = '';
@@ -1019,10 +1028,8 @@
             }
 
             executeMove(cardEl, dropZone) {
-                // Remove cards from source
                 this.removeCardsFromSource();
                 
-                // Add cards to destination
                 if (dropZone.classList.contains('foundation-space')) {
                     const foundationIndex = parseInt(dropZone.id.split('-')[1]);
                     this.foundations[foundationIndex].push(this.draggedCards[0]);
@@ -1101,12 +1108,10 @@
             findCardLocation(cardEl) {
                 const id = cardEl.dataset.id;
                 
-                // Check waste
                 if (this.waste.length > 0 && this.waste[this.waste.length - 1].id === id) {
                     return { type: 'waste', index: 0, cardIndex: this.waste.length - 1 };
                 }
                 
-                // Check foundations
                 for (let i = 0; i < 4; i++) {
                     const foundation = this.foundations[i];
                     const cardIndex = foundation.findIndex(card => card.id === id);
@@ -1115,7 +1120,6 @@
                     }
                 }
                 
-                // Check tableau
                 for (let col = 0; col < 7; col++) {
                     const cardIndex = this.tableau[col].findIndex(card => card.id === id);
                     if (cardIndex !== -1) {
@@ -1129,7 +1133,6 @@
             getCardFromElement(cardEl) {
                 const id = cardEl.dataset.id;
                 
-                // Search all locations for the card
                 if (this.waste.length > 0 && this.waste[this.waste.length - 1].id === id) {
                     return this.waste[this.waste.length - 1];
                 }
@@ -1210,7 +1213,6 @@
                     card.faceUp = true;
                     this.waste.push(card);
                 } else if (this.waste.length > 0) {
-                    // Reset stock from waste
                     while (this.waste.length > 0) {
                         const card = this.waste.pop();
                         card.faceUp = false;
@@ -1218,6 +1220,11 @@
                     }
                     this.score = Math.max(0, this.score - 100);
                 }
+                this.render();
+            }
+
+            applyCardBack() {
+                this.cardBackStyle = this.selectedCardBack;
                 this.render();
             }
         }
@@ -1245,60 +1252,53 @@
                 <div class="card-back-options">
                     <div class="card-back-preview ${game.cardBackStyle === 'back-blue' ? 'selected' : ''}" data-style="back-blue">
                         <div class="preview-card face-down back-blue"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Niebieski</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-red' ? 'selected' : ''}" data-style="back-red">
                         <div class="preview-card face-down back-red"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Czerwony</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-green' ? 'selected' : ''}" data-style="back-green">
                         <div class="preview-card face-down back-green"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Zielony</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-castle' ? 'selected' : ''}" data-style="back-castle">
                         <div class="preview-card face-down back-castle"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Zamek</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-beach' ? 'selected' : ''}" data-style="back-beach">
                         <div class="preview-card face-down back-beach"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Plaża</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-fishes' ? 'selected' : ''}" data-style="back-fishes">
                         <div class="preview-card face-down back-fishes"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Ryby</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-hand' ? 'selected' : ''}" data-style="back-hand">
                         <div class="preview-card face-down back-hand"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Ręka</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-shell' ? 'selected' : ''}" data-style="back-shell">
                         <div class="preview-card face-down back-shell"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Muszla</div>
                     </div>
                     <div class="card-back-preview ${game.cardBackStyle === 'back-robot' ? 'selected' : ''}" data-style="back-robot">
                         <div class="preview-card face-down back-robot"></div>
-                        <div style="margin-top: 5px; font-size: 9px;">Robot</div>
                     </div>
                 </div>
-                <div>
-                    <button class="dialog-button" onclick="closeCardBackDialog(); game.render();">OK</button>
+                <div style="margin-top: 20px;">
+                    <button class="dialog-button" onclick="applyCardBackSelection(); closeCardBackDialog();">OK</button>
                     <button class="dialog-button" onclick="closeCardBackDialog();">Anuluj</button>
                 </div>
             `;
             
-            // Add click handlers for previews
             dialog.querySelectorAll('.card-back-preview').forEach(preview => {
                 preview.addEventListener('click', () => {
-                    // Remove selected class from all previews
                     dialog.querySelectorAll('.card-back-preview').forEach(p => p.classList.remove('selected'));
-                    // Add selected class to clicked preview
                     preview.classList.add('selected');
-                    // Update game card back style
-                    game.cardBackStyle = preview.dataset.style;
+                    game.selectedCardBack = preview.dataset.style;
                 });
             });
             
             document.body.appendChild(dialog);
+        }
+
+        function applyCardBackSelection() {
+            if (game) {
+                game.applyCardBack();
+            }
         }
 
         function closeCardBackDialog() {
@@ -1317,7 +1317,6 @@
                   '• Użyj "Odwrót karty" aby zmienić wzór odwrotu');
         }
 
-        // Initialize game
         window.addEventListener('load', () => {
             newGame();
         });
