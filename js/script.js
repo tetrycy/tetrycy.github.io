@@ -75,6 +75,10 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
             case 'games':
                 toggleGamesSubmenu();
                 break;
+                case 'piszpad':
+    openPiszpad();
+    toggleStartMenu();
+    break;
             case 'paint':
                 openPaint();
                 toggleStartMenu();
@@ -240,6 +244,11 @@ function showBSOD() {
             &nbsp;&nbsp;lose any unsaved information in all open applications.</p>
             
             <p>Press any key to continue _</p>
+
+function openPiszpad() {
+    window.open('piszpad.html', '_blank', 'width=900,height=700,resizable=yes,scrollbars=yes');
+}
+            
         </div>
     `;
     
