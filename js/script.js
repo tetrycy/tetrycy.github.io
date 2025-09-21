@@ -213,6 +213,10 @@ function openHelp() {
     window.open('https://patronite.pl/tetrycy', '_blank');
 }
 
+function openPiszpad() {
+    window.open('piszpad.html', '_blank', 'width=900,height=700,resizable=yes,scrollbars=yes');
+}
+
 function openRun() {
     showBSOD();
 }
@@ -244,11 +248,7 @@ function showBSOD() {
             &nbsp;&nbsp;lose any unsaved information in all open applications.</p>
             
             <p>Press any key to continue _</p>
-
-function openPiszpad() {
-    window.open('piszpad.html', '_blank', 'width=900,height=700,resizable=yes,scrollbars=yes');
-}
-            
+           
         </div>
     `;
     
