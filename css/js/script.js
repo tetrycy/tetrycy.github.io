@@ -92,6 +92,15 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 openRun();
                 toggleStartMenu();
                 break;
+
+            case 'maps':
+    openMaps();
+    toggleStartMenu();
+    break;
+case 'outlook':
+    openOutlook();
+    toggleStartMenu();
+    break;
            
             default:
                 alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
@@ -344,6 +353,12 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
                 console.log('Kliknięto: Folder Matiego');
                 // openWindow('folder-mati-window');
                 break;
+                case 'jakub-olkiewicz':
+    window.open('jakub-olkiewicz.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+    break;
+case 'marian-fussball':
+    window.open('marian-fussball.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+    break;
         }
     });
 });
