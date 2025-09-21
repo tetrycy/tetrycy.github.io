@@ -266,22 +266,93 @@
             // Tutaj logika przywracania
         }
         
-        // Funkcja do trwałego usuwania - na przyszłość
+        // Funkcja do trwałego usuwania
         function deleteFile(filename) {
-            if (confirm('Czy na pewno chcesz trwale usunąć ten plik?')) {
+            if (confirm('Czy na pewno chcesz trwale usunąć plik "' + filename + '"?\n\nNie będzie można go przywrócić.')) {
+                // Znajdź i usuń plik
+                const files = document.querySelectorAll('.deleted-file');
+                files.forEach(file => {
+                    const fileNameElement = file.querySelector('.filename');
+                    if (fileNameElement.textContent === filename) {
+                        file.remove();
+                    }
+                });
+                
+                // Sprawdź czy kosz jest pusty
+                const remainingFiles = document.querySelectorAll('.deleted-file');
+                if (remainingFiles.length === 0) {
+                    showEmptyRecycleBin();
+                }
+                
+                // Zaktualizuj pasek stanu
+                updateStatusBar();
+                
+                // Wyłącz przyciski toolbar
+                disableToolbarButtons();
+                
                 console.log('Trwałe usuwanie:', filename);
-                // Tutaj logika trwałego usuwania
             }
         }
         
-        // Funkcja opróżniania kosza - na przyszłość
+        // Funkcja opróżniania kosza
         function emptyRecycleBin() {
+            const deletedFiles = document.querySelectorAll('.deleted-file');
+            if (deletedFiles.length === 0) {
+                alert('Kosz jest już pusty.');
+                return;
+            }
+            
             if (confirm('Czy na pewno chcesz opróżnić kosz?\n\nWszystkie pliki zostaną trwale usunięte.')) {
-                console.log('Opróżnianie kosza');
-                // Tutaj logika opróżniania kosza
+                // Usuń wszystkie pliki z kosza
+                deletedFiles.forEach(file => file.remove());
+                
+                // Pokaż pustą ikonę kosza
+                showEmptyRecycleBin();
+                
+                // Zaktualizuj pasek stanu
+                updateStatusBar();
+                
+                // Wyłącz przyciski toolbar
+                disableToolbarButtons();
+                
+                console.log('Kosz został opróżniony');
             }
         }
         
+        // Funkcja pokazująca pusty kosz
+        function showEmptyRecycleBin() {
+            const content = document.querySelector('.content');
+            content.innerHTML = `
+                <div class="empty-recycle">
+                    <div class="empty-recycle-icon">🗑️</div>
+                    <div>Kosz jest pusty</div>
+                </div>
+            `;
+        }
+        
+        // Funkcja aktualizująca pasek stanu
+        function updateStatusBar() {
+            const fileCount = document.querySelectorAll('.deleted-file').length;
+            const statusText = document.querySelector('.status-bar span:first-child');
+            
+            if (fileCount === 0) {
+                statusText.textContent = 'Kosz jest pusty';
+            } else if (fileCount === 1) {
+                statusText.textContent = '1 obiekt';
+            } else {
+                statusText.textContent = fileCount + ' obiekty';
+            }
+        }
+        
+        // Funkcja wyłączająca przyciski toolbar
+        function disableToolbarButtons() {
+            document.querySelectorAll('.toolbar-btn').forEach(btn => {
+                if (btn.textContent === 'Przywróć' || btn.textContent === 'Usuń') {
+                    btn.classList.add('disabled');
+                }
+            });
+        }
+
         // Funkcja do zaznaczania usuniętych plików
         function selectDeletedFile(element) {
             // Usuń zaznaczenie z innych plików
@@ -310,9 +381,19 @@
                 switch(action) {
                     case 'Przywróć':
                         // Przywróć zaznaczony plik
+                        const selectedFile = document.querySelector('.deleted-file.selected');
+                        if (selectedFile) {
+                            const filename = selectedFile.querySelector('.filename').textContent;
+                            restoreFile(filename);
+                        }
                         break;
                     case 'Usuń':
                         // Trwale usuń zaznaczony plik
+                        const selectedFileToDelete = document.querySelector('.deleted-file.selected');
+                        if (selectedFileToDelete) {
+                            const filename = selectedFileToDelete.querySelector('.filename').textContent;
+                            deleteFile(filename);
+                        }
                         break;
                     case 'Opróżnij kosz':
                         emptyRecycleBin();
