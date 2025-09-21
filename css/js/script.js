@@ -150,6 +150,20 @@ function openHelp() {
 function openRun() {
     showBSOD();
 }
+// Menu Start - dodatkowe funkcje
+function openMaps() {
+    window.open('https://maps.google.com', '_blank');
+    document.getElementById('startMenu').classList.remove('show');
+}
+
+function openOutlook() {
+    document.getElementById('outlook-window').style.display = 'block';
+    document.getElementById('startMenu').classList.remove('show');
+}
+
+function closeOutlook() {
+    document.getElementById('outlook-window').style.display = 'none';
+}
 
 function openSettings() {
     openWindow('settings-window', {
