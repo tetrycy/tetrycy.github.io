@@ -3,9 +3,9 @@
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
     {
-        playerTeam: "MARIAN WŁODARSKI",
+        playerTeam: "M. WŁODARSKI",
         opponentTeam: "HAJTO", 
-        field: "simple", // Proste zielone boisko - najwydajniejsze
+        field: "simple", // Proste zielone boisko
         fieldScale: 1.0,
         bots: [
             { 
@@ -18,7 +18,122 @@ const oneVsOneTeams = [
                 canCrossHalf: false,
                 number: 2,
                 role: "defender",
-                preferredY: 200
+                preferredY: 200,
+                radius: 20, // Standardowy rozmiar
+                shootPower: 1.0 // Standardowa siła
+            }
+        ]
+    },
+    {
+        playerTeam: "M. WŁODARSKI",
+        opponentTeam: "BASLER", 
+        field: "light_grass", // Jasna zieleń
+        fieldScale: 1.0,
+        bots: [
+            { 
+                name: "BASLER", 
+                x: 650, 
+                y: 200, 
+                color: "#ff4400", // Pomarańczowy
+                maxSpeed: 5.5, // Bardzo szybki
+                aggressiveness: 1.0, // Bardzo agresywny
+                canCrossHalf: true, // Może przekraczać połowę
+                number: 11,
+                role: "attacker",
+                preferredY: 200,
+                radius: 16, // Mniejszy = zwinniejszy
+                shootPower: 0.8 // Słabsze strzały
+            }
+        ]
+    },
+    {
+        playerTeam: "M. WŁODARSKI",
+        opponentTeam: "BAŁAKOW", 
+        field: "dark_grass", // Ciemna zieleń
+        fieldScale: 1.0,
+        bots: [
+            { 
+                name: "BAŁAKOW", 
+                x: 680, 
+                y: 200, 
+                color: "#8b0000", // Ciemno czerwony
+                maxSpeed: 2.8, // Wolny
+                aggressiveness: 0.9, // Bardzo agresywny
+                canCrossHalf: false,
+                number: 6,
+                role: "defender",
+                preferredY: 200,
+                radius: 26, // Większy = trudniejszy do ominięcia
+                shootPower: 1.8 // Bardzo mocne strzały
+            }
+        ]
+    },
+    {
+        playerTeam: "M. WŁODARSKI",
+        opponentTeam: "P. NOWAK", 
+        field: "striped_grass", // Pasiaste boisko
+        fieldScale: 1.0,
+        bots: [
+            { 
+                name: "P. NOWAK", 
+                x: 650, 
+                y: 200, 
+                color: "#4b0082", // Indygo
+                maxSpeed: 4.2, // Średnia prędkość
+                aggressiveness: 0.8, // Średnia agresja
+                canCrossHalf: true,
+                number: 8,
+                role: "midfielder",
+                preferredY: 200,
+                radius: 20, // Standardowy
+                shootPower: 1.3 // Mocne strzały
+            }
+        ]
+    },
+    {
+        playerTeam: "M. WŁODARSKI",
+        opponentTeam: "HERZOG", 
+        field: "dotted_grass", // Kropkowane boisko
+        fieldScale: 1.0,
+        bots: [
+            { 
+                name: "PRECYZYJNY PAVEL", 
+                x: 650, 
+                y: 200, 
+                color: "#2e8b57", // Morska zieleń
+                maxSpeed: 3.9, // Średnio szybki
+                aggressiveness: 0.6, // Spokojny
+                canCrossHalf: true,
+                number: 10,
+                role: "midfielder",
+                preferredY: 200,
+                radius: 18, // Mniejszy
+                shootPower: 1.5, // Precyzyjne strzały
+                isPrecise: true // Specjalna cecha - rzadkie błędy
+            }
+        ]
+    },
+    {
+        playerTeam: "M. WŁODARSKI",
+        opponentTeam: "KAHN", 
+        field: "penalty_box", // Specjalne boisko z wyraźnym polem karnym
+        fieldScale: 1.0,
+        bots: [
+            { 
+                name: "KAHN", 
+                x: 720, 
+                y: 200, 
+                color: "#ff1493", // Różowy (klasyczny bramkarski)
+                maxSpeed: 4.0, // Dosyć szybki
+                aggressiveness: 0.4, // Defensywny
+                canCrossHalf: false,
+                number: 1,
+                role: "goalkeeper",
+                preferredY: 200,
+                radius: 24, // Większy zasięg
+                shootPower: 2.0, // Mocne wybicia
+                isGoalkeeper: true,
+                staysInArea: true // Zostaje w okolicy bramki
             }
         ]
     }
