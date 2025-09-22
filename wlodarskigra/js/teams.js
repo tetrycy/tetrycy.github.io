@@ -2,7 +2,7 @@
 
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
-  {
+javascript{
     playerTeam: "M. WŁODARSKI",
     opponentTeam: "HAJTO", 
     field: "simple",
@@ -10,20 +10,29 @@ const oneVsOneTeams = [
     bots: [
         { 
             name: "HAJTO", 
-            x: 600,                     // ⬅️ Dalej od bramki (zamiast 650)
+            x: 600, 
             y: 200, 
             color: "#0066ff",
-            maxSpeed: 4.5,              // ⬅️ SZYBSZY (było 3.75)
-            aggressiveness: 0.9,        // ⬅️ BARDZIEJ AGRESYWNY (było 0.7)
-            canCrossHalf: false,        // Nadal obrońca
+            
+            // 🎯 TYLKO PODSTAWY:
+            maxSpeed: 4.5,              // Szybkość
+            aggressiveness: 0.9,        // Agresja
+            
+            // 🚫 OGRANICZENIE RUCHU - 1/3 BOISKA:
+            minX: 400,                  // Nie może być lewiej niż x=400 (środek)
+            maxX: 800,                  // Może być do prawej krawędzi
+            minY: 50,                   // Może od góry boiska  
+            maxY: 350,                  // Do dołu boiska
+            
+            // 📊 STANDARDOWE:
             number: 2,
-            role: "defender",
-            preferredY: -1,             // ⬅️ KLUCZ: -1 = brak fikacji pozycji!
-            radius: 35,
+            radius: 20,                 // Wrócił do normalnego
             shootPower: 1.0
+            
+            // ❌ USUNIĘTE: role, canCrossHalf, preferredY
         }
     ]
-},  // ← PRZECINEK TUTAJ!
+}, // ← PRZECINEK TUTAJ!
     {
         playerTeam: "M. WŁODARSKI",
         opponentTeam: "BASLER",
