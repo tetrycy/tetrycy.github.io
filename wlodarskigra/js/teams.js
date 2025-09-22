@@ -2,9 +2,10 @@
 
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
-javascript{
+{    // ← Tylko klamra otwierająca
     playerTeam: "M. WŁODARSKI",
     opponentTeam: "HAJTO", 
+
     field: "simple",
     fieldScale: 1.0,
     bots: [
