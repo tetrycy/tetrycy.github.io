@@ -5,7 +5,7 @@ const oneVsOneTeams = [
     {
         playerTeam: "MARIAN WŁODARSKI",
         opponentTeam: "HAJTO", 
-        field: "grass",
+        field: "simple", // Proste zielone boisko - najwydajniejsze
         fieldScale: 1.0,
         bots: [
             { 
