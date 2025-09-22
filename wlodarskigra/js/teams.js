@@ -9,29 +9,25 @@ const oneVsOneTeams = [
     field: "simple",
     fieldScale: 1.0,
     bots: [
-        { 
-            name: "HAJTO", 
-            x: 600, 
-            y: 200, 
-            color: "#0066ff",
-            
-            // 🎯 TYLKO PODSTAWY:
-            maxSpeed: 4.5,              // Szybkość
-            aggressiveness: 0.9,        // Agresja
-            
-            // 🚫 OGRANICZENIE RUCHU - 1/3 BOISKA:
-            minX: 400,                  // Nie może być lewiej niż x=400 (środek)
-            maxX: 800,                  // Może być do prawej krawędzi
-            minY: 50,                   // Może od góry boiska  
-            maxY: 350,                  // Do dołu boiska
-            
-            // 📊 STANDARDOWE:
-            number: 2,
-            radius: 20,                 // Wrócił do normalnego
-            shootPower: 1.0
-            
-            // ❌ USUNIĘTE: role, canCrossHalf, preferredY
-        }
+{
+    name: "HAJTO", 
+    x: 600, 
+    y: 200, 
+    color: "#0066ff",
+    
+    maxSpeed: 4.5,
+    aggressiveness: 0.9,
+    
+    // POPRAWIONE OGRANICZENIE - tylko prawa 1/3:
+    minX: 533,                  // Od 2/3 boiska w prawo  
+    maxX: 800,                  // Do prawej krawędzi
+    minY: 50,                   
+    maxY: 350,                  
+    
+    number: 2,
+    radius: 20,
+    shootPower: 1.0
+}
     ]
 }, // ← PRZECINEK TUTAJ!
     {
