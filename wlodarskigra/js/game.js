@@ -1,240 +1,241 @@
-// game.js - główna logika gry i inicjalizacja
+// player.js - zoptymalizowana logika gracza i AI botów z unikalną rolą Hajto
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// Sterowanie graczem - uproszczone
+function updatePlayer() {
+    const speed = 5.1;
 
-// Stan gry
-let gameMode = null; // '1v1' or 'bundesliga'
-let selectedTeam = null;
-
-// Stan gry z efektami
-let gameState = {
-    playerScore: 0,
-    botScore: 0,
-    gameWon: false,
-    gameStarted: false,
-    ballInPlay: false,
-    particles: [],
-    ballRotation: 0,
-    screenShake: 0,
-    lastCollisionTime: 0,  // Cooldown kolizji
-    frameCount: 0
-};
-
-// Gracz (Marian Włodarski)
-const player = {
-    x: 100,
-    y: canvas.height / 2,
-    radius: 20,
-    color: '#ff0000',
-    vx: 0,
-    vy: 0,
-    number: 10
-};
-
-// Boty - będą ładowane z definicji drużyn
-let bots = [];
-
-// Bramkarz gracza (opcjonalny)
-let playerGoalkeeper = null;
-
-// Piłka
-const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: 8,
-    vx: 0,
-    vy: 0,
-    color: '#ffffff',
-    maxSpeed: 11.5,
-    startSpeed: 5.7
-};
-
-// Sterowanie
-const keys = {};
-
-document.addEventListener('keydown', (e) => {
-    keys[e.key.toLowerCase()] = true;
+    player.vx = 0;
+    player.vy = 0;
     
-    if (e.key === ' ') {
-        e.preventDefault();
-        if (!gameState.gameStarted) {
-            startGame();
-        } else if (!gameState.ballInPlay && !gameState.gameWon) {
-            launchBall();
-        }
-    }
-});
+    if (keys['w']) player.vy = -speed;
+    if (keys['s']) player.vy = speed;
+    if (keys['a']) player.vx = -speed;
+    if (keys['d']) player.vx = speed;
 
-document.addEventListener('keyup', (e) => {
-    keys[e.key.toLowerCase()] = false;
-});
+    player.x += player.vx;
+    player.y += player.vy;
 
-// Uproszczona funkcja rysowania gracza - tylko kółko + numer
-function drawPlayer(playerObj, name, isBot = false) {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = playerObj.x;
-    const drawY = playerObj.y;
-    // Używaj rzeczywisty rozmiar bota (niektóre są większe/mniejsze)
-    const scaledRadius = (playerObj.radius || 20) * scale;
+    // Natychmiast sprawdź kolizję z piłką
+    checkPlayerBallCollision();
 
-    // Cień gracza - większy dla większych graczy
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.arc(drawX + 2, drawY + 2, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Główny kolor gracza
-    ctx.fillStyle = playerObj.color;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Numer na środku - rozmiar zależny od wielkości gracza
-    ctx.fillStyle = 'white';
-    const fontSize = Math.max(12, (scaledRadius / 20) * 16); // Większe boty = większy tekst
-    ctx.font = `bold ${fontSize}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2 * scale;
-    const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY + 5 * scale);
-    ctx.fillText(number, drawX, drawY + 5 * scale);
-
-    // Nazwa gracza pod kółkiem
-    ctx.fillStyle = 'white';
-    const nameSize = Math.max(8, (scaledRadius / 20) * 10);
-    ctx.font = `bold ${nameSize}px Arial`;
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3 * scale;
-    ctx.strokeText(name, drawX, drawY + scaledRadius + 15 * scale);
-    ctx.fillText(name, drawX, drawY + scaledRadius + 15 * scale);
+    // Ograniczenia boiska
+    player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
+    player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
 }
 
-function drawBall() {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = ball.x;
-    const drawY = ball.y;
-    const scaledRadius = ball.radius * scale;
+function checkPlayerBallCollision() {
+    const dx = ball.x - player.x;
+    const dy = ball.y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const minDistance = ball.radius + player.radius;
 
-    // Cień piłki
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.arc(drawX + 2, drawY + 2, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
+    if (distance < minDistance && distance > 0) {
+        const nx = dx / distance;
+        const ny = dy / distance;
+        
+        // Ustaw piłkę na krawędzi gracza
+        ball.x = player.x + nx * minDistance;
+        ball.y = player.y + ny * minDistance;
+        
+        // Nadaj piłce prędkość
+        const kickPower = Math.max(6, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 3);
+        ball.vx = nx * kickPower;
+        ball.vy = ny * kickPower;
+    }
+}
 
-    // Piłka - miganie gdy nie w grze
-    if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
-        if (Math.floor(Date.now() / 300) % 2) {
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+// Zoptymalizowane AI botów
+function updateBots() {
+    bots.forEach((bot, index) => {
+        if (!gameState.ballInPlay && !bot.isGoalkeeper) {
+            const readyX = canvas.width / 2 + 80;
+            const readyY = bot.startY || canvas.height / 2;
+            
+            bot.vx = (readyX - bot.x) * 0.1;
+            bot.vy = (readyY - bot.y) * 0.1;
+            
+            bot.x += bot.vx;
+            bot.y += bot.vy;
+            return;
+        }
+
+        if (bot.isGoalkeeper) {
+            updateGoalkeeper(bot);
         } else {
-            ctx.fillStyle = ball.color;
+            updateFieldBot(bot, index);
         }
-    } else {
-        ctx.fillStyle = ball.color;
-    }
-    
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Prosta czarna linia na piłce
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2 * scale;
-    ctx.beginPath();
-    ctx.moveTo(drawX - scaledRadius * 0.7, drawY);
-    ctx.lineTo(drawX + scaledRadius * 0.7, drawY);
-    ctx.stroke();
-}
-
-// Minimalne efekty cząsteczkowe
-function createParticles(x, y, color, count) {
-    for(let i = 0; i < Math.min(count, 3); i++) { // Max 3 cząsteczki
-        gameState.particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 8,
-            vy: (Math.random() - 0.5) * 8,
-            life: 20, // Krótszy czas życia
-            maxLife: 20,
-            color: color,
-            size: 3
-        });
-    }
-}
-
-function updateParticles() {
-    for(let i = gameState.particles.length - 1; i >= 0; i--) {
-        const particle = gameState.particles[i];
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vx *= 0.9;
-        particle.vy *= 0.9;
-        particle.life--;
-        
-        if(particle.life <= 0) {
-            gameState.particles.splice(i, 1);
-        }
-    }
-}
-
-function drawParticles() {
-    gameState.particles.forEach(particle => {
-        const alpha = particle.life / particle.maxLife;
-        ctx.fillStyle = `rgba(255,255,0,${alpha})`;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-        ctx.fill();
     });
-}
-
-function updateEffects() {
-    if(gameState.particles.length > 0) {
-        updateParticles();
-    }
-    if(gameState.screenShake > 0) {
-        gameState.screenShake *= 0.8;
-        if(gameState.screenShake < 0.1) gameState.screenShake = 0;
+    
+    // Bramkarz gracza
+    if (playerGoalkeeper) {
+        updatePlayerGoalkeeper();
     }
 }
 
-// Główna pętla gry
-function gameLoop() {
-    if (gameMode) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updatePlayerGoalkeeper() {
+    if (!gameState.ballInPlay) {
+        playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
+        playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
+    } else {
+        let targetY = ball.y;
+        playerGoalkeeper.x = Math.max(20, Math.min(50, playerGoalkeeper.x));
+        targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
         
-        drawField();
-        
-        if (gameState.gameStarted) {
-            updatePlayer();
-            updateBots();
-            updateBall();
-        }
-        
-        drawPlayer(player, 'WŁODARSKI', false);
-        if (playerGoalkeeper) {
-            drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
-        }
-        bots.forEach(bot => {
-            drawPlayer(bot, bot.name, true);
-        });
-        drawBall();
-        
-        updateEffects();
-        if(gameState.particles.length > 0) {
-            drawParticles();
-        }
+        const dy = targetY - playerGoalkeeper.y;
+        playerGoalkeeper.vy = dy * 0.08;
     }
     
-    gameState.frameCount++;
-    requestAnimationFrame(gameLoop);
+    playerGoalkeeper.x += playerGoalkeeper.vx;
+    playerGoalkeeper.y += playerGoalkeeper.vy;
 }
 
-// Inicjalizacja
-gameLoop();
+function updateFieldBot(bot, index) {
+    // Optymalizacja: oblicz distanceToBall tylko co 3 klatki
+    if (gameState.frameCount % 3 === index % 3) {
+        const dx = ball.x - bot.x;
+        const dy = ball.y - bot.y;
+        bot.cachedDistanceToBall = Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    const distanceToBall = bot.cachedDistanceToBall || 999;
+    const ballInReach = distanceToBall < 100;
+    
+    let targetX, targetY;
+
+    // Pozycjonowanie według roli
+    switch(bot.role) {
+        case "attacker":
+            if (ballInReach) {
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                targetX = canvas.width * 0.6;
+                targetY = bot.preferredY;
+            }
+            break;
+            
+        case "midfielder":
+            if (ballInReach) {
+                targetX = ball.x + (Math.random() - 0.5) * 30;
+                targetY = ball.y + (Math.random() - 0.5) * 30;
+            } else {
+                targetX = canvas.width * 0.65;
+                targetY = bot.preferredY;
+            }
+            break;
+
+        case "hajto":
+            // UNIKALNA LOGIKA DLA HAJTO - agresywny obrońca w ćwierci boiska
+            if (ballInReach || distanceToBall < 150) {
+                // Aktywnie goni piłkę gdy w zasięgu
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                // Pozycja defensywna - patroluje między bramką a ćwiercią boiska
+                const patrolX = canvas.width * 0.85; // 85% boiska
+                targetX = patrolX;
+                
+                // Śledzi piłkę pionowo, ale z ograniczeniem
+                if (ball.y < canvas.height * 0.3) {
+                    targetY = canvas.height * 0.3; // Nie idzie za wysoko
+                } else if (ball.y > canvas.height * 0.7) {
+                    targetY = canvas.height * 0.7; // Nie idzie za nisko
+                } else {
+                    targetY = ball.y; // Śledzi piłkę normalnie
+                }
+            }
+            
+            // Ograniczenia ruchu Hajto - tylko ćwierć boiska
+            targetX = Math.max(canvas.width * 0.75, Math.min(canvas.width - 30, targetX));
+            break;
+            
+        case "defender":
+        default:
+            if (ball.x > canvas.width * 0.6 && ballInReach) {
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                targetX = canvas.width * 0.75;
+                targetY = bot.preferredY;
+            }
+            break;
+    }
+
+    // Uproszczony system błędów - tylko co 5 klatek
+    if (gameState.frameCount % 5 === 0) {
+        let errorChance = 0.08;
+        
+        if (gameMode === '1v1') {
+            switch(selectedTeam) {
+                case 0: errorChance = 0.08; break; // HAJTO - mniejszy błąd (był 0.12)
+                default: errorChance = 0.10;
+            }
+        } else if (gameMode === 'bundesliga') {
+            const errorLevels = [0.15, 0.10, 0.12, 0.06, 0.04, 0.20, 0.18];
+            errorChance = errorLevels[selectedTeam] || 0.08;
+        }
+        
+        // Hajto robi mniej błędów dzięki doświadczeniu
+        if (bot.role === "hajto") {
+            errorChance *= 0.7;
+        }
+        
+        if (Math.random() < errorChance) {
+            targetX += (Math.random() - 0.5) * 40;
+            targetY += (Math.random() - 0.5) * 40;
+        }
+        
+        // Cache target dla kolejnych klatek
+        bot.cachedTargetX = targetX;
+        bot.cachedTargetY = targetY;
+    } else {
+        targetX = bot.cachedTargetX || targetX;
+        targetY = bot.cachedTargetY || targetY;
+    }
+
+    const dx = targetX - bot.x;
+    const dy = targetY - bot.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 3) {
+        const normalizedX = dx / distance;
+        const normalizedY = dy / distance;
+        
+        // Zastosuj aggressiveness jako modyfikator prędkości
+        let speedModifier = 1.0;
+        if (bot.aggressiveness) {
+            speedModifier = 0.7 + (bot.aggressiveness * 0.3); // Od 70% do 100% prędkości
+        }
+        
+        bot.vx = normalizedX * bot.maxSpeed * speedModifier;
+        bot.vy = normalizedY * bot.maxSpeed * speedModifier;
+    } else {
+        bot.vx *= 0.7;
+        bot.vy *= 0.7;
+    }
+
+    bot.x += bot.vx;
+    bot.y += bot.vy;
+
+    // Ograniczenia pozycji
+    if (bot.role === "hajto") {
+        // Hajto ograniczony do ćwierci boiska (75%-100%)
+        bot.x = Math.max(canvas.width * 0.75, Math.min(canvas.width - bot.radius - 15, bot.x));
+    } else if (bot.canCrossHalf) {
+        bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
+    } else {
+        bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
+    }
+    
+    bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+}
+
+function updateGoalkeeper(bot) {
+    let targetY = ball.y;
+    bot.x = Math.max(canvas.width - 50, Math.min(canvas.width - 20, bot.x));
+    targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+    
+    const dy = targetY - bot.y;
+    bot.vy = dy * 0.1;
+    bot.y += bot.vy;
+}
