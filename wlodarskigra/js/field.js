@@ -3,6 +3,9 @@ function drawField() {
     const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     
     switch(currentTeamData.field) {
+        case 'simple':
+            drawSimpleField();
+            break;
         case 'grass':
             drawGrassField();
             break;
@@ -25,6 +28,15 @@ function drawField() {
             drawAsphaltField();
             break;
     }
+}
+
+function drawSimpleField() {
+    // Proste zielone tło - bez gradientów, bez efektów
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Tylko standardowe linie boiska
+    drawStandardFieldLines();
 }
 
 function drawSandyField() {
