@@ -10,26 +10,27 @@ const oneVsOneTeams = [
     fieldScale: 1.0,
     bots: [
 {
-    name: "HAJTO", 
-    x: 250,                     // Bliżej swojej bramki (lewa)
-    y: 200, 
-    color: "#0066ff",
-    
-    maxSpeed: 4.5,
-    aggressiveness: 0.9,
-    
-x: 650,     // To jest WEWNĄTRZ obszaru (533-800)
-minX: 533,  // Prawa 1/3 boiska  
-maxX: 800,  // Do prawej krawędzi                 // Ograniczony do lewej 1/3 
-    minY: 50,                   
-    maxY: 350,                  
-    
-    number: 2,
-    radius: 20,
-    shootPower: 1.0
-}
+    playerTeam: "M. WŁODARSKI",
+    opponentTeam: "HAJTO", 
+    field: "simple",
+    fieldScale: 1.0,
+    bots: [
+        { 
+            name: "HAJTO", 
+            x: 720,                     // Startuje w polu karnym
+            y: 200, 
+            color: "#0066ff",
+            maxSpeed: 4.8,              // Szybki
+            aggressiveness: 0.9,        // Bardzo agresywny
+            canCrossHalf: false,        // Nie atakuje
+            number: 2,
+            role: "hajto",              // UNIKALNA ROLA
+            preferredY: 200,
+            radius: 20,
+            shootPower: 1.2             // Mocniejsze strzały
+        }
     ]
-}, // ← PRZECINEK TUTAJ!
+}, PRZECINEK TUTAJ!
     {
         playerTeam: "M. WŁODARSKI",
         opponentTeam: "BASLER",
