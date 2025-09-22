@@ -2,7 +2,7 @@
 
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
-   {
+  {
     playerTeam: "M. WŁODARSKI",
     opponentTeam: "HAJTO", 
     field: "simple",
@@ -10,34 +10,20 @@ const oneVsOneTeams = [
     bots: [
         { 
             name: "HAJTO", 
-            x: 650, 
+            x: 600,                     // ⬅️ Dalej od bramki (zamiast 650)
             y: 200, 
             color: "#0066ff",
-            maxSpeed: 3.75,
-            aggressiveness: 0.7,
-            canCrossHalf: false,
+            maxSpeed: 4.5,              // ⬅️ SZYBSZY (było 3.75)
+            aggressiveness: 0.9,        // ⬅️ BARDZIEJ AGRESYWNY (było 0.7)
+            canCrossHalf: false,        // Nadal obrońca
             number: 2,
             role: "defender",
-            preferredY: 200,
+            preferredY: -1,             // ⬅️ KLUCZ: -1 = brak fikacji pozycji!
             radius: 35,
-            shootPower: 1.0,
-            
-            // 🆕 NOWE PARAMETRY MOBILNOŚCI:
-            movementRadius: 180,        // Może się oddalić 180px od preferredY
-            verticalRange: [50, 350],   // Może chodzić od góry do dołu boiska  
-            horizontalLimit: 300,       // Nie przekracza x=400 (środek boiska)
-            followBallDistance: 150,    // Goni piłkę w promieniu 150px
-            returnThreshold: 0.4,       // Wraca na pozycję gdy przeciwnik ma piłkę
-            returnSpeed: 0.6,           // Prędkość powrotu na pozycję (60%)
-            
-            // 🎯 TAKTYCZNE ZACHOWANIA:
-            chaseBallInDefense: true,   // Aktywnie goni piłkę w obronie
-            blockPassing: true,         // Próbuje blokować podania
-            coverGoal: true,            // Wraca bronić bramkę gdy zagrożenie
-            coverGoal: true,            // Wraca bronić bramkę gdy zagrożenie
+            shootPower: 1.0
         }
     ]
-},    // ← PRZECINEK TUTAJ!
+},  // ← PRZECINEK TUTAJ!
     {
         playerTeam: "M. WŁODARSKI",
         opponentTeam: "BASLER",
