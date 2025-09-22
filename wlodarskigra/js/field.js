@@ -1,6 +1,6 @@
 // field.js - funkcje rysowania różnych boisk
 function drawField() {
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     
     switch(currentTeamData.field) {
         case 'grass':
@@ -29,7 +29,7 @@ function drawField() {
 
 function drawSandyField() {
     // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     // Piaszczyste boisko z pustynną teksturą
@@ -165,7 +165,7 @@ function drawMuddyField() {
 
 function drawWinterField() {
     // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     // Zimowe boisko
@@ -237,7 +237,7 @@ function drawStadiumField() {
 }
 
 function drawStandardFieldLines() {
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     // Linie boiska - skalowane
