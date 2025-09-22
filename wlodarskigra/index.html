@@ -13,52 +13,39 @@
     <!-- GŁÓWNE MENU -->
     <div id="mainMenu" class="main-menu">
         <h2 style="color: #ffff00; margin-bottom: 20px;">HAUPTMENÜ</h2>
-        <button class="menu-btn" onclick="startTournament()">🏆 TURNIER</button>
-        <button class="menu-btn" onclick="showTeamSelection()">⚽ FREUNDSCHAFTSSPIEL</button>
         <button class="menu-btn" onclick="show1v1Selection()">⚔️ 1 vs 1 DUELL</button>
         <button class="menu-btn" onclick="showBundesligaSelection()">🏟️ ZWEITE BUNDESLIGA</button>
-    </div>
-
-    <!-- WYBÓR DRUŻYNY - FREUNDSCHAFTSSPIEL -->
-    <div id="teamSelection" class="team-selection">
-        <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
-        <button class="team-btn" onclick="startFriendly(0)">🟦 VFL OLDENBURG (Hans Jurgen)</button>
-        <button class="team-btn" onclick="startFriendly(1)">🟣 SV WALDORF MANNHEIM (Klaus Schmidt - GONIO PIŁKĘ!)</button>
-        <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz - GROßES FELD!)</button>
-        <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
-        <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
-        <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
-        <button class="team-btn" onclick="startFriendly(6)">🟤 SPVGG UNTERHACHING (2 Gegner + IHR TORWART!)</button>
-        <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
     </div>
 
     <!-- WYBÓR PRZECIWNIKA - 1 vs 1 -->
     <div id="oneVsOneSelection" class="team-selection">
         <h2 style="color: #ff6600; margin-bottom: 20px;">⚔️ 1vs1 GEGNER WÄHLEN ⚔️</h2>
-        <button class="team-btn" onclick="start1v1(0)">⭐ GÜNTER NETZER (Legende - Kleines Feld)</button>
-        <button class="team-btn" onclick="start1v1(1)">⭐⭐ FRANZ BECKENBAUER (Kaiser - Profi Feld)</button>
-        <button class="team-btn" onclick="start1v1(2)">⭐⭐⭐ GERD MÜLLER (Bomber - Stadium)</button>
+        <button class="team-btn" onclick="start1v1(0)">🔵 HAJTO (Defender - Normales Feld)</button>
         <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
     </div>
 
     <!-- WYBÓR DRUŻYNY - ZWEITE BUNDESLIGA -->
     <div id="bundesligaSelection" class="team-selection">
         <h2 style="color: #ffff00; margin-bottom: 20px;">🏟️ BUNDESLIGA GEGNER WÄHLEN 🏟️</h2>
-        <button class="team-btn" onclick="startBundesliga(0)">🟡 ENERGIE COTTBUS (5 Spieler - Profi Liga)</button>
-        <button class="team-btn" onclick="startBundesliga(1)">🟨 DYNAMO DRESDEN (5 Spieler - Stadium)</button>
-        <button class="team-btn" onclick="startBundesliga(2)">🟤 FC ST. PAULI (4 Spieler - Kultclub)</button>
+        <button class="team-btn" onclick="startBundesliga(0)">🟦 VFL OLDENBURG (Hans Jurgen)</button>
+        <button class="team-btn" onclick="startBundesliga(1)">🟣 SV WALDORF MANNHEIM (Klaus Schmidt - GONIO PIŁKĘ!)</button>
+        <button class="team-btn" onclick="startBundesliga(2)">🟢 FC HANSA ROSTOCK (Werner + Fritz - GROßES FELD!)</button>
+        <button class="team-btn" onclick="startBundesliga(3)">🟠 EINTRACHT BRAUNSCHWEIG (3 Spieler)</button>
+        <button class="team-btn" onclick="startBundesliga(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
+        <button class="team-btn" onclick="startBundesliga(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
+        <button class="team-btn" onclick="startBundesliga(6)">🟤 SPVGG UNTERHACHING (2 Gegner + IHR TORWART!)</button>
         <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
     </div>
     
     <!-- INTERFEJS GRY -->
     <div class="round-info hidden" id="roundInfo">
-        RUNDE 1: SV BABELSBERG 04 vs VFL OLDENBURG
+        1vs1 DUELL: MARIAN WŁODARSKI vs HAJTO
     </div>
     
     <div class="score hidden" id="scoreDisplay">
-        <div class="team-name" id="playerTeam">SV BABELSBERG 04</div>
+        <div class="team-name" id="playerTeam">MARIAN WŁODARSKI</div>
         <span id="playerScore">0</span> : <span id="botScore">0</span>
-        <div class="team-name" id="botTeam">VFL OLDENBURG</div>
+        <div class="team-name" id="botTeam">HAJTO</div>
     </div>
     
     <div class="game-container" id="gameContainer">
@@ -76,7 +63,6 @@
         <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
         
         <button class="reset-btn" onclick="backToMenu()">🏠 HAUPTMENÜ</button>
-        <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
         <button class="reset-btn" id="retryBtn" onclick="retryMatch()" style="display: none;">🔄 WIEDERHOLEN</button>
     </div>
 
