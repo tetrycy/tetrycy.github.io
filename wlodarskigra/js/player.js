@@ -1,6 +1,6 @@
-// player.js - logika gracza i AI botów
+// player.js - zoptymalizowana logika gracza i AI botów
 
-// Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
+// Sterowanie graczem - uproszczone
 function updatePlayer() {
     const speed = 5.1;
 
@@ -15,10 +15,10 @@ function updatePlayer() {
     player.x += player.vx;
     player.y += player.vy;
 
-    // NATYCHMIAST po ruchu gracza sprawdź kolizję z piłką
+    // Natychmiast sprawdź kolizję z piłką
     checkPlayerBallCollision();
 
-    // Ograniczenia boiska - dla wszystkich trybów
+    // Ograniczenia boiska
     player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
     player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
 }
@@ -33,23 +33,23 @@ function checkPlayerBallCollision() {
         const nx = dx / distance;
         const ny = dy / distance;
         
-        // Ustaw piłkę dokładnie na krawędzi gracza
+        // Ustaw piłkę na krawędzi gracza
         ball.x = player.x + nx * minDistance;
         ball.y = player.y + ny * minDistance;
         
-        // Nadaj piłce prędkość - MINIMUM 7 px/frame (zmniejszone o 15%)
-        const kickPower = Math.max(7, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 4);
+        // Nadaj piłce prędkość
+        const kickPower = Math.max(6, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 3);
         ball.vx = nx * kickPower;
         ball.vy = ny * kickPower;
     }
 }
 
-// AI Botów + bramkarz gracza
+// Zoptymalizowane AI botów
 function updateBots() {
-    bots.forEach(bot => {
+    bots.forEach((bot, index) => {
         if (!gameState.ballInPlay && !bot.isGoalkeeper) {
-            const readyX = bot.isGoalkeeper ? canvas.width - 40 : canvas.width / 2 + 80;
-            const readyY = bot.isGoalkeeper ? canvas.height / 2 : bot.startY || canvas.height / 2;
+            const readyX = canvas.width / 2 + 80;
+            const readyY = bot.startY || canvas.height / 2;
             
             bot.vx = (readyX - bot.x) * 0.1;
             bot.vy = (readyY - bot.y) * 0.1;
@@ -62,11 +62,11 @@ function updateBots() {
         if (bot.isGoalkeeper) {
             updateGoalkeeper(bot);
         } else {
-            updateFieldBot(bot);
+            updateFieldBot(bot, index);
         }
     });
     
-    // Aktualizuj bramkarza gracza jeśli istnieje
+    // Bramkarz gracza
     if (playerGoalkeeper) {
         updatePlayerGoalkeeper();
     }
@@ -74,66 +74,41 @@ function updateBots() {
 
 function updatePlayerGoalkeeper() {
     if (!gameState.ballInPlay) {
-        // Wróć do pozycji startowej
         playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
         playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
     } else {
-        // Śledź piłkę ale tylko w bramce
         let targetY = ball.y;
         playerGoalkeeper.x = Math.max(20, Math.min(50, playerGoalkeeper.x));
         targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
         
         const dy = targetY - playerGoalkeeper.y;
-        playerGoalkeeper.vy = dy * 0.08; // Nieco wolniejszy niż przeciwny bramkarz
+        playerGoalkeeper.vy = dy * 0.08;
     }
     
     playerGoalkeeper.x += playerGoalkeeper.vx;
     playerGoalkeeper.y += playerGoalkeeper.vy;
 }
 
-function updateFieldBot(bot) {
-    const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
-    const ballInReach = distanceToBall < 120;
+function updateFieldBot(bot, index) {
+    // Optymalizacja: oblicz distanceToBall tylko co 3 klatki
+    if (gameState.frameCount % 3 === index % 3) {
+        const dx = ball.x - bot.x;
+        const dy = ball.y - bot.y;
+        bot.cachedDistanceToBall = Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    const distanceToBall = bot.cachedDistanceToBall || 999;
+    const ballInReach = distanceToBall < 100;
     
     let targetX, targetY;
 
-    // Sprawdź odległości do kolegów z drużyny (unikaj skupiania się)
-    const teammateSpacing = 60;
-    let spacingAdjustmentX = 0;
-    let spacingAdjustmentY = 0;
-    
-    bots.forEach(teammate => {
-        if (teammate !== bot && !teammate.isGoalkeeper) {
-            const dx = bot.x - teammate.x;
-            const dy = bot.y - teammate.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < teammateSpacing && distance > 0) {
-                const pushStrength = (teammateSpacing - distance) / teammateSpacing;
-                spacingAdjustmentX += (dx / distance) * pushStrength * 30;
-                spacingAdjustmentY += (dy / distance) * pushStrength * 30;
-            }
-        }
-    });
-
-    // Różne zachowania w zależności od roli
+    // Uproszczone pozycjonowanie - bez sprawdzania rozstawienia teammates
     switch(bot.role) {
         case "attacker":
-            if (ballInReach || ball.x > canvas.width * 0.3) {
-                // Napastnicy agresywnie gonią piłkę
-                const predictTime = 6;
-                targetX = ball.x + ball.vx * predictTime;
-                targetY = ball.y + ball.vy * predictTime;
-                
-                if (distanceToBall < 50) {
-                    // Pozycjonuj się za piłką do strzału
-                    const goalCenterY = canvas.height / 2;
-                    const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
-                    targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 30;
-                    targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 30;
-                }
+            if (ballInReach) {
+                targetX = ball.x;
+                targetY = ball.y;
             } else {
-                // Czekaj w pozycji ofensywnej
                 targetX = canvas.width * 0.6;
                 targetY = bot.preferredY;
             }
@@ -141,68 +116,51 @@ function updateFieldBot(bot) {
             
         case "midfielder":
             if (ballInReach) {
-                // Pomocnicy wspierają grę
-                targetX = ball.x + (Math.random() - 0.5) * 40;
-                targetY = ball.y + (Math.random() - 0.5) * 40;
+                targetX = ball.x + (Math.random() - 0.5) * 30;
+                targetY = ball.y + (Math.random() - 0.5) * 30;
             } else {
-                // Trzymaj pozycję centralną
                 targetX = canvas.width * 0.65;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.3;
+                targetY = bot.preferredY;
             }
             break;
             
         case "defender":
         default:
             if (ball.x > canvas.width * 0.6 && ballInReach) {
-                // Obrońcy reagują tylko gdy piłka blisko
-                targetX = ball.x + 20;
+                targetX = ball.x;
                 targetY = ball.y;
             } else {
-                // Trzymaj pozycję defensywną
                 targetX = canvas.width * 0.75;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.2;
+                targetY = bot.preferredY;
             }
             break;
     }
 
-    // Zastosuj korektę rozstawienia
-    targetX += spacingAdjustmentX;
-    targetY += spacingAdjustmentY;
-
-    // System błędów dla różnych przeciwników
-    let errorChance = 0.08; // Domyślny poziom błędów
-    
-    if (gameMode === '1v1') {
-        // Dla 1v1 błędy zależą od konkretnego przeciwnika
-        switch(selectedTeam) {
-            case 0: errorChance = 0.15; break; // HAJTO - jak VFL Oldenburg
-            default: errorChance = 0.10;
+    // Uproszczony system błędów - tylko co 5 klatek
+    if (gameState.frameCount % 5 === 0) {
+        let errorChance = 0.08;
+        
+        if (gameMode === '1v1') {
+            switch(selectedTeam) {
+                case 0: errorChance = 0.12; break; // HAJTO
+                default: errorChance = 0.10;
+            }
+        } else if (gameMode === 'bundesliga') {
+            const errorLevels = [0.15, 0.10, 0.12, 0.06, 0.04, 0.20, 0.18];
+            errorChance = errorLevels[selectedTeam] || 0.08;
         }
-    } else if (gameMode === 'bundesliga') {
-        // Dla Bundesliga błędy zależą od drużyny
-        switch(selectedTeam) {
-            case 0: errorChance = 0.15; break; // VFL Oldenburg
-            case 1: errorChance = 0.10; break; // SV Waldorf Mannheim  
-            case 2: errorChance = 0.12; break; // FC Hansa Rostock
-            case 3: errorChance = 0.06; break; // Eintracht Braunschweig
-            case 4: errorChance = 0.04; break; // Lokomotiv Leipzig
-            case 5: errorChance = 0.20; break; // FC Carl Zeiss Jena
-            case 6: errorChance = 0.18; break; // SpVgg Unterhaching
-            default: errorChance = 0.08;
+        
+        if (Math.random() < errorChance) {
+            targetX += (Math.random() - 0.5) * 40;
+            targetY += (Math.random() - 0.5) * 40;
         }
-    }
-    
-    // Dodaj błędy w zależności od roli
-    let roleErrorMultiplier = 1.0;
-    switch(bot.role) {
-        case "attacker": roleErrorMultiplier = 0.8; break;  // Napastnicy bardziej precyzyjni
-        case "midfielder": roleErrorMultiplier = 1.0; break;
-        case "defender": roleErrorMultiplier = 1.2; break;  // Obrońcy mniej zwinni
-    }
-    
-    if (Math.random() < errorChance * roleErrorMultiplier) {
-        targetX += (Math.random() - 0.5) * 60;
-        targetY += (Math.random() - 0.5) * 60;
+        
+        // Cache target dla kolejnych klatek
+        bot.cachedTargetX = targetX;
+        bot.cachedTargetY = targetY;
+    } else {
+        targetX = bot.cachedTargetX || targetX;
+        targetY = bot.cachedTargetY || targetY;
     }
 
     const dx = targetX - bot.x;
@@ -213,14 +171,11 @@ function updateFieldBot(bot) {
         const normalizedX = dx / distance;
         const normalizedY = dy / distance;
         
-        // Stała prędkość - brak bonusów
-        const currentSpeed = bot.maxSpeed;
-        
-        bot.vx = normalizedX * currentSpeed;
-        bot.vy = normalizedY * currentSpeed;
+        bot.vx = normalizedX * bot.maxSpeed;
+        bot.vy = normalizedY * bot.maxSpeed;
     } else {
-        bot.vx *= 0.8;
-        bot.vy *= 0.8;
+        bot.vx *= 0.7;
+        bot.vy *= 0.7;
     }
 
     bot.x += bot.vx;
@@ -242,6 +197,6 @@ function updateGoalkeeper(bot) {
     targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
     
     const dy = targetY - bot.y;
-    bot.vy = dy * 0.12;
+    bot.vy = dy * 0.1;
     bot.y += bot.vy;
 }
