@@ -18,13 +18,8 @@ function updatePlayer() {
     // NATYCHMIAST po ruchu gracza sprawdź kolizję z piłką
     checkPlayerBallCollision();
 
-    // Ograniczenia boiska
-    if (gameMode === 'tournament' && gameState.currentRound === 0) {
-        player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
-    } else {
-        player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
-    }
-    
+    // Ograniczenia boiska - dla wszystkich trybów
+    player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
     player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
 }
 
@@ -175,21 +170,20 @@ function updateFieldBot(bot) {
     targetY += spacingAdjustmentY;
 
     // System błędów dla różnych przeciwników
-    let errorChance;
-    if (gameMode === 'tournament') {
-        switch(gameState.currentRound) {
-            case 0: errorChance = 0.15; break;
-            case 1: errorChance = 0.10; break;
-            case 2: errorChance = 0.08; break;
-            case 3: errorChance = 0.06; break;
-            case 4: errorChance = 0.04; break;
-            default: errorChance = 0.08;
+    let errorChance = 0.08; // Domyślny poziom błędów
+    
+    if (gameMode === '1v1') {
+        // Dla 1v1 błędy zależą od konkretnego przeciwnika
+        switch(selectedTeam) {
+            case 0: errorChance = 0.15; break; // HAJTO - jak VFL Oldenburg
+            default: errorChance = 0.10;
         }
-    } else {
+    } else if (gameMode === 'bundesliga') {
+        // Dla Bundesliga błędy zależą od drużyny
         switch(selectedTeam) {
             case 0: errorChance = 0.15; break; // VFL Oldenburg
             case 1: errorChance = 0.10; break; // SV Waldorf Mannheim  
-            case 2: errorChance = 0.12; break; // FC Hansa Rostock - zwiększone błędy
+            case 2: errorChance = 0.12; break; // FC Hansa Rostock
             case 3: errorChance = 0.06; break; // Eintracht Braunschweig
             case 4: errorChance = 0.04; break; // Lokomotiv Leipzig
             case 5: errorChance = 0.20; break; // FC Carl Zeiss Jena
