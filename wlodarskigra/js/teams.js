@@ -97,7 +97,7 @@ const oneVsOneTeams = [
         fieldScale: 1.0,
         bots: [
             { 
-                name: "PRECYZYJNY PAVEL", 
+                name: "HERZOG", 
                 x: 650, 
                 y: 200, 
                 color: "#2e8b57", // Morska zieleń
