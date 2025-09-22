@@ -18,9 +18,9 @@ const oneVsOneTeams = [
     maxSpeed: 4.5,
     aggressiveness: 0.9,
     
-    // POPRAWIONE - lewa 1/3 boiska:
-    minX: 0,                    // Może dotrzeć do swojej bramki  
-    maxX: 267,                  // Ograniczony do lewej 1/3 
+x: 650,     // To jest WEWNĄTRZ obszaru (533-800)
+minX: 533,  // Prawa 1/3 boiska  
+maxX: 800,  // Do prawej krawędzi                 // Ograniczony do lewej 1/3 
     minY: 50,                   
     maxY: 350,                  
     
