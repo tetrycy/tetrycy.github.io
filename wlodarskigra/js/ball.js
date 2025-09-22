@@ -1,175 +1,202 @@
-// ball.js - fizyka piłki i kolizje
+// player.js - zoptymalizowana logika gracza i AI botów
 
-function updateBall() {
-    if (!gameState.ballInPlay || gameState.gameWon) return;
+// Sterowanie graczem - uproszczone
+function updatePlayer() {
+    const speed = 5.1;
 
-    ball.x += ball.vx;
-    ball.y += ball.vy;
+    player.vx = 0;
+    player.vy = 0;
+    
+    if (keys['w']) player.vy = -speed;
+    if (keys['s']) player.vy = speed;
+    if (keys['a']) player.vx = -speed;
+    if (keys['d']) player.vx = speed;
 
-    // Rotacja piłki
-    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-    gameState.ballRotation += speed * 0.05;
+    player.x += player.vx;
+    player.y += player.vy;
 
-    // Odbicia od ścian - bez efektów
-    if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
-        ball.vy = -ball.vy;
-        ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
+    // Natychmiast sprawdź kolizję z piłką
+    checkPlayerBallCollision();
+
+    // Ograniczenia boiska
+    player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
+    player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
+}
+
+function checkPlayerBallCollision() {
+    const dx = ball.x - player.x;
+    const dy = ball.y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const minDistance = ball.radius + player.radius;
+
+    if (distance < minDistance && distance > 0) {
+        const nx = dx / distance;
+        const ny = dy / distance;
+        
+        // Ustaw piłkę na krawędzi gracza
+        ball.x = player.x + nx * minDistance;
+        ball.y = player.y + ny * minDistance;
+        
+        // Nadaj piłce prędkość
+        const kickPower = Math.max(6, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 3);
+        ball.vx = nx * kickPower;
+        ball.vy = ny * kickPower;
     }
+}
 
-    // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
-    if (ball.x <= 60 && ball.vx < 0) { // Sprawdź wcześniej, gdy piłka leci w lewo
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            // Sprawdź czy bramkarz gracza może zablokować
-            if (playerGoalkeeper) {
-                const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
-                if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
-                    // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
-                    ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
-                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
-                    
-                    // Upewnij się że piłka leci od bramki
-                    if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
-                }
-            }
+// Zoptymalizowane AI botów
+function updateBots() {
+    bots.forEach((bot, index) => {
+        if (!gameState.ballInPlay && !bot.isGoalkeeper) {
+            const readyX = canvas.width / 2 + 80;
+            const readyY = bot.startY || canvas.height / 2;
+            
+            bot.vx = (readyX - bot.x) * 0.1;
+            bot.vy = (readyY - bot.y) * 0.1;
+            
+            bot.x += bot.vx;
+            bot.y += bot.vy;
+            return;
         }
-    }
 
-    if (ball.x <= 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
-            gameState.botScore++;
-            updateScore();
-            resetBallAfterGoal();
+        if (bot.isGoalkeeper) {
+            updateGoalkeeper(bot);
         } else {
-            ball.vx = -ball.vx;
-            ball.x = ball.radius + 15;
-        }
-    }
-
-    if (ball.x >= canvas.width - 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            gameState.playerScore++;
-            updateScore();
-            resetBallAfterGoal();
-        } else {
-            ball.vx = -ball.vx;
-            ball.x = canvas.width - ball.radius - 15;
-        }
-    }
-
-    // Kolizje z graczami - ulepszona wersja anty-chaos
-    const currentTime = Date.now();
-    const allPlayers = [player, ...bots];
-    if (playerGoalkeeper) {
-        allPlayers.push(playerGoalkeeper);
-    }
-    allPlayers.forEach(p => {
-        const dx = ball.x - p.x;
-        const dy = ball.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < ball.radius + p.radius) {
-            // Dłuższy cooldown kolizji - zapobiega wielokrotnym kolizjom
-            if (currentTime - gameState.lastCollisionTime < 300) {
-                return; // Pomiń kolizję jeśli za wcześnie (zwiększone z 150ms)
-            }
-            
-            const nx = dx / distance;
-            const ny = dy / distance;
-
-            // Znacznie większe rozdzielenie obiektów
-            const overlap = ball.radius + p.radius - distance;
-            const separationDistance = overlap + 8; // Zwiększone z 2 do 8 pikseli bufora
-            ball.x += nx * separationDistance;
-            ball.y += ny * separationDistance;
-
-            // Sprawdź czy piłka była praktycznie nieruchoma
-            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            const wasStationary = ballSpeed < 1;
-
-            const dotProduct = ball.vx * nx + ball.vy * ny;
-            
-            createParticles(ball.x, ball.y, p.color, 4);
-            gameState.screenShake = Math.max(gameState.screenShake, 2);
-            
-            if (p !== player) {
-                const goalCenterY = canvas.height / 2;
-                const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
-                
-                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
-                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
-                
-                ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
-                ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
-            } else {
-                // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
-                if (wasStationary) {
-                    // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
-                    const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                    if (playerSpeed > 0) {
-                        const kickPower = 8; // Stała siła kopnięcia
-                        ball.vx = (p.vx / playerSpeed) * kickPower;
-                        ball.vy = (p.vy / playerSpeed) * kickPower;
-                    } else {
-                        // Gracz stoi - delikatne odbicie
-                        ball.vx = nx * 3;
-                        ball.vy = ny * 3;
-                    }
-                } else {
-                    // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
-                    ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.1; // Bardzo mały wpływ
-                    ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
-                }
-                
-                // KLUCZOWE: Odepchnij gracza od piłki
-                if (p === player) {
-                    const pushPower = 3;
-                    player.pushbackX = -nx * pushPower;  // Przeciwny kierunek do piłki
-                    player.pushbackY = -ny * pushPower;
-                    player.stunned = 8;  // 8 klatek ograniczonej responsywności
-                }
-            }
-
-            // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
-            const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            if (newSpeed < 2) {
-                // Jeśli piłka za wolna, nadaj jej minimalną prędkość
-                ball.vx = nx * 2;
-                ball.vy = ny * 2;
-            } else if (newSpeed > ball.maxSpeed) {
-                ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
-                ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
-            }
-            
-            // Ustaw cooldown
-            gameState.lastCollisionTime = currentTime;
+            updateFieldBot(bot, index);
         }
     });
-
-    // Tarcie
-    ball.vx *= 0.998;
-    ball.vy *= 0.998;
-
-    if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
-        ball.vx = 0;
-        ball.vy = 0;
-        gameState.ballInPlay = false;
+    
+    // Bramkarz gracza
+    if (playerGoalkeeper) {
+        updatePlayerGoalkeeper();
     }
 }
 
-function launchBall() {
-    gameState.ballInPlay = true;
-    const angle = (Math.random() - 0.5) * Math.PI * 0.4;
-    const direction = Math.random() < 0.5 ? 1 : -1;
+function updatePlayerGoalkeeper() {
+    if (!gameState.ballInPlay) {
+        playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
+        playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
+    } else {
+        let targetY = ball.y;
+        playerGoalkeeper.x = Math.max(20, Math.min(50, playerGoalkeeper.x));
+        targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+        
+        const dy = targetY - playerGoalkeeper.y;
+        playerGoalkeeper.vy = dy * 0.08;
+    }
     
-    ball.vx = Math.cos(angle) * ball.startSpeed * direction;
-    ball.vy = Math.sin(angle) * ball.startSpeed;
+    playerGoalkeeper.x += playerGoalkeeper.vx;
+    playerGoalkeeper.y += playerGoalkeeper.vy;
 }
 
-function resetBallAfterGoal() {
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.vx = 0;
-    ball.vy = 0;
-    gameState.ballInPlay = false;
+function updateFieldBot(bot, index) {
+    // Optymalizacja: oblicz distanceToBall tylko co 3 klatki
+    if (gameState.frameCount % 3 === index % 3) {
+        const dx = ball.x - bot.x;
+        const dy = ball.y - bot.y;
+        bot.cachedDistanceToBall = Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    const distanceToBall = bot.cachedDistanceToBall || 999;
+    const ballInReach = distanceToBall < 100;
+    
+    let targetX, targetY;
+
+    // Uproszczone pozycjonowanie - bez sprawdzania rozstawienia teammates
+    switch(bot.role) {
+        case "attacker":
+            if (ballInReach) {
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                targetX = canvas.width * 0.6;
+                targetY = bot.preferredY;
+            }
+            break;
+            
+        case "midfielder":
+            if (ballInReach) {
+                targetX = ball.x + (Math.random() - 0.5) * 30;
+                targetY = ball.y + (Math.random() - 0.5) * 30;
+            } else {
+                targetX = canvas.width * 0.65;
+                targetY = bot.preferredY;
+            }
+            break;
+            
+        case "defender":
+        default:
+            if (ball.x > canvas.width * 0.6 && ballInReach) {
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                targetX = canvas.width * 0.75;
+                targetY = bot.preferredY;
+            }
+            break;
+    }
+
+    // Uproszczony system błędów - tylko co 5 klatek
+    if (gameState.frameCount % 5 === 0) {
+        let errorChance = 0.08;
+        
+        if (gameMode === '1v1') {
+            switch(selectedTeam) {
+                case 0: errorChance = 0.12; break; // HAJTO
+                default: errorChance = 0.10;
+            }
+        } else if (gameMode === 'bundesliga') {
+            const errorLevels = [0.15, 0.10, 0.12, 0.06, 0.04, 0.20, 0.18];
+            errorChance = errorLevels[selectedTeam] || 0.08;
+        }
+        
+        if (Math.random() < errorChance) {
+            targetX += (Math.random() - 0.5) * 40;
+            targetY += (Math.random() - 0.5) * 40;
+        }
+        
+        // Cache target dla kolejnych klatek
+        bot.cachedTargetX = targetX;
+        bot.cachedTargetY = targetY;
+    } else {
+        targetX = bot.cachedTargetX || targetX;
+        targetY = bot.cachedTargetY || targetY;
+    }
+
+    const dx = targetX - bot.x;
+    const dy = targetY - bot.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 3) {
+        const normalizedX = dx / distance;
+        const normalizedY = dy / distance;
+        
+        bot.vx = normalizedX * bot.maxSpeed;
+        bot.vy = normalizedY * bot.maxSpeed;
+    } else {
+        bot.vx *= 0.7;
+        bot.vy *= 0.7;
+    }
+
+    bot.x += bot.vx;
+    bot.y += bot.vy;
+
+    // Ograniczenia pozycji
+    if (bot.canCrossHalf) {
+        bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
+    } else {
+        bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
+    }
+    
+    bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+}
+
+function updateGoalkeeper(bot) {
+    let targetY = ball.y;
+    bot.x = Math.max(canvas.width - 50, Math.min(canvas.width - 20, bot.x));
+    targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+    
+    const dy = targetY - bot.y;
+    bot.vy = dy * 0.1;
+    bot.y += bot.vy;
 }
