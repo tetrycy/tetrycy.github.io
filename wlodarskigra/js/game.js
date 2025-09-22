@@ -4,7 +4,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Stan gry
-let gameMode = null; // 'tournament' or 'friendly'
+let gameMode = null; // '1v1' or 'bundesliga'
 let selectedTeam = null;
 
 // Stan gry z efektami
@@ -14,15 +14,13 @@ let gameState = {
     gameWon: false,
     gameStarted: false,
     ballInPlay: false,
-    currentRound: 0,
-    roundWon: false,
     particles: [],
     ballRotation: 0,
     screenShake: 0,
     lastCollisionTime: 0  // Cooldown kolizji
 };
 
-// Gracz (Marian Włodarski) - szybkość 8
+// Gracz (Marian Włodarski)
 const player = {
     x: 100,
     y: canvas.height / 2,
@@ -39,7 +37,7 @@ let bots = [];
 // Bramkarz gracza (opcjonalny)
 let playerGoalkeeper = null;
 
-// Piłka - prędkość zmniejszona o 15%
+// Piłka
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
@@ -138,7 +136,7 @@ function updateEffects() {
 
 function drawPlayer(playerObj, name, isBot = false) {
     // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     // Bez shake effect
@@ -251,7 +249,7 @@ function drawPlayer(playerObj, name, isBot = false) {
 
 function drawBall() {
     // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const currentTeamData = gameMode === '1v1' ? oneVsOneTeams[selectedTeam] : bundesligaTeams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     // Bez shake effect
