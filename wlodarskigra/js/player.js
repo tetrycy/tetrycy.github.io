@@ -1,4 +1,4 @@
-// player.js - zoptymalizowana logika gracza i AI botów
+// player.js - zoptymalizowana logika gracza i AI botów z unikalną rolą Hajto
 
 // Sterowanie graczem - uproszczone
 function updatePlayer() {
@@ -102,7 +102,7 @@ function updateFieldBot(bot, index) {
     
     let targetX, targetY;
 
-    // Uproszczone pozycjonowanie - bez sprawdzania rozstawienia teammates
+    // Pozycjonowanie według roli
     switch(bot.role) {
         case "attacker":
             if (ballInReach) {
@@ -123,6 +123,31 @@ function updateFieldBot(bot, index) {
                 targetY = bot.preferredY;
             }
             break;
+
+        case "hajto":
+            // UNIKALNA LOGIKA DLA HAJTO - agresywny obrońca w ćwierci boiska
+            if (ballInReach || distanceToBall < 150) {
+                // Aktywnie goni piłkę gdy w zasięgu
+                targetX = ball.x;
+                targetY = ball.y;
+            } else {
+                // Pozycja defensywna - patroluje między bramką a ćwiercią boiska
+                const patrolX = canvas.width * 0.85; // 85% boiska
+                targetX = patrolX;
+                
+                // Śledzi piłkę pionowo, ale z ograniczeniem
+                if (ball.y < canvas.height * 0.3) {
+                    targetY = canvas.height * 0.3; // Nie idzie za wysoko
+                } else if (ball.y > canvas.height * 0.7) {
+                    targetY = canvas.height * 0.7; // Nie idzie za nisko
+                } else {
+                    targetY = ball.y; // Śledzi piłkę normalnie
+                }
+            }
+            
+            // Ograniczenia ruchu Hajto - tylko ćwierć boiska
+            targetX = Math.max(canvas.width * 0.75, Math.min(canvas.width - 30, targetX));
+            break;
             
         case "defender":
         default:
@@ -142,12 +167,22 @@ function updateFieldBot(bot, index) {
         
         if (gameMode === '1v1') {
             switch(selectedTeam) {
-                case 0: errorChance = 0.12; break; // HAJTO
+                case 0: errorChance = 0.08; break; // HAJTO - mniejszy błąd (był 0.12)
                 default: errorChance = 0.10;
             }
         } else if (gameMode === 'bundesliga') {
             const errorLevels = [0.15, 0.10, 0.12, 0.06, 0.04, 0.20, 0.18];
             errorChance = errorLevels[selectedTeam] || 0.08;
+        }
+        
+        // Hajto robi mniej błędów dzięki doświadczeniu
+        if (bot.role === "hajto") {
+            errorChance *= 0.7;
+        }
+        
+        // Hajto robi mniej błędów dzięki doświadczeniu
+        if (bot.role === "hajto") {
+            errorChance *= 0.7;
         }
         
         if (Math.random() < errorChance) {
@@ -171,8 +206,14 @@ function updateFieldBot(bot, index) {
         const normalizedX = dx / distance;
         const normalizedY = dy / distance;
         
-        bot.vx = normalizedX * bot.maxSpeed;
-        bot.vy = normalizedY * bot.maxSpeed;
+        // Zastosuj aggressiveness jako modyfikator prędkości
+        let speedModifier = 1.0;
+        if (bot.aggressiveness) {
+            speedModifier = 0.7 + (bot.aggressiveness * 0.3); // Od 70% do 100% prędkości
+        }
+        
+        bot.vx = normalizedX * bot.maxSpeed * speedModifier;
+        bot.vy = normalizedY * bot.maxSpeed * speedModifier;
     } else {
         bot.vx *= 0.7;
         bot.vy *= 0.7;
@@ -182,7 +223,10 @@ function updateFieldBot(bot, index) {
     bot.y += bot.vy;
 
     // Ograniczenia pozycji
-    if (bot.canCrossHalf) {
+    if (bot.role === "hajto") {
+        // Hajto ograniczony do ćwierci boiska (75%-100%)
+        bot.x = Math.max(canvas.width * 0.75, Math.min(canvas.width - bot.radius - 15, bot.x));
+    } else if (bot.canCrossHalf) {
         bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
     } else {
         bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
