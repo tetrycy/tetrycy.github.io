@@ -15,9 +15,11 @@
         <h2 style="color: #ffff00; margin-bottom: 20px;">HAUPTMENÜ</h2>
         <button class="menu-btn" onclick="startTournament()">🏆 TURNIER</button>
         <button class="menu-btn" onclick="showTeamSelection()">⚽ FREUNDSCHAFTSSPIEL</button>
+        <button class="menu-btn" onclick="show1v1Selection()">⚔️ 1 vs 1 DUELL</button>
+        <button class="menu-btn" onclick="showBundesligaSelection()">🏟️ ZWEITE BUNDESLIGA</button>
     </div>
 
-    <!-- WYBÓR DRUŻYNY -->
+    <!-- WYBÓR DRUŻYNY - FREUNDSCHAFTSSPIEL -->
     <div id="teamSelection" class="team-selection">
         <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
         <button class="team-btn" onclick="startFriendly(0)">🟦 VFL OLDENBURG (Hans Jurgen)</button>
@@ -27,7 +29,25 @@
         <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG (4 Spieler + Torwart)</button>
         <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA (3 Kiepscy Spieler - GROßES FELD!)</button>
         <button class="team-btn" onclick="startFriendly(6)">🟤 SPVGG UNTERHACHING (2 Gegner + IHR TORWART!)</button>
-        <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
+        <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
+    </div>
+
+    <!-- WYBÓR PRZECIWNIKA - 1 vs 1 -->
+    <div id="oneVsOneSelection" class="team-selection">
+        <h2 style="color: #ff6600; margin-bottom: 20px;">⚔️ 1vs1 GEGNER WÄHLEN ⚔️</h2>
+        <button class="team-btn" onclick="start1v1(0)">⭐ GÜNTER NETZER (Legende - Kleines Feld)</button>
+        <button class="team-btn" onclick="start1v1(1)">⭐⭐ FRANZ BECKENBAUER (Kaiser - Profi Feld)</button>
+        <button class="team-btn" onclick="start1v1(2)">⭐⭐⭐ GERD MÜLLER (Bomber - Stadium)</button>
+        <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
+    </div>
+
+    <!-- WYBÓR DRUŻYNY - ZWEITE BUNDESLIGA -->
+    <div id="bundesligaSelection" class="team-selection">
+        <h2 style="color: #ffff00; margin-bottom: 20px;">🏟️ BUNDESLIGA GEGNER WÄHLEN 🏟️</h2>
+        <button class="team-btn" onclick="startBundesliga(0)">🟡 ENERGIE COTTBUS (5 Spieler - Profi Liga)</button>
+        <button class="team-btn" onclick="startBundesliga(1)">🟨 DYNAMO DRESDEN (5 Spieler - Stadium)</button>
+        <button class="team-btn" onclick="startBundesliga(2)">🟤 FC ST. PAULI (4 Spieler - Kultclub)</button>
+        <button class="back-btn" onclick="backToMenuFromSelection()">← ZURÜCK</button>
     </div>
     
     <!-- INTERFEJS GRY -->
