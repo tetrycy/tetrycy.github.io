@@ -1,216 +1,309 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+/* Windows 98 Style CSS */
+@import url('https://fonts.googleapis.com/css2?family=MS+Sans+Serif:wght@400;700&display=swap');
 
 body {
     margin: 0;
-    padding: 20px;
-    background: linear-gradient(45deg, #0d4a2d, #1a5c36, #0d4a2d);
-    font-family: 'Orbitron', monospace;
+    padding: 0;
+    background: #008080; /* Classic Windows teal */
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    color: #00ff00;
+    color: #000000;
+    overflow-x: hidden;
+}
+
+/* Desktop wallpaper pattern */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 25% 25%, #ffffff 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, #ffffff 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.1;
+    z-index: -1;
 }
 
 h1 {
-    color: #ffff00;
-    text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8);
+    background: #c0c0c0;
+    color: #000080;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 10px;
     margin-bottom: 5px;
-    font-weight: 900;
-    font-size: 24px;
-    letter-spacing: 2px;
+    padding: 8px 12px;
+    border: 2px outset #c0c0c0;
     text-align: center;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 20px #ffff00; }
-    to { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 40px #ffff00, 0 0 60px #ffff00; }
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .subtitle {
-    color: #00ffff;
-    font-size: 12px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    margin-bottom: 10px;
+    background: #c0c0c0;
+    color: #000000;
+    font-size: 9px;
+    padding: 4px 8px;
+    border: 1px inset #c0c0c0;
+    margin-bottom: 15px;
     text-align: center;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
-.main-menu {
-    background: linear-gradient(45deg, #000033, #000066);
-    border: 3px solid #ffff00;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(255,255,0,0.5);
-}
-
-.team-selection {
-    background: linear-gradient(45deg, #000033, #000066);
-    border: 3px solid #00ff00;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(0,255,0,0.5);
-    display: none;
-}
-
-.menu-btn, .team-btn {
-    background: linear-gradient(45deg, #ff0000, #ff4444);
-    color: #ffff00;
-    border: 3px solid #ffff00;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
+.main-menu, .team-selection {
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    padding: 12px;
     margin: 10px;
-    font-family: 'Orbitron', monospace;
-    transition: all 0.3s;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+    min-width: 300px;
+}
+
+.main-menu h2, .team-selection h2 {
+    background: linear-gradient(90deg, #000080, #0000ff);
+    color: #ffffff;
+    margin: -12px -12px 12px -12px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: left;
+    border: none;
+    box-shadow: none;
+}
+
+.menu-btn, .team-btn, .back-btn, .reset-btn, .next-btn {
+    background: #c0c0c0;
+    color: #000000;
+    border: 2px outset #c0c0c0;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-weight: normal;
+    margin: 4px 2px;
+    cursor: pointer;
+    transition: all 0.1s;
+    min-height: 23px;
+    box-sizing: border-box;
 }
 
 .team-btn {
-    background: linear-gradient(45deg, #00aa00, #00ff00);
-    color: #000033;
     display: block;
-    width: 80%;
-    margin: 8px auto;
-    font-size: 14px;
+    width: calc(100% - 4px);
+    margin: 2px;
+    text-align: left;
+    padding-left: 24px;
+    position: relative;
 }
 
-.menu-btn:hover, .team-btn:hover {
-    box-shadow: 0 0 15px rgba(255,255,0,0.5);
-    transform: scale(1.05);
+/* Windows 98 button states */
+.menu-btn:hover, .team-btn:hover, .back-btn:hover, .reset-btn:hover, .next-btn:hover {
+    background: #d4d0c8;
+}
+
+.menu-btn:active, .team-btn:active, .back-btn:active, .reset-btn:active, .next-btn:active {
+    border: 2px inset #c0c0c0;
+    padding: 7px 15px 5px 17px;
+}
+
+/* Fake icons for team buttons */
+.team-btn::before {
+    content: "⚽";
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+}
+
+.back-btn {
+    background: #dfdfdf;
+}
+
+.next-btn {
+    background: #d4edda;
+    color: #155724;
 }
 
 .round-info {
-    background: linear-gradient(45deg, #000033, #000066);
-    border: 3px solid #ff4444;
-    padding: 8px 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    text-align: center;
-    color: #ffff00;
-    font-size: 14px;
+    background: #c0c0c0;
+    border: 1px inset #c0c0c0;
+    padding: 4px 8px;
+    margin: 8px;
+    font-size: 10px;
     font-weight: bold;
-    box-shadow: 0 0 15px rgba(255,68,68,0.5);
+    color: #000080;
+    text-align: center;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
 .score {
-    background: linear-gradient(45deg, #000033, #000066);
-    border: 3px solid #00ff00;
-    padding: 10px 20px;
-    font-size: 18px;
+    background: #c0c0c0;
+    border: 2px inset #c0c0c0;
+    padding: 8px 16px;
+    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    border-radius: 10px;
-    box-shadow: inset 0 0 10px rgba(0,255,0,0.3);
+    margin: 8px;
+    text-align: center;
+    color: #000000;
+    font-family: 'MS Sans Serif', sans-serif;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .team-name {
-    font-size: 12px;
-    color: #ffff00;
+    font-size: 9px;
+    color: #000080;
+    font-weight: normal;
 }
 
 .game-container {
     position: relative;
-    border: 8px solid #8B4513;
-    border-radius: 15px;
-    background: #228B22;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(139,69,19,0.5);
+    border: 2px inset #c0c0c0;
+    background: #c0c0c0;
+    padding: 2px;
+    margin: 10px;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.3);
     display: none;
 }
 
 #gameCanvas {
     display: block;
-    border-radius: 8px;
+    border: 1px solid #808080;
+    background: #008000;
 }
 
 .controls {
-    background: linear-gradient(45deg, #000033, #000066);
-    border: 2px solid #00ff00;
-    border-radius: 10px;
-    padding: 15px;
-    margin-top: 20px;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    padding: 8px;
+    margin: 8px;
+    font-size: 10px;
     text-align: center;
-    font-size: 12px;
-    box-shadow: 0 0 15px rgba(0,255,0,0.3);
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     display: none;
 }
 
-.reset-btn, .next-btn, #retryRoundBtn, .back-btn {
-    background: linear-gradient(45deg, #ff0000, #ff4444);
-    color: #ffff00;
-    border: 3px solid #ffff00;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 5px;
-    font-family: 'Orbitron', monospace;
-    transition: all 0.3s;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-}
-
-.next-btn {
-    background: linear-gradient(45deg, #00aa00, #00ff00);
-    color: #000033;
-    border-color: #ffff00;
-}
-
-.back-btn {
-    background: linear-gradient(45deg, #666666, #999999);
-    color: #ffffff;
-}
-
-.reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover, .back-btn:hover {
-    box-shadow: 0 0 15px rgba(255,255,0,0.5);
-}
-
-.winner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(45deg, #000066, #000099);
-    border: 4px solid #ffff00;
-    color: #00ff00;
-    padding: 20px 40px;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    z-index: 10;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    box-shadow: 0 0 30px rgba(255,255,0,0.5);
-}
-
-.start-message {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(45deg, #000066, #000099);
-    border: 4px solid #00ff00;
-    color: #ffff00;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    z-index: 10;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    box-shadow: 0 0 30px rgba(0,255,0,0.5);
+.controls p {
+    margin: 4px 0;
+    color: #000000;
 }
 
 .retro-text {
-    color: #00ffff;
+    color: #000080;
     font-weight: bold;
+}
+
+.winner, .start-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    color: #000000;
+    padding: 16px 24px;
+    text-align: center;
+    z-index: 10;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+    min-width: 200px;
+}
+
+.winner h3, .start-message h3 {
+    background: linear-gradient(90deg, #000080, #0000ff);
+    color: #ffffff;
+    margin: -16px -24px 12px -24px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.winner div {
+    margin: 8px 0;
 }
 
 .hidden {
     display: none !important;
+}
+
+/* Status bar style for game info */
+.round-info {
+    background: #c0c0c0;
+    border: 1px inset #c0c0c0;
+    padding: 2px 6px;
+    margin: 4px 8px;
+    font-size: 10px;
+    color: #000000;
+    text-align: left;
+    font-family: 'MS Sans Serif', sans-serif;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Classic Windows 98 scrollbar for overflowing content */
+.team-selection {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar */
+.team-selection::-webkit-scrollbar {
+    width: 16px;
+}
+
+.team-selection::-webkit-scrollbar-track {
+    background: #c0c0c0;
+    border: 1px inset #c0c0c0;
+}
+
+.team-selection::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+}
+
+.team-selection::-webkit-scrollbar-thumb:hover {
+    background: #d4d0c8;
+}
+
+/* Menu window titles */
+.main-menu::before {
+    content: "🗁 MARIAN WŁODARSKI FUSSBALL - Hauptmenü";
+    display: block;
+    background: linear-gradient(90deg, #000080, #0000ff);
+    color: #ffffff;
+    margin: -12px -12px 12px -12px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Add window decoration */
+.main-menu, .team-selection {
+    position: relative;
+}
+
+.main-menu h2 {
+    display: none; /* Hide duplicate title */
+}
+
+.team-selection::before {
+    content: "🗁 Gegner auswählen";
+    display: block;
+    background: linear-gradient(90deg, #000080, #0000ff);
+    color: #ffffff;
+    margin: -12px -12px 12px -12px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.team-selection h2 {
+    display: none; /* Hide duplicate title */
 }
