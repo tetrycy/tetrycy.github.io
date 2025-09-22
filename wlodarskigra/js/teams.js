@@ -2,13 +2,6 @@
 
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
-{    // ← Tylko klamra otwierająca
-    playerTeam: "M. WŁODARSKI",
-    opponentTeam: "HAJTO", 
-
-    field: "simple",
-    fieldScale: 1.0,
-    bots: [
 {
     playerTeam: "M. WŁODARSKI",
     opponentTeam: "HAJTO", 
@@ -30,7 +23,7 @@ const oneVsOneTeams = [
             shootPower: 1.2             // Mocniejsze strzały
         }
     ]
-}, PRZECINEK TUTAJ!
+},
     {
         playerTeam: "M. WŁODARSKI",
         opponentTeam: "BASLER",
