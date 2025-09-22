@@ -6,6 +6,21 @@ function drawField() {
         case 'simple':
             drawSimpleField();
             break;
+        case 'light_grass':
+            drawLightGrassField();
+            break;
+        case 'dark_grass':
+            drawDarkGrassField();
+            break;
+        case 'striped_grass':
+            drawStripedGrassField();
+            break;
+        case 'dotted_grass':
+            drawDottedGrassField();
+            break;
+        case 'penalty_box':
+            drawPenaltyBoxField();
+            break;
         case 'grass':
             drawGrassField();
             break;
@@ -36,6 +51,88 @@ function drawSimpleField() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Tylko standardowe linie boiska
+    drawStandardFieldLines();
+}
+
+function drawLightGrassField() {
+    // Jasna zieleń dla SZYBKIEGO MARIO
+    ctx.fillStyle = '#32CD32';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Subtelne światełka na boisku
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    for (let i = 0; i < 8; i++) {
+        const x = (i * 100) + 50;
+        const y = 100 + (i % 2) * 200;
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawStandardFieldLines();
+}
+
+function drawDarkGrassField() {
+    // Ciemna zieleń dla BRUTALNEGO BORISA
+    ctx.fillStyle = '#1F4F1F';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Ciemne plamy na boisku
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    const spots = [{x:150,y:120,r:25}, {x:400,y:80,r:20}, {x:650,y:300,r:30}, {x:300,y:320,r:22}];
+    spots.forEach(spot => {
+        ctx.beginPath();
+        ctx.arc(spot.x, spot.y, spot.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    
+    drawStandardFieldLines();
+}
+
+function drawStripedGrassField() {
+    // Pasiaste boisko dla WSZECHSTRONNEGO WERNERA
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Pionowe paski
+    ctx.fillStyle = '#1F7A1F';
+    for (let i = 0; i < canvas.width; i += 60) {
+        ctx.fillRect(i, 0, 30, canvas.height);
+    }
+    
+    drawStandardFieldLines();
+}
+
+function drawDottedGrassField() {
+    // Kropkowane boisko dla PRECYZYJNEGO PAVLA
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Regularne kropki
+    ctx.fillStyle = '#32CD32';
+    for (let x = 40; x < canvas.width; x += 40) {
+        for (let y = 40; y < canvas.height; y += 40) {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    drawStandardFieldLines();
+}
+
+function drawPenaltyBoxField() {
+    // Specjalne boisko z wyraźnym polem karnym dla BRAMKARZA GUSTAVA
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Podkreśl pole karne po prawej stronie
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    const penaltyBoxWidth = 80;
+    const penaltyBoxHeight = canvas.height * 0.5;
+    const penaltyBoxTop = canvas.height * 0.25;
+    ctx.fillRect(canvas.width - 10 - penaltyBoxWidth, penaltyBoxTop, penaltyBoxWidth, penaltyBoxHeight);
+    
     drawStandardFieldLines();
 }
 
