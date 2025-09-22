@@ -2,28 +2,41 @@
 
 // Drużyny dla trybu 1vs1 (pojedynczy przeciwnik)
 const oneVsOneTeams = [
-    {
-        playerTeam: "M. WŁODARSKI",
-        opponentTeam: "HAJTO", 
-        field: "simple", // Proste zielone boisko
-        fieldScale: 1.0,
-        bots: [
-            { 
-                name: "HAJTO", 
-                x: 650, 
-                y: 200, 
-                color: "#0066ff", // Niebieski
-                maxSpeed: 3.75,
-                aggressiveness: 0.7,
-                canCrossHalf: false,
-                number: 2,
-                role: "defender",
-                preferredY: 200,
-                radius: 20, // Standardowy rozmiar
-                shootPower: 1.0 // Standardowa siła
-            }
-        ]
-    },
+   {
+    playerTeam: "M. WŁODARSKI",
+    opponentTeam: "HAJTO", 
+    field: "simple",
+    fieldScale: 1.0,
+    bots: [
+        { 
+            name: "HAJTO", 
+            x: 650, 
+            y: 200, 
+            color: "#0066ff",
+            maxSpeed: 3.75,
+            aggressiveness: 0.7,
+            canCrossHalf: false,
+            number: 2,
+            role: "defender",
+            preferredY: 200,
+            radius: 20,
+            shootPower: 1.0,
+            
+            // 🆕 NOWE PARAMETRY MOBILNOŚCI:
+            movementRadius: 180,        // Może się oddalić 180px od preferredY
+            verticalRange: [50, 350],   // Może chodzić od góry do dołu boiska  
+            horizontalLimit: 400,       // Nie przekracza x=400 (środek boiska)
+            followBallDistance: 150,    // Goni piłkę w promieniu 150px
+            returnThreshold: 0.4,       // Wraca na pozycję gdy przeciwnik ma piłkę
+            returnSpeed: 0.6,           // Prędkość powrotu na pozycję (60%)
+            
+            // 🎯 TAKTYCZNE ZACHOWANIA:
+            chaseBallInDefense: true,   // Aktywnie goni piłkę w obronie
+            blockPassing: true,         // Próbuje blokować podania
+            coverGoal: true,            // Wraca bronić bramkę gdy zagrożenie
+        }
+    ]
+}
     {
         playerTeam: "M. WŁODARSKI",
         opponentTeam: "BASLER", 
