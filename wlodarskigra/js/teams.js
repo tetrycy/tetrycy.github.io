@@ -11,16 +11,16 @@ const oneVsOneTeams = [
     bots: [
 {
     name: "HAJTO", 
-    x: 600, 
+    x: 250,                     // Bliżej swojej bramki (lewa)
     y: 200, 
     color: "#0066ff",
     
     maxSpeed: 4.5,
     aggressiveness: 0.9,
     
-    // POPRAWIONE OGRANICZENIE - tylko prawa 1/3:
-    minX: 533,                  // Od 2/3 boiska w prawo  
-    maxX: 800,                  // Do prawej krawędzi
+    // POPRAWIONE - lewa 1/3 boiska:
+    minX: 0,                    // Może dotrzeć do swojej bramki  
+    maxX: 267,                  // Ograniczony do lewej 1/3 
     minY: 50,                   
     maxY: 350,                  
     
