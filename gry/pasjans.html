@@ -25,6 +25,9 @@
             position: fixed;
             width: 100%;
             height: 100%;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .game-window {
@@ -117,6 +120,7 @@
         .stock-space {
             background: rgba(0, 64, 0, 0.5);
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .foundation-space::after {
@@ -176,6 +180,8 @@
             border-radius: 4px;
             box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             transition: none;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .card.face-up {
@@ -299,8 +305,6 @@
         .black {
             color: #000000;
         }
-
-
 
         .score-display {
             background: #c0c0c0;
@@ -621,7 +625,7 @@
 
         <div class="game-area">
             <div class="top-row">
-                <div id="stock" class="card-space stock-space" onclick="dealCards()">
+                <div id="stock" class="card-space stock-space">
                     <div class="stock-count" id="stock-count">24</div>
                 </div>
                 <div id="waste" class="card-space"></div>
@@ -677,6 +681,11 @@
                 
                 this.cardBackStyle = 'back-blue';
                 this.selectedCardBack = 'back-blue';
+                
+                // Touch handling
+                this.touchStarted = false;
+                this.lastTouchTime = 0;
+                this.touchTimeout = null;
                 
                 this.init();
             }
@@ -822,15 +831,28 @@
             }
 
             setupEventListeners() {
+                // Mouse events
                 document.addEventListener('mousedown', this.handleMouseDown.bind(this));
                 document.addEventListener('mousemove', this.handleMouseMove.bind(this));
                 document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                document.addEventListener('dblclick', this.handleDoubleClick.bind(this));
                 
+                // Touch events - improved mobile handling
                 document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
                 document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
                 document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
                 
-                document.addEventListener('dblclick', this.handleDoubleClick.bind(this));
+                // Stock pile click/tap handling
+                document.getElementById('stock').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.dealFromStock();
+                });
+                
+                document.getElementById('stock').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.dealFromStock();
+                });
                 
                 // Close button handler
                 document.querySelector('.close-btn').addEventListener('click', () => {
@@ -841,21 +863,21 @@
                     }
                 });
                 
-                // Prevent default touch behaviors on mobile
-                document.addEventListener('touchmove', (e) => {
-                    if (this.dragElement) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
+                // Prevent context menu on mobile
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
                 
-                document.addEventListener('touchstart', (e) => {
-                    if (e.target.closest('.card')) {
-                        e.preventDefault();
-                    }
+                // Prevent default touch scrolling on game area
+                document.querySelector('.game-area').addEventListener('touchmove', (e) => {
+                    e.preventDefault();
                 }, { passive: false });
             }
 
             handleMouseDown(e) {
+                // Don't handle mouse events on stock pile (it has its own handler)
+                if (e.target.closest('#stock')) return;
+                
                 const card = e.target.closest('.card');
                 if (!card || !card.classList.contains('face-up')) return;
                 
@@ -864,11 +886,44 @@
             }
 
             handleTouchStart(e) {
-                const touch = e.touches[0];
-                const card = touch.target.closest('.card');
-                if (!card || !card.classList.contains('face-up')) return;
+                // Handle stock pile separately
+                if (e.target.closest('#stock')) {
+                    return; // Let the dedicated stock handler deal with it
+                }
                 
-                this.startDrag(card, touch.clientX, touch.clientY);
+                const touch = e.touches[0];
+                const card = e.target.closest('.card');
+                
+                if (!card || !card.classList.contains('face-up')) {
+                    return;
+                }
+                
+                // Clear any existing timeout
+                if (this.touchTimeout) {
+                    clearTimeout(this.touchTimeout);
+                    this.touchTimeout = null;
+                }
+                
+                this.touchStarted = true;
+                const now = Date.now();
+                
+                // Check for double tap
+                if (now - this.lastTouchTime < 300) {
+                    this.autoMoveToFoundation(card);
+                    this.lastTouchTime = 0;
+                    e.preventDefault();
+                    return;
+                }
+                
+                this.lastTouchTime = now;
+                
+                // Start drag after short delay to distinguish from tap
+                this.touchTimeout = setTimeout(() => {
+                    if (this.touchStarted) {
+                        this.startDrag(card, touch.clientX, touch.clientY);
+                    }
+                }, 150);
+                
                 e.preventDefault();
             }
 
@@ -881,6 +936,7 @@
 
             autoMoveToFoundation(cardEl) {
                 const card = this.getCardFromElement(cardEl);
+                if (!card) return;
                 
                 for (let i = 0; i < 4; i++) {
                     const foundation = this.foundations[i];
@@ -918,7 +974,7 @@
                 this.dragElement.style.transition = 'none';
                 
                 this.draggedCards.forEach((dragCard, index) => {
-                    const cardEl = this.createCardElement(dragCard, true); // Always show front
+                    const cardEl = this.createCardElement(dragCard, true);
                     cardEl.style.position = 'absolute';
                     cardEl.style.top = `${index * 20}px`;
                     cardEl.style.left = '0px';
@@ -958,10 +1014,22 @@
             }
 
             handleTouchMove(e) {
+                if (this.touchTimeout) {
+                    clearTimeout(this.touchTimeout);
+                    this.touchTimeout = null;
+                }
+                
                 if (this.dragElement) {
                     const touch = e.touches[0];
                     this.updateDragPosition(touch.clientX, touch.clientY);
                     e.preventDefault();
+                } else if (this.touchStarted) {
+                    // Start dragging if we haven't started yet but are moving
+                    const touch = e.touches[0];
+                    const card = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.card');
+                    if (card && card.classList.contains('face-up')) {
+                        this.startDrag(card, touch.clientX, touch.clientY);
+                    }
                 }
             }
 
@@ -980,6 +1048,13 @@
             }
 
             handleTouchEnd(e) {
+                this.touchStarted = false;
+                
+                if (this.touchTimeout) {
+                    clearTimeout(this.touchTimeout);
+                    this.touchTimeout = null;
+                }
+                
                 if (this.dragElement && e.changedTouches[0]) {
                     const touch = e.changedTouches[0];
                     this.endDrag(touch.clientX, touch.clientY);
@@ -1294,8 +1369,8 @@
         function showHelp() {
             alert('Pasjans - Instrukcja:\n\n' +
                   '• Przeciągnij karty aby je przełożyć\n' +
-                  '• Kliknij dwukrotnie kartę aby automatycznie przenieść do fundamentu\n' +
-                  '• Kliknij talię aby rozdać nowe karty\n' +
+                  '• Dotknij dwukrotnie kartę aby automatycznie przenieść do fundamentu\n' +
+                  '• Dotknij talię aby rozdać nowe karty\n' +
                   '• Ułóż wszystkie karty w fundamentach według kolorów od Asa do Króla\n' +
                   '• Użyj "Odwrót karty" aby zmienić wzór odwrotu');
         }
