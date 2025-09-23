@@ -1,42 +1,32 @@
 // ui.js - interfejs użytkownika, menu i ekrany
 
-// Funkcje menu głównego
-function show1v1Selection() {
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('oneVsOneSelection').style.display = 'block';
-}
-
-function showBundesligaSelection() {
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('bundesligaSelection').style.display = 'block';
-}
-
-// Funkcje startowania trybów
-function start1v1(opponentIndex) {
-    gameMode = '1v1';
-    selectedTeam = opponentIndex;
+// Funkcje menu
+function startTournament() {
+    gameMode = 'tournament';
+    gameState.currentRound = 0;
     showGame();
-    load1v1Team(opponentIndex);
+    loadCurrentTeam();
 }
 
-function startBundesliga(teamIndex) {
-    gameMode = 'bundesliga';
+function showTeamSelection() {
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('teamSelection').style.display = 'block';
+}
+
+function startFriendly(teamIndex) {
+    gameMode = 'friendly';
     selectedTeam = teamIndex;
     showGame();
-    loadBundesligaTeam(teamIndex);
+    loadFriendlyTeam(teamIndex);
 }
 
-// Funkcje nawigacji wstecznej
 function backToMenu() {
     // Ukryj wszystkie ekrany gry
     document.getElementById('gameContainer').style.display = 'none';
     document.getElementById('gameControls').style.display = 'none';
     document.getElementById('roundInfo').classList.add('hidden');
     document.getElementById('scoreDisplay').classList.add('hidden');
-    
-    // Ukryj wszystkie menu wyboru
-    document.getElementById('oneVsOneSelection').style.display = 'none';
-    document.getElementById('bundesligaSelection').style.display = 'none';
+    document.getElementById('teamSelection').style.display = 'none';
     
     // Pokaż menu główne
     document.getElementById('mainMenu').style.display = 'block';
@@ -45,21 +35,10 @@ function backToMenu() {
     resetGameState();
 }
 
-function backToMenuFromSelection() {
-    // Ukryj wszystkie menu wyboru
-    document.getElementById('oneVsOneSelection').style.display = 'none';
-    document.getElementById('bundesligaSelection').style.display = 'none';
-    
-    // Pokaż menu główne
-    document.getElementById('mainMenu').style.display = 'block';
-}
-
-// Funkcje wyświetlania gry
 function showGame() {
-    // Ukryj wszystkie menu
+    // Ukryj menu
     document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('oneVsOneSelection').style.display = 'none';
-    document.getElementById('bundesligaSelection').style.display = 'none';
+    document.getElementById('teamSelection').style.display = 'none';
     
     // Pokaż grę
     document.getElementById('gameContainer').style.display = 'block';
@@ -68,26 +47,26 @@ function showGame() {
     document.getElementById('scoreDisplay').classList.remove('hidden');
 }
 
-// Funkcje ładowania drużyn dla różnych trybów
-function load1v1Team(opponentIndex) {
-    const teamData = oneVsOneTeams[opponentIndex];
+function loadCurrentTeam() {
+    const currentTeamData = teams[gameState.currentRound];
+    loadTeamData(currentTeamData);
+    
+    if (gameMode === 'tournament') {
+        document.getElementById('roundInfo').textContent = 
+            `RUNDE ${currentTeamData.number}: ${currentTeamData.playerTeam} vs ${currentTeamData.opponentTeam}`;
+        document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentTeamData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
+    }
+}
+
+function loadFriendlyTeam(teamIndex) {
+    const teamData = teams[teamIndex];
     loadTeamData(teamData);
     
     document.getElementById('roundInfo').textContent = 
-        `1 vs 1 DUELL: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
-    document.getElementById('startTitle').textContent = `⚔️ 1vs1 KAMPF - DRÜCKEN SIE LEERTASTE! ⚔️`;
+        `FREUNDSCHAFTSSPIEL: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
+    document.getElementById('startTitle').textContent = `🚀 FREUNDSCHAFTSSPIEL - DRÜCKEN SIE LEERTASTE! 🚀`;
 }
 
-function loadBundesligaTeam(teamIndex) {
-    const teamData = bundesligaTeams[teamIndex];
-    loadTeamData(teamData);
-    
-    document.getElementById('roundInfo').textContent = 
-        `ZWEITE BUNDESLIGA: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
-    document.getElementById('startTitle').textContent = `🏟️ BUNDESLIGA MATCH - DRÜCKEN SIE LEERTASTE! 🏟️`;
-}
-
-// Uniwersalna funkcja ładowania danych drużyny
 function loadTeamData(teamData) {
     document.getElementById('playerTeam').textContent = teamData.playerTeam;
     document.getElementById('botTeam').textContent = teamData.opponentTeam;
@@ -122,7 +101,6 @@ function loadTeamData(teamData) {
     }
 }
 
-// Funkcje zarządzania wynikami
 function updateScore() {
     document.getElementById('playerScore').textContent = gameState.playerScore;
     document.getElementById('botScore').textContent = gameState.botScore;
@@ -139,28 +117,32 @@ function updateScore() {
 }
 
 function showWinMessage() {
-    let currentTeamData;
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
-    if (gameMode === '1v1') {
-        currentTeamData = oneVsOneTeams[selectedTeam];
+    if (gameMode === 'tournament') {
+        const isLastRound = gameState.currentRound >= teams.length - 1;
+        
         document.getElementById('winnerMessage').innerHTML = `
-            <div>⚔️ 1vs1 DUELL GEWONNEN! ⚔️</div>
+            <div>🎉 RUNDE ${currentTeamData.number} GEWONNEN! 🎉</div>
             <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
-                ${currentTeamData.playerTeam} BESIEGT ${currentTeamData.opponentTeam}!
+                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
             </div>
             <div style="font-size: 12px; color: #ffff00;">
-                Überlegene Technik!
+                ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
             </div>
         `;
-    } else if (gameMode === 'bundesliga') {
-        currentTeamData = bundesligaTeams[selectedTeam];
+        
+        if (!isLastRound) {
+            document.getElementById('nextRoundBtn').style.display = 'inline-block';
+        }
+    } else {
         document.getElementById('winnerMessage').innerHTML = `
-            <div>🏟️ BUNDESLIGA SIEG! 🏟️</div>
+            <div>🎉 FREUNDSCHAFTSSPIEL GEWONNEN! 🎉</div>
             <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
-                ${currentTeamData.playerTeam} BESIEGT ${currentTeamData.opponentTeam}!
+                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
             </div>
             <div style="font-size: 12px; color: #ffff00;">
-                Professionell gespielt!
+                Gut gespielt!
             </div>
         `;
     }
@@ -170,50 +152,58 @@ function showWinMessage() {
 }
 
 function showLoseMessage() {
-    let currentTeamData;
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
-    if (gameMode === '1v1') {
-        currentTeamData = oneVsOneTeams[selectedTeam];
+    if (gameMode === 'tournament') {
         document.getElementById('winnerMessage').innerHTML = `
-            <div>⚔️ 1vs1 DUELL VERLOREN! ⚔️</div>
+            <div>💀 RUNDE ${currentTeamData.number} VERLOREN! 💀</div>
             <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
                 ${currentTeamData.opponentTeam} GEWINNT!
             </div>
             <div style="font-size: 12px; color: #ffff00;">
-                Mehr Training nötig!
+                Runde wiederholen?
             </div>
         `;
-    } else if (gameMode === 'bundesliga') {
-        currentTeamData = bundesligaTeams[selectedTeam];
+    } else {
         document.getElementById('winnerMessage').innerHTML = `
-            <div>🏟️ BUNDESLIGA NIEDERLAGE! 🏟️</div>
+            <div>💀 FREUNDSCHAFTSSPIEL VERLOREN! 💀</div>
             <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
                 ${currentTeamData.opponentTeam} GEWINNT!
             </div>
             <div style="font-size: 12px; color: #ffff00;">
-                Die Profis waren stärker!
+                Nochmal versuchen?
             </div>
         `;
     }
     
     document.getElementById('winnerMessage').style.display = 'block';
     document.getElementById('retryBtn').style.display = 'inline-block';
+    document.getElementById('nextRoundBtn').style.display = 'none';
 }
 
-// Funkcje zarządzania meczami
+function nextRound() {
+    if (gameMode === 'tournament') {
+        gameState.currentRound++;
+        resetMatch();
+        loadCurrentTeam();
+        
+        document.getElementById('nextRoundBtn').style.display = 'none';
+    }
+}
+
 function retryMatch() {
     resetMatch();
     
-    if (gameMode === '1v1') {
-        load1v1Team(selectedTeam);
-    } else if (gameMode === 'bundesliga') {
-        loadBundesligaTeam(selectedTeam);
+    if (gameMode === 'tournament') {
+        loadCurrentTeam();
+    } else {
+        loadFriendlyTeam(selectedTeam);
     }
     
     document.getElementById('retryBtn').style.display = 'none';
+    document.getElementById('nextRoundBtn').style.display = 'none';
 }
 
-// Funkcje resetowania
 function resetMatch() {
     gameState.playerScore = 0;
     gameState.botScore = 0;
@@ -224,12 +214,12 @@ function resetMatch() {
     gameState.particles = [];
     gameState.ballRotation = 0;
     gameState.screenShake = 0;
-    gameState.lastCollisionTime = 0;
+    gameState.lastCollisionTime = 0; // Reset cooldown
     
     player.x = 100;
     player.y = canvas.height / 2;
-    player.stunned = 0;
-    player.pushbackX = 0;
+    player.stunned = 0;      // Reset ogłuszenia
+    player.pushbackX = 0;    // Reset odrzutu
     player.pushbackY = 0;
     
     // Reset bramkarza gracza jeśli istnieje
@@ -253,6 +243,7 @@ function resetMatch() {
 function resetGameState() {
     gameMode = null;
     selectedTeam = null;
+    gameState.currentRound = 0;
     resetMatch();
 }
 
