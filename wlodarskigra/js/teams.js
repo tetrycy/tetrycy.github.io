@@ -61,14 +61,13 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "FC CARL ZEISS JENA",
         field: "sandy",
-        fieldScale: 0.75, // Wszystko pomniejszone o 25% = efekt 4x większego boiska
+        fieldScale: 0.75,
         bots: [
             { name: "BERND KOCH", x: 650, y: 130, color: "#0066ff", maxSpeed: 3.0, aggressiveness: 0.5, canCrossHalf: false, number: 14, role: "defender", preferredY: 130 },
             { name: "UWE KRAUSE", x: 680, y: 200, color: "#0066ff", maxSpeed: 2.8, aggressiveness: 0.4, canCrossHalf: false, number: 8, role: "midfielder", preferredY: 200 },
             { name: "THOMAS WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
         ]
-    },const teams = [
-    // ... wszystkie istniejące drużyny ...
+    },
     {
         number: 7,
         playerTeam: "SV BABELSBERG 04",
@@ -82,7 +81,6 @@ const teams = [
         ],
         playerGoalkeeper: { name: "PETER NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
     },
-    // DODAJ PRZECINEK TUTAJ ↓
     {
         number: 8,
         playerTeam: "SV BABELSBERG 04",
@@ -90,7 +88,7 @@ const teams = [
         field: "grass",
         fieldScale: 1.0,
         bots: [
-            { name: "MARCO REUS", x: 650, y: 200, color: "#ffff00", maxSpeed: 5.0, aggressiveness: 0.9, canCrossHalf: true, number: 11}
+            { name: "MARCO REUS", x: 650, y: 200, color: "#ffff00", maxSpeed: 5.0, aggressiveness: 0.9, canCrossHalf: true, number: 11, }
         ]
     }
-]; // ZAMKNIJ TABLICĘ TUTAJ
+];
