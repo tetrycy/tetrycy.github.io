@@ -7,7 +7,7 @@ const ctx = canvas.getContext('2d');
 let gameMode = null; // 'tournament' or 'friendly'
 let selectedTeam = null;
 
-// Stan gry z efektami
+// Stan gry - usunięto efekty wizualne
 let gameState = {
     playerScore: 0,
     botScore: 0,
@@ -16,9 +16,7 @@ let gameState = {
     ballInPlay: false,
     currentRound: 0,
     roundWon: false,
-    particles: [],
     ballRotation: 0,
-    screenShake: 0,
     lastCollisionTime: 0  // Cooldown kolizji
 };
 
@@ -71,77 +69,11 @@ document.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
 });
 
-// Efekty cząsteczkowe
-function createParticles(x, y, color, count) {
-    for(let i = 0; i < count; i++) {
-        gameState.particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 30,
-            maxLife: 30,
-            color: color,
-            size: Math.random() * 4 + 2
-        });
-    }
-}
-
-function createGoalEffect(x, y) {
-    for(let i = 0; i < 20; i++) {
-        gameState.particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 20,
-            vy: (Math.random() - 0.5) * 20,
-            life: 60,
-            maxLife: 60,
-            color: '#ffff00',
-            size: Math.random() * 8 + 4
-        });
-    }
-    gameState.screenShake = 8;
-}
-
-function updateParticles() {
-    for(let i = gameState.particles.length - 1; i >= 0; i--) {
-        const particle = gameState.particles[i];
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vx *= 0.95;
-        particle.vy *= 0.95;
-        particle.life--;
-        
-        if(particle.life <= 0) {
-            gameState.particles.splice(i, 1);
-        }
-    }
-}
-
-function drawParticles() {
-    gameState.particles.forEach(particle => {
-        const alpha = particle.life / particle.maxLife;
-        ctx.fillStyle = `rgba(255,255,0,${alpha})`;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-        ctx.fill();
-    });
-}
-
-function updateEffects() {
-    updateParticles();
-    if(gameState.screenShake > 0) {
-        gameState.screenShake *= 0.9;
-        if(gameState.screenShake < 0.1) gameState.screenShake = 0;
-    }
-}
-
 function drawPlayer(playerObj, name, isBot = false) {
     // Pobierz skalę dla obecnego boiska
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-    // Bez shake effect
     const drawX = playerObj.x;
     const drawY = playerObj.y;
 
@@ -254,26 +186,11 @@ function drawBall() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-    // Bez shake effect
     const drawX = ball.x;
     const drawY = ball.y;
 
     // Skalowany promień piłki
     const scaledRadius = ball.radius * scale;
-
-    // Ślady za piłką - skalowane
-    if (gameState.ballInPlay && (Math.abs(ball.vx) > 2 || Math.abs(ball.vy) > 2)) {
-        for(let i = 1; i <= 3; i++) {
-            const alpha = 0.3 - (i * 0.1);
-            const trailX = drawX - (ball.vx * i * 2);
-            const trailY = drawY - (ball.vy * i * 2);
-            
-            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-            ctx.beginPath();
-            ctx.arc(trailX, trailY, (scaledRadius - i) * scale, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
 
     // Cień piłki - skalowany
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -346,9 +263,6 @@ function gameLoop() {
             drawPlayer(bot, bot.name, true);
         });
         drawBall();
-        
-        updateEffects();
-        drawParticles();
     }
     
     requestAnimationFrame(gameLoop);
