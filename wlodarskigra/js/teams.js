@@ -8,7 +8,7 @@ const teams = [
         field: "professional",
         fieldScale: 0.5,
         bots: [
-            { name: "HAJTO", x: 550, y: 120, color: "#445aff", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 2, role: "centre-back", },
+            { name: "HAJTO", x: 250, y: 120, color: "#445aff", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 2, role: "centre-back", },
 
         ]
     },
