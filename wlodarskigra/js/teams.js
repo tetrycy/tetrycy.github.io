@@ -8,16 +8,8 @@ const teams = [
         field: "professional",
         fieldScale: 0.5,
         bots: [
-            { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "attacker", preferredY: 120 },
-            { name: "STRIKER BLUE", x: 550, y: 280, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 11, role: "attacker", preferredY: 280 },
-            
-            { name: "MIDFIELD LEFT", x: 650, y: 150, color: "#44aa44", maxSpeed: 4.2, aggressiveness: 0.7, canCrossHalf: true, number: 8, role: "midfielder", preferredY: 150 },
-            { name: "MIDFIELD RIGHT", x: 650, y: 250, color: "#44aa44", maxSpeed: 4.2, aggressiveness: 0.7, canCrossHalf: false, number: 6, role: "midfielder", preferredY: 250 },
-            
-            { name: "DEFENSE CENTER", x: 700, y: 180, color: "#4444ff", maxSpeed: 3.8, aggressiveness: 0.5, canCrossHalf: false, number: 4, role: "defender", preferredY: 180 },
-            { name: "DEFENSE SIDE", x: 700, y: 220, color: "#4444ff", maxSpeed: 3.8, aggressiveness: 0.5, canCrossHalf: false, number: 5, role: "defender", preferredY: 220 },
-            
-            { name: "KEEPER TEST", x: 750, y: 200, color: "#222222", maxSpeed: 2.2, aggressiveness: 0.3, isGoalkeeper: true, canCrossHalf: false, number: 1, role: "goalkeeper", preferredY: 200 }
+            { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "ballchaser", preferredY: 120 },
+
         ]
     },
     {
