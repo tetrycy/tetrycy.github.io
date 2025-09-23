@@ -94,8 +94,7 @@ function loadTeamData(teamData) {
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
-            startY: teamData.playerGoalkeeper.y,
-            name: teamData.playerGoalkeeper.name // Dodajemy name do obiektu
+            startY: teamData.playerGoalkeeper.y
         };
     } else {
         playerGoalkeeper = null;
@@ -217,7 +216,9 @@ function resetMatch() {
     
     player.x = 100;
     player.y = canvas.height / 2;
-    // Usunięto: player.stunned, player.pushbackX, player.pushbackY - niepotrzebne
+    player.stunned = 0;      // Reset ogłuszenia
+    player.pushbackX = 0;    // Reset odrzutu
+    player.pushbackY = 0;
     
     // Reset bramkarza gracza jeśli istnieje
     if (playerGoalkeeper) {
