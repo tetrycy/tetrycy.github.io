@@ -1,169 +1,252 @@
-// ball.js - fizyka piłki i kolizje
+// ui.js - interfejs użytkownika, menu i ekrany
 
-function updateBall() {
-    if (!gameState.ballInPlay || gameState.gameWon) return;
-
-    ball.x += ball.vx;
-    ball.y += ball.vy;
-
-    // Rotacja piłki
-    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-    gameState.ballRotation += speed * 0.05;
-
-    // Odbicia od ścian - bez efektów
-    if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
-        ball.vy = -ball.vy;
-        ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
-    }
-
-    // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
-    if (ball.x <= 60 && ball.vx < 0) { // Sprawdź wcześniej, gdy piłka leci w lewo
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            // Sprawdź czy bramkarz gracza może zablokować
-            if (playerGoalkeeper) {
-                const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
-                if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
-                    // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
-                    ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
-                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
-                    
-                    // Upewnij się że piłka leci od bramki
-                    if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
-                }
-            }
-        }
-    }
-
-    if (ball.x <= 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
-            gameState.botScore++;
-            updateScore();
-            resetBallAfterGoal();
-        } else {
-            ball.vx = -ball.vx;
-            ball.x = ball.radius + 15;
-        }
-    }
-
-    if (ball.x >= canvas.width - 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
-            gameState.playerScore++;
-            updateScore();
-            resetBallAfterGoal();
-        } else {
-            ball.vx = -ball.vx;
-            ball.x = canvas.width - ball.radius - 15;
-        }
-    }
-
-    // Kolizje z graczami - ulepszona wersja anty-chaos
-    const currentTime = Date.now();
-    const allPlayers = [player, ...bots];
-    if (playerGoalkeeper) {
-        allPlayers.push(playerGoalkeeper);
-    }
-    allPlayers.forEach(p => {
-        const dx = ball.x - p.x;
-        const dy = ball.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < ball.radius + p.radius) {
-            // Dłuższy cooldown kolizji - zapobiega wielokrotnym kolizjom
-            if (currentTime - gameState.lastCollisionTime < 300) {
-                return; // Pomiń kolizję jeśli za wcześnie (zwiększone z 150ms)
-            }
-            
-            const nx = dx / distance;
-            const ny = dy / distance;
-
-            // Znacznie większe rozdzielenie obiektów
-            const overlap = ball.radius + p.radius - distance;
-            const separationDistance = overlap + 8; // Zwiększone z 2 do 8 pikseli bufora
-            ball.x += nx * separationDistance;
-            ball.y += ny * separationDistance;
-
-            // Sprawdź czy piłka była praktycznie nieruchoma
-            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            const wasStationary = ballSpeed < 1;
-
-            const dotProduct = ball.vx * nx + ball.vy * ny;
-            
-            // USUNIĘTO: createParticles i screenShake
-            
-            if (p !== player) {
-                const goalCenterY = canvas.height / 2;
-                const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
-                
-                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
-                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
-                
-                ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
-                ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
-            } else {
-                // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
-                if (wasStationary) {
-                    // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
-                    const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                    if (playerSpeed > 0) {
-                        const kickPower = 8; // Stała siła kopnięcia
-                        ball.vx = (p.vx / playerSpeed) * kickPower;
-                        ball.vy = (p.vy / playerSpeed) * kickPower;
-                    } else {
-                        // Gracz stoi - delikatne odbicie
-                        ball.vx = nx * 3;
-                        ball.vy = ny * 3;
-                    }
-                } else {
-                    // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
-                    ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.1; // Bardzo mały wpływ
-                    ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
-                }
-                
-                // KLUCZOWE: Odepchnij gracza od piłki - USUNIĘTO dla uproszczenia
-                // Kod uproszczony - bez odrzutu gracza
-            }
-
-            // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
-            const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            if (newSpeed < 2) {
-                // Jeśli piłka za wolna, nadaj jej minimalną prędkość
-                ball.vx = nx * 2;
-                ball.vy = ny * 2;
-            } else if (newSpeed > ball.maxSpeed) {
-                ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
-                ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
-            }
-            
-            // Ustaw cooldown
-            gameState.lastCollisionTime = currentTime;
-        }
-    });
-
-    // Tarcie
-    ball.vx *= 0.998;
-    ball.vy *= 0.998;
-
-    if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
-        ball.vx = 0;
-        ball.vy = 0;
-        gameState.ballInPlay = false;
-    }
+// Funkcje menu
+function startTournament() {
+    gameMode = 'tournament';
+    gameState.currentRound = 0;
+    showGame();
+    loadCurrentTeam();
 }
 
-function launchBall() {
-    gameState.ballInPlay = true;
-    const angle = (Math.random() - 0.5) * Math.PI * 0.4;
-    const direction = Math.random() < 0.5 ? 1 : -1;
+function showTeamSelection() {
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('teamSelection').style.display = 'block';
+}
+
+function startFriendly(teamIndex) {
+    gameMode = 'friendly';
+    selectedTeam = teamIndex;
+    showGame();
+    loadFriendlyTeam(teamIndex);
+}
+
+function backToMenu() {
+    // Ukryj wszystkie ekrany gry
+    document.getElementById('gameContainer').style.display = 'none';
+    document.getElementById('gameControls').style.display = 'none';
+    document.getElementById('roundInfo').classList.add('hidden');
+    document.getElementById('scoreDisplay').classList.add('hidden');
+    document.getElementById('teamSelection').style.display = 'none';
     
-    ball.vx = Math.cos(angle) * ball.startSpeed * direction;
-    ball.vy = Math.sin(angle) * ball.startSpeed;
+    // Pokaż menu główne
+    document.getElementById('mainMenu').style.display = 'block';
+    
+    // Reset stanu gry
+    resetGameState();
 }
 
-function resetBallAfterGoal() {
+function showGame() {
+    // Ukryj menu
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('teamSelection').style.display = 'none';
+    
+    // Pokaż grę
+    document.getElementById('gameContainer').style.display = 'block';
+    document.getElementById('gameControls').style.display = 'block';
+    document.getElementById('roundInfo').classList.remove('hidden');
+    document.getElementById('scoreDisplay').classList.remove('hidden');
+}
+
+function loadCurrentTeam() {
+    const currentTeamData = teams[gameState.currentRound];
+    loadTeamData(currentTeamData);
+    
+    if (gameMode === 'tournament') {
+        document.getElementById('roundInfo').textContent = 
+            `RUNDE ${currentTeamData.number}: ${currentTeamData.playerTeam} vs ${currentTeamData.opponentTeam}`;
+        document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentTeamData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
+    }
+}
+
+function loadFriendlyTeam(teamIndex) {
+    const teamData = teams[teamIndex];
+    loadTeamData(teamData);
+    
+    document.getElementById('roundInfo').textContent = 
+        `FREUNDSCHAFTSSPIEL: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
+    document.getElementById('startTitle').textContent = `🚀 FREUNDSCHAFTSSPIEL - DRÜCKEN SIE LEERTASTE! 🚀`;
+}
+
+function loadTeamData(teamData) {
+    document.getElementById('playerTeam').textContent = teamData.playerTeam;
+    document.getElementById('botTeam').textContent = teamData.opponentTeam;
+    document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
+    
+    bots = teamData.bots.map(botData => ({
+        ...botData,
+        radius: 20,
+        vx: 0,
+        vy: 0,
+        shootPower: botData.shootPower || 1.2,
+        reactionSpeed: 0.2,
+        startY: botData.y,
+        canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
+        isGoalkeeper: botData.isGoalkeeper || false,
+        role: botData.role || "midfielder",
+        preferredY: botData.preferredY || botData.y
+    }));
+    
+    // Ładuj bramkarza gracza jeśli istnieje
+    if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
+        playerGoalkeeper = {
+            ...teamData.playerGoalkeeper,
+            radius: 20,
+            vx: 0,
+            vy: 0,
+            startX: teamData.playerGoalkeeper.x,
+            startY: teamData.playerGoalkeeper.y
+        };
+    } else {
+        playerGoalkeeper = null;
+    }
+}
+
+function updateScore() {
+    document.getElementById('playerScore').textContent = gameState.playerScore;
+    document.getElementById('botScore').textContent = gameState.botScore;
+
+    if (gameState.playerScore >= 5) {
+        gameState.gameWon = true;
+        gameState.roundWon = true;
+        showWinMessage();
+    } else if (gameState.botScore >= 5) {
+        gameState.gameWon = true;
+        gameState.roundWon = false;
+        showLoseMessage();
+    }
+}
+
+function showWinMessage() {
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    
+    if (gameMode === 'tournament') {
+        const isLastRound = gameState.currentRound >= teams.length - 1;
+        
+        document.getElementById('winnerMessage').innerHTML = `
+            <div>🎉 RUNDE ${currentTeamData.number} GEWONNEN! 🎉</div>
+            <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
+                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
+            </div>
+            <div style="font-size: 12px; color: #ffff00;">
+                ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
+            </div>
+        `;
+        
+        if (!isLastRound) {
+            document.getElementById('nextRoundBtn').style.display = 'inline-block';
+        }
+    } else {
+        document.getElementById('winnerMessage').innerHTML = `
+            <div>🎉 FREUNDSCHAFTSSPIEL GEWONNEN! 🎉</div>
+            <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
+                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
+            </div>
+            <div style="font-size: 12px; color: #ffff00;">
+                Gut gespielt!
+            </div>
+        `;
+    }
+    
+    document.getElementById('winnerMessage').style.display = 'block';
+    document.getElementById('retryBtn').style.display = 'inline-block';
+}
+
+function showLoseMessage() {
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    
+    if (gameMode === 'tournament') {
+        document.getElementById('winnerMessage').innerHTML = `
+            <div>💀 RUNDE ${currentTeamData.number} VERLOREN! 💀</div>
+            <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
+                ${currentTeamData.opponentTeam} GEWINNT!
+            </div>
+            <div style="font-size: 12px; color: #ffff00;">
+                Runde wiederholen?
+            </div>
+        `;
+    } else {
+        document.getElementById('winnerMessage').innerHTML = `
+            <div>💀 FREUNDSCHAFTSSPIEL VERLOREN! 💀</div>
+            <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
+                ${currentTeamData.opponentTeam} GEWINNT!
+            </div>
+            <div style="font-size: 12px; color: #ffff00;">
+                Nochmal versuchen?
+            </div>
+        `;
+    }
+    
+    document.getElementById('winnerMessage').style.display = 'block';
+    document.getElementById('retryBtn').style.display = 'inline-block';
+    document.getElementById('nextRoundBtn').style.display = 'none';
+}
+
+function nextRound() {
+    if (gameMode === 'tournament') {
+        gameState.currentRound++;
+        resetMatch();
+        loadCurrentTeam();
+        
+        document.getElementById('nextRoundBtn').style.display = 'none';
+    }
+}
+
+function retryMatch() {
+    resetMatch();
+    
+    if (gameMode === 'tournament') {
+        loadCurrentTeam();
+    } else {
+        loadFriendlyTeam(selectedTeam);
+    }
+    
+    document.getElementById('retryBtn').style.display = 'none';
+    document.getElementById('nextRoundBtn').style.display = 'none';
+}
+
+function resetMatch() {
+    gameState.playerScore = 0;
+    gameState.botScore = 0;
+    gameState.gameWon = false;
+    gameState.gameStarted = false;
+    gameState.ballInPlay = false;
+    gameState.roundWon = false;
+    gameState.ballRotation = 0;
+    gameState.lastCollisionTime = 0; // Reset cooldown
+    
+    player.x = 100;
+    player.y = canvas.height / 2;
+    player.stunned = 0;      // Reset ogłuszenia
+    player.pushbackX = 0;    // Reset odrzutu
+    player.pushbackY = 0;
+    
+    // Reset bramkarza gracza jeśli istnieje
+    if (playerGoalkeeper) {
+        playerGoalkeeper.x = playerGoalkeeper.startX;
+        playerGoalkeeper.y = playerGoalkeeper.startY;
+        playerGoalkeeper.vx = 0;
+        playerGoalkeeper.vy = 0;
+    }
+    
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
     ball.vx = 0;
     ball.vy = 0;
-    gameState.ballInPlay = false;
+    
+    updateScore();
+    document.getElementById('winnerMessage').style.display = 'none';
+    document.getElementById('startMessage').style.display = 'block';
+}
+
+function resetGameState() {
+    gameMode = null;
+    selectedTeam = null;
+    gameState.currentRound = 0;
+    resetMatch();
+}
+
+function startGame() {
+    gameState.gameStarted = true;
+    document.getElementById('startMessage').style.display = 'none';
+    launchBall();
 }
