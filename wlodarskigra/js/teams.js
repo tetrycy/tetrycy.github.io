@@ -81,14 +81,27 @@ const teams = [
         ],
         playerGoalkeeper: { name: "PETER NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
     },
-    {
-        number: 8,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "MARCO REUS TEST",
-        field: "grass",
-        fieldScale: 1.0,
+{
+        number: 1,
+        playerTeam: "MARIAN WŁODARSKI",
+        opponentTeam: "AMATEUR STEFAN",
+        field: "backyard",
+        fieldScale: 1.2,
         bots: [
-            { name: "MARCO REUS", x: 650, y: 200, color: "#ffff00", maxSpeed: 9.0, aggressiveness: 1.0, canCrossHalf: true, number: 11, role: "attacker"}
+            { 
+                name: "AMATEUR STEFAN", 
+                x: 680, 
+                y: 200, 
+                color: "#888888", 
+                maxSpeed: 2.8,
+                aggressiveness: 0.4,
+                canCrossHalf: false,
+                number: 99, 
+                preferredY: 200,
+                // Podstawowe wartości - żadnych specjalnych umiejętności
+                shootPower: 0.8,
+                ballControl: 0.6,
+                role: "defender"
+            }
         ]
-    }
-];
+    },
