@@ -35,7 +35,7 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "SV WALDORF MANNHEIM",
         field: "muddy",
-        fieldScale: 1.0,
+        fieldScale: 0.75,
         bots: [
             { name: "KLAUS SCHMIDT", x: 650, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 },
             { name: "HERMANN BACK", x: 720, y: 200, color: "#600060", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: false, number: 3, role: "defender", preferredY: 200 }
