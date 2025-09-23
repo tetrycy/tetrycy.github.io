@@ -217,9 +217,7 @@ function resetMatch() {
     
     player.x = 100;
     player.y = canvas.height / 2;
-    player.stunned = 0;      // Reset ogłuszenia
-    player.pushbackX = 0;    // Reset odrzutu
-    player.pushbackY = 0;
+    // Usunięto: player.stunned, player.pushbackX, player.pushbackY - niepotrzebne
     
     // Reset bramkarza gracza jeśli istnieje
     if (playerGoalkeeper) {
