@@ -1,514 +1,358 @@
-// game.js - główny silnik gry napisany od zera
+// game.js - główna logika gry i inicjalizacja
 
-// Globalne zmienne
-let canvas, ctx;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Stan gry
+let gameMode = null; // 'tournament' or 'friendly'
+let selectedTeam = null;
+
+// Stan gry z efektami
 let gameState = {
+    playerScore: 0,
+    botScore: 0,
+    gameWon: false,
+    gameStarted: false,
     ballInPlay: false,
-    frameCount: 0,
-    gameRunning: false,
-    gameEnded: false
+    currentRound: 0,
+    roundWon: false,
+    particles: [],
+    ballRotation: 0,
+    screenShake: 0,
+    lastCollisionTime: 0  // Cooldown kolizji
 };
 
-let gameMode = '1v1';
-let selectedTeam = 0;
-let currentTeam = null;
-
-// Obiekty gry
-let player = {
+// Gracz (Marian Włodarski) - szybkość 8
+const player = {
     x: 100,
-    y: 200,
+    y: canvas.height / 2,
+    radius: 20,
+    color: '#ff0000',
     vx: 0,
     vy: 0,
-    radius: 15,
-    color: "#cc0000"
+    number: 10
 };
 
-let ball = {
-    x: 400,
-    y: 200,
-    vx: 0,
-    vy: 0,
-    radius: 8,
-    color: "#ffffff"
-};
-
+// Boty - będą ładowane z definicji drużyn
 let bots = [];
+
+// Bramkarz gracza (opcjonalny)
 let playerGoalkeeper = null;
 
-// Input
-let keys = {};
+// Piłka - prędkość zmniejszona o 15%
+const ball = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    radius: 8,
+    vx: 0,
+    vy: 0,
+    color: '#ffffff',
+    maxSpeed: 11.5,
+    startSpeed: 5.7
+};
 
-// Wyniki
-let playerScore = 0;
-let botScore = 0;
-const maxScore = 5;
+// Sterowanie
+const keys = {};
 
-// Inicjalizacja gry
-function initGame() {
-    canvas = document.getElementById('gameCanvas');
-    ctx = canvas.getContext('2d');
+document.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
     
-    // Event listeners
-    document.addEventListener('keydown', (e) => {
-        keys[e.key.toLowerCase()] = true;
-        
-        if (e.code === 'Space') {
-            e.preventDefault();
-            if (!gameState.ballInPlay && !gameState.gameEnded) {
-                startBall();
-            } else if (gameState.gameEnded) {
-                resetGame();
-            }
+    if (e.key === ' ') {
+        e.preventDefault();
+        if (!gameState.gameStarted) {
+            startGame();
+        } else if (!gameState.ballInPlay && !gameState.gameWon) {
+            launchBall();
         }
-    });
-    
-    document.addEventListener('keyup', (e) => {
-        keys[e.key.toLowerCase()] = false;
-    });
-    
-    // Ukryj menu i pokaż interface gry
-    hideAllMenus();
-}
+    }
+});
 
-// Menu functions
-function show1v1Selection() {
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('oneVsOneSelection').classList.remove('hidden');
-}
+document.addEventListener('keyup', (e) => {
+    keys[e.key.toLowerCase()] = false;
+});
 
-function showBundesligaSelection() {
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('bundesligaSelection').classList.remove('hidden');
-}
-
-function backToMenuFromSelection() {
-    document.getElementById('oneVsOneSelection').classList.add('hidden');
-    document.getElementById('bundesligaSelection').classList.add('hidden');
-    document.getElementById('mainMenu').classList.remove('hidden');
-}
-
-function backToMenu() {
-    hideAllMenus();
-    document.getElementById('mainMenu').classList.remove('hidden');
-    stopGame();
-}
-
-function hideAllMenus() {
-    document.getElementById('mainMenu').classList.add('hidden');
-    document.getElementById('oneVsOneSelection').classList.add('hidden');
-    document.getElementById('bundesligaSelection').classList.add('hidden');
-    document.getElementById('roundInfo').classList.remove('hidden');
-    document.getElementById('scoreDisplay').classList.remove('hidden');
-    document.getElementById('gameControls').classList.remove('hidden');
-}
-
-// Start functions
-function start1v1(teamIndex) {
-    gameMode = '1v1';
-    selectedTeam = teamIndex;
-    currentTeam = oneVsOneTeams[teamIndex];
-    
-    setupGame();
-    initGame();
-    startGameLoop();
-}
-
-function startBundesliga(teamIndex) {
-    gameMode = 'bundesliga';
-    selectedTeam = teamIndex;
-    currentTeam = bundesligaTeams[teamIndex];
-    
-    setupGame();
-    initGame();
-    startGameLoop();
-}
-
-// Setup game objects
-function setupGame() {
-    // Reset scores
-    playerScore = 0;
-    botScore = 0;
-    
-    // Setup player
-    player.x = 100;
-    player.y = 200;
-    player.vx = 0;
-    player.vy = 0;
-    
-    // Setup ball
-    resetBallPosition();
-    
-    // Setup bots from team data
-    bots = [];
-    if (currentTeam && currentTeam.bots) {
-        currentTeam.bots.forEach(botData => {
-            const bot = {
-                name: botData.name,
-                x: botData.x || 650,
-                y: botData.y || 200,
-                vx: 0,
-                vy: 0,
-                startX: botData.x || 650,
-                startY: botData.y || 200,
-                color: botData.color || "#0066ff",
-                radius: botData.radius || 20,
-                maxSpeed: botData.maxSpeed || 3.5,
-                role: botData.role || "defender",
-                preferredY: botData.preferredY || 200,
-                canCrossHalf: botData.canCrossHalf || false,
-                isGoalkeeper: botData.isGoalkeeper || false,
-                number: botData.number || 1
-            };
-            bots.push(bot);
+// Efekty cząsteczkowe
+function createParticles(x, y, color, count) {
+    for(let i = 0; i < count; i++) {
+        gameState.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            life: 30,
+            maxLife: 30,
+            color: color,
+            size: Math.random() * 4 + 2
         });
     }
-    
-    // Setup player goalkeeper if needed
-    if (currentTeam && currentTeam.playerGoalkeeper) {
-        const gkData = currentTeam.playerGoalkeeper;
-        playerGoalkeeper = {
-            name: gkData.name,
-            x: gkData.x || 50,
-            y: gkData.y || 200,
-            vx: 0,
-            vy: 0,
-            startX: gkData.x || 50,
-            startY: gkData.y || 200,
-            color: gkData.color || "#cc0000",
-            radius: 18,
-            maxSpeed: gkData.maxSpeed || 2.0
-        };
-    } else {
-        playerGoalkeeper = null;
+}
+
+function createGoalEffect(x, y) {
+    for(let i = 0; i < 20; i++) {
+        gameState.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 20,
+            vy: (Math.random() - 0.5) * 20,
+            life: 60,
+            maxLife: 60,
+            color: '#ffff00',
+            size: Math.random() * 8 + 4
+        });
     }
-    
-    // Update UI
-    updateUI();
-    
-    // Reset game state
-    gameState.ballInPlay = false;
-    gameState.gameRunning = true;
-    gameState.gameEnded = false;
-    gameState.frameCount = 0;
+    gameState.screenShake = 8;
 }
 
-function resetBallPosition() {
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.vx = 0;
-    ball.vy = 0;
-}
-
-function startBall() {
-    gameState.ballInPlay = true;
-    ball.vx = (Math.random() - 0.5) * 4;
-    ball.vy = (Math.random() - 0.5) * 4;
-    document.getElementById('startMessage').style.display = 'none';
-}
-
-// Main game loop
-function startGameLoop() {
-    if (gameState.gameRunning) {
-        gameLoop();
-    }
-}
-
-function gameLoop() {
-    if (!gameState.gameRunning) return;
-    
-    gameState.frameCount++;
-    
-    // Update game objects
-    if (gameState.ballInPlay) {
-        updatePlayer();
-        updateBots();
-        updateBall();
-        checkCollisions();
-        checkGoals();
-    }
-    
-    // Render everything
-    render();
-    
-    // Continue loop
-    requestAnimationFrame(gameLoop);
-}
-
-function stopGame() {
-    gameState.gameRunning = false;
-}
-
-// Ball physics
-function updateBall() {
-    ball.x += ball.vx;
-    ball.y += ball.vy;
-    
-    // Friction
-    ball.vx *= 0.995;
-    ball.vy *= 0.995;
-    
-    // Wall bounces (top/bottom)
-    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-        ball.vy *= -0.8;
-        ball.y = Math.max(ball.radius, Math.min(canvas.height - ball.radius, ball.y));
-    }
-    
-    // Side walls (left/right) - except goal areas
-    const goalTop = canvas.height * 0.35;
-    const goalBottom = canvas.height * 0.65;
-    
-    // Left side
-    if (ball.x - ball.radius < 0) {
-        if (ball.y < goalTop || ball.y > goalBottom) {
-            ball.vx *= -0.8;
-            ball.x = ball.radius;
-        }
-    }
-    
-    // Right side  
-    if (ball.x + ball.radius > canvas.width) {
-        if (ball.y < goalTop || ball.y > goalBottom) {
-            ball.vx *= -0.8;
-            ball.x = canvas.width - ball.radius;
-        }
-    }
-}
-
-// Collision detection
-function checkCollisions() {
-    // Player-ball collision (handled in player.js)
-    
-    // Bot-ball collisions
-    bots.forEach(bot => {
-        const dx = ball.x - bot.x;
-        const dy = ball.y - bot.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const minDistance = ball.radius + bot.radius;
+function updateParticles() {
+    for(let i = gameState.particles.length - 1; i >= 0; i--) {
+        const particle = gameState.particles[i];
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vx *= 0.95;
+        particle.vy *= 0.95;
+        particle.life--;
         
-        if (distance < minDistance && distance > 0) {
-            const nx = dx / distance;
-            const ny = dy / distance;
-            
-            // Separate ball from bot
-            ball.x = bot.x + nx * minDistance;
-            ball.y = bot.y + ny * minDistance;
-            
-            // Transfer velocity
-            const kickPower = Math.max(3, Math.sqrt(bot.vx * bot.vx + bot.vy * bot.vy) + 2);
-            ball.vx = nx * kickPower;
-            ball.vy = ny * kickPower;
-        }
-    });
-    
-    // Player goalkeeper collision
-    if (playerGoalkeeper) {
-        const dx = ball.x - playerGoalkeeper.x;
-        const dy = ball.y - playerGoalkeeper.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const minDistance = ball.radius + playerGoalkeeper.radius;
-        
-        if (distance < minDistance && distance > 0) {
-            const nx = dx / distance;
-            const ny = dy / distance;
-            
-            ball.x = playerGoalkeeper.x + nx * minDistance;
-            ball.y = playerGoalkeeper.y + ny * minDistance;
-            
-            const kickPower = 4;
-            ball.vx = nx * kickPower;
-            ball.vy = ny * kickPower;
+        if(particle.life <= 0) {
+            gameState.particles.splice(i, 1);
         }
     }
 }
 
-// Goal detection
-function checkGoals() {
-    const goalTop = canvas.height * 0.35;
-    const goalBottom = canvas.height * 0.65;
-    
-    // Left goal (player scores)
-    if (ball.x < 0 && ball.y > goalTop && ball.y < goalBottom) {
-        playerScore++;
-        goalScored('player');
-    }
-    
-    // Right goal (bot scores)  
-    if (ball.x > canvas.width && ball.y > goalTop && ball.y < goalBottom) {
-        botScore++;
-        goalScored('bot');
-    }
-}
-
-function goalScored(scorer) {
-    gameState.ballInPlay = false;
-    resetBallPosition();
-    updateUI();
-    
-    // Check win condition
-    if (playerScore >= maxScore || botScore >= maxScore) {
-        endGame();
-    } else {
-        document.getElementById('startMessage').style.display = 'block';
-    }
-}
-
-function endGame() {
-    gameState.gameEnded = true;
-    gameState.ballInPlay = false;
-    
-    const winner = playerScore >= maxScore ? 'MARIAN WŁODARSKI' : (currentTeam ? currentTeam.opponentTeam : 'GEGNER');
-    
-    const winnerMsg = document.getElementById('winnerMessage');
-    winnerMsg.innerHTML = `🏆 ${winner} GEWINNT! 🏆<br>DRÜCKEN SIE LEERTASTE FÜR NEUSTART`;
-    winnerMsg.style.display = 'block';
-    
-    document.getElementById('retryBtn').style.display = 'inline-block';
-}
-
-function resetGame() {
-    document.getElementById('winnerMessage').style.display = 'none';
-    document.getElementById('retryBtn').style.display = 'none';
-    setupGame();
-}
-
-function retryMatch() {
-    resetGame();
-}
-
-// UI updates
-function updateUI() {
-    document.getElementById('playerScore').textContent = playerScore;
-    document.getElementById('botScore').textContent = botScore;
-    
-    if (currentTeam) {
-        document.getElementById('playerTeam').textContent = currentTeam.playerTeam || 'MARIAN WŁODARSKI';
-        document.getElementById('botTeam').textContent = currentTeam.opponentTeam || 'GEGNER';
-        
-        const roundInfo = document.getElementById('roundInfo');
-        roundInfo.textContent = `${gameMode.toUpperCase()}: ${currentTeam.playerTeam || 'MARIAN WŁODARSKI'} vs ${currentTeam.opponentTeam || 'GEGNER'}`;
-    }
-}
-
-// Rendering
-function render() {
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw field
-    drawField();
-    
-    // Draw game objects
-    drawPlayer();
-    drawBots();
-    drawBall();
-    
-    if (playerGoalkeeper) {
-        drawPlayerGoalkeeper();
-    }
-}
-
-function drawField() {
-    // Green background
-    ctx.fillStyle = '#2d5a2d';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Center line
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
-    
-    // Center circle
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    // Goals
-    const goalTop = canvas.height * 0.35;
-    const goalBottom = canvas.height * 0.65;
-    
-    // Left goal
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(0, goalTop);
-    ctx.lineTo(-10, goalTop);
-    ctx.lineTo(-10, goalBottom);
-    ctx.lineTo(0, goalBottom);
-    ctx.stroke();
-    
-    // Right goal
-    ctx.beginPath();
-    ctx.moveTo(canvas.width, goalTop);
-    ctx.lineTo(canvas.width + 10, goalTop);
-    ctx.lineTo(canvas.width + 10, goalBottom);
-    ctx.lineTo(canvas.width, goalBottom);
-    ctx.stroke();
-    
-    // Goal areas
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0, goalTop, 50, goalBottom - goalTop);
-    ctx.strokeRect(canvas.width - 50, goalTop, 50, goalBottom - goalTop);
-}
-
-function drawPlayer() {
-    ctx.fillStyle = player.color;
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Player number
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('MW', player.x, player.y + 3);
-}
-
-function drawBots() {
-    bots.forEach(bot => {
-        ctx.fillStyle = bot.color;
+function drawParticles() {
+    gameState.particles.forEach(particle => {
+        const alpha = particle.life / particle.maxLife;
+        ctx.fillStyle = `rgba(255,255,0,${alpha})`;
         ctx.beginPath();
-        ctx.arc(bot.x, bot.y, bot.radius, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Bot number
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(bot.number || '?', bot.x, bot.y + 3);
     });
 }
 
-function drawPlayerGoalkeeper() {
-    ctx.fillStyle = playerGoalkeeper.color;
-    ctx.beginPath();
-    ctx.arc(playerGoalkeeper.x, playerGoalkeeper.y, playerGoalkeeper.radius, 0, Math.PI * 2);
-    ctx.fill();
+function updateEffects() {
+    updateParticles();
+    if(gameState.screenShake > 0) {
+        gameState.screenShake *= 0.9;
+        if(gameState.screenShake < 0.1) gameState.screenShake = 0;
+    }
+}
+
+function drawPlayer(playerObj, name, isBot = false) {
+    // Pobierz skalę dla obecnego boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
     
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10px Arial';
+    // Bez shake effect
+    const drawX = playerObj.x;
+    const drawY = playerObj.y;
+
+    // Skalowany promień gracza
+    const scaledRadius = playerObj.radius * scale;
+
+    // Cień gracza
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.beginPath();
+    ctx.arc(drawX + 4, drawY + 4, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Koszulka
+    ctx.fillStyle = playerObj.color;
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Paski na koszulce - skalowane
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2 * scale;
+    const stripeSpacing = 8 * scale;
+    const stripeLength = 15 * scale;
+    for(let i = -stripeLength; i <= stripeLength; i += stripeSpacing) {
+        ctx.beginPath();
+        ctx.moveTo(drawX + i, drawY - stripeLength);
+        ctx.lineTo(drawX + i, drawY + stripeLength);
+        ctx.stroke();
+    }
+
+    // Ręce - skalowane
+    ctx.fillStyle = '#ffdbac';
+    const armDistance = 12 * scale;
+    const armRadius = 4 * scale;
+    const armHeight = 8 * scale;
+    ctx.beginPath();
+    ctx.arc(drawX - armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(drawX + armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nogi - skalowane
+    ctx.fillStyle = playerObj.color;
+    const legDistance = 6 * scale;
+    const legRadius = 5 * scale;
+    const legHeight = 15 * scale;
+    ctx.beginPath();
+    ctx.arc(drawX - legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(drawX + legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Buty - skalowane
+    ctx.fillStyle = '#000000';
+    const shoeRadius = 3 * scale;
+    const shoeHeight = 18 * scale;
+    ctx.beginPath();
+    ctx.arc(drawX - legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(drawX + legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Głowa - skalowana
+    ctx.fillStyle = '#ffdbac';
+    const headRadius = 8 * scale;
+    const headHeight = 12 * scale;
+    ctx.beginPath();
+    ctx.arc(drawX, drawY - headHeight, headRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Włosy - skalowane
+    ctx.fillStyle = isBot ? '#8B4513' : '#FFD700';
+    const hairRadius = 6 * scale;
+    const hairHeight = 16 * scale;
+    ctx.beginPath();
+    ctx.arc(drawX, drawY - hairHeight, hairRadius, 0, Math.PI);
+    ctx.fill();
+
+    // Numer na koszulce - skalowany
+    ctx.fillStyle = 'white';
+    ctx.font = `bold ${14 * scale}px Orbitron`;
     ctx.textAlign = 'center';
-    ctx.fillText('GK', playerGoalkeeper.x, playerGoalkeeper.y + 3);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3 * scale;
+    const number = playerObj.number.toString();
+    ctx.strokeText(number, drawX, drawY + 4 * scale);
+    ctx.fillText(number, drawX, drawY + 4 * scale);
+
+    // Nazwa gracza - skalowana
+    const nameY = drawY + scaledRadius + 25 * scale;
+    const nameWidth = 70 * scale;
+    const nameHeight = 12 * scale;
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
+    
+    ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
+    
+    ctx.fillStyle = 'white';
+    ctx.font = `bold ${8 * scale}px Orbitron`;
+    ctx.fillText(name, drawX, nameY + 2 * scale);
 }
 
 function drawBall() {
-    ctx.fillStyle = ball.color;
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-    ctx.fill();
+    // Pobierz skalę dla obecnego boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
     
-    // Ball highlight
-    ctx.fillStyle = '#cccccc';
+    // Bez shake effect
+    const drawX = ball.x;
+    const drawY = ball.y;
+
+    // Skalowany promień piłki
+    const scaledRadius = ball.radius * scale;
+
+    // Ślady za piłką - skalowane
+    if (gameState.ballInPlay && (Math.abs(ball.vx) > 2 || Math.abs(ball.vy) > 2)) {
+        for(let i = 1; i <= 3; i++) {
+            const alpha = 0.3 - (i * 0.1);
+            const trailX = drawX - (ball.vx * i * 2);
+            const trailY = drawY - (ball.vy * i * 2);
+            
+            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+            ctx.beginPath();
+            ctx.arc(trailX, trailY, (scaledRadius - i) * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Cień piłki - skalowany
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.beginPath();
-    ctx.arc(ball.x - 2, ball.y - 2, ball.radius * 0.3, 0, Math.PI * 2);
+    ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Piłka
+    if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
+        if (Math.floor(Date.now() / 200) % 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        } else {
+            ctx.fillStyle = ball.color;
+        }
+    } else {
+        ctx.fillStyle = ball.color;
+    }
+    
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wzór piłki z rotacją - skalowany
+    ctx.save();
+    ctx.translate(drawX, drawY);
+    ctx.rotate(gameState.ballRotation);
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1.5 * scale;
+    
+    // Pentagramy - skalowane
+    ctx.beginPath();
+    for(let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2 / 5);
+        const x = Math.cos(angle) * scaledRadius * 0.6;
+        const y = Math.sin(angle) * scaledRadius * 0.6;
+        if(i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Połysk - skalowany
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(drawX - scaledRadius * 0.3, drawY - scaledRadius * 0.3, scaledRadius * 0.3, 0, Math.PI * 2);
     ctx.fill();
 }
 
-// Initialize when page loads
-window.addEventListener('load', () => {
-    // Game is ready, waiting for user to select team
-    console.log('Game loaded, waiting for team selection');
-});
+// Główna pętla gry
+function gameLoop() {
+    if (gameMode) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawField();
+        
+        if (gameState.gameStarted) {
+            updatePlayer();
+            updateBots();
+            updateBall();
+        }
+        
+        drawPlayer(player, 'MARIAN WŁODARSKI', false);
+        if (playerGoalkeeper) {
+            drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
+        }
+        bots.forEach(bot => {
+            drawPlayer(bot, bot.name, true);
+        });
+        drawBall();
+        
+        updateEffects();
+        drawParticles();
+    }
+    
+    requestAnimationFrame(gameLoop);
+}
+
+// Inicjalizacja
+gameLoop();
