@@ -8,7 +8,7 @@ const teams = [
         field: "professional",
         fieldScale: 0.5,
         bots: [
-            { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "ballchaser", preferredY: 120 },
+            { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "fullback", preferredY: 120 },
 
         ]
     },
