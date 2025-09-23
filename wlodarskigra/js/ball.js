@@ -120,13 +120,8 @@ function updateBall() {
                     ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
                 }
                 
-                // KLUCZOWE: Odepchnij gracza od piłki
-                if (p === player) {
-                    const pushPower = 3;
-                    player.pushbackX = -nx * pushPower;  // Przeciwny kierunek do piłki
-                    player.pushbackY = -ny * pushPower;
-                    player.stunned = 8;  // 8 klatek ograniczonej responsywności
-                }
+                // KLUCZOWE: Odepchnij gracza od piłki - USUNIĘTO dla uproszczenia
+                // Kod uproszczony - bez odrzutu gracza
             }
 
             // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
