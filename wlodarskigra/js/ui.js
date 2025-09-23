@@ -99,9 +99,6 @@ function loadTeamData(teamData) {
     } else {
         playerGoalkeeper = null;
     }
-    
-    // NOWE! Inicjalizuj strefy pozycjonowania dla nowego systemu AI
-    initializeBotZones();
 }
 
 function updateScore() {
