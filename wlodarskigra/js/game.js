@@ -22,7 +22,7 @@ let gameState = {
     lastCollisionTime: 0  // Cooldown kolizji
 };
 
-// Gracz (Marian Włodarski) - szybkość 8
+// Gracz (Włodarski) - szybkość 8
 const player = {
     x: 100,
     y: canvas.height / 2,
