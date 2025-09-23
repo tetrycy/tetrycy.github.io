@@ -94,7 +94,8 @@ function loadTeamData(teamData) {
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
-            startY: teamData.playerGoalkeeper.y
+            startY: teamData.playerGoalkeeper.y,
+            name: teamData.playerGoalkeeper.name // Dodajemy name do obiektu
         };
     } else {
         playerGoalkeeper = null;
