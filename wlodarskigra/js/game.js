@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press Start 2P:wght@400;700;900&display=swap');
 
 body {
     margin: 0;
     padding: 20px;
     background: linear-gradient(45deg, #0d4a2d, #1a5c36, #0d4a2d);
-    font-family: 'Orbitron', monospace;
+    font-family: 'Press Start 2P', monospace;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -152,7 +152,7 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     margin: 5px;
-    font-family: 'Orbitron', monospace;
+    font-family: 'Press Start 2P', monospace;
     transition: all 0.3s;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
