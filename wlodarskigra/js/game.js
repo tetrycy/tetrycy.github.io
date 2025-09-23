@@ -70,7 +70,7 @@ document.addEventListener('keyup', (e) => {
 });
 
 function drawPlayer(playerObj, name, isBot = false) {
-    // Pobierz skalę dla obecnego boiska (tylko dla promienia gracza)
+    // Pobierz skalę dla obecnego boiska
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
@@ -92,22 +92,22 @@ function drawPlayer(playerObj, name, isBot = false) {
     ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Numer na graczu - ZAWSZE widoczny (nie skalowany)
+    // Numer na graczu - skalowany
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 14px Orbitron';
+    ctx.font = `bold ${14 * scale}px Orbitron`;
     ctx.textAlign = 'center';
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * scale;
     const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY + 4);
-    ctx.fillText(number, drawX, drawY + 4);
+    ctx.strokeText(number, drawX, drawY + 4 * scale);
+    ctx.fillText(number, drawX, drawY + 4 * scale);
 
-    // Nazwa gracza - ZAWSZE widoczna (nie skalowana), bez tła
-    const nameY = drawY + scaledRadius + 20;
+    // Nazwa gracza - skalowana
+    const nameY = drawY + scaledRadius + 20 * scale;
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 10px Orbitron';
+    ctx.font = `bold ${10 * scale}px Orbitron`;
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * scale;
     ctx.strokeText(name, drawX, nameY);
     ctx.fillText(name, drawX, nameY);
 }
