@@ -1,4 +1,4 @@
-// player.js - logika gracza i AI botów z nowym systemem pozycjonowania
+// player.js - logika gracza i AI botów z rozszerzonym systemem 12 ról piłkarskich
 
 // Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
 function updatePlayer() {
@@ -49,7 +49,7 @@ function checkPlayerBallCollision() {
     }
 }
 
-// NOWY SYSTEM POZYCJONOWANIA - określa fazę gry na podstawie pozycji piłki
+// Określa fazę gry na podstawie pozycji piłki
 function determineGamePhase() {
     const centerLine = canvas.width / 2;
     const ballX = ball.x;
@@ -64,7 +64,7 @@ function determineGamePhase() {
     }
 }
 
-// Inicjalizuje strefy odpowiedzialności dla botów
+// ROZSZERZONA inicjalizacja stref dla 12 ról piłkarskich
 function initializeBotZones() {
     const fieldWidth = canvas.width;
     const fieldHeight = canvas.height;
@@ -78,8 +78,119 @@ function initializeBotZones() {
             return;
         }
         
-        // Strefy bazowe w zależności od roli
+        // 12 RÓŻNYCH RÓL z unikalnymi strefami
         switch(bot.role) {
+            case "striker":
+                // Środkowy napastnik - bardzo ofensywny
+                bot.homeZone = {
+                    x: [fieldWidth * 0.3, fieldWidth * 0.85],
+                    y: [fieldHeight * 0.35, fieldHeight * 0.65],
+                    defensiveX: [fieldWidth * 0.5, fieldWidth * 0.75],
+                    attackX: [fieldWidth * 0.2, fieldWidth * 0.9]
+                };
+                break;
+                
+            case "winger":
+                // Skrzydłowy - boczne obszary
+                const isLeftWinger = bot.preferredY < fieldHeight * 0.5;
+                if (isLeftWinger) {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.35, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.1, fieldHeight * 0.45],
+                        defensiveX: [fieldWidth * 0.55, fieldWidth * 0.85],
+                        attackX: [fieldWidth * 0.25, fieldWidth * 0.95]
+                    };
+                } else {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.35, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.55, fieldHeight * 0.9],
+                        defensiveX: [fieldWidth * 0.55, fieldWidth * 0.85],
+                        attackX: [fieldWidth * 0.25, fieldWidth * 0.95]
+                    };
+                }
+                break;
+                
+            case "attacking-midfielder":
+                // Ofensywny pomocnik
+                bot.homeZone = {
+                    x: [fieldWidth * 0.4, fieldWidth * 0.8],
+                    y: [fieldHeight * 0.25, fieldHeight * 0.75],
+                    defensiveX: [fieldWidth * 0.55, fieldWidth * 0.8],
+                    attackX: [fieldWidth * 0.35, fieldWidth * 0.85]
+                };
+                break;
+                
+            case "defensive-midfielder":
+                // Defensywny pomocnik
+                bot.homeZone = {
+                    x: [fieldWidth * 0.55, fieldWidth * 0.85],
+                    y: [fieldHeight * 0.2, fieldHeight * 0.8],
+                    defensiveX: [fieldWidth * 0.65, fieldWidth * 0.9],
+                    attackX: [fieldWidth * 0.5, fieldWidth * 0.8]
+                };
+                break;
+                
+            case "centre-back":
+                // Środkowy obrońca
+                bot.homeZone = {
+                    x: [fieldWidth * 0.65, fieldWidth * 0.9],
+                    y: [fieldHeight * 0.3, fieldHeight * 0.7],
+                    defensiveX: [fieldWidth * 0.75, fieldWidth * 0.95],
+                    attackX: [fieldWidth * 0.6, fieldWidth * 0.85]
+                };
+                break;
+                
+            case "fullback":
+                // Boczny obrońca
+                const isLeftBack = bot.preferredY < fieldHeight * 0.5;
+                if (isLeftBack) {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.6, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.1, fieldHeight * 0.4],
+                        defensiveX: [fieldWidth * 0.7, fieldWidth * 0.95],
+                        attackX: [fieldWidth * 0.5, fieldWidth * 0.85]
+                    };
+                } else {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.6, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.6, fieldHeight * 0.9],
+                        defensiveX: [fieldWidth * 0.7, fieldWidth * 0.95],
+                        attackX: [fieldWidth * 0.5, fieldWidth * 0.85]
+                    };
+                }
+                break;
+                
+            case "wing-back":
+                // Ofensywny boczny obrońca
+                const isLeftWingBack = bot.preferredY < fieldHeight * 0.5;
+                if (isLeftWingBack) {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.45, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.05, fieldHeight * 0.4],
+                        defensiveX: [fieldWidth * 0.65, fieldWidth * 0.9],
+                        attackX: [fieldWidth * 0.3, fieldWidth * 0.9]
+                    };
+                } else {
+                    bot.homeZone = {
+                        x: [fieldWidth * 0.45, fieldWidth * 0.9],
+                        y: [fieldHeight * 0.6, fieldHeight * 0.95],
+                        defensiveX: [fieldWidth * 0.65, fieldWidth * 0.9],
+                        attackX: [fieldWidth * 0.3, fieldWidth * 0.9]
+                    };
+                }
+                break;
+                
+            case "ballchaser":
+                // Gracz który zawsze goni piłkę - cały boisko to jego strefa!
+                bot.homeZone = {
+                    x: [fieldWidth * 0.3, fieldWidth * 0.95],
+                    y: [fieldHeight * 0.05, fieldHeight * 0.95],
+                    defensiveX: [fieldWidth * 0.3, fieldWidth * 0.95], // Zawsze ta sama strefa
+                    attackX: [fieldWidth * 0.3, fieldWidth * 0.95]     // Ignoruje fazy gry
+                };
+                break;
+                
+            // STARE ROLE - zachowane dla kompatybilności
             case "attacker":
                 bot.homeZone = {
                     x: [fieldWidth * 0.4, fieldWidth * 0.9],
@@ -133,6 +244,14 @@ function calculateFormationPosition(bot, gamePhase) {
         };
     }
     
+    // BALLCHASER ignoruje formacje - zawsze idzie za piłką
+    if (bot.role === "ballchaser") {
+        return {
+            x: ball.x,
+            y: ball.y
+        };
+    }
+    
     let targetX, targetY;
     const ballInfluence = 0.3; // Jak mocno piłka wpływa na pozycję
     
@@ -152,8 +271,8 @@ function calculateFormationPosition(bot, gamePhase) {
             // W ataku - przesuń się do ofensywnej części strefy
             const attZone = bot.homeZone.attackX;
             targetX = (attZone[0] + attZone[1]) / 2;
-            // Napastnicy idą najbliżej bramki
-            if (bot.role === "attacker") {
+            // Napastnicy i strikerzy idą najbliżej bramki
+            if (bot.role === "attacker" || bot.role === "striker") {
                 targetX = Math.min(targetX - 30, attZone[0]);
             }
             break;
@@ -231,19 +350,19 @@ function updatePlayerGoalkeeper() {
     playerGoalkeeper.y += playerGoalkeeper.vy;
 }
 
-// NOWA LOGIKA BOTÓW POLOWYCH z systemem pozycjonowania
+// NOWA LOGIKA BOTÓW POLOWYCH z 12 rolami specjalistycznymi
 function updateFieldBot(bot) {
     const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
     const ballInReach = distanceToBall < 120;
     
-    // NOWY SYSTEM - określ fazę gry i pozycję w formacji
+    // Określ fazę gry i pozycję w formacji
     const gamePhase = determineGamePhase();
     const formationPos = calculateFormationPosition(bot, gamePhase);
     
     let targetX = formationPos.x;
     let targetY = formationPos.y;
 
-    // Sprawdź odległości do kolegów z drużyny (unikaj skupiania się)
+    // System rozstawienia (unikaj skupiania się kolegów)
     const teammateSpacing = 60;
     let spacingAdjustmentX = 0;
     let spacingAdjustmentY = 0;
@@ -257,22 +376,130 @@ function updateFieldBot(bot) {
             if (distance < teammateSpacing && distance > 0) {
                 const pushStrength = (teammateSpacing - distance) / teammateSpacing;
                 spacingAdjustmentX += (dx / distance) * pushStrength * 30;
-                spacingAdjustmentY += (dy / distance) * pushStrength * 30;
+                spacingAdjustmentY += (dx / distance) * pushStrength * 30;
             }
         }
     });
 
-    // SPECJALNE ZACHOWANIA gdy piłka w zasięgu
+    // SPECJALNE ZACHOWANIA dla wszystkich 12 ról
     if (ballInReach) {
         switch(bot.role) {
-            case "attacker":
-                // Napastnicy priorytetowo gonią piłkę
+            case "striker":
+                // Napastnik - bardzo agresywny, zawsze goni piłkę
+                if (gamePhase === "bot_attack" || gamePhase === "neutral") {
+                    const predictTime = 8;
+                    targetX = ball.x + ball.vx * predictTime;
+                    targetY = ball.y + ball.vy * predictTime;
+                    
+                    if (distanceToBall < 50) {
+                        const goalCenterY = canvas.height / 2;
+                        const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
+                        targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 25;
+                        targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 25;
+                    }
+                }
+                break;
+                
+            case "winger":
+                // Skrzydłowy - preferuje boczne akcje
                 if (gamePhase === "bot_attack" || gamePhase === "neutral") {
                     const predictTime = 6;
                     targetX = ball.x + ball.vx * predictTime;
                     targetY = ball.y + ball.vy * predictTime;
                     
-                    // Pozycjonuj się do strzału
+                    // Ciągnie piłkę ku swoim liniom bocznym
+                    const isLeftWinger = bot.preferredY < canvas.height * 0.5;
+                    if (isLeftWinger) {
+                        targetY = Math.min(targetY, canvas.height * 0.3);
+                    } else {
+                        targetY = Math.max(targetY, canvas.height * 0.7);
+                    }
+                }
+                break;
+                
+            case "attacking-midfielder":
+                // Ofensywny pomocnik - kreatywny
+                if (gamePhase !== "bot_defense") {
+                    targetX = ball.x + (Math.random() - 0.5) * 50;
+                    targetY = ball.y + (Math.random() - 0.5) * 50;
+                    
+                    // Szuka przestrzeni za napastnikami
+                    if (distanceToBall < 60) {
+                        targetX = ball.x - 40;
+                        targetY = ball.y + (Math.random() - 0.5) * 60;
+                    }
+                }
+                break;
+                
+            case "defensive-midfielder":
+                // Defensywny pomocnik - ostrożny
+                if (gamePhase === "bot_defense" || ball.x > canvas.width * 0.55) {
+                    targetX = ball.x + 30;
+                    targetY = ball.y;
+                } else if (gamePhase === "neutral") {
+                    targetX = ball.x + (Math.random() - 0.5) * 30;
+                    targetY = ball.y + (Math.random() - 0.5) * 30;
+                }
+                break;
+                
+            case "centre-back":
+                // Środkowy obrońca - tylko defensywa
+                if (ball.x > canvas.width * 0.7 && gamePhase === "bot_defense") {
+                    targetX = ball.x + 25;
+                    targetY = ball.y;
+                }
+                break;
+                
+            case "fullback":
+                // Boczny obrońca - defensywa + wsparcie
+                if (ball.x > canvas.width * 0.65) {
+                    if (gamePhase === "bot_defense") {
+                        targetX = ball.x + 20;
+                        targetY = ball.y;
+                    } else {
+                        // Lekkie wsparcie w ataku
+                        targetX = ball.x + (Math.random() - 0.5) * 40;
+                        targetY = ball.y + (Math.random() - 0.5) * 40;
+                    }
+                }
+                break;
+                
+            case "wing-back":
+                // Ofensywny boczny obrońca
+                if (gamePhase === "bot_attack") {
+                    // Bardzo ofensywny
+                    targetX = ball.x + (Math.random() - 0.5) * 40;
+                    targetY = ball.y + (Math.random() - 0.5) * 40;
+                } else if (gamePhase === "bot_defense" && ball.x > canvas.width * 0.7) {
+                    targetX = ball.x + 20;
+                    targetY = ball.y;
+                }
+                break;
+                
+            case "ballchaser":
+                // ZAWSZE GONI PIŁKĘ! Ignoruje taktykę i fazy gry
+                const ballChaserPredictTime = 10; // Bardzo agresywne przewidywanie
+                targetX = ball.x + ball.vx * ballChaserPredictTime;
+                targetY = ball.y + ball.vy * ballChaserPredictTime;
+                
+                // Jeśli bardzo blisko piłki, idzie prosto w nią
+                if (distanceToBall < 100) {
+                    targetX = ball.x;
+                    targetY = ball.y;
+                }
+                
+                // Ignoruje rozstawienie kolegów - pcha się przez wszystkich
+                spacingAdjustmentX = 0;
+                spacingAdjustmentY = 0;
+                break;
+                
+            // STARE ROLE - zachowane
+            case "attacker":
+                if (gamePhase === "bot_attack" || gamePhase === "neutral") {
+                    const predictTime = 6;
+                    targetX = ball.x + ball.vx * predictTime;
+                    targetY = ball.y + ball.vy * predictTime;
+                    
                     if (distanceToBall < 50) {
                         const goalCenterY = canvas.height / 2;
                         const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
@@ -283,7 +510,6 @@ function updateFieldBot(bot) {
                 break;
                 
             case "midfielder":
-                // Pomocnicy wspierają w każdej fazie
                 if (gamePhase !== "bot_defense" || ball.x > canvas.width * 0.6) {
                     targetX = ball.x + (Math.random() - 0.5) * 40;
                     targetY = ball.y + (Math.random() - 0.5) * 40;
@@ -291,7 +517,7 @@ function updateFieldBot(bot) {
                 break;
                 
             case "defender":
-                // Obrońcy reagują tylko w krytycznych sytuacjach
+            default:
                 if (ball.x > canvas.width * 0.65 && (gamePhase === "bot_defense" || distanceToBall < 60)) {
                     targetX = ball.x + 20;
                     targetY = ball.y;
@@ -300,9 +526,11 @@ function updateFieldBot(bot) {
         }
     }
 
-    // Zastosuj korektę rozstawienia
-    targetX += spacingAdjustmentX;
-    targetY += spacingAdjustmentY;
+    // Zastosuj korektę rozstawienia (ballchaser ignoruje to)
+    if (bot.role !== "ballchaser") {
+        targetX += spacingAdjustmentX;
+        targetY += spacingAdjustmentY;
+    }
 
     // System błędów dla różnych przeciwników
     let errorChance;
@@ -317,23 +545,34 @@ function updateFieldBot(bot) {
         }
     } else {
         switch(selectedTeam) {
-            case 0: errorChance = 0.15; break; // VFL Oldenburg
-            case 1: errorChance = 0.10; break; // SV Waldorf Mannheim  
-            case 2: errorChance = 0.12; break; // FC Hansa Rostock - zwiększone błędy
-            case 3: errorChance = 0.06; break; // Eintracht Braunschweig
-            case 4: errorChance = 0.04; break; // Lokomotiv Leipzig
-            case 5: errorChance = 0.20; break; // FC Carl Zeiss Jena
-            case 6: errorChance = 0.18; break; // SpVgg Unterhaching
+            case 0: errorChance = 0.15; break; // TEST FORMATION FC
+            case 1: errorChance = 0.15; break; // VFL Oldenburg
+            case 2: errorChance = 0.10; break; // SV Waldorf Mannheim  
+            case 3: errorChance = 0.12; break; // FC Hansa Rostock
+            case 4: errorChance = 0.06; break; // Eintracht Braunschweig
+            case 5: errorChance = 0.04; break; // Lokomotiv Leipzig
+            case 6: errorChance = 0.20; break; // FC Carl Zeiss Jena
+            case 7: errorChance = 0.18; break; // SpVgg Unterhaching
             default: errorChance = 0.08;
         }
     }
     
-    // Dodaj błędy w zależności od roli
+    // ROZSZERZONE błędy według 12 ról
     let roleErrorMultiplier = 1.0;
     switch(bot.role) {
-        case "attacker": roleErrorMultiplier = 0.8; break;  // Napastnicy bardziej precyzyjni
+        case "striker": roleErrorMultiplier = 0.7; break;          // Najlepsi strzelcy
+        case "winger": roleErrorMultiplier = 0.8; break;           // Techniczni skrzydłowi
+        case "attacking-midfielder": roleErrorMultiplier = 0.75; break; // Kreatywni playmakerzy
+        case "defensive-midfielder": roleErrorMultiplier = 1.0; break;   // Standardowo
+        case "centre-back": roleErrorMultiplier = 1.1; break;      // Wolniejsi środkowi
+        case "fullback": roleErrorMultiplier = 0.9; break;         // Wszechstronni boczni
+        case "wing-back": roleErrorMultiplier = 0.85; break;       // Ofensywni boczni
+        case "ballchaser": roleErrorMultiplier = 1.3; break;       // Chaotyczny - dużo błędów!
+        case "goalkeeper": roleErrorMultiplier = 0.6; break;       // Bramkarze bardzo precyzyjni
+        // Stare role
+        case "attacker": roleErrorMultiplier = 0.8; break;
         case "midfielder": roleErrorMultiplier = 1.0; break;
-        case "defender": roleErrorMultiplier = 1.2; break;  // Obrońcy mniej zwinni
+        case "defender": roleErrorMultiplier = 1.2; break;
     }
     
     if (Math.random() < errorChance * roleErrorMultiplier) {
@@ -349,7 +588,6 @@ function updateFieldBot(bot) {
         const normalizedX = dx / distance;
         const normalizedY = dy / distance;
         
-        // Stała prędkość - brak bonusów
         const currentSpeed = bot.maxSpeed;
         
         bot.vx = normalizedX * currentSpeed;
@@ -362,11 +600,15 @@ function updateFieldBot(bot) {
     bot.x += bot.vx;
     bot.y += bot.vy;
 
-    // Ograniczenia pozycji
-    if (bot.canCrossHalf) {
+    // Ograniczenia pozycji - ballchaser może biegać wszędzie!
+    if (bot.role === "ballchaser") {
         bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
     } else {
-        bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
+        if (bot.canCrossHalf) {
+            bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
+        } else {
+            bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
+        }
     }
     
     bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
