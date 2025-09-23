@@ -13,16 +13,6 @@ function showTeamSelection() {
     document.getElementById('teamSelection').style.display = 'block';
 }
 
-function show1v1Selection() {
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('oneVsOneSelection').style.display = 'block';
-}
-
-function showBundesligaSelection() {
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('bundesligaSelection').style.display = 'block';
-}
-
 function startFriendly(teamIndex) {
     gameMode = 'friendly';
     selectedTeam = teamIndex;
