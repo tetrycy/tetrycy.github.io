@@ -6,7 +6,7 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "TEST FORMATION FC",
         field: "professional",
-        fieldScale: 1.0,
+        fieldScale: 0.5,
         bots: [
             { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "attacker", preferredY: 120 },
             { name: "STRIKER BLUE", x: 550, y: 280, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 11, role: "attacker", preferredY: 280 },
