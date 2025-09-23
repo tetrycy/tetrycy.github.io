@@ -183,10 +183,10 @@ function initializeBotZones() {
             case "ballchaser":
                 // Gracz który zawsze goni piłkę - cały boisko to jego strefa!
                 bot.homeZone = {
-                    x: [fieldWidth * 0.3, fieldWidth * 0.95],
-                    y: [fieldHeight * 0.05, fieldHeight * 0.95],
-                    defensiveX: [fieldWidth * 0.3, fieldWidth * 0.95], // Zawsze ta sama strefa
-                    attackX: [fieldWidth * 0.3, fieldWidth * 0.95]     // Ignoruje fazy gry
+                    x: [fieldWidth * 1.0, fieldWidth * 1.0],
+                    y: [fieldHeight * 1.0, fieldHeight * 1.0],
+                    defensiveX: [fieldWidth * 1.0, fieldWidth * 1.0], // Zawsze ta sama strefa
+                    attackX: [fieldWidth * 1.0, fieldWidth * 1.0]     // Ignoruje fazy gry
                 };
                 break;
                 
