@@ -121,83 +121,57 @@ function updateEffects() {
     }
 }
 
-// UPROSZCZONA funkcja gracza - tylko kulka + numer + nazwa
+// DEBUG - minimalna funkcja gracza (tymczasowo)
 function drawPlayer(playerObj, name, isBot = false) {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
+    // Zapisz obecne ustawienia
+    ctx.save();
     
-    const drawX = playerObj.x;
-    const drawY = playerObj.y;
-    const scaledRadius = playerObj.radius * scale;
+    try {
+        const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+        const scale = currentTeamData ? currentTeamData.fieldScale || 1.0 : 1.0;
+        
+        const drawX = playerObj.x;
+        const drawY = playerObj.y;
+        const scaledRadius = playerObj.radius * scale;
 
-    // Cień gracza
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath();
-    ctx.arc(drawX + 4, drawY + 4, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
+        // Prosta kulka
+        ctx.fillStyle = playerObj.color;
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
+        ctx.fill();
 
-    // Główna kulka gracza
-    ctx.fillStyle = playerObj.color;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
+        // Proste obramowanie
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-    // Obramowanie
-    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.lineWidth = Math.max(1, 2 * scale);
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.stroke();
+        // Prosty numer - bez Press Start 2P na razie
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';  // Bezpieczna czcionka
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const number = playerObj.number.toString();
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 3;
+        ctx.strokeText(number, drawX, drawY);
+        ctx.fillText(number, drawX, drawY);
 
-    // Numer na koszulce
-    const minNumberSize = 12;
-    const numberSize = Math.max(minNumberSize, 16 * scale);
-    ctx.fillStyle = 'white';
-    ctx.font = `bold ${numberSize}px 'Press Start 2P'`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Kontur numeru
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = Math.max(2, 3 * scale);
-    const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY);
-    ctx.fillText(number, drawX, drawY);
-
-    // Nazwa gracza - zawsze czytelna
-    const nameY = drawY + scaledRadius + (30 * Math.max(0.6, scale));
-    const minNameWidth = 120;
-    const minNameHeight = 16;
-    const minFontSize = 6;
-    
-    const nameWidth = Math.max(minNameWidth, 70 * scale);
-    const nameHeight = Math.max(minNameHeight, 12 * scale);
-    const fontSize = Math.max(minFontSize, 8 * scale);
-    
-    // Tło nazwiska
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
-    ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
-    // Ramka nazwiska
-    ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
-    ctx.lineWidth = Math.max(1, 2 * scale);
-    ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
-    // Tekst nazwiska
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${fontSize}px 'Press Start 2P'`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Kontur nazwiska
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = Math.max(1, 1.5 * scale);
-    ctx.strokeText(name, drawX, nameY);
-    ctx.fillText(name, drawX, nameY);
-    
-    // WAŻNE: Przywróć domyślne ustawienia canvas
-    ctx.textBaseline = 'alphabetic';
+        // Prosty napis nazwiska
+        const nameY = drawY + scaledRadius + 20;
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillRect(drawX - 50, nameY - 8, 100, 16);
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '10px Arial';  // Bezpieczna czcionka
+        ctx.fillText(name, drawX, nameY);
+        
+    } catch(error) {
+        console.error('Błąd w drawPlayer:', error);
+    } finally {
+        // Przywróć ustawienia
+        ctx.restore();
+    }
 }
 
 function drawBall() {
