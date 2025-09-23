@@ -1,13 +1,9 @@
-// game.js - główna logika gry i inicjalizacja
+// game.js - główna logika gry i inicjalizacja (uproszczona wersja)
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Stan gry
-let gameMode = null; // 'tournament' or 'friendly'
-let selectedTeam = null;
-
-// Stan gry z efektami
+// Stan gry z efektami (tylko gole, bez efektów przy uderzeniu)
 let gameState = {
     playerScore: 0,
     botScore: 0,
@@ -19,10 +15,10 @@ let gameState = {
     particles: [],
     ballRotation: 0,
     screenShake: 0,
-    lastCollisionTime: 0  // Cooldown kolizji
+    lastCollisionTime: 0
 };
 
-// Gracz (Włodarski) - szybkość 8
+// Gracz (Marian Włodarski) - szybkość 8
 const player = {
     x: 100,
     y: canvas.height / 2,
@@ -71,22 +67,7 @@ document.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
 });
 
-// Efekty cząsteczkowe
-function createParticles(x, y, color, count) {
-    for(let i = 0; i < count; i++) {
-        gameState.particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            life: 30,
-            maxLife: 30,
-            color: color,
-            size: Math.random() * 4 + 2
-        });
-    }
-}
-
+// TYLKO efekty bramkowe - bez efektów przy uderzeniu piłki
 function createGoalEffect(x, y) {
     for(let i = 0; i < 20; i++) {
         gameState.particles.push({
@@ -136,12 +117,12 @@ function updateEffects() {
     }
 }
 
+// UPROSZCZONA funkcja rysowania gracza - tylko kulka + numer + nazwisko
 function drawPlayer(playerObj, name, isBot = false) {
     // Pobierz skalę dla obecnego boiska
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-    // Bez shake effect
     const drawX = playerObj.x;
     const drawY = playerObj.y;
 
@@ -154,99 +135,68 @@ function drawPlayer(playerObj, name, isBot = false) {
     ctx.arc(drawX + 4, drawY + 4, scaledRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Koszulka
+    // GŁÓWNA KULKA - koszulka gracza
     ctx.fillStyle = playerObj.color;
     ctx.beginPath();
     ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Paski na koszulce - skalowane
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2 * scale;
-    const stripeSpacing = 8 * scale;
-    const stripeLength = 15 * scale;
-    for(let i = -stripeLength; i <= stripeLength; i += stripeSpacing) {
-        ctx.beginPath();
-        ctx.moveTo(drawX + i, drawY - stripeLength);
-        ctx.lineTo(drawX + i, drawY + stripeLength);
-        ctx.stroke();
-    }
+    // Obramowanie kulki dla lepszego wyglądu
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.lineWidth = Math.max(1, 2 * scale);
+    ctx.stroke();
 
-    // Ręce - skalowane
-    ctx.fillStyle = '#ffdbac';
-    const armDistance = 12 * scale;
-    const armRadius = 4 * scale;
-    const armHeight = 8 * scale;
-    ctx.beginPath();
-    ctx.arc(drawX - armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(drawX + armDistance, drawY - armHeight, armRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Nogi - skalowane
-    ctx.fillStyle = playerObj.color;
-    const legDistance = 6 * scale;
-    const legRadius = 5 * scale;
-    const legHeight = 15 * scale;
-    ctx.beginPath();
-    ctx.arc(drawX - legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(drawX + legDistance, drawY + legHeight, legRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Buty - skalowane
-    ctx.fillStyle = '#000000';
-    const shoeRadius = 3 * scale;
-    const shoeHeight = 18 * scale;
-    ctx.beginPath();
-    ctx.arc(drawX - legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(drawX + legDistance, drawY + shoeHeight, shoeRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Głowa - skalowana
-    ctx.fillStyle = '#ffdbac';
-    const headRadius = 8 * scale;
-    const headHeight = 12 * scale;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY - headHeight, headRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Włosy - skalowane
-    ctx.fillStyle = isBot ? '#8B4513' : '#FFD700';
-    const hairRadius = 6 * scale;
-    const hairHeight = 16 * scale;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY - hairHeight, hairRadius, 0, Math.PI);
-    ctx.fill();
-
-    // Numer na koszulce - skalowany
+    // NUMER - zawsze czytelny
     ctx.fillStyle = 'white';
-    ctx.font = `bold ${14 * scale}px Orbitron`;
+    const minNumberSize = 12; // Minimalny rozmiar dla numeru
+    const numberSize = Math.max(minNumberSize, 16 * scale);
+    ctx.font = `bold ${numberSize}px 'Press Start 2P'`;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Kontur numeru dla lepszej czytelności
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3 * scale;
+    ctx.lineWidth = Math.max(2, 3 * scale);
     const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY + 4 * scale);
-    ctx.fillText(number, drawX, drawY + 4 * scale);
+    ctx.strokeText(number, drawX, drawY);
+    ctx.fillText(number, drawX, drawY);
 
-    // Nazwa gracza - skalowana
-    const nameY = drawY + scaledRadius + 25 * scale;
-    const nameWidth = 70 * scale;
-    const nameHeight = 12 * scale;
-    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    // NAZWISKO - zawsze czytelne z Press Start 2P (jak wcześniej poprawione)
+    const nameY = drawY + scaledRadius + (30 * Math.max(0.6, scale));
+    
+    // Minimalne rozmiary dla czytelności
+    const minNameWidth = 120;
+    const minNameHeight = 16;
+    const minFontSize = 6; // Minimalny rozmiar czcionki
+    
+    // Oblicz rozmiary z uwzględnieniem minimów
+    const nameWidth = Math.max(minNameWidth, 70 * scale);
+    const nameHeight = Math.max(minNameHeight, 12 * scale);
+    const fontSize = Math.max(minFontSize, 8 * scale);
+    
+    // Tło dla nazwiska - zawsze czytelne
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
     ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
     
+    // Ramka wokół nazwiska
     ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = Math.max(1, 2 * scale);
     ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
     
-    ctx.fillStyle = 'white';
-    ctx.font = `bold ${8 * scale}px Orbitron`;
-    ctx.fillText(name, drawX, nameY + 2 * scale);
+    // NAZWISKO z Press Start 2P - zawsze czytelne
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${fontSize}px 'Press Start 2P'`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Dodatkowy kontur dla lepszej czytelności
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = Math.max(1, 1.5 * scale);
+    ctx.strokeText(name, drawX, nameY);
+    ctx.fillText(name, drawX, nameY);
+    
+    // Przywróć domyślne ustawienia
+    ctx.textBaseline = 'alphabetic';
 }
 
 function drawBall() {
@@ -254,7 +204,6 @@ function drawBall() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-    // Bez shake effect
     const drawX = ball.x;
     const drawY = ball.y;
 
@@ -281,7 +230,7 @@ function drawBall() {
     ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Piłka
+    // Piłka - miga gdy czeka na start
     if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
         if (Math.floor(Date.now() / 200) % 2) {
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
