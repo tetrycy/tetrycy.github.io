@@ -1,203 +1,84 @@
-// game.js - główna logika gry i inicjalizacja
-
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// Stan gry
-let gameMode = null; // 'tournament' or 'friendly'
-let selectedTeam = null;
-
-// Stan gry - usunięto efekty wizualne
-let gameState = {
-    playerScore: 0,
-    botScore: 0,
-    gameWon: false,
-    gameStarted: false,
-    ballInPlay: false,
-    currentRound: 0,
-    roundWon: false,
-    ballRotation: 0,
-    lastCollisionTime: 0  // Cooldown kolizji
-};
-
-// Gracz (Marian Włodarski) - szybkość 8
-const player = {
-    x: 100,
-    y: canvas.height / 2,
-    radius: 20,
-    color: '#ff0000',
-    vx: 0,
-    vy: 0,
-    number: 10
-};
-
-// Boty - będą ładowane z definicji drużyn
-let bots = [];
-
-// Bramkarz gracza (opcjonalny)
-let playerGoalkeeper = null;
-
-// Piłka - prędkość zmniejszona o 15%
-const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: 8,
-    vx: 0,
-    vy: 0,
-    color: '#ffffff',
-    maxSpeed: 11.5,
-    startSpeed: 5.7
-};
-
-// Sterowanie
-const keys = {};
-
-document.addEventListener('keydown', (e) => {
-    keys[e.key.toLowerCase()] = true;
-    
-    if (e.key === ' ') {
-        e.preventDefault();
-        if (!gameState.gameStarted) {
-            startGame();
-        } else if (!gameState.ballInPlay && !gameState.gameWon) {
-            launchBall();
-        }
+// teams.js - definicje drużyn i przeciwników
+const teams = [
+    {
+        number: 1,
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "VFL OLDENBURG",
+        field: "grass",
+        fieldScale: 1.0,
+        bots: [
+            { name: "JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200 }
+        ]
+    },
+    {
+        number: 2, 
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "SV WALDORF MANNHEIM",
+        field: "muddy",
+        fieldScale: 1.0,
+        bots: [
+            { name: "SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
+        ]
+    },
+    {
+        number: 3,
+        playerTeam: "SV BABELSBERG 04", 
+        opponentTeam: "FC HANSA ROSTOCK",
+        field: "winter",
+        fieldScale: 1.0,
+        bots: [
+            { name: "MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150 },
+            { name: "WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250 }
+        ]
+    },
+    {
+        number: 4,
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
+        field: "professional",
+        fieldScale: 1.0,
+        bots: [
+            { name: "HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: true, number: 6, role: "attacker", preferredY: 120 },
+            { name: "KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: false, number: 4, role: "midfielder", preferredY: 200 },
+            { name: "BRAUN", x: 600, y: 280, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 3, role: "defender", preferredY: 280 }
+        ]
+    },
+    {
+        number: 5,
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "LOKOMOTIV LEIPZIG",
+        field: "stadium", 
+        fieldScale: 1.0,
+        bots: [
+            { name: "RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: true, number: 5, role: "attacker", preferredY: 100 },
+            { name: "FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 2, role: "midfielder", preferredY: 200 },
+            { name: "BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: false, number: 1, role: "defender", preferredY: 300 },
+            { name: "SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 2.25, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false, number: 12, role: "goalkeeper", preferredY: 200 }
+        ]
+    },
+    {
+        number: 6,
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "FC CARL ZEISS JENA",
+        field: "sandy",
+        fieldScale: 0.75, // Wszystko pomniejszone o 25% = efekt 4x większego boiska
+        bots: [
+            { name: "KOCH", x: 650, y: 130, color: "#0066ff", maxSpeed: 3.0, aggressiveness: 0.5, canCrossHalf: false, number: 14, role: "defender", preferredY: 130 },
+            { name: "KRAUSE", x: 680, y: 200, color: "#0066ff", maxSpeed: 2.8, aggressiveness: 0.4, canCrossHalf: false, number: 8, role: "midfielder", preferredY: 200 },
+            { name: "WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
+        ]
+    },
+    {
+        number: 7,
+        playerTeam: "SV BABELSBERG 04",
+        opponentTeam: "SPVGG UNTERHACHING",
+        field: "asphalt",
+        fieldScale: 0.75, // Duże boisko jak Carl Zeiss
+        hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
+        bots: [
+            { name: "MULLER", x: 500, y: 200, color: "#800040", maxSpeed: 2.5, aggressiveness: 0.3, canCrossHalf: true, number: 10, role: "attacker", preferredY: 200 },
+            { name: "KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, aggressiveness: 0.2, isGoalkeeper: true, canCrossHalf: false, number: 1, role: "goalkeeper", preferredY: 200 }
+        ],
+        playerGoalkeeper: { name: "NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
     }
-});
-
-document.addEventListener('keyup', (e) => {
-    keys[e.key.toLowerCase()] = false;
-});
-
-function drawPlayer(playerObj, name, isBot = false) {
-    // Pobierz skalę dla obecnego boiska (tylko dla promienia gracza)
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = playerObj.x;
-    const drawY = playerObj.y;
-
-    // Skalowany promień gracza
-    const scaledRadius = playerObj.radius * scale;
-
-    // Cień gracza
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.arc(drawX + 2, drawY + 2, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Kolorowe kółko gracza
-    ctx.fillStyle = playerObj.color;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Numer na graczu - ZAWSZE widoczny (nie skalowany)
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 14px Orbitron';
-    ctx.textAlign = 'center';
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3;
-    const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY + 4);
-    ctx.fillText(number, drawX, drawY + 4);
-
-    // Nazwa gracza - ZAWSZE widoczna (nie skalowana), bez tła
-    const nameY = drawY + scaledRadius + 20;
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 10px Orbitron';
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
-    ctx.strokeText(name, drawX, nameY);
-    ctx.fillText(name, drawX, nameY);
-}
-
-function drawBall() {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = ball.x;
-    const drawY = ball.y;
-
-    // Skalowany promień piłki
-    const scaledRadius = ball.radius * scale;
-
-    // Cień piłki - skalowany
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath();
-    ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Piłka
-    if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
-        if (Math.floor(Date.now() / 200) % 2) {
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        } else {
-            ctx.fillStyle = ball.color;
-        }
-    } else {
-        ctx.fillStyle = ball.color;
-    }
-    
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Wzór piłki z rotacją - skalowany
-    ctx.save();
-    ctx.translate(drawX, drawY);
-    ctx.rotate(gameState.ballRotation);
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1.5 * scale;
-    
-    // Pentagramy - skalowane
-    ctx.beginPath();
-    for(let i = 0; i < 5; i++) {
-        const angle = (i * Math.PI * 2 / 5);
-        const x = Math.cos(angle) * scaledRadius * 0.6;
-        const y = Math.sin(angle) * scaledRadius * 0.6;
-        if(i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-
-    ctx.restore();
-
-    // Połysk - skalowany
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.beginPath();
-    ctx.arc(drawX - scaledRadius * 0.3, drawY - scaledRadius * 0.3, scaledRadius * 0.3, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-// Główna pętla gry
-function gameLoop() {
-    if (gameMode) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        drawField();
-        
-        if (gameState.gameStarted) {
-            updatePlayer();
-            updateBots();
-            updateBall();
-        }
-        
-        drawPlayer(player, 'WŁODARSKI', false);
-        if (playerGoalkeeper) {
-            drawPlayer(playerGoalkeeper, 'NOWAK', false);
-        }
-        bots.forEach(bot => {
-            drawPlayer(bot, bot.name, true);
-        });
-        drawBall();
-    }
-    
-    requestAnimationFrame(gameLoop);
-}
-
-// Inicjalizacja
-gameLoop();
+];
