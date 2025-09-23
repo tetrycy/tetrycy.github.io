@@ -1,4 +1,4 @@
-// player.js - logika gracza i AI botów
+// player.js - logika gracza i AI botów z nowym systemem pozycjonowania
 
 // Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
 function updatePlayer() {
@@ -49,6 +49,141 @@ function checkPlayerBallCollision() {
     }
 }
 
+// NOWY SYSTEM POZYCJONOWANIA - określa fazę gry na podstawie pozycji piłki
+function determineGamePhase() {
+    const centerLine = canvas.width / 2;
+    const ballX = ball.x;
+    
+    // Strefy: lewa połowa to "obrona botów", prawa to "atak botów"
+    if (ballX < centerLine - 100) {
+        return "bot_attack"; // Piłka blisko bramki gracza - boty atakują
+    } else if (ballX > centerLine + 100) {
+        return "bot_defense"; // Piłka blisko bramki botów - boty się bronią  
+    } else {
+        return "neutral"; // Piłka w środku - pozycje neutralne
+    }
+}
+
+// Inicjalizuje strefy odpowiedzialności dla botów
+function initializeBotZones() {
+    const fieldWidth = canvas.width;
+    const fieldHeight = canvas.height;
+    
+    bots.forEach(bot => {
+        if (bot.isGoalkeeper) {
+            bot.homeZone = {
+                x: [fieldWidth - 60, fieldWidth - 20],
+                y: [fieldHeight * 0.3, fieldHeight * 0.7]
+            };
+            return;
+        }
+        
+        // Strefy bazowe w zależności od roli
+        switch(bot.role) {
+            case "attacker":
+                bot.homeZone = {
+                    x: [fieldWidth * 0.4, fieldWidth * 0.9],
+                    y: [fieldHeight * 0.2, fieldHeight * 0.8],
+                    defensiveX: [fieldWidth * 0.6, fieldWidth * 0.85],
+                    attackX: [fieldWidth * 0.3, fieldWidth * 0.95]
+                };
+                break;
+                
+            case "midfielder":
+                bot.homeZone = {
+                    x: [fieldWidth * 0.5, fieldWidth * 0.8],
+                    y: [fieldHeight * 0.1, fieldHeight * 0.9],
+                    defensiveX: [fieldWidth * 0.65, fieldWidth * 0.85],
+                    attackX: [fieldWidth * 0.4, fieldWidth * 0.8]
+                };
+                break;
+                
+            case "defender":
+            default:
+                bot.homeZone = {
+                    x: [fieldWidth * 0.6, fieldWidth * 0.9],
+                    y: [fieldHeight * 0.15, fieldHeight * 0.85],
+                    defensiveX: [fieldWidth * 0.7, fieldWidth * 0.9],
+                    attackX: [fieldWidth * 0.6, fieldWidth * 0.85]
+                };
+                break;
+        }
+        
+        // Przypisz preferowaną pozycję Y w strefie (podział równomierny)
+        const botsInRole = bots.filter(b => b.role === bot.role && !b.isGoalkeeper);
+        const roleIndex = botsInRole.indexOf(bot);
+        const totalInRole = botsInRole.length;
+        
+        if (totalInRole > 1) {
+            const ySpread = bot.homeZone.y[1] - bot.homeZone.y[0];
+            bot.preferredYInZone = bot.homeZone.y[0] + (ySpread / (totalInRole + 1)) * (roleIndex + 1);
+        } else {
+            bot.preferredYInZone = (bot.homeZone.y[0] + bot.homeZone.y[1]) / 2;
+        }
+    });
+}
+
+// Oblicza optymalną pozycję w formacji
+function calculateFormationPosition(bot, gamePhase) {
+    if (bot.isGoalkeeper) {
+        // Bramkarze mają własną logikę - bez zmian
+        return {
+            x: Math.max(canvas.width - 50, Math.min(canvas.width - 20, bot.x)),
+            y: Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, ball.y))
+        };
+    }
+    
+    let targetX, targetY;
+    const ballInfluence = 0.3; // Jak mocno piłka wpływa na pozycję
+    
+    // Oblicz docelowy X na podstawie fazy gry
+    switch(gamePhase) {
+        case "bot_defense":
+            // W obronie - cofnij się do defensywnej części strefy
+            const defZone = bot.homeZone.defensiveX;
+            targetX = (defZone[0] + defZone[1]) / 2;
+            // Dodatkowo zbliż się do centrum jeśli piłka bardzo blisko
+            if (ball.x > canvas.width * 0.7) {
+                targetX = Math.max(targetX - 50, defZone[0]);
+            }
+            break;
+            
+        case "bot_attack":
+            // W ataku - przesuń się do ofensywnej części strefy
+            const attZone = bot.homeZone.attackX;
+            targetX = (attZone[0] + attZone[1]) / 2;
+            // Napastnicy idą najbliżej bramki
+            if (bot.role === "attacker") {
+                targetX = Math.min(targetX - 30, attZone[0]);
+            }
+            break;
+            
+        case "neutral":
+        default:
+            // Neutralnie - środek domyślnej strefy
+            targetX = (bot.homeZone.x[0] + bot.homeZone.x[1]) / 2;
+            break;
+    }
+    
+    // Oblicz Y - bazuj na preferowanej pozycji ale reaguj na piłkę
+    targetY = bot.preferredYInZone + (ball.y - canvas.height/2) * ballInfluence;
+    
+    // Upewnij się że Y jest w dozwolonej strefie
+    targetY = Math.max(bot.homeZone.y[0], Math.min(bot.homeZone.y[1], targetY));
+    
+    // W sytuacjach krytycznych (piłka bardzo blisko) zwiększ reakcję
+    const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
+    if (distanceToBall < 80) {
+        // Bezpośrednia reakcja na piłkę gdy jest blisko
+        if (gamePhase === "bot_attack" || gamePhase === "neutral") {
+            targetX = ball.x + (Math.random() - 0.5) * 60;
+            targetY = ball.y + (Math.random() - 0.5) * 60;
+        }
+    }
+    
+    return { x: targetX, y: targetY };
+}
+
 // AI Botów + bramkarz gracza
 function updateBots() {
     bots.forEach(bot => {
@@ -96,11 +231,17 @@ function updatePlayerGoalkeeper() {
     playerGoalkeeper.y += playerGoalkeeper.vy;
 }
 
+// NOWA LOGIKA BOTÓW POLOWYCH z systemem pozycjonowania
 function updateFieldBot(bot) {
     const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
     const ballInReach = distanceToBall < 120;
     
-    let targetX, targetY;
+    // NOWY SYSTEM - określ fazę gry i pozycję w formacji
+    const gamePhase = determineGamePhase();
+    const formationPos = calculateFormationPosition(bot, gamePhase);
+    
+    let targetX = formationPos.x;
+    let targetY = formationPos.y;
 
     // Sprawdź odległości do kolegów z drużyny (unikaj skupiania się)
     const teammateSpacing = 60;
@@ -121,53 +262,42 @@ function updateFieldBot(bot) {
         }
     });
 
-    // Różne zachowania w zależności od roli
-    switch(bot.role) {
-        case "attacker":
-            if (ballInReach || ball.x > canvas.width * 0.3) {
-                // Napastnicy agresywnie gonią piłkę
-                const predictTime = 6;
-                targetX = ball.x + ball.vx * predictTime;
-                targetY = ball.y + ball.vy * predictTime;
-                
-                if (distanceToBall < 50) {
-                    // Pozycjonuj się za piłką do strzału
-                    const goalCenterY = canvas.height / 2;
-                    const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
-                    targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 30;
-                    targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 30;
+    // SPECJALNE ZACHOWANIA gdy piłka w zasięgu
+    if (ballInReach) {
+        switch(bot.role) {
+            case "attacker":
+                // Napastnicy priorytetowo gonią piłkę
+                if (gamePhase === "bot_attack" || gamePhase === "neutral") {
+                    const predictTime = 6;
+                    targetX = ball.x + ball.vx * predictTime;
+                    targetY = ball.y + ball.vy * predictTime;
+                    
+                    // Pozycjonuj się do strzału
+                    if (distanceToBall < 50) {
+                        const goalCenterY = canvas.height / 2;
+                        const angleToGoal = Math.atan2(goalCenterY - ball.y, 20 - ball.x);
+                        targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 30;
+                        targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 30;
+                    }
                 }
-            } else {
-                // Czekaj w pozycji ofensywnej
-                targetX = canvas.width * 0.6;
-                targetY = bot.preferredY;
-            }
-            break;
-            
-        case "midfielder":
-            if (ballInReach) {
-                // Pomocnicy wspierają grę
-                targetX = ball.x + (Math.random() - 0.5) * 40;
-                targetY = ball.y + (Math.random() - 0.5) * 40;
-            } else {
-                // Trzymaj pozycję centralną
-                targetX = canvas.width * 0.65;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.3;
-            }
-            break;
-            
-        case "defender":
-        default:
-            if (ball.x > canvas.width * 0.6 && ballInReach) {
-                // Obrońcy reagują tylko gdy piłka blisko
-                targetX = ball.x + 20;
-                targetY = ball.y;
-            } else {
-                // Trzymaj pozycję defensywną
-                targetX = canvas.width * 0.75;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.2;
-            }
-            break;
+                break;
+                
+            case "midfielder":
+                // Pomocnicy wspierają w każdej fazie
+                if (gamePhase !== "bot_defense" || ball.x > canvas.width * 0.6) {
+                    targetX = ball.x + (Math.random() - 0.5) * 40;
+                    targetY = ball.y + (Math.random() - 0.5) * 40;
+                }
+                break;
+                
+            case "defender":
+                // Obrońcy reagują tylko w krytycznych sytuacjach
+                if (ball.x > canvas.width * 0.65 && (gamePhase === "bot_defense" || distanceToBall < 60)) {
+                    targetX = ball.x + 20;
+                    targetY = ball.y;
+                }
+                break;
+        }
     }
 
     // Zastosuj korektę rozstawienia
