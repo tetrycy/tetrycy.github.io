@@ -1,251 +1,203 @@
-// ui.js - interfejs użytkownika, menu i ekrany
+// game.js - główna logika gry i inicjalizacja
 
-// Funkcje menu
-function startTournament() {
-    gameMode = 'tournament';
-    gameState.currentRound = 0;
-    showGame();
-    loadCurrentTeam();
-}
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-function showTeamSelection() {
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('teamSelection').style.display = 'block';
-}
+// Stan gry
+let gameMode = null; // 'tournament' or 'friendly'
+let selectedTeam = null;
 
-function startFriendly(teamIndex) {
-    gameMode = 'friendly';
-    selectedTeam = teamIndex;
-    showGame();
-    loadFriendlyTeam(teamIndex);
-}
+// Stan gry - usunięto efekty wizualne
+let gameState = {
+    playerScore: 0,
+    botScore: 0,
+    gameWon: false,
+    gameStarted: false,
+    ballInPlay: false,
+    currentRound: 0,
+    roundWon: false,
+    ballRotation: 0,
+    lastCollisionTime: 0  // Cooldown kolizji
+};
 
-function backToMenu() {
-    // Ukryj wszystkie ekrany gry
-    document.getElementById('gameContainer').style.display = 'none';
-    document.getElementById('gameControls').style.display = 'none';
-    document.getElementById('roundInfo').classList.add('hidden');
-    document.getElementById('scoreDisplay').classList.add('hidden');
-    document.getElementById('teamSelection').style.display = 'none';
+// Gracz (Marian Włodarski) - szybkość 8
+const player = {
+    x: 100,
+    y: canvas.height / 2,
+    radius: 20,
+    color: '#ff0000',
+    vx: 0,
+    vy: 0,
+    number: 10
+};
+
+// Boty - będą ładowane z definicji drużyn
+let bots = [];
+
+// Bramkarz gracza (opcjonalny)
+let playerGoalkeeper = null;
+
+// Piłka - prędkość zmniejszona o 15%
+const ball = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    radius: 8,
+    vx: 0,
+    vy: 0,
+    color: '#ffffff',
+    maxSpeed: 11.5,
+    startSpeed: 5.7
+};
+
+// Sterowanie
+const keys = {};
+
+document.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
     
-    // Pokaż menu główne
-    document.getElementById('mainMenu').style.display = 'block';
-    
-    // Reset stanu gry
-    resetGameState();
-}
-
-function showGame() {
-    // Ukryj menu
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('teamSelection').style.display = 'none';
-    
-    // Pokaż grę
-    document.getElementById('gameContainer').style.display = 'block';
-    document.getElementById('gameControls').style.display = 'block';
-    document.getElementById('roundInfo').classList.remove('hidden');
-    document.getElementById('scoreDisplay').classList.remove('hidden');
-}
-
-function loadCurrentTeam() {
-    const currentTeamData = teams[gameState.currentRound];
-    loadTeamData(currentTeamData);
-    
-    if (gameMode === 'tournament') {
-        document.getElementById('roundInfo').textContent = 
-            `RUNDE ${currentTeamData.number}: ${currentTeamData.playerTeam} vs ${currentTeamData.opponentTeam}`;
-        document.getElementById('startTitle').textContent = `🚀 RUNDE ${currentTeamData.number} - DRÜCKEN SIE LEERTASTE! 🚀`;
+    if (e.key === ' ') {
+        e.preventDefault();
+        if (!gameState.gameStarted) {
+            startGame();
+        } else if (!gameState.ballInPlay && !gameState.gameWon) {
+            launchBall();
+        }
     }
-}
+});
 
-function loadFriendlyTeam(teamIndex) {
-    const teamData = teams[teamIndex];
-    loadTeamData(teamData);
-    
-    document.getElementById('roundInfo').textContent = 
-        `FREUNDSCHAFTSSPIEL: ${teamData.playerTeam} vs ${teamData.opponentTeam}`;
-    document.getElementById('startTitle').textContent = `🚀 FREUNDSCHAFTSSPIEL - DRÜCKEN SIE LEERTASTE! 🚀`;
-}
+document.addEventListener('keyup', (e) => {
+    keys[e.key.toLowerCase()] = false;
+});
 
-function loadTeamData(teamData) {
-    document.getElementById('playerTeam').textContent = teamData.playerTeam;
-    document.getElementById('botTeam').textContent = teamData.opponentTeam;
-    document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
-    
-    bots = teamData.bots.map(botData => ({
-        ...botData,
-        radius: 20,
-        vx: 0,
-        vy: 0,
-        shootPower: botData.shootPower || 1.2,
-        reactionSpeed: 0.2,
-        startY: botData.y,
-        canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
-        isGoalkeeper: botData.isGoalkeeper || false,
-        role: botData.role || "midfielder",
-        preferredY: botData.preferredY || botData.y
-    }));
-    
-    // Ładuj bramkarza gracza jeśli istnieje
-    if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
-        playerGoalkeeper = {
-            ...teamData.playerGoalkeeper,
-            radius: 20,
-            vx: 0,
-            vy: 0,
-            startX: teamData.playerGoalkeeper.x,
-            startY: teamData.playerGoalkeeper.y,
-            name: teamData.playerGoalkeeper.name // Dodajemy name do obiektu
-        };
-    } else {
-        playerGoalkeeper = null;
-    }
-}
-
-function updateScore() {
-    document.getElementById('playerScore').textContent = gameState.playerScore;
-    document.getElementById('botScore').textContent = gameState.botScore;
-
-    if (gameState.playerScore >= 5) {
-        gameState.gameWon = true;
-        gameState.roundWon = true;
-        showWinMessage();
-    } else if (gameState.botScore >= 5) {
-        gameState.gameWon = true;
-        gameState.roundWon = false;
-        showLoseMessage();
-    }
-}
-
-function showWinMessage() {
+function drawPlayer(playerObj, name, isBot = false) {
+    // Pobierz skalę dla obecnego boiska (tylko dla promienia gracza)
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
     
-    if (gameMode === 'tournament') {
-        const isLastRound = gameState.currentRound >= teams.length - 1;
-        
-        document.getElementById('winnerMessage').innerHTML = `
-            <div>🎉 RUNDE ${currentTeamData.number} GEWONNEN! 🎉</div>
-            <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
-                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
-            </div>
-            <div style="font-size: 12px; color: #ffff00;">
-                ${isLastRound ? '*** TURNIER GEWONNEN! MEISTER! ***' : 'Bereit für die nächste Runde?'}
-            </div>
-        `;
-        
-        if (!isLastRound) {
-            document.getElementById('nextRoundBtn').style.display = 'inline-block';
+    const drawX = playerObj.x;
+    const drawY = playerObj.y;
+
+    // Skalowany promień gracza
+    const scaledRadius = playerObj.radius * scale;
+
+    // Cień gracza
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.arc(drawX + 2, drawY + 2, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kolorowe kółko gracza
+    ctx.fillStyle = playerObj.color;
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Numer na graczu - ZAWSZE widoczny (nie skalowany)
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 14px Orbitron';
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    const number = playerObj.number.toString();
+    ctx.strokeText(number, drawX, drawY + 4);
+    ctx.fillText(number, drawX, drawY + 4);
+
+    // Nazwa gracza - ZAWSZE widoczna (nie skalowana), bez tła
+    const nameY = drawY + scaledRadius + 20;
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 10px Orbitron';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.strokeText(name, drawX, nameY);
+    ctx.fillText(name, drawX, nameY);
+}
+
+function drawBall() {
+    // Pobierz skalę dla obecnego boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+    const drawX = ball.x;
+    const drawY = ball.y;
+
+    // Skalowany promień piłki
+    const scaledRadius = ball.radius * scale;
+
+    // Cień piłki - skalowany
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.beginPath();
+    ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Piłka
+    if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
+        if (Math.floor(Date.now() / 200) % 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        } else {
+            ctx.fillStyle = ball.color;
         }
     } else {
-        document.getElementById('winnerMessage').innerHTML = `
-            <div>🎉 FREUNDSCHAFTSSPIEL GEWONNEN! 🎉</div>
-            <div style="font-size: 14px; margin: 10px 0; color: #00ffff;">
-                SV BABELSBERG 04 BESIEGT ${currentTeamData.opponentTeam}!
-            </div>
-            <div style="font-size: 12px; color: #ffff00;">
-                Gut gespielt!
-            </div>
-        `;
+        ctx.fillStyle = ball.color;
     }
     
-    document.getElementById('winnerMessage').style.display = 'block';
-    document.getElementById('retryBtn').style.display = 'inline-block';
-}
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-function showLoseMessage() {
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    // Wzór piłki z rotacją - skalowany
+    ctx.save();
+    ctx.translate(drawX, drawY);
+    ctx.rotate(gameState.ballRotation);
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1.5 * scale;
     
-    if (gameMode === 'tournament') {
-        document.getElementById('winnerMessage').innerHTML = `
-            <div>💀 RUNDE ${currentTeamData.number} VERLOREN! 💀</div>
-            <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
-                ${currentTeamData.opponentTeam} GEWINNT!
-            </div>
-            <div style="font-size: 12px; color: #ffff00;">
-                Runde wiederholen?
-            </div>
-        `;
-    } else {
-        document.getElementById('winnerMessage').innerHTML = `
-            <div>💀 FREUNDSCHAFTSSPIEL VERLOREN! 💀</div>
-            <div style="font-size: 14px; margin: 10px 0; color: #ff4444;">
-                ${currentTeamData.opponentTeam} GEWINNT!
-            </div>
-            <div style="font-size: 12px; color: #ffff00;">
-                Nochmal versuchen?
-            </div>
-        `;
+    // Pentagramy - skalowane
+    ctx.beginPath();
+    for(let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2 / 5);
+        const x = Math.cos(angle) * scaledRadius * 0.6;
+        const y = Math.sin(angle) * scaledRadius * 0.6;
+        if(i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
     }
-    
-    document.getElementById('winnerMessage').style.display = 'block';
-    document.getElementById('retryBtn').style.display = 'inline-block';
-    document.getElementById('nextRoundBtn').style.display = 'none';
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Połysk - skalowany
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(drawX - scaledRadius * 0.3, drawY - scaledRadius * 0.3, scaledRadius * 0.3, 0, Math.PI * 2);
+    ctx.fill();
 }
 
-function nextRound() {
-    if (gameMode === 'tournament') {
-        gameState.currentRound++;
-        resetMatch();
-        loadCurrentTeam();
+// Główna pętla gry
+function gameLoop() {
+    if (gameMode) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        document.getElementById('nextRoundBtn').style.display = 'none';
-    }
-}
-
-function retryMatch() {
-    resetMatch();
-    
-    if (gameMode === 'tournament') {
-        loadCurrentTeam();
-    } else {
-        loadFriendlyTeam(selectedTeam);
-    }
-    
-    document.getElementById('retryBtn').style.display = 'none';
-    document.getElementById('nextRoundBtn').style.display = 'none';
-}
-
-function resetMatch() {
-    gameState.playerScore = 0;
-    gameState.botScore = 0;
-    gameState.gameWon = false;
-    gameState.gameStarted = false;
-    gameState.ballInPlay = false;
-    gameState.roundWon = false;
-    gameState.ballRotation = 0;
-    gameState.lastCollisionTime = 0; // Reset cooldown
-    
-    player.x = 100;
-    player.y = canvas.height / 2;
-    // Usunięto: player.stunned, player.pushbackX, player.pushbackY - niepotrzebne
-    
-    // Reset bramkarza gracza jeśli istnieje
-    if (playerGoalkeeper) {
-        playerGoalkeeper.x = playerGoalkeeper.startX;
-        playerGoalkeeper.y = playerGoalkeeper.startY;
-        playerGoalkeeper.vx = 0;
-        playerGoalkeeper.vy = 0;
+        drawField();
+        
+        if (gameState.gameStarted) {
+            updatePlayer();
+            updateBots();
+            updateBall();
+        }
+        
+        drawPlayer(player, 'WŁODARSKI', false);
+        if (playerGoalkeeper) {
+            drawPlayer(playerGoalkeeper, 'NOWAK', false);
+        }
+        bots.forEach(bot => {
+            drawPlayer(bot, bot.name, true);
+        });
+        drawBall();
     }
     
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.vx = 0;
-    ball.vy = 0;
-    
-    updateScore();
-    document.getElementById('winnerMessage').style.display = 'none';
-    document.getElementById('startMessage').style.display = 'block';
+    requestAnimationFrame(gameLoop);
 }
 
-function resetGameState() {
-    gameMode = null;
-    selectedTeam = null;
-    gameState.currentRound = 0;
-    resetMatch();
-}
-
-function startGame() {
-    gameState.gameStarted = true;
-    document.getElementById('startMessage').style.display = 'none';
-    launchBall();
-}
+// Inicjalizacja
+gameLoop();
