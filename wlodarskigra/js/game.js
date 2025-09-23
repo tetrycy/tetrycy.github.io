@@ -1,307 +1,216 @@
-// game.js - główna logika gry i inicjalizacja (uproszczona wersja)
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// Stan gry z efektami (tylko gole, bez efektów przy uderzeniu)
-let gameState = {
-    playerScore: 0,
-    botScore: 0,
-    gameWon: false,
-    gameStarted: false,
-    ballInPlay: false,
-    currentRound: 0,
-    roundWon: false,
-    particles: [],
-    ballRotation: 0,
-    screenShake: 0,
-    lastCollisionTime: 0
-};
-
-// Gracz (Marian Włodarski) - szybkość 8
-const player = {
-    x: 100,
-    y: canvas.height / 2,
-    radius: 20,
-    color: '#ff0000',
-    vx: 0,
-    vy: 0,
-    number: 10
-};
-
-// Boty - będą ładowane z definicji drużyn
-let bots = [];
-
-// Bramkarz gracza (opcjonalny)
-let playerGoalkeeper = null;
-
-// Piłka - prędkość zmniejszona o 15%
-const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: 8,
-    vx: 0,
-    vy: 0,
-    color: '#ffffff',
-    maxSpeed: 11.5,
-    startSpeed: 5.7
-};
-
-// Sterowanie
-const keys = {};
-
-document.addEventListener('keydown', (e) => {
-    keys[e.key.toLowerCase()] = true;
-    
-    if (e.key === ' ') {
-        e.preventDefault();
-        if (!gameState.gameStarted) {
-            startGame();
-        } else if (!gameState.ballInPlay && !gameState.gameWon) {
-            launchBall();
-        }
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    keys[e.key.toLowerCase()] = false;
-});
-
-// TYLKO efekty bramkowe - bez efektów przy uderzeniu piłki
-function createGoalEffect(x, y) {
-    for(let i = 0; i < 20; i++) {
-        gameState.particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 20,
-            vy: (Math.random() - 0.5) * 20,
-            life: 60,
-            maxLife: 60,
-            color: '#ffff00',
-            size: Math.random() * 8 + 4
-        });
-    }
-    gameState.screenShake = 8;
+body {
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(45deg, #0d4a2d, #1a5c36, #0d4a2d);
+    font-family: 'Orbitron', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #00ff00;
 }
 
-function updateParticles() {
-    for(let i = gameState.particles.length - 1; i >= 0; i--) {
-        const particle = gameState.particles[i];
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vx *= 0.95;
-        particle.vy *= 0.95;
-        particle.life--;
-        
-        if(particle.life <= 0) {
-            gameState.particles.splice(i, 1);
-        }
-    }
+h1 {
+    color: #ffff00;
+    text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8);
+    margin-bottom: 5px;
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-align: center;
+    animation: glow 2s ease-in-out infinite alternate;
 }
 
-function drawParticles() {
-    gameState.particles.forEach(particle => {
-        const alpha = particle.life / particle.maxLife;
-        ctx.fillStyle = `rgba(255,255,0,${alpha})`;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
-        ctx.fill();
-    });
+@keyframes glow {
+    from { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 20px #ffff00; }
+    to { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 40px #ffff00, 0 0 60px #ffff00; }
 }
 
-function updateEffects() {
-    updateParticles();
-    if(gameState.screenShake > 0) {
-        gameState.screenShake *= 0.9;
-        if(gameState.screenShake < 0.1) gameState.screenShake = 0;
-    }
+.subtitle {
+    color: #00ffff;
+    font-size: 12px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    margin-bottom: 10px;
+    text-align: center;
 }
 
-// UPROSZCZONA funkcja rysowania gracza - tylko kulka + numer + nazwisko
-function drawPlayer(playerObj, name, isBot = false) {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = playerObj.x;
-    const drawY = playerObj.y;
-
-    // Skalowany promień gracza
-    const scaledRadius = playerObj.radius * scale;
-
-    // Cień gracza
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath();
-    ctx.arc(drawX + 4, drawY + 4, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // GŁÓWNA KULKA - koszulka gracza
-    ctx.fillStyle = playerObj.color;
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Obramowanie kulki dla lepszego wyglądu
-    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.lineWidth = Math.max(1, 2 * scale);
-    ctx.stroke();
-
-    // NUMER - zawsze czytelny
-    ctx.fillStyle = 'white';
-    const minNumberSize = 12; // Minimalny rozmiar dla numeru
-    const numberSize = Math.max(minNumberSize, 16 * scale);
-    ctx.font = `bold ${numberSize}px 'Press Start 2P'`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Kontur numeru dla lepszej czytelności
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = Math.max(2, 3 * scale);
-    const number = playerObj.number.toString();
-    ctx.strokeText(number, drawX, drawY);
-    ctx.fillText(number, drawX, drawY);
-
-    // NAZWISKO - zawsze czytelne z Press Start 2P (jak wcześniej poprawione)
-    const nameY = drawY + scaledRadius + (30 * Math.max(0.6, scale));
-    
-    // Minimalne rozmiary dla czytelności
-    const minNameWidth = 120;
-    const minNameHeight = 16;
-    const minFontSize = 6; // Minimalny rozmiar czcionki
-    
-    // Oblicz rozmiary z uwzględnieniem minimów
-    const nameWidth = Math.max(minNameWidth, 70 * scale);
-    const nameHeight = Math.max(minNameHeight, 12 * scale);
-    const fontSize = Math.max(minFontSize, 8 * scale);
-    
-    // Tło dla nazwiska - zawsze czytelne
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
-    ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
-    // Ramka wokół nazwiska
-    ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
-    ctx.lineWidth = Math.max(1, 2 * scale);
-    ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
-    // NAZWISKO z Press Start 2P - zawsze czytelne
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${fontSize}px 'Press Start 2P'`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Dodatkowy kontur dla lepszej czytelności
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = Math.max(1, 1.5 * scale);
-    ctx.strokeText(name, drawX, nameY);
-    ctx.fillText(name, drawX, nameY);
-    
-    // Przywróć domyślne ustawienia
-    ctx.textBaseline = 'alphabetic';
+.main-menu {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #ffff00;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(255,255,0,0.5);
 }
 
-function drawBall() {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    const drawX = ball.x;
-    const drawY = ball.y;
-
-    // Skalowany promień piłki
-    const scaledRadius = ball.radius * scale;
-
-    // Ślady za piłką - skalowane
-    if (gameState.ballInPlay && (Math.abs(ball.vx) > 2 || Math.abs(ball.vy) > 2)) {
-        for(let i = 1; i <= 3; i++) {
-            const alpha = 0.3 - (i * 0.1);
-            const trailX = drawX - (ball.vx * i * 2);
-            const trailY = drawY - (ball.vy * i * 2);
-            
-            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-            ctx.beginPath();
-            ctx.arc(trailX, trailY, (scaledRadius - i) * scale, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    // Cień piłki - skalowany
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath();
-    ctx.arc(drawX + 3, drawY + 3, scaledRadius * 1.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Piłka - miga gdy czeka na start
-    if (!gameState.ballInPlay && gameState.gameStarted && !gameState.gameWon) {
-        if (Math.floor(Date.now() / 200) % 2) {
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        } else {
-            ctx.fillStyle = ball.color;
-        }
-    } else {
-        ctx.fillStyle = ball.color;
-    }
-    
-    ctx.beginPath();
-    ctx.arc(drawX, drawY, scaledRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Wzór piłki z rotacją - skalowany
-    ctx.save();
-    ctx.translate(drawX, drawY);
-    ctx.rotate(gameState.ballRotation);
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1.5 * scale;
-    
-    // Pentagramy - skalowane
-    ctx.beginPath();
-    for(let i = 0; i < 5; i++) {
-        const angle = (i * Math.PI * 2 / 5);
-        const x = Math.cos(angle) * scaledRadius * 0.6;
-        const y = Math.sin(angle) * scaledRadius * 0.6;
-        if(i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-
-    ctx.restore();
-
-    // Połysk - skalowany
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.beginPath();
-    ctx.arc(drawX - scaledRadius * 0.3, drawY - scaledRadius * 0.3, scaledRadius * 0.3, 0, Math.PI * 2);
-    ctx.fill();
+.team-selection {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #00ff00;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(0,255,0,0.5);
+    display: none;
 }
 
-// Główna pętla gry
-function gameLoop() {
-    if (gameMode) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        drawField();
-        
-        if (gameState.gameStarted) {
-            updatePlayer();
-            updateBots();
-            updateBall();
-        }
-        
-        drawPlayer(player, 'MARIAN WŁODARSKI', false);
-        if (playerGoalkeeper) {
-            drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
-        }
-        bots.forEach(bot => {
-            drawPlayer(bot, bot.name, true);
-        });
-        drawBall();
-        
-        updateEffects();
-        drawParticles();
-    }
-    
-    requestAnimationFrame(gameLoop);
+.menu-btn, .team-btn {
+    background: linear-gradient(45deg, #ff0000, #ff4444);
+    color: #ffff00;
+    border: 3px solid #ffff00;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px;
+    font-family: 'Orbitron', monospace;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
-// Inicjalizacja
-gameLoop();
+.team-btn {
+    background: linear-gradient(45deg, #00aa00, #00ff00);
+    color: #000033;
+    display: block;
+    width: 80%;
+    margin: 8px auto;
+    font-size: 14px;
+}
+
+.menu-btn:hover, .team-btn:hover {
+    box-shadow: 0 0 15px rgba(255,255,0,0.5);
+    transform: scale(1.05);
+}
+
+.round-info {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #ff4444;
+    padding: 8px 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+    color: #ffff00;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(255,68,68,0.5);
+}
+
+.score {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #00ff00;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0,255,0,0.3);
+}
+
+.team-name {
+    font-size: 12px;
+    color: #ffff00;
+}
+
+.game-container {
+    position: relative;
+    border: 8px solid #8B4513;
+    border-radius: 15px;
+    background: #228B22;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(139,69,19,0.5);
+    display: none;
+}
+
+#gameCanvas {
+    display: block;
+    border-radius: 8px;
+}
+
+.controls {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+    box-shadow: 0 0 15px rgba(0,255,0,0.3);
+    display: none;
+}
+
+.reset-btn, .next-btn, #retryRoundBtn, .back-btn {
+    background: linear-gradient(45deg, #ff0000, #ff4444);
+    color: #ffff00;
+    border: 3px solid #ffff00;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    font-family: 'Orbitron', monospace;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.next-btn {
+    background: linear-gradient(45deg, #00aa00, #00ff00);
+    color: #000033;
+    border-color: #ffff00;
+}
+
+.back-btn {
+    background: linear-gradient(45deg, #666666, #999999);
+    color: #ffffff;
+}
+
+.reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover, .back-btn:hover {
+    box-shadow: 0 0 15px rgba(255,255,0,0.5);
+}
+
+.winner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #000066, #000099);
+    border: 4px solid #ffff00;
+    color: #00ff00;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 0 30px rgba(255,255,0,0.5);
+}
+
+.start-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #000066, #000099);
+    border: 4px solid #00ff00;
+    color: #ffff00;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 0 30px rgba(0,255,0,0.5);
+}
+
+.retro-text {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
