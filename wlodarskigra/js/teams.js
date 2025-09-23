@@ -4,11 +4,11 @@ const teams = [
     {
         number: 0,
         playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "TEST FORMATION FC",
+        opponentTeam: "MSV DUISBURG",
         field: "professional",
         fieldScale: 0.5,
         bots: [
-            { name: "STRIKER RED", x: 550, y: 120, color: "#ff4444", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 9, role: "centre-back", },
+            { name: "HAJTO", x: 550, y: 120, color: "#445aff", maxSpeed: 4.8, aggressiveness: 0.9, canCrossHalf: true, number: 2, role: "centre-back", },
 
         ]
     },
