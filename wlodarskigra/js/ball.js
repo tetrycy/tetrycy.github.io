@@ -89,8 +89,7 @@ function updateBall() {
 
             const dotProduct = ball.vx * nx + ball.vy * ny;
             
-            createParticles(ball.x, ball.y, p.color, 4);
-            gameState.screenShake = Math.max(gameState.screenShake, 2);
+            // USUNIĘTO: createParticles i screenShake
             
             if (p !== player) {
                 const goalCenterY = canvas.height / 2;
