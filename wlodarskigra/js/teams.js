@@ -88,7 +88,7 @@ const teams = [
         field: "grass",
         fieldScale: 1.0,
         bots: [
-            { name: "MARCO REUS", x: 650, y: 200, color: "#ffff00", maxSpeed: 5.0, aggressiveness: 0.9, canCrossHalf: true, number: 11, }
+            { name: "MARCO REUS", x: 650, y: 200, color: "#ffff00", maxSpeed: 5.0, aggressiveness: 0.5, canCrossHalf: true, number: 11, }
         ]
     }
 ];
