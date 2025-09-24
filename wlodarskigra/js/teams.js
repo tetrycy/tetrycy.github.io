@@ -36,6 +36,7 @@ const teams = [
         opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
         field: "professional",
         fieldScale: 0.5,
+        hasPlayerGoalkeeper: true
         bots: [
             { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: true, number: 6, role: "attacker", preferredY: 120, team: "opponent" },
             { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: false, number: 4, role: "midfielder", preferredY: 200, team: "opponent" },
