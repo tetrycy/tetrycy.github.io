@@ -48,7 +48,7 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "LOKOMOTIV LEIPZIG",
         field: "stadium", 
-        fieldScale: 1.0,
+        fieldScale: 0.25,
         bots: [
             { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: true, number: 5, role: "attacker", preferredY: 100, team: "opponent" },
             { name: "HERMANN FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 2, role: "midfielder", preferredY: 200, team: "opponent" },
