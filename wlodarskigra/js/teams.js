@@ -72,7 +72,7 @@ const teams = [
         number: 7,
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "SPVGG UNTERHACHING",
-        field: "asphalt",
+        field: "professional",
         fieldScale: 0.25, // Duże boisko jak Carl Zeiss
         hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
         bots: [
