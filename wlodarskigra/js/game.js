@@ -157,7 +157,7 @@ function drawPlayer(playerObj, name, isBot = false) {
 
     // Numer na koszulce - skalowany
     ctx.fillStyle = 'white';
-    ctx.font = `bold ${14 * scale}px Orbitron`;
+    ctx.font = `bold ${14 * scale}px Press Start 2P`;
     ctx.textAlign = 'center';
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 3 * scale;
@@ -171,7 +171,7 @@ function drawPlayer(playerObj, name, isBot = false) {
     const nameHeight = 12 * scale;
         
     ctx.fillStyle = 'white';
-    ctx.font = `bold ${8 * scale}px Orbitron`;
+    ctx.font = `bold ${8 * scale}px Press Start 2P`;
     ctx.fillText(name, drawX, nameY + 2 * scale);
 }
 
@@ -249,7 +249,7 @@ function gameLoop() {
             updateBall();
         }
         
-        drawPlayer(player, 'MARIAN WŁODARSKI', false);
+        drawPlayer(player, 'WŁODARSKI', false);
         if (playerGoalkeeper) {
             drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
         }
