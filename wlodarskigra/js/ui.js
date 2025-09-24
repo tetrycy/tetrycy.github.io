@@ -17,8 +17,8 @@ const wlodarskiParameters = {
         speed: 2.6
     },
     0.25: {
-        radius: 5,
-        speed: 1.3
+        radius: 50,
+        speed: 8.3
     }
 };
 
