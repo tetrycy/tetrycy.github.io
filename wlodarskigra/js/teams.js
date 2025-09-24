@@ -3,7 +3,7 @@ const teams = [
         number: 1,
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "MSV DUISBURG",
-        field: 'simple',
+        field: 'autumn',
         fieldScale: 1.0,
         bots: [
             { name: "HAJTO", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200, team: "opponent" }
