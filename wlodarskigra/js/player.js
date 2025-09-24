@@ -7,7 +7,7 @@ function getCurrentScale() {
 // Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
 function updatePlayer() {
     
- const speed = 5.1 * getCurrentScale();
+const speed = player.speed || 5.1;
 
     player.vx = 0;
     player.vy = 0;
