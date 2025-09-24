@@ -68,17 +68,50 @@ const teams = [
             { name: "THOMAS WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
         ]
     },
-    {
-        number: 7,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "SPVGG UNTERHACHING",
-        field: "professional",
-        fieldScale: 0.25, // Duże boisko jak Carl Zeiss
-        hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
-        bots: [
-            { name: "RALF MULLER", x: 500, y: 200, color: "#800040", maxSpeed: 2.5, aggressiveness: 0.3, canCrossHalf: true, number: 10, role: "attacker", preferredY: 200 },
-            { name: "JOSEF KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, aggressiveness: 0.2, isGoalkeeper: true, canCrossHalf: false, number: 1, role: "goalkeeper", preferredY: 200 }
-        ],
-        playerGoalkeeper: { name: "PETER NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
-    }
+{
+    number: 7,
+    playerTeam: "SV BABELSBERG 04",
+    opponentTeam: "SPVGG UNTERHACHING",
+    field: "professional",
+    fieldScale: 0.25,
+    hasPlayerGoalkeeper: true,
+    bots: [
+        // DRUŻYNA PRZECIWNIKA (11 zawodników)
+        // Bramkarz
+        { name: "JOSEF KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, number: 1, role: "goalkeeper", isGoalkeeper: true, preferredY: 200 },
+        
+        // Obrona (4 zawodników)
+        { name: "KLAUS WEBER", x: 700, y: 120, color: "#800040", maxSpeed: 3.8, number: 2, role: "fullback", preferredY: 120 },
+        { name: "WERNER BRAUN", x: 720, y: 160, color: "#800040", maxSpeed: 3.5, number: 3, role: "centerback", preferredY: 160 },
+        { name: "FRITZ MANN", x: 720, y: 240, color: "#800040", maxSpeed: 3.5, number: 4, role: "centerback", preferredY: 240 },
+        { name: "GUSTAV KLEIN", x: 700, y: 280, color: "#800040", maxSpeed: 3.8, number: 5, role: "fullback", preferredY: 280 },
+        
+        // Pomocnicy (4 zawodników)  
+        { name: "OTTO SCHULZ", x: 650, y: 140, color: "#800040", maxSpeed: 4.0, number: 6, role: "defensive_midfielder", preferredY: 140 },
+        { name: "ERNST KOCH", x: 650, y: 260, color: "#800040", maxSpeed: 4.0, number: 8, role: "defensive_midfielder", preferredY: 260 },
+        { name: "HEINRICH FUCHS", x: 580, y: 120, color: "#800040", maxSpeed: 4.5, number: 7, role: "winger", preferredY: 120 },
+        { name: "LUDWIG RICHTER", x: 580, y: 280, color: "#800040", maxSpeed: 4.5, number: 11, role: "winger", preferredY: 280 },
+        
+        // Napastnicy (2 zawodników)
+        { name: "RALF MULLER", x: 520, y: 170, color: "#800040", maxSpeed: 4.8, number: 9, role: "striker", preferredY: 170 },
+        { name: "KARL BECKER", x: 520, y: 230, color: "#800040", maxSpeed: 4.8, number: 10, role: "striker", preferredY: 230 },
+
+        // DRUŻYNA GRACZA (9 zawodników z pola + Włodarski + bramkarz)
+        // Obrona (4 zawodników)
+        { name: "STEFAN NOWAK", x: 100, y: 120, color: "#ff0000", maxSpeed: 3.8, number: 2, role: "fullback", preferredY: 120 },
+        { name: "MAREK KOWALSKI", x: 120, y: 160, color: "#ff0000", maxSpeed: 3.5, number: 3, role: "centerback", preferredY: 160 },
+        { name: "TOMASZ WIŚNIEWSKI", x: 120, y: 240, color: "#ff0000", maxSpeed: 3.5, number: 4, role: "centerback", preferredY: 240 },
+        { name: "PAWEŁ JANKOWSKI", x: 100, y: 280, color: "#ff0000", maxSpeed: 3.8, number: 5, role: "fullback", preferredY: 280 },
+        
+        // Pomocnicy (3 zawodników)
+        { name: "JACEK ZIELIŃSKI", x: 150, y: 140, color: "#ff0000", maxSpeed: 4.0, number: 6, role: "defensive_midfielder", preferredY: 140 },
+        { name: "ANDRZEJ SZYMAŃSKI", x: 150, y: 260, color: "#ff0000", maxSpeed: 4.0, number: 8, role: "defensive_midfielder", preferredY: 260 },
+        { name: "MICHAŁ DĄBROWSKI", x: 200, y: 200, color: "#ff0000", maxSpeed: 4.3, number: 11, role: "attacking_midfielder", preferredY: 200 },
+        
+        // Skrzydłowi (2 zawodników)
+        { name: "GRZEGORZ LEWANDOWSKI", x: 220, y: 120, color: "#ff0000", maxSpeed: 4.5, number: 7, role: "winger", preferredY: 120 },
+        { name: "ROBERT WÓJCIK", x: 220, y: 280, color: "#ff0000", maxSpeed: 4.5, number: 9, role: "winger", preferredY: 280 }
+    ],
+    playerGoalkeeper: { name: "PETER NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, number: 1, role: "goalkeeper" }
+}
 ];
