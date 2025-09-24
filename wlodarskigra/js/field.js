@@ -33,6 +33,42 @@ function drawField() {
         case 'simple2':
             drawSimple2Field();
             break;
+        case 'autumn':
+            drawAutumnField();
+            break;
+        case 'desert':
+            drawDesertField();
+            break;
+        case 'beach':
+            drawBeachField();
+            break;
+        case 'forest':
+            drawForestField();
+            break;
+        case 'clay':
+            drawClayField();
+            break;
+        case 'rubber':
+            drawRubberField();
+            break;
+        case 'concrete':
+            drawConcreteField();
+            break;
+        case 'parquet':
+            drawParquetField();
+            break;
+        case 'night':
+            drawNightField();
+            break;
+        case 'rain':
+            drawRainField();
+            break;
+        case 'retro':
+            drawRetroField();
+            break;
+        case 'neon':
+            drawNeonField();
+            break;
     }
 }
 
