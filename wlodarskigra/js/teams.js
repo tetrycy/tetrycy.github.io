@@ -73,7 +73,7 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "SPVGG UNTERHACHING",
         field: "asphalt",
-        fieldScale: 0.75, // Duże boisko jak Carl Zeiss
+        fieldScale: 0.5, // Duże boisko jak Carl Zeiss
         hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
         bots: [
             { name: "RALF MULLER", x: 500, y: 200, color: "#800040", maxSpeed: 2.5, aggressiveness: 0.3, canCrossHalf: true, number: 10, role: "attacker", preferredY: 200 },
