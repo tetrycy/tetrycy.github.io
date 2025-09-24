@@ -34,7 +34,7 @@ const teams = [
         number: 4,
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
-        field: "professional",
+        field: 'stadium',
         fieldScale: 0.5,
         hasPlayerGoalkeeper: true
         bots: [
