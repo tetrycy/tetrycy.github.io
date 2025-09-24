@@ -1,5 +1,59 @@
 // ui.js - interfejs użytkownika, menu i ekrany
 
+// W ui.js - dodaj na górze pliku, tuż po komentarzach:
+
+// Parametry Włodarskiego dla różnych skal boisk
+const wlodarskiParameters = {
+    1.0: {
+        radius: 20,
+        speed: 5.1
+    },
+    0.75: {
+        radius: 15,
+        speed: 3.8
+    },
+    0.5: {
+        radius: 10,
+        speed: 2.6
+    },
+    0.25: {
+        radius: 5,
+        speed: 1.3
+    }
+};
+
+// W funkcji resetMatch() zamień tę linię:
+// player.radius = 20 * scale;
+
+// Na:
+function resetMatch() {
+    gameState.playerScore = 0;
+    gameState.botScore = 0;
+    gameState.gameWon = false;
+    gameState.gameStarted = false;
+    gameState.ballInPlay = false;
+    gameState.roundWon = false;
+    gameState.ballRotation = 0;
+    gameState.lastCollisionTime = 0; // Reset cooldown
+    
+    // Pobierz aktualną skalę boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+    // Ustaw parametry Włodarskiego w zależności od skali boiska
+    const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
+    
+    player.x = 100;
+    player.y = canvas.height / 2;
+    player.radius = playerParams.radius;
+    player.speed = playerParams.speed;
+    player.stunned = 0;
+    player.pushbackX = 0;
+    player.pushbackY = 0;
+    
+    // ... reszta bez zmian
+}
+
 // Funkcje menu
 function startTournament() {
     gameMode = 'tournament';
