@@ -462,3 +462,22 @@ function updateGoalkeeper(bot) {
     bot.vy = dy * 0.12;
     bot.y += bot.vy;
 }
+
+function updatePlayerGoalkeeper() {
+    if (!gameState.ballInPlay) {
+        // Wróć do pozycji startowej
+        playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
+        playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
+    } else {
+        // Śledź piłkę ale tylko w bramce
+        let targetY = ball.y;
+        playerGoalkeeper.x = Math.max(20, Math.min(50, playerGoalkeeper.x));
+        targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
+        
+        const dy = targetY - playerGoalkeeper.y;
+        playerGoalkeeper.vy = dy * 0.08; // Nieco wolniejszy niż przeciwny bramkarz
+    }
+    
+    playerGoalkeeper.x += playerGoalkeeper.vx;
+    playerGoalkeeper.y += playerGoalkeeper.vy;
+}
