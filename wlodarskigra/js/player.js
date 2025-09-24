@@ -416,8 +416,6 @@ function updateFieldBot(bot) {
     bot.x = Math.max(bot.radius + 15, Math.min(canvas.width - bot.radius - 15, bot.x));
     bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
 }
-}
-}
 
 function updateGoalkeeper(bot) {
     let targetY = ball.y;
