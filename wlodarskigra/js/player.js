@@ -232,14 +232,9 @@ function updateFieldBot(bot) {
     bot.x += bot.vx;
     bot.y += bot.vy;
 
-    // Ograniczenia pozycji
-    if (bot.canCrossHalf) {
-        bot.x = Math.max(canvas.width / 2 - 50, Math.min(canvas.width - bot.radius - 15, bot.x));
-    } else {
-        bot.x = Math.max(canvas.width / 2 + 10, Math.min(canvas.width - bot.radius - 15, bot.x));
-    }
-    
-    bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+// Ograniczenia pozycji - tylko granice boiska
+bot.x = Math.max(bot.radius + 15, Math.min(canvas.width - bot.radius - 15, bot.x));
+bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
 }
 
 function updateGoalkeeper(bot) {
