@@ -169,13 +169,7 @@ function drawPlayer(playerObj, name, isBot = false) {
     const nameY = drawY + scaledRadius + 25 * scale;
     const nameWidth = 70 * scale;
     const nameHeight = 12 * scale;
-    ctx.fillStyle = 'rgba(0,0,0,0.8)';
-    ctx.fillRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
-    ctx.strokeStyle = isBot ? playerObj.color : '#ff0000';
-    ctx.lineWidth = 2 * scale;
-    ctx.strokeRect(drawX - nameWidth/2, nameY - nameHeight/2, nameWidth, nameHeight);
-    
+        
     ctx.fillStyle = 'white';
     ctx.font = `bold ${8 * scale}px Orbitron`;
     ctx.fillText(name, drawX, nameY + 2 * scale);
