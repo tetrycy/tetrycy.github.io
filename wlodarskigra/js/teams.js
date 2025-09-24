@@ -6,7 +6,7 @@ const teams = [
         field: 'simple',
         fieldScale: 1.0,
         bots: [
-            { name: "HAJTO", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200, team: "opponent" }
+            { name: "HAJTO", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 2, role: "defender", preferredY: 200, team: "opponent" }
         ]
     },
     {
@@ -26,7 +26,7 @@ const teams = [
         field: "winter",
         fieldScale: 0.75,
         bots: [
-            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 3.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
+            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 3.5, aggressiveness: 0.8, radius: 10, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
             { name: "LANGE", x: 650, y: 250, color: "#006600", maxSpeed: 2.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 200, team: "opponent" }
         ]
     },
