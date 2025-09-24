@@ -17,7 +17,7 @@ const teams = [
         field: "muddy",
         fieldScale: 1.0,
         bots: [
-            { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
+            { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "ball_chaser", preferredY: 200 }
         ]
     },
     {
