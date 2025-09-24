@@ -211,9 +211,7 @@ function resetMatch() {
     gameState.gameStarted = false;
     gameState.ballInPlay = false;
     gameState.roundWon = false;
-    gameState.particles = [];
     gameState.ballRotation = 0;
-    gameState.screenShake = 0;
     gameState.lastCollisionTime = 0; // Reset cooldown
     
     player.x = 100;
