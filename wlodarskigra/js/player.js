@@ -358,6 +358,8 @@ function updateFieldBot(bot) {
         case "fullback": 
         case "sweeper": 
             roleErrorMultiplier = 1.1; break;  // Nieco mniej zwinni
+        case "ball_chaser": 
+            roleErrorMultiplier = 1.4; break;  // Bardzo nieprzewidywalni, dużo błędów
         case "centerback": 
         case "defender": 
             roleErrorMultiplier = 1.3; break;  // Najmniej zwinni
@@ -382,6 +384,8 @@ function updateFieldBot(bot) {
             case "winger": 
             case "striker": 
                 speedMultiplier = 1.1; break;  // Najszybsi
+            case "ball_chaser": 
+                speedMultiplier = 1.15; break;  // Bardzo szybcy ale nieprecyzyjni
             case "attacking_midfielder": 
             case "attacker": 
                 speedMultiplier = 1.05; break;  // Szybcy
@@ -411,6 +415,7 @@ function updateFieldBot(bot) {
     // Ograniczenia pozycji - tylko granice boiska
     bot.x = Math.max(bot.radius + 15, Math.min(canvas.width - bot.radius - 15, bot.x));
     bot.y = Math.max(bot.radius + 15, Math.min(canvas.height - bot.radius - 15, bot.y));
+}
 }
 }
 
