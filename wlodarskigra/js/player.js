@@ -1,3 +1,54 @@
+// player.js - logika gracza i AI botów
+
+// Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
+function updatePlayer() {
+    const speed = 5.1;
+
+    player.vx = 0;
+    player.vy = 0;
+    
+    if (keys['w']) player.vy = -speed;
+    if (keys['s']) player.vy = speed;
+    if (keys['a']) player.vx = -speed;
+    if (keys['d']) player.vx = speed;
+
+    player.x += player.vx;
+    player.y += player.vy;
+
+    // NATYCHMIAST po ruchu gracza sprawdź kolizję z piłką
+    checkPlayerBallCollision();
+
+    // Ograniczenia boiska
+    if (gameMode === 'tournament' && gameState.currentRound === 0) {
+        player.x = Math.max(player.radius + 15, Math.min(canvas.width / 2 - 10, player.x));
+    } else {
+        player.x = Math.max(player.radius + 15, Math.min(canvas.width - player.radius - 15, player.x));
+    }
+    
+    player.y = Math.max(player.radius + 15, Math.min(canvas.height - player.radius - 15, player.y));
+}
+
+function checkPlayerBallCollision() {
+    const dx = ball.x - player.x;
+    const dy = ball.y - player.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const minDistance = ball.radius + player.radius;
+
+    if (distance < minDistance && distance > 0) {
+        const nx = dx / distance;
+        const ny = dy / distance;
+        
+        // Ustaw piłkę dokładnie na krawędzi gracza
+        ball.x = player.x + nx * minDistance;
+        ball.y = player.y + ny * minDistance;
+        
+        // Nadaj piłce prędkość - MINIMUM 7 px/frame (zmniejszone o 15%)
+        const kickPower = Math.max(7, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 4);
+        ball.vx = nx * kickPower;
+        ball.vy = ny * kickPower;
+    }
+}
+
 // AI Botów + bramkarz gracza
 function updateBots() {
     bots.forEach(bot => {
