@@ -79,17 +79,17 @@ const teams = [
         hasPlayerGoalkeeper: true,
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników)
-            { name: "KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, number: 1, role: "goalkeeper", isGoalkeeper: true, preferredY: 200, team: "opponent" },
-            { name: "WEBER", x: 700, y: 120, color: "#800040", maxSpeed: 1.8, number: 2, role: "fullback", preferredY: 120, team: "opponent" },
-            { name: "BRAUN", x: 720, y: 160, color: "#800040", maxSpeed: 1.5, number: 3, role: "centerback", preferredY: 160, team: "opponent" },
-            { name: "MANN", x: 720, y: 240, color: "#800040", maxSpeed: 1.5, number: 4, role: "centerback", preferredY: 240, team: "opponent" },
-            { name: "KLEIN", x: 700, y: 280, color: "#800040", maxSpeed: 1.8, number: 5, role: "fullback", preferredY: 280, team: "opponent" },
-            { name: "SCHULZ", x: 650, y: 140, color: "#800040", maxSpeed: 2.0, number: 6, role: "defensive_midfielder", preferredY: 140, team: "opponent" },
-            { name: "KOCH", x: 650, y: 260, color: "#800040", maxSpeed: 2.0, number: 8, role: "defensive_midfielder", preferredY: 260, team: "opponent" },
-            { name: "FUCHS", x: 580, y: 120, color: "#800040", maxSpeed: 2.5, number: 7, role: "winger", preferredY: 120, team: "opponent" },
-            { name: "RICHTER", x: 580, y: 280, color: "#800040", maxSpeed: 2.5, number: 11, role: "winger", preferredY: 280, team: "opponent" },
-            { name: "MULLER", x: 520, y: 170, color: "#800040", maxSpeed: 2.8, number: 9, role: "striker", preferredY: 170, team: "opponent" },
-            { name: "BECKER", x: 520, y: 230, color: "#800040", maxSpeed: 2.8, number: 10, role: "striker", preferredY: 230, team: "opponent" },
+            { name: "KAHN", x: 750, y: 200, color: "#080808", maxSpeed: 1.8, number: 1, role: "goalkeeper", isGoalkeeper: true, preferredY: 200, team: "opponent" },
+            { name: "WEBER", x: 700, y: 120, color: "#080808", maxSpeed: 1.8, number: 2, role: "fullback", preferredY: 120, team: "opponent" },
+            { name: "BRAUN", x: 720, y: 160, color: "#080808", maxSpeed: 1.5, number: 3, role: "centerback", preferredY: 160, team: "opponent" },
+            { name: "MANN", x: 720, y: 240, color: "#080808", maxSpeed: 1.5, number: 4, role: "centerback", preferredY: 240, team: "opponent" },
+            { name: "KLEIN", x: 700, y: 280, color: "#080808", maxSpeed: 1.8, number: 5, role: "fullback", preferredY: 280, team: "opponent" },
+            { name: "SCHULZ", x: 650, y: 140, color: "#080808", maxSpeed: 2.0, number: 6, role: "defensive_midfielder", preferredY: 140, team: "opponent" },
+            { name: "KOCH", x: 650, y: 260, color: "#080808", maxSpeed: 2.0, number: 8, role: "defensive_midfielder", preferredY: 260, team: "opponent" },
+            { name: "FUCHS", x: 580, y: 120, color: "#080808", maxSpeed: 2.5, number: 7, role: "winger", preferredY: 120, team: "opponent" },
+            { name: "RICHTER", x: 580, y: 280, color: "#080808", maxSpeed: 2.5, number: 11, role: "winger", preferredY: 280, team: "opponent" },
+            { name: "MULLER", x: 520, y: 170, color: "#080808", maxSpeed: 2.8, number: 9, role: "striker", preferredY: 170, team: "opponent" },
+            { name: "BECKER", x: 520, y: 230, color: "#080808", maxSpeed: 2.8, number: 10, role: "striker", preferredY: 230, team: "opponent" },
 
             // DRUŻYNA GRACZA (9 zawodników z pola + Włodarski + bramkarz)
             { name: "NOWAK", x: 100, y: 120, color: "#ff0000", maxSpeed: 1.8, number: 12, role: "fullback", preferredY: 120, team: "player" },
