@@ -49,7 +49,7 @@ const teams = [
     number: 5,
     playerTeam: "SV BABELSBERG 04",
     opponentTeam: "LOKOMOTIV LEIPZIG",
-    field: "stadium", 
+    field: "professional", 
     fieldScale: 0.25,
     bots: [
         { name: "WOLFGANG RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: true, number: 5, role: "attacker", preferredY: 100, team: "opponent" },
