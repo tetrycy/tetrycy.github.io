@@ -71,10 +71,11 @@ function loadTeamData(teamData) {
     document.getElementById('playerTeam').textContent = teamData.playerTeam;
     document.getElementById('botTeam').textContent = teamData.opponentTeam;
     document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
+    const scale = teamData.fieldScale || 1.0;
     
     bots = teamData.bots.map(botData => ({
         ...botData,
-        radius: 20,
+     radius: 20 * scale,
         vx: 0,
         vy: 0,
         shootPower: botData.shootPower || 1.2,
@@ -89,8 +90,8 @@ function loadTeamData(teamData) {
     // Ładuj bramkarza gracza jeśli istnieje
     if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
         playerGoalkeeper = {
-            ...teamData.playerGoalkeeper,
-            radius: 20,
+    ...teamData.playerGoalkeeper,
+    radius: 20 * scale,
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
@@ -214,10 +215,16 @@ function resetMatch() {
     gameState.ballRotation = 0;
     gameState.lastCollisionTime = 0; // Reset cooldown
     
-    player.x = 100;
+    // Pobierz aktualną skalę boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+     
+       player.x = 100;
     player.y = canvas.height / 2;
-    player.stunned = 0;      // Reset ogłuszenia
-    player.pushbackX = 0;    // Reset odrzutu
+    player.radius = 20 * scale;  // DODAJ TĘ LINIĘ
+    player.stunned = 0;
+    player.pushbackX = 0;
     player.pushbackY = 0;
     
     // Reset bramkarza gracza jeśli istnieje
@@ -228,8 +235,9 @@ function resetMatch() {
         playerGoalkeeper.vy = 0;
     }
     
-    ball.x = canvas.width / 2;
+      ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
+    ball.radius = 8 * scale;  // DODAJ TĘ LINIĘ
     ball.vx = 0;
     ball.vy = 0;
     
