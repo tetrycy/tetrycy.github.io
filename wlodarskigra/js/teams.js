@@ -2,21 +2,21 @@ const teams = [
     {
         number: 1,
         playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "VFL OLDENBURG",
-        field: "grass",
+        opponentTeam: "MSV DUISBURG",
+        field: "proffessional",
         fieldScale: 1.0,
         bots: [
-            { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200, team: "opponent" }
+            { name: "HAJTO", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200, team: "opponent" }
         ]
     },
     {
         number: 2, 
         playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "SV WALDORF MANNHEIM",
+        opponentTeam: "SV WALDHOF MANNHEIM",
         field: "muddy",
         fieldScale: 1.0,
         bots: [
-            { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "ball_chaser", preferredY: 200, team: "opponent" }
+            { name: "KOBYLANSKI", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "ball_chaser", preferredY: 200, team: "opponent" }
         ]
     },
     {
