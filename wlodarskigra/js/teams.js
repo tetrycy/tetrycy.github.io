@@ -26,8 +26,8 @@ const teams = [
         field: "winter",
         fieldScale: 0.75,
         bots: [
-            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
-            { name: "LANGE", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 200, team: "opponent" }
+            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 3.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
+            { name: "LANGE", x: 650, y: 250, color: "#006600", maxSpeed: 2.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 200, team: "opponent" }
         ]
     },
     {
@@ -35,7 +35,7 @@ const teams = [
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
         field: "professional",
-        fieldScale: 1.0,
+        fieldScale: 0.5,
         bots: [
             { name: "GÜNTER HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: true, number: 6, role: "attacker", preferredY: 120, team: "opponent" },
             { name: "DIETER KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: false, number: 4, role: "midfielder", preferredY: 200, team: "opponent" },
