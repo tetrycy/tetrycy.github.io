@@ -1,84 +1,175 @@
-// teams.js - definicje drużyn i przeciwników
-const teams = [
-    {
-        number: 1,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "VFL OLDENBURG",
-        field: "grass",
-        fieldScale: 1.0,
-        bots: [
-            { name: "JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200 }
-        ]
-    },
-    {
-        number: 2, 
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "SV WALDORF MANNHEIM",
-        field: "muddy",
-        fieldScale: 1.0,
-        bots: [
-            { name: "SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
-        ]
-    },
-    {
-        number: 3,
-        playerTeam: "SV BABELSBERG 04", 
-        opponentTeam: "FC HANSA ROSTOCK",
-        field: "winter",
-        fieldScale: 1.0,
-        bots: [
-            { name: "MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150 },
-            { name: "WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250 }
-        ]
-    },
-    {
-        number: 4,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "EINTRACHT BRAUNSCHWEIG", 
-        field: "professional",
-        fieldScale: 1.0,
-        bots: [
-            { name: "HOFFMAN", x: 600, y: 120, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: true, number: 6, role: "attacker", preferredY: 120 },
-            { name: "KLEIN", x: 650, y: 200, color: "#ff6600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: false, number: 4, role: "midfielder", preferredY: 200 },
-            { name: "BRAUN", x: 600, y: 280, color: "#ff6600", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 3, role: "defender", preferredY: 280 }
-        ]
-    },
-    {
-        number: 5,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "LOKOMOTIV LEIPZIG",
-        field: "stadium", 
-        fieldScale: 1.0,
-        bots: [
-            { name: "RICHTER", x: 600, y: 100, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: true, number: 5, role: "attacker", preferredY: 100 },
-            { name: "FISCHER", x: 650, y: 200, color: "#990000", maxSpeed: 5.25, aggressiveness: 0.9, canCrossHalf: false, number: 2, role: "midfielder", preferredY: 200 },
-            { name: "BECKER", x: 600, y: 300, color: "#990000", maxSpeed: 6, aggressiveness: 1.0, canCrossHalf: false, number: 1, role: "defender", preferredY: 300 },
-            { name: "SCHULZ", x: 750, y: 200, color: "#660000", maxSpeed: 2.25, aggressiveness: 0.4, isGoalkeeper: true, canCrossHalf: false, number: 12, role: "goalkeeper", preferredY: 200 }
-        ]
-    },
-    {
-        number: 6,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "FC CARL ZEISS JENA",
-        field: "sandy",
-        fieldScale: 0.75, // Wszystko pomniejszone o 25% = efekt 4x większego boiska
-        bots: [
-            { name: "KOCH", x: 650, y: 130, color: "#0066ff", maxSpeed: 3.0, aggressiveness: 0.5, canCrossHalf: false, number: 14, role: "defender", preferredY: 130 },
-            { name: "KRAUSE", x: 680, y: 200, color: "#0066ff", maxSpeed: 2.8, aggressiveness: 0.4, canCrossHalf: false, number: 8, role: "midfielder", preferredY: 200 },
-            { name: "WEBER", x: 650, y: 270, color: "#0066ff", maxSpeed: 3.2, aggressiveness: 0.6, canCrossHalf: true, number: 9, role: "attacker", preferredY: 270 }
-        ]
-    },
-    {
-        number: 7,
-        playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "SPVGG UNTERHACHING",
-        field: "asphalt",
-        fieldScale: 0.75, // Duże boisko jak Carl Zeiss
-        hasPlayerGoalkeeper: true, // Włodarski ma bramkarza!
-        bots: [
-            { name: "MULLER", x: 500, y: 200, color: "#800040", maxSpeed: 2.5, aggressiveness: 0.3, canCrossHalf: true, number: 10, role: "attacker", preferredY: 200 },
-            { name: "KAHN", x: 750, y: 200, color: "#660033", maxSpeed: 1.8, aggressiveness: 0.2, isGoalkeeper: true, canCrossHalf: false, number: 1, role: "goalkeeper", preferredY: 200 }
-        ],
-        playerGoalkeeper: { name: "NOWAK", x: 50, y: 200, color: "#cc0000", maxSpeed: 2.0, aggressiveness: 0.3, number: 1, role: "goalkeeper" }
+// ball.js - fizyka piłki i kolizje
+
+function updateBall() {
+    if (!gameState.ballInPlay || gameState.gameWon) return;
+
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    // Rotacja piłki
+    const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+    gameState.ballRotation += speed * 0.05;
+
+    // Odbicia od ścian - bez efektów
+    if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
+        ball.vy = -ball.vy;
+        ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
     }
-];
+
+    // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
+    if (ball.x <= 60 && ball.vx < 0) { // Sprawdź wcześniej, gdy piłka leci w lewo
+        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+            // Sprawdź czy bramkarz gracza może zablokować
+            if (playerGoalkeeper) {
+                const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
+                if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
+                    // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
+                    ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
+                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
+                    
+                    // Upewnij się że piłka leci od bramki
+                    if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
+                }
+            }
+        }
+    }
+
+    if (ball.x <= 15) {
+        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+            // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
+            gameState.botScore++;
+            updateScore();
+            resetBallAfterGoal();
+        } else {
+            ball.vx = -ball.vx;
+            ball.x = ball.radius + 15;
+        }
+    }
+
+    if (ball.x >= canvas.width - 15) {
+        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+            gameState.playerScore++;
+            updateScore();
+            resetBallAfterGoal();
+        } else {
+            ball.vx = -ball.vx;
+            ball.x = canvas.width - ball.radius - 15;
+        }
+    }
+
+    // Kolizje z graczami - ulepszona wersja anty-chaos
+    const currentTime = Date.now();
+    const allPlayers = [player, ...bots];
+    if (playerGoalkeeper) {
+        allPlayers.push(playerGoalkeeper);
+    }
+    allPlayers.forEach(p => {
+        const dx = ball.x - p.x;
+        const dy = ball.y - p.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < ball.radius + p.radius) {
+            // Dłuższy cooldown kolizji - zapobiega wielokrotnym kolizjom
+            if (currentTime - gameState.lastCollisionTime < 300) {
+                return; // Pomiń kolizję jeśli za wcześnie (zwiększone z 150ms)
+            }
+            
+            const nx = dx / distance;
+            const ny = dy / distance;
+
+            // Znacznie większe rozdzielenie obiektów
+            const overlap = ball.radius + p.radius - distance;
+            const separationDistance = overlap + 8; // Zwiększone z 2 do 8 pikseli bufora
+            ball.x += nx * separationDistance;
+            ball.y += ny * separationDistance;
+
+            // Sprawdź czy piłka była praktycznie nieruchoma
+            const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            const wasStationary = ballSpeed < 1;
+
+            const dotProduct = ball.vx * nx + ball.vy * ny;
+            
+            createParticles(ball.x, ball.y, p.color, 4);
+            gameState.screenShake = Math.max(gameState.screenShake, 2);
+            
+            if (p !== player) {
+                const goalCenterY = canvas.height / 2;
+                const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
+                
+                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
+                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
+                
+                ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
+                ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
+            } else {
+                // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
+                if (wasStationary) {
+                    // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
+                    const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                    if (playerSpeed > 0) {
+                        const kickPower = 8; // Stała siła kopnięcia
+                        ball.vx = (p.vx / playerSpeed) * kickPower;
+                        ball.vy = (p.vy / playerSpeed) * kickPower;
+                    } else {
+                        // Gracz stoi - delikatne odbicie
+                        ball.vx = nx * 3;
+                        ball.vy = ny * 3;
+                    }
+                } else {
+                    // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
+                    ball.vx = ball.vx - 2 * dotProduct * nx + p.vx * 0.1; // Bardzo mały wpływ
+                    ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
+                }
+                
+                // KLUCZOWE: Odepchnij gracza od piłki
+                if (p === player) {
+                    const pushPower = 3;
+                    player.pushbackX = -nx * pushPower;  // Przeciwny kierunek do piłki
+                    player.pushbackY = -ny * pushPower;
+                    player.stunned = 8;  // 8 klatek ograniczonej responsywności
+                }
+            }
+
+            // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
+            const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (newSpeed < 2) {
+                // Jeśli piłka za wolna, nadaj jej minimalną prędkość
+                ball.vx = nx * 2;
+                ball.vy = ny * 2;
+            } else if (newSpeed > ball.maxSpeed) {
+                ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
+                ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
+            }
+            
+            // Ustaw cooldown
+            gameState.lastCollisionTime = currentTime;
+        }
+    });
+
+    // Tarcie
+    ball.vx *= 0.998;
+    ball.vy *= 0.998;
+
+    if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
+        ball.vx = 0;
+        ball.vy = 0;
+        gameState.ballInPlay = false;
+    }
+}
+
+function launchBall() {
+    gameState.ballInPlay = true;
+    const angle = (Math.random() - 0.5) * Math.PI * 0.4;
+    const direction = Math.random() < 0.5 ? 1 : -1;
+    
+    ball.vx = Math.cos(angle) * ball.startSpeed * direction;
+    ball.vy = Math.sin(angle) * ball.startSpeed;
+}
+
+function resetBallAfterGoal() {
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.vx = 0;
+    ball.vy = 0;
+    gameState.ballInPlay = false;
+}
