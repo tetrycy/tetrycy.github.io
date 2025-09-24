@@ -24,10 +24,10 @@ const teams = [
         playerTeam: "SV BABELSBERG 04", 
         opponentTeam: "FC HANSA ROSTOCK",
         field: "winter",
-        fieldScale: 1.0,
+        fieldScale: 0.75,
         bots: [
-            { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
-            { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250, team: "opponent" }
+            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150, team: "opponent" },
+            { name: "LANGE", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 200, team: "opponent" }
         ]
     },
     {
