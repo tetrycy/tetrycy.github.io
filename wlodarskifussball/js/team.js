@@ -3,21 +3,21 @@ const teams = [
     {
         number: 1,
         playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "VFL OLDENBURG",
+        opponentTeam: "MSV DUISBURG",
         field: "grass",
         fieldScale: 1.0,
         bots: [
-            { name: "HANS JURGEN", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200 }
+            { name: "HAJTO", x: 700, y: 200, color: "#0000ff", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 7, role: "defender", preferredY: 200 }
         ]
     },
     {
         number: 2, 
         playerTeam: "SV BABELSBERG 04",
-        opponentTeam: "SV WALDORF MANNHEIM",
+        opponentTeam: "SV WALDHOF MANNHEIM",
         field: "muddy",
         fieldScale: 1.0,
         bots: [
-            { name: "KLAUS SCHMIDT", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
+            { name: "KOBYLANSKI", x: 700, y: 200, color: "#800080", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 9, role: "attacker", preferredY: 200 }
         ]
     },
     {
@@ -25,10 +25,10 @@ const teams = [
         playerTeam: "SV BABELSBERG 04", 
         opponentTeam: "FC HANSA ROSTOCK",
         field: "winter",
-        fieldScale: 1.0,
+        fieldScale: 0.75,
         bots: [
-            { name: "WERNER MÜLLER", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150 },
-            { name: "FRITZ WAGNER", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250 }
+            { name: "MAJAK", x: 650, y: 150, color: "#006600", maxSpeed: 4.5, aggressiveness: 0.8, canCrossHalf: true, number: 8, role: "attacker", preferredY: 150 },
+            { name: "LANGE", x: 650, y: 250, color: "#006600", maxSpeed: 3.75, aggressiveness: 0.7, canCrossHalf: false, number: 11, role: "defender", preferredY: 250 }
         ]
     },
     {
