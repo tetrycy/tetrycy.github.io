@@ -346,13 +346,13 @@ const teams = [
         hasPlayerGoalkeeper: true,
         
         // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
-        playerRadius: 22,        // Większy, mocniejszy
-        playerSpeed: 5.5,        // Najszybszy
-        playerShootPower: 10,    // Najsilniejsze strzały
+        playerRadius: 8,        // Większy, mocniejszy
+        playerSpeed: 3,        // Najszybszy
+        playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
-        ballSpeed: 6.5,          // Bardzo szybka
-        ballMaxSpeed: 14.0,      // Najszybsza możliwa
+        ballSpeed: 2.5,          // Bardzo szybka
+        ballMaxSpeed: 6.0,      // Najszybsza możliwa
         
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
@@ -390,7 +390,7 @@ const teams = [
                 color: "#080808", 
                 maxSpeed: 1.5,
                 shootPower: 0.7,
-                radius: 6,
+                radius: 10,
                 number: 29, 
                 role: "centerback", 
                 preferredY: 160, 
@@ -442,7 +442,7 @@ const teams = [
                 color: "#080808", 
                 maxSpeed: 2.0,
                 shootPower: 1.0,
-                radius: 5,
+                radius: 13,
                 number: 15, 
                 role: "defensive_midfielder", 
                 preferredY: 260, 
@@ -481,7 +481,7 @@ const teams = [
                 color: "#080808", 
                 maxSpeed: 2.8,
                 shootPower: 2.0,  // Klinsmann - legendarny strzelec!
-                radius: 5,
+                radius: 8,
                 number: 12, 
                 role: "striker", 
                 preferredY: 170, 
@@ -535,7 +535,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 1.5,
                 shootPower: 0.7,
-                radius: 6,
+                radius: 12,
                 number: 8, 
                 role: "centerback", 
                 preferredY: 240, 
@@ -574,7 +574,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.0,
                 shootPower: 1.1,
-                radius: 5,
+                radius: 9,
                 number: 4, 
                 role: "defensive_midfielder", 
                 preferredY: 260, 
@@ -613,7 +613,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.5,
                 shootPower: 1.6,
-                radius: 5,
+                radius: 8,
                 number: 1, 
                 role: "winger", 
                 preferredY: 280, 
