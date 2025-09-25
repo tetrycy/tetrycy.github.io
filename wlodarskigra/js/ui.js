@@ -113,7 +113,7 @@ function loadTeamData(teamData) {
     if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
         playerGoalkeeper = {
     ...teamData.playerGoalkeeper,
-    radius: 20 * scale,
+playerGoalkeeper.radius = (teamData.playerGoalkeeper.radius || 20) * scale;
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
@@ -245,10 +245,13 @@ function resetMatch() {
       // Ustaw parametry Włodarskiego w zależności od skali boiska
 const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
 
+// Ustaw parametry Włodarskiego w zależności od skali boiska
+const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
+
 player.x = 100;
 player.y = canvas.height / 2;
-player.radius = playerParams.radius;  // ← DODAJ TĘ LINIĘ
-player.speed = playerParams.speed;    // ← DODAJ TĘ LINIĘ
+player.radius = Math.max(3, playerParams.radius);
+player.speed = playerParams.speed;
 player.stunned = 0;
     player.pushbackX = 0;
     player.pushbackY = 0;
@@ -261,11 +264,11 @@ player.stunned = 0;
         playerGoalkeeper.vy = 0;
     }
     
-      ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.radius = 8 * scale;  // DODAJ TĘ LINIĘ
-    ball.vx = 0;
-    ball.vy = 0;
+ball.x = canvas.width / 2;
+ball.y = canvas.height / 2;
+ball.radius = Math.max(2, 8 * scale);
+ball.vx = 0;
+ball.vy = 0;
     
     updateScore();
     document.getElementById('winnerMessage').style.display = 'none';
