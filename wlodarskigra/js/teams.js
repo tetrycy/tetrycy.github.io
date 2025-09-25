@@ -351,8 +351,8 @@ const teams = [
         playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
-        ballSpeed: 2.5,          // Bardzo szybka
-        ballMaxSpeed: 6.0,      // Najszybsza możliwa
+        ballSpeed: 1.5,          // Bardzo szybka
+        ballMaxSpeed: 3.0,      // Najszybsza możliwa
         
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
