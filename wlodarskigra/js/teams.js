@@ -613,7 +613,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.5,
                 shootPower: 1.6,
-                radius: 8,
+                radius: 25,
                 number: 1, 
                 role: "winger", 
                 preferredY: 280, 
