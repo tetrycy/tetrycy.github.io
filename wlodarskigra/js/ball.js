@@ -1,5 +1,22 @@
 // ball.js - fizyka piłki i kolizje
 
+/**
+ * Oblicza skalowane granice bramki
+ */
+function getGoalBounds() {
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+    const goalAreaHeight = 0.3 * scale;
+    const goalTop = 0.5 - goalAreaHeight/2;
+    const goalBottom = 0.5 + goalAreaHeight/2;
+    
+    return {
+        top: canvas.height * goalTop,
+        bottom: canvas.height * goalBottom
+    };
+}
+
 function updateBall() {
     if (!gameState.ballInPlay || gameState.gameWon) return;
 
@@ -17,8 +34,9 @@ function updateBall() {
     }
 
     // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
-    if (ball.x <= 60 && ball.vx < 0) { // Sprawdź wcześniej, gdy piłka leci w lewo
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+    if (ball.x <= 60 && ball.vx < 0) {
+        const goalBounds = getGoalBounds();
+        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             // Sprawdź czy bramkarz gracza może zablokować
             if (playerGoalkeeper) {
                 const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
@@ -35,7 +53,8 @@ function updateBall() {
     }
 
     if (ball.x <= 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+        const goalBounds = getGoalBounds();
+        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
             gameState.botScore++;
             updateScore();
@@ -47,7 +66,8 @@ function updateBall() {
     }
 
     if (ball.x >= canvas.width - 15) {
-        if (ball.y > canvas.height * 0.35 && ball.y < canvas.height * 0.65) {
+        const goalBounds = getGoalBounds();
+        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             gameState.playerScore++;
             updateScore();
             resetBallAfterGoal();
@@ -89,27 +109,25 @@ function updateBall() {
 
             const dotProduct = ball.vx * nx + ball.vy * ny;
             
-            // USUNIĘTO: createParticles i screenShake
-            
-      if (p !== player) {
-    const goalCenterY = canvas.height / 2;
-    
-    // Określ docelową bramkę w zależności od drużyny bota
-    let targetGoalX;
-    if (p.team === "player") {
-        targetGoalX = canvas.width - 15; // Drużyna gracza strzela w prawo
-    } else {
-        targetGoalX = 15; // Drużyna przeciwnika strzela w lewo
-    }
-    
-    const shootAngle = Math.atan2(goalCenterY - ball.y, targetGoalX - ball.x);
-    
-    const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
-    const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
-    
-    ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2;
-    ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
-} else {
+            if (p !== player) {
+                const goalCenterY = canvas.height / 2;
+                
+                // Określ docelową bramkę w zależności od drużyny bota
+                let targetGoalX;
+                if (p.team === "player") {
+                    targetGoalX = canvas.width - 15; // Drużyna gracza strzela w prawo
+                } else {
+                    targetGoalX = 15; // Drużyna przeciwnika strzela w lewo
+                }
+                
+                const shootAngle = Math.atan2(goalCenterY - ball.y, targetGoalX - ball.x);
+                
+                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
+                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
+                
+                ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2;
+                ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
+            } else {
                 // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
                 if (wasStationary) {
                     // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
