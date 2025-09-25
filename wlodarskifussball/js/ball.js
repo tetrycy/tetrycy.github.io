@@ -91,16 +91,25 @@ function updateBall() {
             
             // USUNIĘTO: createParticles i screenShake
             
-            if (p !== player) {
-                const goalCenterY = canvas.height / 2;
-                const shootAngle = Math.atan2(goalCenterY - ball.y, 15 - ball.x);
-                
-                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
-                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
-                
-                ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2; // Zmniejszone z 0.4
-                ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
-            } else {
+      if (p !== player) {
+    const goalCenterY = canvas.height / 2;
+    
+    // Określ docelową bramkę w zależności od drużyny bota
+    let targetGoalX;
+    if (p.team === "player") {
+        targetGoalX = canvas.width - 15; // Drużyna gracza strzela w prawo
+    } else {
+        targetGoalX = 15; // Drużyna przeciwnika strzela w lewo
+    }
+    
+    const shootAngle = Math.atan2(goalCenterY - ball.y, targetGoalX - ball.x);
+    
+    const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
+    const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
+    
+    ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2;
+    ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
+} else {
                 // Dla gracza - specjalne zachowanie w zależności od stanu piłki + odrzut
                 if (wasStationary) {
                     // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
