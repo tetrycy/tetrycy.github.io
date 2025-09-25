@@ -1,13 +1,363 @@
-// player.js - logika gracza i AI botów
-// Funkcja pomocnicza do pobierania skali boiska
-function getCurrentScale() {
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    return currentTeamData.fieldScale || 1.0;
-}
-// Sterowanie graczem + natychmiastowa kolizja - prędkość zmniejszona o 15%
-function updatePlayer() {
+// player.js - REFAKTORYZOWANA logika gracza i AI botów
+
+// ============ STAŁE I KONFIGURACJA ============
+const GAME_CONSTANTS = {
+    // Kolizje i fizyka
+    COLLISION_COOLDOWN: 300,
+    SEPARATION_BUFFER: 8,
+    MIN_BALL_SPEED: 2,
+    PUSH_BACK_POWER: 3,
+    STUN_DURATION: 8,
     
-const speed = player.speed || 5.1;
+    // AI i pozycjonowanie
+    TEAMMATE_SPACING: 60,
+    BALL_REACH_DISTANCE: 120,
+    CLOSE_BALL_DISTANCE: 40,
+    VERY_CLOSE_BALL_DISTANCE: 25,
+    
+    // Błędy AI według poziomów
+    ERROR_CHANCES: {
+        0: 0.15, 1: 0.10, 2: 0.08, 3: 0.06, 4: 0.04,
+        5: 0.20, 6: 0.18, default: 0.08
+    },
+    
+    // Mnożniki prędkości dla ról
+    SPEED_MULTIPLIERS: {
+        winger: 1.1, striker: 1.1, ball_chaser: 1.15,
+        attacking_midfielder: 1.05, attacker: 1.05,
+        midfielder: 1.0, fullback: 1.0,
+        defensive_midfielder: 0.95, sweeper: 0.95,
+        centerback: 0.9, defender: 0.9
+    },
+    
+    // Mnożniki błędów dla ról
+    ROLE_ERROR_MULTIPLIERS: {
+        striker: 0.7, attacking_midfielder: 0.7,
+        winger: 0.8, attacker: 0.8,
+        midfielder: 1.0, defensive_midfielder: 1.0,
+        fullback: 1.1, sweeper: 1.1,
+        ball_chaser: 1.4,
+        centerback: 1.3, defender: 1.3
+    }
+};
+
+// ============ FUNKCJE POMOCNICZE ============
+
+/**
+ * Pobiera aktualną skalę boiska
+ */
+function getCurrentScale() {
+    const currentTeamData = gameMode === 'tournament' 
+        ? teams[gameState.currentRound] 
+        : teams[selectedTeam];
+    return currentTeamData?.fieldScale || 1.0;
+}
+
+/**
+ * Sprawdza czy piłka jest w zasięgu bota
+ */
+function isBallInReach(bot, reachDistance = GAME_CONSTANTS.BALL_REACH_DISTANCE) {
+    const scale = getCurrentScale();
+    const distance = getDistanceToBall(bot);
+    return distance < reachDistance * scale;
+}
+
+/**
+ * Oblicza odległość między botem a piłką
+ */
+function getDistanceToBall(bot) {
+    return Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
+}
+
+/**
+ * Sprawdza czy piłka jest w określonej strefie boiska
+ */
+function isBallInZone(zone, isPlayerTeam) {
+    switch (zone) {
+        case 'offensive':
+            return isPlayerTeam ? ball.x > canvas.width * 0.6 : ball.x < canvas.width * 0.4;
+        case 'attack':
+            return isPlayerTeam ? ball.x > canvas.width * 0.4 : ball.x < canvas.width * 0.6;
+        case 'defense':
+            return isPlayerTeam ? ball.x < canvas.width * 0.4 : ball.x > canvas.width * 0.6;
+        case 'penalty':
+            return isPlayerTeam ? ball.x < canvas.width * 0.2 : ball.x > canvas.width * 0.8;
+        case 'very_close':
+            return isPlayerTeam ? ball.x < canvas.width * 0.3 : ball.x > canvas.width * 0.7;
+        default:
+            return false;
+    }
+}
+
+/**
+ * Oblicza korektę rozstawienia względem kolegów z drużyny
+ */
+function calculateTeammateSpacing(bot) {
+    const scale = getCurrentScale();
+    const spacing = GAME_CONSTANTS.TEAMMATE_SPACING * scale;
+    let adjustmentX = 0, adjustmentY = 0;
+    
+    bots.forEach(teammate => {
+        if (teammate !== bot && !teammate.isGoalkeeper && teammate.team === bot.team) {
+            const dx = bot.x - teammate.x;
+            const dy = bot.y - teammate.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < spacing && distance > 0) {
+                const pushStrength = (spacing - distance) / spacing;
+                adjustmentX += (dx / distance) * pushStrength * 30 * scale;
+                adjustmentY += (dy / distance) * pushStrength * 30 * scale;
+            }
+        }
+    });
+    
+    return { x: adjustmentX, y: adjustmentY };
+}
+
+/**
+ * Oblicza kierunek do bramki przeciwnika
+ */
+function getShootDirection(isPlayerTeam, fromX, fromY) {
+    const goalX = isPlayerTeam ? canvas.width - 15 : 15;
+    const goalY = canvas.height / 2;
+    return Math.atan2(goalY - fromY, goalX - fromX);
+}
+
+/**
+ * Przewiduje pozycję piłki po określonym czasie
+ */
+function predictBallPosition(timeFrames) {
+    return {
+        x: ball.x + ball.vx * timeFrames,
+        y: ball.y + ball.vy * timeFrames
+    };
+}
+
+// ============ FUNKCJE POZYCJONOWANIA DLA RÓL ============
+
+/**
+ * Pozycjonowanie napastnika
+ */
+function updateStriker(bot, isPlayerTeam, ballInReach, distanceToBall) {
+    const scale = getCurrentScale();
+    const ballInOffensiveZone = isBallInZone('offensive', isPlayerTeam);
+    
+    if (ballInReach || ballInOffensiveZone) {
+        const predicted = predictBallPosition(8);
+        let targetX = predicted.x;
+        let targetY = predicted.y;
+
+        if (distanceToBall < GAME_CONSTANTS.CLOSE_BALL_DISTANCE * scale) {
+            const shootAngle = getShootDirection(isPlayerTeam, ball.x, ball.y);
+            targetX = ball.x + Math.cos(shootAngle + Math.PI) * 25 * scale;
+            targetY = ball.y + Math.sin(shootAngle + Math.PI) * 25 * scale;
+        }
+        
+        return { x: targetX, y: targetY };
+    } else {
+        // Pozycja w polu karnym przeciwnika
+        const targetX = isPlayerTeam ? canvas.width * 0.85 : canvas.width * 0.15;
+        const targetY = canvas.height / 2 + (Math.random() - 0.5) * 60 * scale;
+        return { x: targetX, y: targetY };
+    }
+}
+
+/**
+ * Pozycjonowanie skrzydłowego
+ */
+function updateWinger(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    const isTopWinger = bot.preferredY < canvas.height / 2;
+    const wingY = isTopWinger ? canvas.height * 0.2 : canvas.height * 0.8;
+    
+    if (ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? 30 * scale : -30 * scale);
+        const targetY = wingY + (Math.random() - 0.5) * 40 * scale;
+        return { x: targetX, y: targetY };
+    } else if (isBallInZone('attack', isPlayerTeam)) {
+        const targetX = isPlayerTeam ? canvas.width * 0.75 : canvas.width * 0.25;
+        return { x: targetX, y: wingY };
+    } else {
+        const targetX = isPlayerTeam ? canvas.width * 0.4 : canvas.width * 0.6;
+        return { x: targetX, y: wingY };
+    }
+}
+
+/**
+ * Pozycjonowanie ofensywnego pomocnika
+ */
+function updateAttackingMidfielder(bot, isPlayerTeam, ballInReach, distanceToBall) {
+    const scale = getCurrentScale();
+    const ballInAttackZone = isBallInZone('attack', isPlayerTeam);
+    
+    if (ballInReach || ballInAttackZone) {
+        const predicted = predictBallPosition(5);
+        let targetX = predicted.x;
+        let targetY = predicted.y;
+        
+        if (distanceToBall < 60 * scale) {
+            targetX = isPlayerTeam ? canvas.width * 0.65 : canvas.width * 0.35;
+            targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.8;
+        }
+        
+        return { x: targetX, y: targetY };
+    } else {
+        const targetX = canvas.width * 0.5;
+        const targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.4;
+        return { x: targetX, y: targetY };
+    }
+}
+
+/**
+ * Pozycjonowanie defensywnego pomocnika
+ */
+function updateDefensiveMidfielder(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    const ballNearDefense = isBallInZone('defense', isPlayerTeam);
+    
+    if (ballNearDefense && ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? -40 * scale : 40 * scale);
+        const targetY = ball.y;
+        return { x: targetX, y: targetY };
+    } else {
+        let targetX = isPlayerTeam ? canvas.width * 0.3 : canvas.width * 0.7;
+        const targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.3;
+        
+        if (isBallInZone('very_close', isPlayerTeam)) {
+            targetX = isPlayerTeam ? canvas.width * 0.25 : canvas.width * 0.75;
+        }
+        
+        return { x: targetX, y: targetY };
+    }
+}
+
+/**
+ * Pozycjonowanie bocznego obrońcy
+ */
+function updateFullback(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    const isTopFullback = bot.preferredY < canvas.height / 2;
+    const fullbackY = isTopFullback ? canvas.height * 0.25 : canvas.height * 0.75;
+    const ballInDefenseZone = isBallInZone('very_close', isPlayerTeam);
+    
+    if (ballInDefenseZone && ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? -30 * scale : 30 * scale);
+        const targetY = ball.y;
+        return { x: targetX, y: targetY };
+    } else if (isBallInZone('offensive', !isPlayerTeam)) {
+        const targetX = isPlayerTeam ? canvas.width * 0.45 : canvas.width * 0.55;
+        return { x: targetX, y: fullbackY };
+    } else {
+        const targetX = isPlayerTeam ? canvas.width * 0.2 : canvas.width * 0.8;
+        return { x: targetX, y: fullbackY };
+    }
+}
+
+/**
+ * Pozycjonowanie środkowego obrońcy
+ */
+function updateCenterback(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    const ballVeryClose = isBallInZone('very_close', isPlayerTeam);
+    
+    if (ballVeryClose && ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? -25 * scale : 25 * scale);
+        const targetY = ball.y;
+        return { x: targetX, y: targetY };
+    } else {
+        let targetX = isPlayerTeam ? canvas.width * 0.15 : canvas.width * 0.85;
+        let targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.15;
+        
+        if (isBallInZone('penalty', isPlayerTeam)) {
+            targetX = isPlayerTeam ? canvas.width * 0.1 : canvas.width * 0.9;
+            targetY = ball.y;
+        }
+        
+        return { x: targetX, y: targetY };
+    }
+}
+
+/**
+ * Pozycjonowanie libero
+ */
+function updateSweeper(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    
+    if (ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? -20 * scale : 20 * scale);
+        const targetY = ball.y;
+        return { x: targetX, y: targetY };
+    } else {
+        const sameTeamDefenders = bots.filter(b => 
+            b.team === bot.team && (b.role === "centerback" || b.role === "fullback")
+        );
+        
+        let defenseLine;
+        if (isPlayerTeam) {
+            defenseLine = sameTeamDefenders.length > 0 ? 
+                Math.min(...sameTeamDefenders.map(b => b.x)) - 20 * scale : 
+                canvas.width * 0.25;
+        } else {
+            defenseLine = sameTeamDefenders.length > 0 ? 
+                Math.max(...sameTeamDefenders.map(b => b.x)) + 20 * scale : 
+                canvas.width * 0.75;
+        }
+        
+        let targetX = defenseLine;
+        let targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.2;
+        
+        // Reaguj na przełamania
+        const ballFastMoving = Math.abs(ball.vx) > 3;
+        const ballThreatening = isBallInZone('defense', isPlayerTeam);
+        
+        if (ballFastMoving && ballThreatening) {
+            targetX = ball.x + ball.vx * 3 * scale;
+            targetY = ball.y + ball.vy * 3 * scale;
+        }
+        
+        return { x: targetX, y: targetY };
+    }
+}
+
+/**
+ * Pozycjonowanie goniącego za piłką
+ */
+function updateBallChaser(bot, distanceToBall) {
+    const scale = getCurrentScale();
+    const predicted = predictBallPosition(2);
+    
+    if (distanceToBall > 200 * scale) {
+        return { x: ball.x, y: ball.y };
+    }
+    
+    return { x: predicted.x, y: predicted.y };
+}
+
+/**
+ * Domyślne pozycjonowanie (obrońca/pomocnik)
+ */
+function updateDefaultRole(bot, isPlayerTeam, ballInReach) {
+    const scale = getCurrentScale();
+    const ballNearOwnGoal = isBallInZone('defense', isPlayerTeam);
+    
+    if (ballNearOwnGoal && ballInReach) {
+        const targetX = ball.x + (isPlayerTeam ? -20 * scale : 20 * scale);
+        const targetY = ball.y;
+        return { x: targetX, y: targetY };
+    } else {
+        const targetX = isPlayerTeam ? canvas.width * 0.25 : canvas.width * 0.75;
+        const targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.2;
+        return { x: targetX, y: targetY };
+    }
+}
+
+// ============ GŁÓWNE FUNKCJE ============
+
+/**
+ * Sterowanie graczem z natychmiastową kolizją
+ */
+function updatePlayer() {
+    const speed = player.speed || 5.1;
 
     player.vx = 0;
     player.vy = 0;
@@ -20,22 +370,16 @@ const speed = player.speed || 5.1;
     player.x += player.vx;
     player.y += player.vy;
 
-    // NATYCHMIAST po ruchu gracza sprawdź kolizję z piłką
+    // Natychmiastowa kolizja z piłką
     checkPlayerBallCollision();
 
-// Ograniczenia boiska
-const scale = getCurrentScale();
-const border = 15 * scale;
-
-if (gameMode === 'tournament' && gameState.currentRound === 0) {
-    player.x = Math.max(player.radius + border, Math.min(canvas.width / 2 - 10, player.x));
-} else {
-    player.x = Math.max(player.radius + border, Math.min(canvas.width - player.radius - border, player.x));
+    // Ograniczenia boiska
+    applyFieldBoundaries(player);
 }
 
-player.y = Math.max(player.radius + border, Math.min(canvas.height - player.radius - border, player.y));
-}
-
+/**
+ * Sprawdza kolizje gracza z piłką
+ */
 function checkPlayerBallCollision() {
     const dx = ball.x - player.x;
     const dy = ball.y - player.y;
@@ -46,41 +390,25 @@ function checkPlayerBallCollision() {
         const nx = dx / distance;
         const ny = dy / distance;
         
-        // Ustaw piłkę dokładnie na krawędzi gracza
+        // Ustaw piłkę na krawędzi gracza
         ball.x = player.x + nx * minDistance;
         ball.y = player.y + ny * minDistance;
         
-        // Nadaj piłce prędkość - MINIMUM 7 px/frame (zmniejszone o 15%)
-const scale = getCurrentScale();
-const kickPower = Math.max(7 * scale, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 4 * scale);
+        // Nadaj piłce prędkość
+        const scale = getCurrentScale();
+        const kickPower = Math.max(7 * scale, Math.sqrt(player.vx * player.vx + player.vy * player.vy) + 4 * scale);
         ball.vx = nx * kickPower;
         ball.vy = ny * kickPower;
     }
 }
 
-// AI Botów + bramkarz gracza
-// AI Botów + bramkarz gracza - POPRAWIONE
+/**
+ * Aktualizacja wszystkich botów
+ */
 function updateBots() {
     bots.forEach(bot => {
         if (!gameState.ballInPlay && !bot.isGoalkeeper) {
-    // Pozycjonowanie startowe zależne od drużyny
-    const isPlayerTeam = bot.team === "player";
-    let readyX, readyY;
-    const scale = getCurrentScale(); // <-- DODAJ TĘ LINIĘ
-    
-    if (bot.isGoalkeeper) {
-        readyX = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale; // <-- DODAJ scale
-        readyY = canvas.height / 2;
-    } else {
-        readyX = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale; // <-- DODAJ scale
-        readyY = bot.startY || canvas.height / 2;
-    }
-            
-            bot.vx = (readyX - bot.x) * 0.1;
-            bot.vy = (readyY - bot.y) * 0.1;
-            
-            bot.x += bot.vx;
-            bot.y += bot.vy;
+            positionBotForKickoff(bot);
             return;
         }
 
@@ -91,350 +419,145 @@ function updateBots() {
         }
     });
     
-    // Aktualizuj bramkarza gracza jeśli istnieje
     if (playerGoalkeeper) {
         updatePlayerGoalkeeper();
     }
 }
 
-function updateFieldBot(bot) {
-    // Określ kierunek ataku na podstawie drużyny
+/**
+ * Pozycjonuje bota przed rozpoczęciem gry
+ */
+function positionBotForKickoff(bot) {
     const isPlayerTeam = bot.team === "player";
-    const enemyGoalX = isPlayerTeam ? canvas.width - 20 : 20;
-    const ownGoalX = isPlayerTeam ? 20 : canvas.width - 20;
+    const scale = getCurrentScale();
     
-const scale = getCurrentScale();
-const distanceToBall = Math.sqrt((ball.x - bot.x) ** 2 + (ball.y - bot.y) ** 2);
-const ballInReach = distanceToBall < 120 * scale;
+    let readyX, readyY;
     
-    let targetX, targetY;
+    if (bot.isGoalkeeper) {
+        readyX = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
+        readyY = canvas.height / 2;
+    } else {
+        readyX = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
+        readyY = bot.startY || canvas.height / 2;
+    }
+    
+    bot.vx = (readyX - bot.x) * 0.1;
+    bot.vy = (readyY - bot.y) * 0.1;
+    
+    bot.x += bot.vx;
+    bot.y += bot.vy;
+}
 
-    // Sprawdź odległości do kolegów z tej samej drużyny
-const teammateSpacing = 60 * scale;
-let spacingAdjustmentX = 0;
-let spacingAdjustmentY = 0;
-    
-    bots.forEach(teammate => {
-        if (teammate !== bot && !teammate.isGoalkeeper && teammate.team === bot.team) {
-            const dx = bot.x - teammate.x;
-            const dy = bot.y - teammate.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < teammateSpacing && distance > 0) {
-                const pushStrength = (teammateSpacing - distance) / teammateSpacing;
-           spacingAdjustmentX += (dx / distance) * pushStrength * 30 * scale;
-spacingAdjustmentY += (dy / distance) * pushStrength * 30 * scale;
-            }
-        }
-    });
+/**
+ * Główna funkcja aktualizacji bota na boisku - ZREFAKTORYZOWANA
+ */
+function updateFieldBot(bot) {
+    const isPlayerTeam = bot.team === "player";
+    const scale = getCurrentScale();
+    const distanceToBall = getDistanceToBall(bot);
+    const ballInReach = isBallInReach(bot);
 
-    // Różne zachowania w zależności od roli i drużyny
+    // Oblicz korektę rozstawienia
+    const spacing = calculateTeammateSpacing(bot);
+    
+    // Określ pozycję docelową w zależności od roli
+    let target;
+    
     switch(bot.role) {
         case "striker":
-            // Środkowy napastnik - zawsze blisko bramki przeciwnika
-            const ballInOffensiveZone = isPlayerTeam ? ball.x > canvas.width * 0.6 : ball.x < canvas.width * 0.4;
-            
-            if (ballInReach || ballInOffensiveZone) {
-                const predictTime = 8;
-targetX = ball.x + ball.vx * predictTime;
-targetY = ball.y + ball.vy * predictTime;
-
-if (distanceToBall < 40 * scale) {
-    const goalCenterY = canvas.height / 2;
-    const angleToGoal = Math.atan2(goalCenterY - ball.y, enemyGoalX - ball.x);
-    targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 25 * scale;
-    targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 25 * scale;
-}
-            } else {
-                // Czekaj w polu karnym przeciwnika
-                targetX = isPlayerTeam ? canvas.width * 0.85 : canvas.width * 0.15;
-          targetY = canvas.height / 2 + (Math.random() - 0.5) * 60 * scale;
-            }
+            target = updateStriker(bot, isPlayerTeam, ballInReach, distanceToBall);
             break;
-
         case "winger":
-            // Skrzydłowy - porusza się po bokach
-            const isTopWinger = bot.preferredY < canvas.height / 2;
-            const wingY = isTopWinger ? canvas.height * 0.2 : canvas.height * 0.8;
-            
-            if (ballInReach) {
-                // Przy piłce - przeciągaj ją w stronę bramki wroga
-        targetX = ball.x + (isPlayerTeam ? 30 * scale : -30 * scale);
-targetY = wingY + (Math.random() - 0.5) * 40 * scale;
-            } else if (isPlayerTeam ? ball.x < canvas.width * 0.5 : ball.x > canvas.width * 0.5) {
-                // Piłka w ofensywie - biegaj po linii bocznej
-                targetX = isPlayerTeam ? canvas.width * 0.75 : canvas.width * 0.25;
-                targetY = wingY;
-            } else {
-                // Piłka w defensywie - wróć nieco do tyłu
-                targetX = isPlayerTeam ? canvas.width * 0.4 : canvas.width * 0.6;
-                targetY = wingY;
-            }
+            target = updateWinger(bot, isPlayerTeam, ballInReach);
             break;
-
         case "attacking_midfielder":
-            // Ofensywny pomocnik - wspiera atak
-            const ballInAttackZone = isPlayerTeam ? ball.x > canvas.width * 0.4 : ball.x < canvas.width * 0.6;
-            
-            if (ballInReach || ballInAttackZone) {
-                const predictTime = 5;
-                targetX = ball.x + ball.vx * predictTime;
-                targetY = ball.y + ball.vy * predictTime;
-                
-if (distanceToBall < 60 * scale) {
-                    // Znajdź wolną przestrzeń za napastnikami
-                    targetX = isPlayerTeam ? canvas.width * 0.65 : canvas.width * 0.35;
-                    targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.8;
-                }
-            } else {
-                // Pozycja centralnie-ofensywna
-                targetX = isPlayerTeam ? canvas.width * 0.5 : canvas.width * 0.5;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.4;
-            }
+            target = updateAttackingMidfielder(bot, isPlayerTeam, ballInReach, distanceToBall);
             break;
-
         case "defensive_midfielder":
-            // Defensywny pomocnik - osłania obronę
-            const ballNearDefense = isPlayerTeam ? ball.x < canvas.width * 0.4 : ball.x > canvas.width * 0.6;
-            
-            if (ballNearDefense && ballInReach) {
-targetX = ball.x + (isPlayerTeam ? -40 * scale : 40 * scale);
-                targetY = ball.y;
-            } else {
-                // Pozycja przed obroną
-                targetX = isPlayerTeam ? canvas.width * 0.3 : canvas.width * 0.7;
-                targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.3;
-                
-                // Reaguj na zagrożenie
-                const ballThreatening = isPlayerTeam ? ball.x < canvas.width * 0.3 : ball.x > canvas.width * 0.7;
-                if (ballThreatening) {
-                    targetX = isPlayerTeam ? canvas.width * 0.25 : canvas.width * 0.75;
-                }
-            }
+            target = updateDefensiveMidfielder(bot, isPlayerTeam, ballInReach);
             break;
-
         case "fullback":
-            // Boczny obrońca
-            const isTopFullback = bot.preferredY < canvas.height / 2;
-            const fullbackY = isTopFullback ? canvas.height * 0.25 : canvas.height * 0.75;
-            const ballInDefenseZone = isPlayerTeam ? ball.x < canvas.width * 0.3 : ball.x > canvas.width * 0.7;
-            
-            if (ballInDefenseZone && ballInReach) {
-                // Przy piłce w defensywie
-targetX = ball.x + (isPlayerTeam ? -30 * scale : 30 * scale);
-                targetY = ball.y;
-            } else if (isPlayerTeam ? ball.x > canvas.width * 0.7 : ball.x < canvas.width * 0.3) {
-                // Piłka w ataku - można wspomagać atak
-                targetX = isPlayerTeam ? canvas.width * 0.45 : canvas.width * 0.55;
-                targetY = fullbackY;
-            } else {
-                // Normalna pozycja defensywna
-                targetX = isPlayerTeam ? canvas.width * 0.2 : canvas.width * 0.8;
-                targetY = fullbackY;
-            }
+            target = updateFullback(bot, isPlayerTeam, ballInReach);
             break;
-
         case "centerback":
-            // Środkowy obrońca - zawsze w centrum defensywy
-            const ballVeryClose = isPlayerTeam ? ball.x < canvas.width * 0.3 : ball.x > canvas.width * 0.7;
-            
-            if (ballVeryClose && ballInReach) {
-targetX = ball.x + (isPlayerTeam ? -25 * scale : 25 * scale);
-                targetY = ball.y;
-            } else {
-                // Pozycja centralnie-defensywna
-                targetX = isPlayerTeam ? canvas.width * 0.15 : canvas.width * 0.85;
-                targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.15;
-                
-                // Reaguj na zagrożenie w polu karnym
-                const ballInPenaltyBox = isPlayerTeam ? ball.x < canvas.width * 0.2 : ball.x > canvas.width * 0.8;
-                if (ballInPenaltyBox) {
-                    targetX = isPlayerTeam ? canvas.width * 0.1 : canvas.width * 0.9;
-                    targetY = ball.y;
-                }
-            }
+            target = updateCenterback(bot, isPlayerTeam, ballInReach);
             break;
-
         case "sweeper":
-            // Libero - swobodny obrońca
-            if (ballInReach) {
-       targetX = ball.x + (isPlayerTeam ? -20 * scale : 20 * scale);
-                targetY = ball.y;
-            } else {
-                // Pozycjonuj się za linią obrony
-                const sameTeamDefenders = bots.filter(b => 
-                    b.team === bot.team && 
-                    (b.role === "centerback" || b.role === "fullback")
-                );
-                
-                let defenseLine;
-                if (isPlayerTeam) {
-                    defenseLine = sameTeamDefenders.length > 0 ? 
-Math.min(...sameTeamDefenders.map(b => b.x)) - 20 * scale : canvas.width * 0.25;
-                } else {
-                    defenseLine = sameTeamDefenders.length > 0 ? 
-                    Math.max(...sameTeamDefenders.map(b => b.x)) + 20 * scale : canvas.width * 0.75;
-                }
-                
-                targetX = defenseLine;
-                targetY = canvas.height / 2 + (ball.y - canvas.height/2) * 0.2;
-                
-                // Reaguj na przełamania
-                const ballFastMoving = Math.abs(ball.vx) > 3;
-                const ballThreatening = isPlayerTeam ? ball.x < canvas.width * 0.4 : ball.x > canvas.width * 0.6;
-                
-                if (ballFastMoving && ballThreatening) {
-           targetX = ball.x + ball.vx * 3 * scale;
-targetY = ball.y + ball.vy * 3 * scale;
-                }
-            }
+            target = updateSweeper(bot, isPlayerTeam, ballInReach);
             break;
-
-        case "attacker":
-            // Klasyczny napastnik
-            const ballInOffensive = isPlayerTeam ? ball.x > canvas.width * 0.3 : ball.x < canvas.width * 0.7;
-            
-            if (ballInReach || ballInOffensive) {
-                const predictTime = 6;
-                targetX = ball.x + ball.vx * predictTime;
-                targetY = ball.y + ball.vy * predictTime;
-                
-if (distanceToBall < 50 * scale) {
-                    const goalCenterY = canvas.height / 2;
-                    const angleToGoal = Math.atan2(goalCenterY - ball.y, enemyGoalX - ball.x);
-             targetX = ball.x + Math.cos(angleToGoal + Math.PI) * 30 * scale;
-targetY = ball.y + Math.sin(angleToGoal + Math.PI) * 30 * scale;
-                }
-            } else {
-                targetX = isPlayerTeam ? canvas.width * 0.4 : canvas.width * 0.6;
-                targetY = bot.preferredY;
-            }
-            break;
-            
-        case "midfielder":
-            // Klasyczny pomocnik
-            if (ballInReach) {
-         targetX = ball.x + (Math.random() - 0.5) * 40 * scale;
-targetY = ball.y + (Math.random() - 0.5) * 40 * scale;
-            } else {
-                targetX = isPlayerTeam ? canvas.width * 0.35 : canvas.width * 0.65;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.3;
-            }
-            break;
-            
         case "ball_chaser":
-            // Zawsze goni za piłką - brak taktyki
-            const chasePredictTime = 2;
-            targetX = ball.x + ball.vx * chasePredictTime;
-            targetY = ball.y + ball.vy * chasePredictTime;
-            
-            // Nie odstępuj od piłki daleko
-if (distanceToBall > 200 * scale) {
-                targetX = ball.x;
-                targetY = ball.y;
+            target = updateBallChaser(bot, distanceToBall);
+            break;
+        case "attacker":
+            target = updateStriker(bot, isPlayerTeam, ballInReach, distanceToBall); // Podobny do strikera
+            break;
+        case "midfielder":
+            if (ballInReach) {
+                target = {
+                    x: ball.x + (Math.random() - 0.5) * 40 * scale,
+                    y: ball.y + (Math.random() - 0.5) * 40 * scale
+                };
+            } else {
+                target = {
+                    x: isPlayerTeam ? canvas.width * 0.35 : canvas.width * 0.65,
+                    y: bot.preferredY + (ball.y - canvas.height/2) * 0.3
+                };
             }
             break;
-
         case "defender":
         default:
-            // Klasyczny obrońca
-            const ballNearOwnGoal = isPlayerTeam ? ball.x < canvas.width * 0.4 : ball.x > canvas.width * 0.6;
-            
-            if (ballNearOwnGoal && ballInReach) {
-targetX = ball.x + (isPlayerTeam ? -20 * scale : 20 * scale);
-                targetY = ball.y;
-            } else {
-                targetX = isPlayerTeam ? canvas.width * 0.25 : canvas.width * 0.75;
-                targetY = bot.preferredY + (ball.y - canvas.height/2) * 0.2;
-            }
+            target = updateDefaultRole(bot, isPlayerTeam, ballInReach);
             break;
     }
 
     // Zastosuj korektę rozstawienia
-    targetX += spacingAdjustmentX;
-    targetY += spacingAdjustmentY;
+    target.x += spacing.x;
+    target.y += spacing.y;
 
-    // System błędów dla różnych przeciwników
-    let errorChance;
-    if (gameMode === 'tournament') {
-        switch(gameState.currentRound) {
-            case 0: errorChance = 0.15; break;
-            case 1: errorChance = 0.10; break;
-            case 2: errorChance = 0.08; break;
-            case 3: errorChance = 0.06; break;
-            case 4: errorChance = 0.04; break;
-            default: errorChance = 0.08;
-        }
-    } else {
-        switch(selectedTeam) {
-            case 0: errorChance = 0.15; break;
-            case 1: errorChance = 0.10; break;
-            case 2: errorChance = 0.12; break;
-            case 3: errorChance = 0.06; break;
-            case 4: errorChance = 0.04; break;
-            case 5: errorChance = 0.20; break;
-            case 6: errorChance = 0.18; break;
-            default: errorChance = 0.08;
-        }
-    }
+    // Zastosuj błędy AI
+    applyAIErrors(bot, target, scale);
     
-    // Dodaj błędy w zależności od pozycji
-    let roleErrorMultiplier = 1.0;
-    switch(bot.role) {
-        case "striker": 
-        case "attacking_midfielder": 
-            roleErrorMultiplier = 0.7; break;
-        case "winger": 
-        case "attacker": 
-            roleErrorMultiplier = 0.8; break;
-        case "midfielder": 
-        case "defensive_midfielder": 
-            roleErrorMultiplier = 1.0; break;
-        case "fullback": 
-        case "sweeper": 
-            roleErrorMultiplier = 1.1; break;
-        case "ball_chaser": 
-            roleErrorMultiplier = 1.4; break;
-        case "centerback": 
-        case "defender": 
-            roleErrorMultiplier = 1.3; break;
-    }
+    // Porusz bota w kierunku celu
+    moveBotToTarget(bot, target);
     
-if (Math.random() < errorChance * roleErrorMultiplier) {
-    targetX += (Math.random() - 0.5) * 60 * scale;
-    targetY += (Math.random() - 0.5) * 60 * scale;
+    // Zastosuj ograniczenia boiska
+    applyFieldBoundaries(bot);
 }
 
-    const dx = targetX - bot.x;
-    const dy = targetY - bot.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+/**
+ * Zastosuj błędy AI w zależności od poziomu trudności i roli
+ */
+function applyAIErrors(bot, target, scale) {
+    let errorChance;
     
-if (distance > 3 * scale) {
+    if (gameMode === 'tournament') {
+        errorChance = GAME_CONSTANTS.ERROR_CHANCES[gameState.currentRound] || GAME_CONSTANTS.ERROR_CHANCES.default;
+    } else {
+        errorChance = GAME_CONSTANTS.ERROR_CHANCES[selectedTeam] || GAME_CONSTANTS.ERROR_CHANCES.default;
+    }
+    
+    const roleErrorMultiplier = GAME_CONSTANTS.ROLE_ERROR_MULTIPLIERS[bot.role] || 1.0;
+    
+    if (Math.random() < errorChance * roleErrorMultiplier) {
+        target.x += (Math.random() - 0.5) * 60 * scale;
+        target.y += (Math.random() - 0.5) * 60 * scale;
+    }
+}
+
+/**
+ * Porusza bota w kierunku celu
+ */
+function moveBotToTarget(bot, target) {
+    const dx = target.x - bot.x;
+    const dy = target.y - bot.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const scale = getCurrentScale();
+    
+    if (distance > 3 * scale) {
         const normalizedX = dx / distance;
         const normalizedY = dy / distance;
         
-        // Różne prędkości w zależności od pozycji
-        let speedMultiplier = 1.0;
-        switch(bot.role) {
-            case "winger": 
-            case "striker": 
-                speedMultiplier = 1.1; break;
-            case "ball_chaser": 
-                speedMultiplier = 1.15; break;
-            case "attacking_midfielder": 
-            case "attacker": 
-                speedMultiplier = 1.05; break;
-            case "midfielder": 
-            case "fullback": 
-                speedMultiplier = 1.0; break;
-            case "defensive_midfielder": 
-            case "sweeper": 
-                speedMultiplier = 0.95; break;
-            case "centerback": 
-            case "defender": 
-                speedMultiplier = 0.9; break;
-        }
-        
+        const speedMultiplier = GAME_CONSTANTS.SPEED_MULTIPLIERS[bot.role] || 1.0;
         const currentSpeed = bot.maxSpeed * speedMultiplier;
         
         bot.vx = normalizedX * currentSpeed;
@@ -446,23 +569,36 @@ if (distance > 3 * scale) {
 
     bot.x += bot.vx;
     bot.y += bot.vy;
-
-    // Ograniczenia pozycji - tylko granice boiska
-const border = 15 * scale;
-bot.x = Math.max(bot.radius + border, Math.min(canvas.width - bot.radius - border, bot.x));
-bot.y = Math.max(bot.radius + border, Math.min(canvas.height - bot.radius - border, bot.y));
 }
+
+/**
+ * Zastosuj ograniczenia boiska
+ */
+function applyFieldBoundaries(entity) {
+    const scale = getCurrentScale();
+    const border = 15 * scale;
+    
+    // Specjalne ograniczenie dla pierwszej rundy turnieju (Włodarski nie może przekraczać połowy)
+    if (entity === player && gameMode === 'tournament' && gameState.currentRound === 0) {
+        entity.x = Math.max(entity.radius + border, Math.min(canvas.width / 2 - 10, entity.x));
+    } else {
+        entity.x = Math.max(entity.radius + border, Math.min(canvas.width - entity.radius - border, entity.x));
+    }
+    
+    entity.y = Math.max(entity.radius + border, Math.min(canvas.height - entity.radius - border, entity.y));
+}
+
+/**
+ * Aktualizuje bramkarza przeciwnika lub gracza
+ */
 function updateGoalkeeper(bot) {
     const scale = getCurrentScale();
-    // Bramkarz - pozycja zależy od drużyny
     const isPlayerTeam = bot.team === "player";
     let targetY = ball.y;
     
     if (isPlayerTeam) {
-        // Bramkarz gracza - lewa strona
         bot.x = Math.max(20 * scale, Math.min(50 * scale, bot.x));
     } else {
-        // Bramkarz przeciwnika - prawa strona
         bot.x = Math.max(canvas.width - 50 * scale, Math.min(canvas.width - 20 * scale, bot.x));
     }
     
@@ -473,20 +609,22 @@ function updateGoalkeeper(bot) {
     bot.y += bot.vy;
 }
 
+/**
+ * Aktualizuje bramkarza gracza
+ */
 function updatePlayerGoalkeeper() {
     const scale = getCurrentScale();
+    
     if (!gameState.ballInPlay) {
-        // Wróć do pozycji startowej
         playerGoalkeeper.vx = (playerGoalkeeper.startX - playerGoalkeeper.x) * 0.1;
         playerGoalkeeper.vy = (playerGoalkeeper.startY - playerGoalkeeper.y) * 0.1;
     } else {
-        // Śledź piłkę ale tylko w bramce
         let targetY = ball.y;
         playerGoalkeeper.x = Math.max(20 * scale, Math.min(50 * scale, playerGoalkeeper.x));
         targetY = Math.max(canvas.height * 0.35, Math.min(canvas.height * 0.65, targetY));
         
         const dy = targetY - playerGoalkeeper.y;
-        playerGoalkeeper.vy = dy * 0.08; // Nieco wolniejszy niż przeciwny bramkarz
+        playerGoalkeeper.vy = dy * 0.08;
     }
     
     playerGoalkeeper.x += playerGoalkeeper.vx;
