@@ -1,7 +1,5 @@
 // ui.js - interfejs użytkownika, menu i ekrany
 
-// W ui.js - dodaj na górze pliku, tuż po komentarzach:
-
 // Parametry Włodarskiego dla różnych skal boisk
 const wlodarskiParameters = {
     1.0: {
@@ -97,7 +95,7 @@ function loadTeamData(teamData) {
     
     bots = teamData.bots.map(botData => ({
         ...botData,
-    radius: (botData.radius || 20) * scale,
+        radius: Math.max(3, (botData.radius || 20) * scale),
         vx: 0,
         vy: 0,
         shootPower: botData.shootPower || 1.2,
@@ -112,8 +110,8 @@ function loadTeamData(teamData) {
     // Ładuj bramkarza gracza jeśli istnieje
     if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
         playerGoalkeeper = {
-    ...teamData.playerGoalkeeper,
-playerGoalkeeper.radius = (teamData.playerGoalkeeper.radius || 20) * scale;
+            ...teamData.playerGoalkeeper,
+            radius: Math.max(3, (teamData.playerGoalkeeper.radius || 20) * scale),
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
@@ -241,18 +239,14 @@ function resetMatch() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-     
-      // Ustaw parametry Włodarskiego w zależności od skali boiska
-const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
+    // Ustaw parametry Włodarskiego w zależności od skali boiska
+    const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
 
-// Ustaw parametry Włodarskiego w zależności od skali boiska
-const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
-
-player.x = 100;
-player.y = canvas.height / 2;
-player.radius = Math.max(3, playerParams.radius);
-player.speed = playerParams.speed;
-player.stunned = 0;
+    player.x = 100;
+    player.y = canvas.height / 2;
+    player.radius = Math.max(3, playerParams.radius);
+    player.speed = playerParams.speed;
+    player.stunned = 0;
     player.pushbackX = 0;
     player.pushbackY = 0;
     
@@ -264,11 +258,11 @@ player.stunned = 0;
         playerGoalkeeper.vy = 0;
     }
     
-ball.x = canvas.width / 2;
-ball.y = canvas.height / 2;
-ball.radius = Math.max(2, 8 * scale);
-ball.vx = 0;
-ball.vy = 0;
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.radius = Math.max(2, 8 * scale);
+    ball.vx = 0;
+    ball.vy = 0;
     
     updateScore();
     document.getElementById('winnerMessage').style.display = 'none';
