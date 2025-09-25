@@ -346,13 +346,13 @@ const teams = [
         hasPlayerGoalkeeper: true,
         
         // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
-        playerRadius: 8,        // Większy, mocniejszy
+        playerRadius: 4,        // Większy, mocniejszy
         playerSpeed: 3,        // Najszybszy
         playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
-        ballSpeed: 1.5,          // Bardzo szybka
-        ballMaxSpeed: 3.0,      // Najszybsza możliwa
+        ballSpeed: 0.5,          // Bardzo szybka
+        ballMaxSpeed: 1.5,      // Najszybsza możliwa
         
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
@@ -509,14 +509,14 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 1.8,
                 shootPower: 0.9,
-                radius: 6,
+                radius: 25,
                 number: 17, 
                 role: "fullback", 
                 preferredY: 120, 
                 team: "player" 
             },
             { 
-                name: "JÓŹWIAK", 
+                name: "ŁAPIŃSKI", 
                 x: 120, 
                 y: 160, 
                 color: "#ff0000", 
@@ -548,7 +548,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 1.8,
                 shootPower: 1.0,
-                radius: 6,
+                radius: 25,
                 number: 7, 
                 role: "fullback", 
                 preferredY: 280, 
@@ -561,7 +561,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.0,
                 shootPower: 1.1,
-                radius: 5,
+                radius: 10,
                 number: 6, 
                 role: "defensive_midfielder", 
                 preferredY: 140, 
@@ -574,7 +574,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.0,
                 shootPower: 1.1,
-                radius: 9,
+                radius: 30,
                 number: 4, 
                 role: "defensive_midfielder", 
                 preferredY: 260, 
@@ -600,7 +600,7 @@ const teams = [
                 color: "#ff0000", 
                 maxSpeed: 2.5,
                 shootPower: 1.6,  // Skrzydłowy z dryblingu i strzałami
-                radius: 5,
+                radius: 25,
                 number: 2, 
                 role: "winger", 
                 preferredY: 120, 
@@ -627,7 +627,7 @@ const teams = [
             color: "#cc0000", 
             maxSpeed: 2.0,
             shootPower: 0.5,
-            radius: 7,
+            radius: 25,
             number: 5, 
             role: "goalkeeper" 
         }
