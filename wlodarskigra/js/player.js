@@ -5,7 +5,6 @@ const GAME_CONSTANTS = {
     // Kolizje i fizyka
     COLLISION_COOLDOWN: 300,
     SEPARATION_BUFFER: 8,
-    MIN_BALL_SPEED: 2,
     PUSH_BACK_POWER: 3,
     STUN_DURATION: 8,
     
