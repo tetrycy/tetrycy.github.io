@@ -1,25 +1,5 @@
 // ui.js - interfejs użytkownika, menu i ekrany
 
-// Parametry Włodarskiego dla różnych skal boisk
-const wlodarskiParameters = {
-    1.0: {
-        radius: 20,
-        speed: 5.1
-    },
-    0.75: {
-        radius: 15,
-        speed: 3.8
-    },
-    0.5: {
-        radius: 10,
-        speed: 2.6
-    },
-    0.25: {
-        radius: 5,
-        speed: 2.3
-    }
-};
-
 // Funkcje menu
 function startTournament() {
     gameMode = 'tournament';
@@ -120,6 +100,10 @@ function loadTeamData(teamData) {
     } else {
         playerGoalkeeper = null;
     }
+    
+    // Załaduj parametry gracza z definicji drużyny
+    player.radius = Math.max(3, teamData.playerRadius || 20);
+    player.speed = teamData.playerSpeed || 5.1;
 }
 
 function updateScore() {
@@ -234,18 +218,10 @@ function resetMatch() {
     gameState.roundWon = false;
     gameState.ballRotation = 0;
     gameState.lastCollisionTime = 0; // Reset cooldown
-    
-    // Pobierz aktualną skalę boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    // Ustaw parametry Włodarskiego w zależności od skali boiska
-    const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
 
+    // Resetuj tylko pozycję gracza, parametry są ładowane w loadTeamData()
     player.x = 100;
     player.y = canvas.height / 2;
-    player.radius = Math.max(3, playerParams.radius);
-    player.speed = playerParams.speed;
     player.stunned = 0;
     player.pushbackX = 0;
     player.pushbackY = 0;
@@ -258,9 +234,9 @@ function resetMatch() {
         playerGoalkeeper.vy = 0;
     }
     
+    // Resetuj tylko pozycję piłki, rozmiar jest ustawiany w game.js
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
-    ball.radius = Math.max(2, 8 * scale);
     ball.vx = 0;
     ball.vy = 0;
     
