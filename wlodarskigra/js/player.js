@@ -492,7 +492,6 @@ function updateFieldBot(bot) {
     target.y += spacing.y;
 
     // Zastosuj błędy AI
-    applyAIErrors(bot, target, scale);
     
     // Porusz bota w kierunku celu
     moveBotToTarget(bot, target);
