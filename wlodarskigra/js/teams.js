@@ -24,6 +24,7 @@ const teams = [
                 maxSpeed: 3.75,
                 shootPower: 1.0,  // Słabszy strzelec
                 radius: 20,       // Standardowy rozmiar
+                errorChance: 0.12,
                 canCrossHalf: false, 
                 number: 2, 
                 role: "defender", 
