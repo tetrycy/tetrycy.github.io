@@ -1,4 +1,4 @@
-// ball.js - fizyka piłki i kolizje
+// ball.js - fizyka piłki i kolizje - Z RĘCZNYMI PRĘDKOŚCIAMI
 
 /**
  * Oblicza skalowane granice bramki
@@ -14,6 +14,17 @@ function getGoalBounds() {
     return {
         top: canvas.height * goalTop,
         bottom: canvas.height * goalBottom
+    };
+}
+
+/**
+ * Pobiera prędkości piłki dla aktualnej drużyny
+ */
+function getBallSpeeds() {
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    return {
+        startSpeed: currentTeamData.ballSpeed || ball.startSpeed,
+        maxSpeed: currentTeamData.ballMaxSpeed || ball.maxSpeed
     };
 }
 
@@ -156,15 +167,17 @@ function updateBall() {
                 }
             }
 
-            // Zapewnij minimalną prędkość piłki po kolizji (unikaj "przyklejania")
+            // Zapewnij minimalną prędkość piłki po kolizji - używaj prędkości z drużyny
+            const ballSpeeds = getBallSpeeds();
             const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
             if (newSpeed < 2) {
                 // Jeśli piłka za wolna, nadaj jej minimalną prędkość
                 ball.vx = nx * 2;
                 ball.vy = ny * 2;
-            } else if (newSpeed > ball.maxSpeed) {
-                ball.vx = (ball.vx / newSpeed) * ball.maxSpeed;
-                ball.vy = (ball.vy / newSpeed) * ball.maxSpeed;
+            } else if (newSpeed > ballSpeeds.maxSpeed) {
+                // Użyj maksymalnej prędkości z definicji drużyny
+                ball.vx = (ball.vx / newSpeed) * ballSpeeds.maxSpeed;
+                ball.vy = (ball.vy / newSpeed) * ballSpeeds.maxSpeed;
             }
             
             // Ustaw cooldown
@@ -188,8 +201,11 @@ function launchBall() {
     const angle = (Math.random() - 0.5) * Math.PI * 0.4;
     const direction = Math.random() < 0.5 ? 1 : -1;
     
-    ball.vx = Math.cos(angle) * ball.startSpeed * direction;
-    ball.vy = Math.sin(angle) * ball.startSpeed;
+    // Użyj prędkości startowej z definicji drużyny
+    const ballSpeeds = getBallSpeeds();
+    
+    ball.vx = Math.cos(angle) * ballSpeeds.startSpeed * direction;
+    ball.vy = Math.sin(angle) * ballSpeeds.startSpeed;
 }
 
 function resetBallAfterGoal() {
