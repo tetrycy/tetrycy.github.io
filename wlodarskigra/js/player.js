@@ -15,30 +15,7 @@ const GAME_CONSTANTS = {
     CLOSE_BALL_DISTANCE: 40,
     VERY_CLOSE_BALL_DISTANCE: 25,
     
-    // Błędy AI według poziomów
-    ERROR_CHANCES: {
-        0: 0.15, 1: 0.10, 2: 0.08, 3: 0.06, 4: 0.04,
-        5: 0.20, 6: 0.18, default: 0.08
-    },
-    
-    // Mnożniki prędkości dla ról
-    SPEED_MULTIPLIERS: {
-        winger: 1.1, striker: 1.1, ball_chaser: 1.15,
-        attacking_midfielder: 1.05, attacker: 1.05,
-        midfielder: 1.0, fullback: 1.0,
-        defensive_midfielder: 0.95, sweeper: 0.95,
-        centerback: 0.9, defender: 0.9
-    },
-    
-    // Mnożniki błędów dla ról
-    ROLE_ERROR_MULTIPLIERS: {
-        striker: 0.7, attacking_midfielder: 0.7,
-        winger: 0.8, attacker: 0.8,
-        midfielder: 1.0, defensive_midfielder: 1.0,
-        fullback: 1.1, sweeper: 1.1,
-        ball_chaser: 1.4,
-        centerback: 1.3, defender: 1.3
-    }
+ 
 };
 
 // ============ FUNKCJE POMOCNICZE ============
@@ -536,9 +513,7 @@ function applyAIErrors(bot, target, scale) {
         errorChance = GAME_CONSTANTS.ERROR_CHANCES[selectedTeam] || GAME_CONSTANTS.ERROR_CHANCES.default;
     }
     
-    const roleErrorMultiplier = GAME_CONSTANTS.ROLE_ERROR_MULTIPLIERS[bot.role] || 1.0;
-    
-    if (Math.random() < errorChance * roleErrorMultiplier) {
+if (Math.random() < errorChance) {
         target.x += (Math.random() - 0.5) * 60 * scale;
         target.y += (Math.random() - 0.5) * 60 * scale;
     }
@@ -558,7 +533,7 @@ function moveBotToTarget(bot, target) {
         const normalizedY = dy / distance;
         
         const speedMultiplier = GAME_CONSTANTS.SPEED_MULTIPLIERS[bot.role] || 1.0;
-        const currentSpeed = bot.maxSpeed * speedMultiplier;
+    const currentSpeed = bot.maxSpeed;
         
         bot.vx = normalizedX * currentSpeed;
         bot.vy = normalizedY * currentSpeed;
