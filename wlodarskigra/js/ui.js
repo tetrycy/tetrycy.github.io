@@ -97,7 +97,7 @@ function loadTeamData(teamData) {
     
     bots = teamData.bots.map(botData => ({
         ...botData,
-     radius: 20 * scale,
+    radius: (botData.radius || 20) * scale,
         vx: 0,
         vy: 0,
         shootPower: botData.shootPower || 1.2,
