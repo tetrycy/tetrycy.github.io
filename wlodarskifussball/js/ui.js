@@ -1,5 +1,27 @@
 // ui.js - interfejs użytkownika, menu i ekrany
 
+// W ui.js - dodaj na górze pliku, tuż po komentarzach:
+
+// Parametry Włodarskiego dla różnych skal boisk
+const wlodarskiParameters = {
+    1.0: {
+        radius: 20,
+        speed: 5.1
+    },
+    0.75: {
+        radius: 15,
+        speed: 3.8
+    },
+    0.5: {
+        radius: 10,
+        speed: 2.6
+    },
+    0.25: {
+        radius: 5,
+        speed: 2.3
+    }
+};
+
 // Funkcje menu
 function startTournament() {
     gameMode = 'tournament';
@@ -71,10 +93,11 @@ function loadTeamData(teamData) {
     document.getElementById('playerTeam').textContent = teamData.playerTeam;
     document.getElementById('botTeam').textContent = teamData.opponentTeam;
     document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
+    const scale = teamData.fieldScale || 1.0;
     
     bots = teamData.bots.map(botData => ({
         ...botData,
-        radius: 20,
+     radius: 20 * scale,
         vx: 0,
         vy: 0,
         shootPower: botData.shootPower || 1.2,
@@ -89,8 +112,8 @@ function loadTeamData(teamData) {
     // Ładuj bramkarza gracza jeśli istnieje
     if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
         playerGoalkeeper = {
-            ...teamData.playerGoalkeeper,
-            radius: 20,
+    ...teamData.playerGoalkeeper,
+    radius: 20 * scale,
             vx: 0,
             vy: 0,
             startX: teamData.playerGoalkeeper.x,
@@ -214,10 +237,20 @@ function resetMatch() {
     gameState.ballRotation = 0;
     gameState.lastCollisionTime = 0; // Reset cooldown
     
-    player.x = 100;
-    player.y = canvas.height / 2;
-    player.stunned = 0;      // Reset ogłuszenia
-    player.pushbackX = 0;    // Reset odrzutu
+    // Pobierz aktualną skalę boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+     
+      // Ustaw parametry Włodarskiego w zależności od skali boiska
+const playerParams = wlodarskiParameters[scale] || wlodarskiParameters[1.0];
+
+player.x = 100;
+player.y = canvas.height / 2;
+player.radius = playerParams.radius;  // ← DODAJ TĘ LINIĘ
+player.speed = playerParams.speed;    // ← DODAJ TĘ LINIĘ
+player.stunned = 0;
+    player.pushbackX = 0;
     player.pushbackY = 0;
     
     // Reset bramkarza gracza jeśli istnieje
@@ -228,8 +261,9 @@ function resetMatch() {
         playerGoalkeeper.vy = 0;
     }
     
-    ball.x = canvas.width / 2;
+      ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
+    ball.radius = 8 * scale;  // DODAJ TĘ LINIĘ
     ball.vx = 0;
     ball.vy = 0;
     
