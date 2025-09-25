@@ -1,4 +1,4 @@
-// field.js - funkcje rysowania różnych boisk
+// field.js - funkcje rysowania różnych boisk - POPRAWIONE
 function drawField() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
@@ -24,7 +24,108 @@ function drawField() {
         case 'asphalt':
             drawAsphaltField();
             break;
+        case 'simple':
+            drawSimpleField();
+            break;
+        case 'simple1':
+            drawSimple1Field();
+            break;
+        case 'simple2':
+            drawSimple2Field();
+            break;
+        case 'autumn':
+            drawAutumnField();
+            break;
+        case 'desert':
+            drawDesertField();
+            break;
+        case 'beach':
+            drawBeachField();
+            break;
+        case 'forest':
+            drawForestField();
+            break;
+        case 'clay':
+            drawClayField();
+            break;
+        case 'rubber':
+            drawRubberField();
+            break;
+        case 'concrete':
+            drawConcreteField();
+            break;
+        case 'parquet':
+            drawParquetField();
+            break;
+        case 'night':
+            drawNightField();
+            break;
+        case 'rain':
+            drawRainField();
+            break;
+        case 'retro':
+            drawRetroField();
+            break;
+        case 'neon':
+            drawNeonField();
+            break;
     }
+}
+
+function drawSimpleField() {
+    // Proste zielone boisko - jasna zieleń
+    ctx.fillStyle = '#32CD32'; // Lime green
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawStandardFieldLines();
+}
+
+function drawSimple1Field() {
+    // Proste zielone boisko - średnia zieleń
+    ctx.fillStyle = '#228B22'; // Forest green
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawStandardFieldLines();
+}
+
+function drawSimple2Field() {
+    // Proste zielone boisko - ciemna zieleń
+    ctx.fillStyle = '#006400'; // Dark green
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawStandardFieldLines();
+}
+
+function drawWinterField() {
+    // Pobierz skalę dla obecnego boiska
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    const scale = currentTeamData.fieldScale || 1.0;
+    
+    // Zimowe boisko - SZARAWY ŚNIEG zamiast białego
+    const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
+    gradient.addColorStop(0, '#e8e8e8'); // Jasny szary
+    gradient.addColorStop(0.7, '#d5d5d5'); // Średni szary
+    gradient.addColorStop(1, '#c0c0c0'); // Ciemniejszy szary
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Płatki śniegu - SZARE zamiast białych - skalowane
+    const time = Date.now() * 0.001;
+    ctx.fillStyle = 'rgba(200,200,200,0.8)'; // Szary śnieg
+    for(let i = 0; i < 20; i++) {
+        const x = (i * 37 + Math.sin(time + i) * 10) % canvas.width;
+        const y = (i * 23 + time * 10) % canvas.height;
+        ctx.beginPath();
+        ctx.arc(x, y, (2 + Math.sin(time + i)) * scale, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Dodatkowe szare plamy śniegu na ziemi
+    ctx.fillStyle = 'rgba(180,180,180,0.6)';
+    [[150,80,40,25], [500,150,35,20], [300,300,30,18], [650,250,45,30]].forEach(([x,y,w,h]) => {
+        ctx.beginPath();
+        ctx.ellipse(x, y, w * scale, h * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    
+    drawStandardFieldLines();
 }
 
 function drawSandyField() {
@@ -159,33 +260,6 @@ function drawMuddyField() {
         ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
         ctx.fill();
     });
-    
-    drawStandardFieldLines();
-}
-
-function drawWinterField() {
-    // Pobierz skalę dla obecnego boiska
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
-    
-    // Zimowe boisko
-    const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, 400);
-    gradient.addColorStop(0, '#f8f8ff');
-    gradient.addColorStop(0.7, '#e6f3ff');
-    gradient.addColorStop(1, '#d0e8ff');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Płatki śniegu - SKALOWANE
-    const time = Date.now() * 0.001;
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    for(let i = 0; i < 20; i++) {
-        const x = (i * 37 + Math.sin(time + i) * 10) % canvas.width;
-        const y = (i * 23 + time * 10) % canvas.height;
-        ctx.beginPath();
-        ctx.arc(x, y, (2 + Math.sin(time + i)) * scale, 0, Math.PI * 2); // SKALOWANE
-        ctx.fill();
-    }
     
     drawStandardFieldLines();
 }
