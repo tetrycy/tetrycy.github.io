@@ -10,6 +10,7 @@ const teams = [
         playerRadius: 20,
         playerSpeed: 5.1,
         playerShootPower: 8,
+        canCrossHalf: true,
         
         // === PARAMETRY PIŁKI ===
         ballSpeed: 5.7,
