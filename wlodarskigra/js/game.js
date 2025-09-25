@@ -122,15 +122,13 @@ function drawPlayer(playerObj, name, isBot = false) {
 }
 
 function drawBall() {
-    // Pobierz skalę dla obecnego boiska
+    // Zawsze skaluj piłkę zgodnie z obecnym boiskiem
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
     const drawX = ball.x;
     const drawY = ball.y;
-
-    // Radius jest już przeskalowany w ui.js - nie skaluj ponownie
-    const radius = ball.radius;
+    const radius = Math.max(2, 8 * scale);
 
     // Cień piłki - skalowany
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
