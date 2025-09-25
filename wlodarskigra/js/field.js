@@ -338,9 +338,7 @@ function drawStandardFieldLines() {
     ctx.arc(canvas.width / 2, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
     ctx.fill();
 
-// Chorágiewki narożnikowe
-drawCornerFlags();
-    
+   
     drawGoalsAndBoxes(scale);
 }
 
@@ -540,41 +538,3 @@ ctx.stroke();
 
     }
     
-function drawCornerFlags() {
-    const flagSize = Math.max(8, canvas.width * 0.01); // Rozmiar proporcjonalny, minimum 8px
-    const poleHeight = flagSize * 2.5; // Wysokość masztu
-    
-    // Pozycje rogów (10px od krawędzi, jak obramowanie boiska)
-    const corners = [
-        { x: 10, y: 10 },           // Lewy górny
-        { x: canvas.width - 10, y: 10 },  // Prawy górny  
-        { x: 10, y: canvas.height - 10 }, // Lewy dolny
-        { x: canvas.width - 10, y: canvas.height - 10 } // Prawy dolny
-    ];
-    
-    const flagColors = ['#ffff00', '#ffff00', '#ffff00', '#ffff00']; // Czerwona, zielona, niebieska, żółta
-    
-    corners.forEach((corner, index) => {
-        // Maszt chorągiewki (szary pręt)
-        ctx.strokeStyle = '#888888';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(corner.x, corner.y);
-        ctx.lineTo(corner.x, corner.y - poleHeight);
-        ctx.stroke();
-        
-        // Flaga (trójkąt)
-        ctx.fillStyle = flagColors[index];
-        ctx.beginPath();
-        ctx.moveTo(corner.x, corner.y - poleHeight); // Szczyt masztu
-        ctx.lineTo(corner.x + flagSize, corner.y - poleHeight + flagSize/2); // Prawy punkt flagi
-        ctx.lineTo(corner.x, corner.y - poleHeight + flagSize); // Dolny punkt przy maszcie
-        ctx.closePath();
-        ctx.fill();
-        
-        // Obramowanie flagi
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    });
-}
