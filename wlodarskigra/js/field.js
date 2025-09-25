@@ -342,29 +342,161 @@ function drawStandardFieldLines() {
 }
 
 function drawGoalsAndBoxes(scale = 1.0) {
-    // Wyraźniejsze bramki - skalowane
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 10 * scale;
-    
     const goalHeight = canvas.height * 0.3 * scale;
     const goalTop = canvas.height * 0.5 - goalHeight/2;
     const goalBottom = canvas.height * 0.5 + goalHeight/2;
+    const goalWidth = 15 * scale; // Szerokość bramki (głębokość)
     
-    // Lewa bramka
+    // ============ LEWA BRAMKA ============
+    
+    // Tło bramki (ciemniejsze)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(10 - goalWidth, goalTop, goalWidth, goalHeight);
+    
+    // Siatka bramki
+    ctx.strokeStyle = '#dddddd';
+    ctx.lineWidth = 1 * scale;
+    
+    // Pionowe linie siatki
+    for (let i = 0; i < 4; i++) {
+        const x = 10 - goalWidth + (goalWidth / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, goalTop);
+        ctx.lineTo(x, goalBottom);
+        ctx.stroke();
+    }
+    
+    // Poziome linie siatki
+    for (let i = 0; i <= 3; i++) {
+        const y = goalTop + (goalHeight / 3) * i;
+        ctx.beginPath();
+        ctx.moveTo(10 - goalWidth, y);
+        ctx.lineTo(10, y);
+        ctx.stroke();
+    }
+    
+    // Słupki bramki (grube, białe z cieniem)
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 8 * scale;
+    ctx.lineCap = 'round';
+    
+    // Cień słupków
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.beginPath();
+    ctx.moveTo(12, goalTop + 2);
+    ctx.lineTo(12, goalBottom + 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(10 - goalWidth + 2, goalTop - 2);
+    ctx.lineTo(10 + 2, goalTop - 2);
+    ctx.stroke();
+    
+    // Białe słupki
+    ctx.strokeStyle = '#ffffff';
+    
+    // Lewy słupek (linia bramki)
     ctx.beginPath();
     ctx.moveTo(10, goalTop);
     ctx.lineTo(10, goalBottom);
     ctx.stroke();
     
-    // Prawa bramka
+    // Poprzeczka
+    ctx.beginPath();
+    ctx.moveTo(10 - goalWidth, goalTop);
+    ctx.lineTo(10, goalTop);
+    ctx.stroke();
+    
+    // Dolna poprzeczka (opcjonalna)
+    ctx.beginPath();
+    ctx.moveTo(10 - goalWidth, goalBottom);
+    ctx.lineTo(10, goalBottom);
+    ctx.stroke();
+    
+    // Tylni słupek
+    ctx.strokeStyle = '#cccccc'; // Jaśniejszy, bo z tyłu
+    ctx.beginPath();
+    ctx.moveTo(10 - goalWidth, goalTop);
+    ctx.lineTo(10 - goalWidth, goalBottom);
+    ctx.stroke();
+    
+    // ============ PRAWA BRAMKA ============
+    
+    // Tło bramki
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(canvas.width - 10, goalTop, goalWidth, goalHeight);
+    
+    // Siatka bramki
+    ctx.strokeStyle = '#dddddd';
+    ctx.lineWidth = 1 * scale;
+    
+    // Pionowe linie siatki
+    for (let i = 0; i < 4; i++) {
+        const x = canvas.width - 10 + (goalWidth / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, goalTop);
+        ctx.lineTo(x, goalBottom);
+        ctx.stroke();
+    }
+    
+    // Poziome linie siatki
+    for (let i = 0; i <= 3; i++) {
+        const y = goalTop + (goalHeight / 3) * i;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 10, y);
+        ctx.lineTo(canvas.width - 10 + goalWidth, y);
+        ctx.stroke();
+    }
+    
+    // Słupki prawej bramki
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 8 * scale;
+    
+    // Cień słupków
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 12, goalTop + 2);
+    ctx.lineTo(canvas.width - 12, goalBottom + 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 10 - 2, goalTop - 2);
+    ctx.lineTo(canvas.width - 10 + goalWidth - 2, goalTop - 2);
+    ctx.stroke();
+    
+    // Białe słupki
+    ctx.strokeStyle = '#ffffff';
+    
+    // Prawy słupek (linia bramki)
     ctx.beginPath();
     ctx.moveTo(canvas.width - 10, goalTop);
     ctx.lineTo(canvas.width - 10, goalBottom);
     ctx.stroke();
     
-    // Pola bramkowe - skalowane
+    // Poprzeczka
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 10, goalTop);
+    ctx.lineTo(canvas.width - 10 + goalWidth, goalTop);
+    ctx.stroke();
+    
+    // Dolna poprzeczka
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 10, goalBottom);
+    ctx.lineTo(canvas.width - 10 + goalWidth, goalBottom);
+    ctx.stroke();
+    
+    // Tylni słupek
+    ctx.strokeStyle = '#cccccc';
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 10 + goalWidth, goalTop);
+    ctx.lineTo(canvas.width - 10 + goalWidth, goalBottom);
+    ctx.stroke();
+    
+    // ============ POLA BRAMKOWE I KARNE ============
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 2 * scale;
+    ctx.lineCap = 'butt'; // Reset line cap
+    
     const boxWidth = 40 * scale;
     const boxHeight = canvas.height * 0.2 * scale;
     const boxTop = canvas.height * 0.5 - boxHeight/2;
@@ -372,7 +504,7 @@ function drawGoalsAndBoxes(scale = 1.0) {
     ctx.strokeRect(10, boxTop, boxWidth, boxHeight);
     ctx.strokeRect(canvas.width - 10 - boxWidth, boxTop, boxWidth, boxHeight);
 
-    // Pola karne - skalowane
+    // Pola karne
     const penaltyWidth = 80 * scale;
     const penaltyHeight = canvas.height * 0.5 * scale;
     const penaltyTop = canvas.height * 0.5 - penaltyHeight/2;
@@ -380,13 +512,26 @@ function drawGoalsAndBoxes(scale = 1.0) {
     ctx.strokeRect(10, penaltyTop, penaltyWidth, penaltyHeight);
     ctx.strokeRect(canvas.width - 10 - penaltyWidth, penaltyTop, penaltyWidth, penaltyHeight);
 
-    // Punkty karne - skalowane
+    // Punkty karne (większe i bardziej widoczne)
     ctx.fillStyle = 'white';
+    const penaltyRadius = 4 * scale;
+    
     ctx.beginPath();
-    ctx.arc(70 * scale, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
     ctx.fill();
     
     ctx.beginPath();
-    ctx.arc(canvas.width - 70 * scale, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(canvas.width - 70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
     ctx.fill();
+    
+    // Dodatkowe obramowanie punktów karnych
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1 * scale;
+    ctx.beginPath();
+    ctx.arc(70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.arc(canvas.width - 70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+    ctx.stroke();
 }
