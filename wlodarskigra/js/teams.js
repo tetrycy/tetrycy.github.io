@@ -347,7 +347,7 @@ const teams = [
         
         // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
         playerRadius: 4,        // Większy, mocniejszy
-        playerSpeed: 3,        // Najszybszy
+        playerSpeed: 1,        // Najszybszy
         playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
