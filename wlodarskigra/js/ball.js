@@ -144,7 +144,7 @@ function updateBall() {
                     // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
                     const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
                     if (playerSpeed > 0) {
-                        const kickPower = 8; // Stała siła kopnięcia
+                     const kickPower = (player.shootPower || 1.5) ; // Użyj shootPower gracza
                         ball.vx = (p.vx / playerSpeed) * kickPower;
                         ball.vy = (p.vy / playerSpeed) * kickPower;
                     } else {
