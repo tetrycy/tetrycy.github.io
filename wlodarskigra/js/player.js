@@ -505,19 +505,14 @@ function updateFieldBot(bot) {
  * Zastosuj błędy AI w zależności od poziomu trudności i roli
  */
 function applyAIErrors(bot, target, scale) {
-    let errorChance;
+    const botErrorChance = bot.errorChance || 0.08; // domyślnie 8%
     
-    if (gameMode === 'tournament') {
-        errorChance = GAME_CONSTANTS.ERROR_CHANCES[gameState.currentRound] || GAME_CONSTANTS.ERROR_CHANCES.default;
-    } else {
-        errorChance = GAME_CONSTANTS.ERROR_CHANCES[selectedTeam] || GAME_CONSTANTS.ERROR_CHANCES.default;
-    }
-    
-if (Math.random() < errorChance) {
+    if (Math.random() < botErrorChance) {
         target.x += (Math.random() - 0.5) * 60 * scale;
         target.y += (Math.random() - 0.5) * 60 * scale;
     }
 }
+    
 
 /**
  * Porusza bota w kierunku celu
@@ -532,7 +527,6 @@ function moveBotToTarget(bot, target) {
         const normalizedX = dx / distance;
         const normalizedY = dy / distance;
         
-        const speedMultiplier = GAME_CONSTANTS.SPEED_MULTIPLIERS[bot.role] || 1.0;
     const currentSpeed = bot.maxSpeed;
         
         bot.vx = normalizedX * currentSpeed;
