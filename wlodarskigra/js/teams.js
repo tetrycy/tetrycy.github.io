@@ -5,6 +5,16 @@ const teams = [
         opponentTeam: "MSV DUISBURG",
         field: 'simple',
         fieldScale: 1.0,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 20,
+        playerSpeed: 5.1,
+        playerShootPower: 8,
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 5.7,
+        ballMaxSpeed: 11.5,
+        
         bots: [
             { 
                 name: "HAJTO", 
@@ -28,6 +38,16 @@ const teams = [
         opponentTeam: "SV WALDHOF MANNHEIM",
         field: "muddy",
         fieldScale: 1.0,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 20,
+        playerSpeed: 5.0,        // Nieco wolniejszy na błocie
+        playerShootPower: 7.5,   // Nieco słabsze strzały
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 5.5,          // Wolniejsza na błocie
+        ballMaxSpeed: 11.0,
+        
         bots: [
             { 
                 name: "KOBYLANSKI", 
@@ -51,6 +71,16 @@ const teams = [
         opponentTeam: "FC HANSA ROSTOCK",
         field: "winter",
         fieldScale: 0.75,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 20,
+        playerSpeed: 4.8,        // Ślisko na śniegu
+        playerShootPower: 7,     // Trudniej kopać na śniegu
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 5.2,          // Wolniejsza na śniegu
+        ballMaxSpeed: 10.5,
+        
         bots: [
             { 
                 name: "MAJAK", 
@@ -89,6 +119,16 @@ const teams = [
         field: 'stadium',
         fieldScale: 0.5,
         hasPlayerGoalkeeper: true,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 20,
+        playerSpeed: 5.2,        // Szybsze na stadionowej murawie
+        playerShootPower: 8.5,   // Mocniejsze strzały
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 6.0,          // Szybsza na dobrej nawierzchni
+        ballMaxSpeed: 12.0,
+        
         bots: [
             { 
                 name: "GÜNTER HOFFMAN", 
@@ -165,6 +205,16 @@ const teams = [
         opponentTeam: "LOKOMOTIV LEIPZIG",
         field: "professional", 
         fieldScale: 0.25,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 20,
+        playerSpeed: 4.7,        // Trudniejszy mecz - wolniejszy
+        playerShootPower: 7,     // Słabsze strzały
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 6.2,          // Szybsza piłka = trudniejsza kontrola
+        ballMaxSpeed: 13.0,
+        
         bots: [
             { 
                 name: "WOLFGANG RICHTER", 
@@ -231,6 +281,16 @@ const teams = [
         opponentTeam: "FC CARL ZEISS JENA",
         field: "sandy",
         fieldScale: 0.75,
+        
+        // === PARAMETRY WŁODARSKIEGO ===
+        playerRadius: 18,        // Mniejszy na piasku
+        playerSpeed: 4.5,        // Trudno biegać na piasku
+        playerShootPower: 6.5,   // Słabsze strzały na piasku
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 5.0,          // Piasek hamuje piłkę
+        ballMaxSpeed: 10.0,
+        
         bots: [
             { 
                 name: "BERND KOCH", 
@@ -283,6 +343,16 @@ const teams = [
         field: "professional",
         fieldScale: 0.25,
         hasPlayerGoalkeeper: true,
+        
+        // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
+        playerRadius: 22,        // Większy, mocniejszy
+        playerSpeed: 5.5,        // Najszybszy
+        playerShootPower: 10,    // Najsilniejsze strzały
+        
+        // === PARAMETRY PIŁKI ===
+        ballSpeed: 6.5,          // Bardzo szybka
+        ballMaxSpeed: 14.0,      // Najszybsza możliwa
+        
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
             { 
