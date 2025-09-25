@@ -338,6 +338,9 @@ function drawStandardFieldLines() {
     ctx.arc(canvas.width / 2, canvas.height / 2, 4 * scale, 0, Math.PI * 2);
     ctx.fill();
 
+// Chorágiewki narożnikowe
+drawCornerFlags();
+    
     drawGoalsAndBoxes(scale);
 }
 
@@ -493,45 +496,85 @@ function drawGoalsAndBoxes(scale = 1.0) {
     ctx.stroke();
     
     // ============ POLA BRAMKOWE I KARNE ============
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2 * scale;
-    ctx.lineCap = 'butt'; // Reset line cap
-    
-    const boxWidth = 40 * scale;
-    const boxHeight = canvas.height * 0.2 * scale;
-    const boxTop = canvas.height * 0.5 - boxHeight/2;
-    
-    ctx.strokeRect(10, boxTop, boxWidth, boxHeight);
-    ctx.strokeRect(canvas.width - 10 - boxWidth, boxTop, boxWidth, boxHeight);
+ctx.strokeStyle = 'white';
+ctx.lineWidth = 2 * scale;
+ctx.lineCap = 'butt';
 
-    // Pola karne
-    const penaltyWidth = 80 * scale;
-    const penaltyHeight = canvas.height * 0.5 * scale;
-    const penaltyTop = canvas.height * 0.5 - penaltyHeight/2;
-    
-    ctx.strokeRect(10, penaltyTop, penaltyWidth, penaltyHeight);
-    ctx.strokeRect(canvas.width - 10 - penaltyWidth, penaltyTop, penaltyWidth, penaltyHeight);
+const boxWidth = canvas.width * 0.05;
+const boxHeight = canvas.height * 0.2;
+const boxTop = canvas.height * 0.5 - boxHeight/2;
 
-    // Punkty karne (większe i bardziej widoczne)
-    ctx.fillStyle = 'white';
-    const penaltyRadius = 4 * scale;
+ctx.strokeRect(10, boxTop, boxWidth, boxHeight);
+ctx.strokeRect(canvas.width - 10 - boxWidth, boxTop, boxWidth, boxHeight);
+
+// Pola karne
+const penaltyWidth = canvas.width * 0.1;
+const penaltyHeight = canvas.height * 0.5;
+const penaltyTop = canvas.height * 0.5 - penaltyHeight/2;
+
+ctx.strokeRect(10, penaltyTop, penaltyWidth, penaltyHeight);
+ctx.strokeRect(canvas.width - 10 - penaltyWidth, penaltyTop, penaltyWidth, penaltyHeight);
+
+// Punkty karne
+ctx.fillStyle = 'white';
+const penaltyRadius = 4;
+
+ctx.beginPath();
+ctx.arc(canvas.width * 0.0875, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.beginPath();
+ctx.arc(canvas.width * 0.9125, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+ctx.fill();
+
+// Obramowanie punktów karnych
+ctx.strokeStyle = 'black';
+ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.arc(canvas.width * 0.0875, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+ctx.stroke();
+
+ctx.beginPath();
+ctx.arc(canvas.width * 0.9125, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
+ctx.stroke();
+
+    }
     
-    ctx.beginPath();
-    ctx.arc(70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
-    ctx.fill();
+function drawCornerFlags() {
+    const flagSize = Math.max(8, canvas.width * 0.01); // Rozmiar proporcjonalny, minimum 8px
+    const poleHeight = flagSize * 2.5; // Wysokość masztu
     
-    ctx.beginPath();
-    ctx.arc(canvas.width - 70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
-    ctx.fill();
+    // Pozycje rogów (10px od krawędzi, jak obramowanie boiska)
+    const corners = [
+        { x: 10, y: 10 },           // Lewy górny
+        { x: canvas.width - 10, y: 10 },  // Prawy górny  
+        { x: 10, y: canvas.height - 10 }, // Lewy dolny
+        { x: canvas.width - 10, y: canvas.height - 10 } // Prawy dolny
+    ];
     
-    // Dodatkowe obramowanie punktów karnych
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 * scale;
-    ctx.beginPath();
-    ctx.arc(70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
-    ctx.stroke();
+    const flagColors = ['#ffff00', '#ffff00', '#ffff00', '#ffff00']; // Czerwona, zielona, niebieska, żółta
     
-    ctx.beginPath();
-    ctx.arc(canvas.width - 70 * scale, canvas.height / 2, penaltyRadius, 0, Math.PI * 2);
-    ctx.stroke();
+    corners.forEach((corner, index) => {
+        // Maszt chorągiewki (szary pręt)
+        ctx.strokeStyle = '#888888';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(corner.x, corner.y);
+        ctx.lineTo(corner.x, corner.y - poleHeight);
+        ctx.stroke();
+        
+        // Flaga (trójkąt)
+        ctx.fillStyle = flagColors[index];
+        ctx.beginPath();
+        ctx.moveTo(corner.x, corner.y - poleHeight); // Szczyt masztu
+        ctx.lineTo(corner.x + flagSize, corner.y - poleHeight + flagSize/2); // Prawy punkt flagi
+        ctx.lineTo(corner.x, corner.y - poleHeight + flagSize); // Dolny punkt przy maszcie
+        ctx.closePath();
+        ctx.fill();
+        
+        // Obramowanie flagi
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
 }
