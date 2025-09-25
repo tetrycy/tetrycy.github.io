@@ -104,6 +104,10 @@ function loadTeamData(teamData) {
     // Załaduj parametry gracza z definicji drużyny
     player.radius = Math.max(3, teamData.playerRadius || 20);
     player.speed = teamData.playerSpeed || 5.1;
+    
+    // Załaduj parametry piłki z definicji drużyny
+    ball.startSpeed = teamData.ballSpeed || 5.7;
+    ball.maxSpeed = teamData.ballMaxSpeed || 11.5;
 }
 
 function updateScore() {
