@@ -347,13 +347,13 @@ const teams = [
         hasPlayerGoalkeeper: true,
         
         // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
-        playerRadius: 4,        // Większy, mocniejszy
-        playerSpeed: 1,        // Najszybszy
+        playerRadius: 8,        // Większy, mocniejszy
+        playerSpeed: 1.5,        // Najszybszy
         playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
         ballSpeed: 0.5,          // Bardzo szybka
-        ballMaxSpeed: 1.5,      // Najszybsza możliwa
+        ballMaxSpeed: 2,      // Najszybsza możliwa
         
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
@@ -480,7 +480,7 @@ const teams = [
                 x: 520, 
                 y: 170, 
                 color: "#080808", 
-                maxSpeed: 1.8,
+                maxSpeed: 1.5,
                 shootPower: 2.0,  // Klinsmann - legendarny strzelec!
                 radius: 8,
                 number: 12, 
