@@ -432,7 +432,7 @@ const teams = [
                 shootPower: 1.0,
                 radius: 40,
                 number: 16, 
-                role: "defensive_midfielder", 
+                role: "ball_chaser", 
                 preferredY: 140, 
                 team: "opponent" 
             },
