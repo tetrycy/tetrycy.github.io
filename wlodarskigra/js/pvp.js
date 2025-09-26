@@ -6,8 +6,8 @@ let pvpSelectedOpponent = null;
 
 // Gracz 2 (niebieski) - dla trybu PvP
 const player2 = {
-    x: canvas.width - 100,
-    y: canvas.height / 2,
+    x: 700,  // ← ZMIEŃ
+    y: 200,  // ← ZMIEŃ
     radius: 20,
     color: '#0000ff',
     vx: 0,
@@ -22,40 +22,34 @@ const player2 = {
 
 // ============ FUNKCJE MENU PVP ============
 
+// ZNAJDŹ te funkcje w js/pvp.js i ZASTĄP JE tym kodem:
+
 function showPvPMenu() {
     document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('pvpMenu').style.display = 'block';
+    document.getElementById('pvpMenu').classList.remove('hidden');
 }
 
 function showFieldSizeSelection() {
-    document.getElementById('pvpMenu').style.display = 'none';
-    document.getElementById('fieldSizeSelection').style.display = 'block';
+    document.getElementById('pvpMenu').classList.add('hidden');
+    document.getElementById('fieldSizeSelection').classList.remove('hidden');
 }
 
 function showCoopSelection() {
-    document.getElementById('pvpMenu').style.display = 'none';
-    document.getElementById('coopSelection').style.display = 'block';
+    document.getElementById('pvpMenu').classList.add('hidden');
+    document.getElementById('coopSelection').classList.remove('hidden');
 }
 
 function backToPvPMenu() {
-    document.getElementById('fieldSizeSelection').style.display = 'none';
-    document.getElementById('coopSelection').style.display = 'none';
-    document.getElementById('pvpMenu').style.display = 'block';
+    document.getElementById('fieldSizeSelection').classList.add('hidden');
+    document.getElementById('coopSelection').classList.add('hidden');
+    document.getElementById('pvpMenu').classList.remove('hidden');
 }
 
-function startPvP1v1(scale) {
-    gameMode = 'pvp_1v1';
-    pvpFieldScale = scale;
-    showGame();
-    loadPvP1v1Mode(scale);
-}
-
-function startPvPCoop(opponentIndex) {
-    gameMode = 'pvp_coop';
-    pvpSelectedOpponent = opponentIndex;
-    showGame();
-    loadPvPCoopMode(opponentIndex);
-}
+// TAKŻE ZMODYFIKUJ funkcję showGame() w ui.js - DODAJ tę linię:
+// Na końcu funkcji showGame() DODAJ:
+// document.getElementById('pvpMenu').classList.add('hidden');
+// document.getElementById('fieldSizeSelection').classList.add('hidden');
+// document.getElementById('coopSelection').classList.add('hidden');
 
 // ============ ŁADOWANIE TRYBÓW PVP ============
 
