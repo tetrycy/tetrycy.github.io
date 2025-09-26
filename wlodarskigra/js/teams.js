@@ -364,7 +364,7 @@ const teams = [
                 color: "#080808", 
                 maxSpeed: 1.8,
                 shootPower: 5.0,  // Bramkarz
-                radius: 20,
+                radius: 10,
                 number: 21, 
                 role: "goalkeeper", 
                 isGoalkeeper: true, 
