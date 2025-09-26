@@ -347,13 +347,13 @@ const teams = [
         hasPlayerGoalkeeper: true,
         
         // === PARAMETRY WŁODARSKIEGO - FINAŁ! ===
-        playerRadius: 8,        // Większy, mocniejszy
-        playerSpeed: 1.5,        // Najszybszy
+        playerRadius: 4,        // Większy, mocniejszy
+        playerSpeed: 1,        // Najszybszy
         playerShootPower: 1,    // Najsilniejsze strzały
         
         // === PARAMETRY PIŁKI ===
         ballSpeed: 0.5,          // Bardzo szybka
-        ballMaxSpeed: 2,      // Najszybsza możliwa
+        ballMaxSpeed: 1.5,      // Najszybsza możliwa
         
         bots: [
             // DRUŻYNA PRZECIWNIKA (11 zawodników) - NIEMCY '96
@@ -363,8 +363,8 @@ const teams = [
                 y: 200, 
                 color: "#080808", 
                 maxSpeed: 1.8,
-                shootPower: 5.0,  // Bramkarz
-                radius: 10,
+                shootPower: 0.3,  // Bramkarz
+                radius: 20,
                 number: 21, 
                 role: "goalkeeper", 
                 isGoalkeeper: true, 
@@ -393,7 +393,7 @@ const teams = [
                 shootPower: 0.7,
                 radius: 19,
                 number: 29, 
-                role: "defender", 
+                role: "centerback", 
                 preferredY: 160, 
                 team: "opponent" 
             },
@@ -432,7 +432,7 @@ const teams = [
                 shootPower: 1.0,
                 radius: 40,
                 number: 16, 
-                role: "ball_chaser", 
+                role: "defensive_midfielder", 
                 preferredY: 140, 
                 team: "opponent" 
             },
@@ -458,7 +458,7 @@ const teams = [
                 shootPower: 1.5,  // Möller był świetnym strzelcem
                 radius: 34,
                 number: 14, 
-                role: "ball_chaser", 
+                role: "winger", 
                 preferredY: 140, 
                 team: "opponent" 
             },
@@ -471,7 +471,7 @@ const teams = [
                 shootPower: 1.3,
                 radius: 5,
                 number: 13, 
-                role: "midfildier", 
+                role: "winger", 
                 preferredY: 280, 
                 team: "opponent" 
             },
@@ -480,7 +480,7 @@ const teams = [
                 x: 520, 
                 y: 170, 
                 color: "#080808", 
-                maxSpeed: 1.5,
+                maxSpeed: 1.8,
                 shootPower: 2.0,  // Klinsmann - legendarny strzelec!
                 radius: 8,
                 number: 12, 
@@ -497,7 +497,7 @@ const teams = [
                 shootPower: 1.9,  // Bierhoff też mocny strzelec
                 radius: 6,        // Większy fizycznie
                 number: 11, 
-                role: "attacker", 
+                role: "striker", 
                 preferredY: 230, 
                 team: "opponent" 
             },
@@ -525,7 +525,7 @@ const teams = [
                 shootPower: 0.7,
                 radius: 6,
                 number: 9, 
-                role: "defender", 
+                role: "centerback", 
                 preferredY: 160, 
                 team: "player" 
             },
@@ -564,7 +564,7 @@ const teams = [
                 shootPower: 1.1,
                 radius: 10,
                 number: 6, 
-                role: "midfielder", 
+                role: "defensive_midfielder", 
                 preferredY: 140, 
                 team: "player" 
             },
