@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
+    <link rel="stylesheet" href="styles/game.css">
+</head>
+<body>
+    <h1>⚽🚬 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🚬⚽</h1>
+    <div class="subtitle">*** ⚫🔴🟠 ZWEITE BUNDESLIGA EDITION 1995/96 ⚫🔴🟠 ***</div>
+    
+    <!-- GŁÓWNE MENU -->
+    <div id="mainMenu" class="main-menu">
+        <h2 style="color: #ffff00; margin-bottom: 20px;">♞ HAUPTMENÜ ♞</h2>
+        <button class="menu-btn" onclick="startTournament()">🌍 TURNIER</button>
+        <button class="menu-btn" onclick="showTeamSelection()">🥂 FREUNDSCHAFTSSPIEL</button>
+    </div>
+
+    <!-- WYBÓR DRUŻYNY -->
+    <div id="teamSelection" class="team-selection">
+        <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
+        <button class="team-btn" onclick="startFriendly(0)"> MSV DUISBURG (1vs1)</button>
+        <button class="team-btn" onclick="startFriendly(1)"> SV WALDORF MANNHEIM (1vs1)</button>
+        <button class="team-btn" onclick="startFriendly(2)">🟢 FC HANSA ROSTOCK (1vs2)</button>
+        <button class="team-btn" onclick="startFriendly(3)">🟠 EINTRACHT BRAUNSCHWEIG </button>
+        <button class="team-btn" onclick="startFriendly(4)">🔴 LOKOMOTIV LEIPZIG</button>
+        <button class="team-btn" onclick="startFriendly(5)">🔵 FC CARL ZEISS JENA </button>
+        <button class="team-btn" onclick="startFriendly(6)">🟤 SPVGG UNTERHACHING </button>
+        <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
+    </div>
+    
+    <!-- INTERFEJS GRY -->
+    <div class="round-info hidden" id="roundInfo">
+        RUNDE 1: SV BABELSBERG 04 vs VFL OLDENBURG
+    </div>
+    
+    <div class="score hidden" id="scoreDisplay">
+        <div class="team-name" id="playerTeam">SV BABELSBERG 04</div>
+        <span id="playerScore">0</span> : <span id="botScore">0</span>
+        <div class="team-name" id="botTeam">VFL OLDENBURG</div>
+    </div>
+    
+    <div class="game-container" id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div id="startMessage" class="start-message">
+            <h3 id="startTitle">🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
+            <p class="retro-text">WASD = STEUERUNG</p>
+            <p id="startSubtitle">*** SPIEL BEGINNT! ***</p>
+        </div>
+        <div id="winnerMessage" class="winner" style="display: none;"></div>
+    </div>
+
+    <div class="controls" id="gameControls">
+        <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
+        <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
+        
+        <button class="reset-btn" onclick="backToMenu()">🏠 HAUPTMENÜ</button>
+        <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
+        <button class="reset-btn" id="retryBtn" onclick="retryMatch()" style="display: none;">🔄 WIEDERHOLEN</button>
+    </div>
+
+    <!-- ŁADOWANIE PLIKÓW JS W ODPOWIEDNIEJ KOLEJNOŚCI -->
+    <script src="js/teams.js"></script>
+    <script src="js/field.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/ball.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
