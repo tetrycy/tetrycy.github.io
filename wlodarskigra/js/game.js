@@ -7,10 +7,12 @@ const ctx = canvas.getContext('2d');
 let gameMode = null; // 'tournament' or 'friendly'
 let selectedTeam = null;
 
-// Stan gry - usunięto efekty wizualne
+// POPRAWKA 1: Napraw gameState (przenieś linie do środka obiektu)
 let gameState = {
     playerScore: 0,
     botScore: 0,
+    player1Score: 0,  // dla trybu PvP 1vs1 - PRZENIESIONE TUTAJ
+    player2Score: 0,  // dla trybu PvP 1vs1 - PRZENIESIONE TUTAJ
     gameWon: false,
     gameStarted: false,
     ballInPlay: false,
@@ -69,10 +71,23 @@ document.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
 });
 
+// POPRAWKA 2: Zmodyfikuj funkcję drawPlayer (dodaj obsługę PvP)
 function drawPlayer(playerObj, name, isBot = false) {
     // Pobierz skalę dla obecnego boiska  
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
+    let scale = 1.0;
+    if (gameMode === 'tournament') {
+        const currentTeamData = teams[gameState.currentRound];
+        scale = currentTeamData.fieldScale || 1.0;
+    } else if (gameMode === 'friendly') {
+        const teamData = teams[selectedTeam];
+        scale = teamData.fieldScale || 1.0;
+    } else if (gameMode === 'pvp_1v1') {
+        scale = pvpFieldScale || 1.0;
+    } else if (gameMode === 'pvp_coop') {
+        const opponentMapping = {0: 0, 1: 1};
+        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        scale = teamData?.fieldScale || 1.0;
+    }
     
     const drawX = playerObj.x;
     const drawY = playerObj.y;
@@ -121,10 +136,23 @@ function drawPlayer(playerObj, name, isBot = false) {
     ctx.fillText(name, drawX, nameY);
 }
 
+// POPRAWKA 3: Zmodyfikuj funkcję drawBall (dodaj obsługę PvP)
 function drawBall() {
     // Zawsze skaluj piłkę zgodnie z obecnym boiskiem
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
+    let scale = 1.0;
+    if (gameMode === 'tournament') {
+        const currentTeamData = teams[gameState.currentRound];
+        scale = currentTeamData.fieldScale || 1.0;
+    } else if (gameMode === 'friendly') {
+        const teamData = teams[selectedTeam];
+        scale = teamData.fieldScale || 1.0;
+    } else if (gameMode === 'pvp_1v1') {
+        scale = pvpFieldScale || 1.0;
+    } else if (gameMode === 'pvp_coop') {
+        const opponentMapping = {0: 0, 1: 1};
+        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        scale = teamData?.fieldScale || 1.0;
+    }
     
     const drawX = ball.x;
     const drawY = ball.y;
@@ -165,7 +193,7 @@ function drawBall() {
     ctx.fill();
 }
 
-// Główna pętla gry
+// POPRAWKA 4: ZASTĄP całą funkcję gameLoop() tym kodem:
 function gameLoop() {
     if (gameMode) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -173,18 +201,38 @@ function gameLoop() {
         drawField();
         
         if (gameState.gameStarted) {
-            updatePlayer();
-            updateBots();
+            // Sprawdź czy to tryb PvP
+            if (typeof isPvPMode === 'function' && isPvPMode()) {
+                updatePlayersPvP(); // Użyj funkcji z pvp.js
+                if (gameMode === 'pvp_coop') {
+                    updateBots(); // W trybie coop również aktualizuj boty
+                }
+            } else {
+                // Oryginalny kod
+                updatePlayer();
+                updateBots();
+            }
             updateBall();
         }
         
-        drawPlayer(player, 'WŁODARSKI', false);
-        if (playerGoalkeeper) {
-            drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
+        // Rysowanie graczy - sprawdź czy tryb PvP
+        if (typeof isPvPMode === 'function' && isPvPMode()) {
+            drawPlayersPvP(); // Użyj funkcji z pvp.js
+        } else {
+            // Oryginalny kod
+            drawPlayer(player, 'WŁODARSKI', false);
+            if (playerGoalkeeper) {
+                drawPlayer(playerGoalkeeper, playerGoalkeeper.name, false);
+            }
         }
-        bots.forEach(bot => {
-            drawPlayer(bot, bot.name, true);
-        });
+        
+        // Rysuj boty (nie w trybie pvp_1v1)
+        if (gameMode !== 'pvp_1v1') {
+            bots.forEach(bot => {
+                drawPlayer(bot, bot.name, true);
+            });
+        }
+        
         drawBall();
     }
     
