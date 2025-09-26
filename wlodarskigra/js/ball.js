@@ -257,7 +257,7 @@ function resetBallAfterGoal() {
             bot.x = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
             bot.y = canvas.height / 2;
         }
-    }
+
     
     // Wyzeruj prędkości - to powinno być WEWNĄTRZ forEach
     bot.vx = 0;
