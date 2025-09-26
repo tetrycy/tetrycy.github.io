@@ -28,6 +28,17 @@ function backToMenu() {
     document.getElementById('scoreDisplay').classList.add('hidden');
     document.getElementById('teamSelection').style.display = 'none';
     
+    // DODAJ TE LINIE dla nowych ekranów PvP:
+    if (document.getElementById('pvpMenu')) {
+        document.getElementById('pvpMenu').classList.add('hidden');
+    }
+    if (document.getElementById('fieldSizeSelection')) {
+        document.getElementById('fieldSizeSelection').classList.add('hidden');
+    }
+    if (document.getElementById('coopSelection')) {
+        document.getElementById('coopSelection').classList.add('hidden');
+    }
+    
     // Pokaż menu główne
     document.getElementById('mainMenu').style.display = 'block';
     
@@ -112,6 +123,13 @@ player.shootPower = teamData.playerShootPower || 1.5;
 }
 
 function updateScore() {
+    // NOWY KOD - sprawdź czy to tryb PvP
+    if (typeof isPvPMode === 'function' && isPvPMode()) {
+        updateScorePvP(); // Użyj funkcji z pvp.js
+        return;
+    }
+    
+    // ORYGINALNY KOD dla innych trybów
     document.getElementById('playerScore').textContent = gameState.playerScore;
     document.getElementById('botScore').textContent = gameState.botScore;
 
@@ -206,15 +224,26 @@ function retryMatch() {
     
     if (gameMode === 'tournament') {
         loadCurrentTeam();
-    } else {
+    } else if (gameMode === 'friendly') {
         loadFriendlyTeam(selectedTeam);
-    }
+    } else if (gameMode === 'pvp_1v1') {        // ← DODAJ TĘ LINIĘ
+        loadPvP1v1Mode(pvpFieldScale);          // ← DODAJ TĘ LINIĘ
+    } else if (gameMode === 'pvp_coop') {       // ← DODAJ TĘ LINIĘ
+        loadPvPCoopMode(pvpSelectedOpponent);   // ← DODAJ TĘ LINIĘ
+    }                                           // ← DODAJ TĘ LINIĘ
     
     document.getElementById('retryBtn').style.display = 'none';
     document.getElementById('nextRoundBtn').style.display = 'none';
 }
 
 function resetMatch() {
+    // NOWY KOD - sprawdź czy to tryb PvP
+    if (typeof isPvPMode === 'function' && isPvPMode()) {
+        resetMatchPvP(); // Użyj funkcji z pvp.js
+        return;
+    }
+    
+    // ORYGINALNY KOD dla innych trybów
     gameState.playerScore = 0;
     gameState.botScore = 0;
     gameState.gameWon = false;
