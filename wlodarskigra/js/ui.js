@@ -56,6 +56,9 @@ function showGame() {
     document.getElementById('gameControls').style.display = 'block';
     document.getElementById('roundInfo').classList.remove('hidden');
     document.getElementById('scoreDisplay').classList.remove('hidden');
+        document.getElementById('pvpMenu').classList.add('hidden');
+    document.getElementById('fieldSizeSelection').classList.add('hidden');
+    document.getElementById('coopSelection').classList.add('hidden');
 }
 
 function loadCurrentTeam() {
