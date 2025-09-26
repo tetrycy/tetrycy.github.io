@@ -4,12 +4,23 @@
  * Oblicza skalowane granice bramki
  */
 function getGoalBounds() {
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
-    const scale = currentTeamData.fieldScale || 1.0;
+    let scale = 1.0;
+    
+    if (gameMode === 'tournament') {
+        const currentTeamData = teams[gameState.currentRound];
+        scale = currentTeamData.fieldScale || 1.0;
+    } else if (gameMode === 'friendly') {
+        const teamData = teams[selectedTeam];
+        scale = teamData.fieldScale || 1.0;
+    } else if (gameMode === 'pvp_1v1') {
+        scale = pvpFieldScale || 1.0;
+    } else if (gameMode === 'pvp_coop') {
+        const opponentMapping = {0: 0, 1: 1};
+        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        scale = teamData?.fieldScale || 1.0;
+    }
     
     // Bardzo łagodne skalowanie bramek - minimum 60% oryginalnej wysokości
-    // Na skali 0.25: 0.6 + 0.4 * 0.25 = 0.7, więc bramka będzie 21% 
-    // Na skali 1.0: 0.6 + 0.4 * 1.0 = 1.0, więc bramka będzie 30% (bez zmian)
     const goalScaling = 0.6 + 0.4 * scale;
     const goalAreaHeight = 0.3 * goalScaling;
     
@@ -26,6 +37,20 @@ function getGoalBounds() {
  * Pobiera prędkości piłki dla aktualnej drużyny
  */
 function getBallSpeeds() {
+    if (gameMode === 'pvp_1v1') {
+        return {
+            startSpeed: ball.startSpeed,
+            maxSpeed: ball.maxSpeed
+        };
+    } else if (gameMode === 'pvp_coop') {
+        const opponentMapping = {0: 0, 1: 1};
+        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        return {
+            startSpeed: teamData?.ballSpeed || ball.startSpeed,
+            maxSpeed: teamData?.ballMaxSpeed || ball.maxSpeed
+        };
+    }
+    
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     return {
         startSpeed: currentTeamData.ballSpeed || ball.startSpeed,
@@ -37,6 +62,14 @@ function getBallSpeeds() {
  * Pobiera aktualną skalę boiska
  */
 function getCurrentFieldScale() {
+    if (gameMode === 'pvp_1v1') {
+        return pvpFieldScale || 1.0;
+    } else if (gameMode === 'pvp_coop') {
+        const opponentMapping = {0: 0, 1: 1};
+        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        return teamData?.fieldScale || 1.0;
+    }
+    
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     return currentTeamData.fieldScale || 1.0;
 }
@@ -59,48 +92,87 @@ function updateBall() {
         ball.y = ball.y <= ball.radius + 15 * scale ? ball.radius + 15 * scale : canvas.height - ball.radius - 15 * scale;
     }
 
-    // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
-    if (ball.x <= 60 * scale && ball.vx < 0) {
-        const goalBounds = getGoalBounds();
-        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
-            // Sprawdź czy bramkarz gracza może zablokować
-            if (playerGoalkeeper) {
-                const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
-                if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
-                    // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
-                    ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
-                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6 * scale; // Losowy kierunek w pionie - skalowany
-                    
-                    // Upewnij się że piłka leci od bramki - skalowane
-                    const minSpeed = 4 * scale;
-                    if (ball.vx < minSpeed) ball.vx = minSpeed;
+ // SPRAWDZENIE GOLI - ROZSZERZONE DLA PVP
+    if (gameMode === 'pvp_1v1' || gameMode === 'pvp_coop') {
+        // Obsługa goli w trybie PvP
+        if (ball.x <= 15 * scale) {
+            const goalBounds = getGoalBounds();
+            if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
+                if (gameMode === 'pvp_1v1') {
+                    gameState.player2Score++; // Gracz 2 zdobył gola (strzelił do lewej bramki)
+                } else if (gameMode === 'pvp_coop') {
+                    gameState.botScore++; // Boty zdobyły gola przeciwko graczom
+                }
+                updateScore();
+                resetBallAfterGoalPvP();
+                return; // Wyjdź z funkcji po golu
+            } else {
+                ball.vx = -ball.vx;
+                ball.x = ball.radius + 15 * scale;
+            }
+        }
+
+        if (ball.x >= canvas.width - 15 * scale) {
+            const goalBounds = getGoalBounds();
+            if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
+                if (gameMode === 'pvp_1v1') {
+                    gameState.player1Score++; // Gracz 1 zdobył gola (strzelił do prawej bramki)
+                } else if (gameMode === 'pvp_coop') {
+                    gameState.playerScore++; // Gracze zdobyli gola przeciwko botom
+                }
+                updateScore();
+                resetBallAfterGoalPvP();
+                return; // Wyjdź z funkcji po golu
+            } else {
+                ball.vx = -ball.vx;
+                ball.x = canvas.width - ball.radius - 15 * scale;
+            }
+        }
+    } else {
+        // ORYGINALNY KOD dla tournament/friendly (zostaje bez zmian)
+        // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
+        if (ball.x <= 60 * scale && ball.vx < 0) {
+            const goalBounds = getGoalBounds();
+            if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
+                // Sprawdź czy bramkarz gracza może zablokować
+                if (playerGoalkeeper) {
+                    const distanceToGoalkeeper = Math.sqrt((ball.x - playerGoalkeeper.x) ** 2 + (ball.y - playerGoalkeeper.y) ** 2);
+                    if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
+                        // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
+                        ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
+                        ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6 * scale; // Losowy kierunek w pionie - skalowany
+                        
+                        // Upewnij się że piłka leci od bramki - skalowane
+                        const minSpeed = 4 * scale;
+                        if (ball.vx < minSpeed) ball.vx = minSpeed;
+                    }
                 }
             }
         }
-    }
 
-    if (ball.x <= 15 * scale) {
-        const goalBounds = getGoalBounds();
-        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
-            // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
-            gameState.botScore++;
-            updateScore();
-            resetBallAfterGoal();
-        } else {
-            ball.vx = -ball.vx;
-            ball.x = ball.radius + 15 * scale;
+        if (ball.x <= 15 * scale) {
+            const goalBounds = getGoalBounds();
+            if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
+                // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
+                gameState.botScore++;
+                updateScore();
+                resetBallAfterGoal();
+            } else {
+                ball.vx = -ball.vx;
+                ball.x = ball.radius + 15 * scale;
+            }
         }
-    }
 
-    if (ball.x >= canvas.width - 15 * scale) {
-        const goalBounds = getGoalBounds();
-        if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
-            gameState.playerScore++;
-            updateScore();
-            resetBallAfterGoal();
-        } else {
-            ball.vx = -ball.vx;
-            ball.x = canvas.width - ball.radius - 15 * scale;
+        if (ball.x >= canvas.width - 15 * scale) {
+            const goalBounds = getGoalBounds();
+            if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
+                gameState.playerScore++;
+                updateScore();
+                resetBallAfterGoal();
+            } else {
+                ball.vx = -ball.vx;
+                ball.x = canvas.width - ball.radius - 15 * scale;
+            }
         }
     }
 
@@ -268,9 +340,45 @@ function resetBallAfterGoal() {
         playerGoalkeeper.vy = 0;
     }
     
-    // Reset gracza na pozycję startową
     player.x = 100;
     player.y = canvas.height / 2;
     player.vx = 0;
     player.vy = 0;
+}  // ← koniec resetBallAfterGoal()
+
+function resetBallAfterGoalPvP() {  // ← PRZENIEŚ TUTAJ (poza resetBallAfterGoal)
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.vx = 0;
+    ball.vy = 0;
+    gameState.ballInPlay = false;
+    
+    // Reset pozycji graczy
+    player.x = 100;
+    player.y = canvas.height / 2;
+    player.stunned = 0;
+    player.pushbackX = 0;
+    player.pushbackY = 0;
+    
+    // Reset gracza 2 jeśli istnieje
+    if (typeof player2 !== 'undefined') {
+        if (gameMode === 'pvp_1v1') {
+            player2.x = canvas.width - 100;
+            player2.y = canvas.height / 2;
+        } else {
+            player2.x = 150;
+            player2.y = canvas.height / 2 + 50;
+        }
+        player2.stunned = 0;
+        player2.pushbackX = 0;
+        player2.pushbackY = 0;
+    }
+    
+    // Reset botów
+    bots.forEach(bot => {
+        bot.x = 700;
+        bot.y = bot.startY;
+        bot.vx = 0;
+        bot.vy = 0;
+    });
 }
