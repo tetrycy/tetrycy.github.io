@@ -393,7 +393,7 @@ const teams = [
                 shootPower: 0.7,
                 radius: 19,
                 number: 29, 
-                role: "centerback", 
+                role: "defender", 
                 preferredY: 160, 
                 team: "opponent" 
             },
@@ -458,7 +458,7 @@ const teams = [
                 shootPower: 1.5,  // Möller był świetnym strzelcem
                 radius: 34,
                 number: 14, 
-                role: "winger", 
+                role: "ball_chaser", 
                 preferredY: 140, 
                 team: "opponent" 
             },
@@ -471,7 +471,7 @@ const teams = [
                 shootPower: 1.3,
                 radius: 5,
                 number: 13, 
-                role: "winger", 
+                role: "midfildier", 
                 preferredY: 280, 
                 team: "opponent" 
             },
@@ -497,7 +497,7 @@ const teams = [
                 shootPower: 1.9,  // Bierhoff też mocny strzelec
                 radius: 6,        // Większy fizycznie
                 number: 11, 
-                role: "striker", 
+                role: "attacker", 
                 preferredY: 230, 
                 team: "opponent" 
             },
@@ -525,7 +525,7 @@ const teams = [
                 shootPower: 0.7,
                 radius: 6,
                 number: 9, 
-                role: "centerback", 
+                role: "defender", 
                 preferredY: 160, 
                 team: "player" 
             },
@@ -564,7 +564,7 @@ const teams = [
                 shootPower: 1.1,
                 radius: 10,
                 number: 6, 
-                role: "defensive_midfielder", 
+                role: "midfielder", 
                 preferredY: 140, 
                 team: "player" 
             },
