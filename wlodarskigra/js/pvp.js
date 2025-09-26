@@ -44,6 +44,22 @@ function backToPvPMenu() {
     document.getElementById('pvpMenu').classList.remove('hidden');
 }
 
+// DODAJ TE FUNKCJE do pvp.js (po funkcji backToPvPMenu):
+
+function startPvP1v1(scale) {
+    gameMode = 'pvp_1v1';
+    pvpFieldScale = scale;
+    showGame();
+    loadPvP1v1Mode(scale);
+}
+
+function startPvPCoop(opponentIndex) {
+    gameMode = 'pvp_coop';
+    pvpSelectedOpponent = opponentIndex;
+    showGame();
+    loadPvPCoopMode(opponentIndex);
+}
+
 // TAKŻE ZMODYFIKUJ funkcję showGame() w ui.js - DODAJ tę linię:
 // Na końcu funkcji showGame() DODAJ:
 // document.getElementById('pvpMenu').classList.add('hidden');
