@@ -244,13 +244,10 @@ function resetBallAfterGoal() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
     bots.forEach(bot => {
-        // Znajdź oryginalną definicję tego bota po nazwie
-        const originalBotData = currentTeamData.bots.find(originalBot => originalBot.name === bot.name);
-        
-        if (originalBotData) {
-            // Użyj oryginalnych pozycji X,Y ze skalowaniem
-            bot.x = originalBotData.x * scale;
-            bot.y = originalBotData.y * scale;
+        if (bot.originalX !== undefined && bot.originalY !== undefined) {
+            // Użyj zapisanych oryginalnych pozycji
+            bot.x = bot.originalX * scale;
+            bot.y = bot.originalY * scale;
         } else {
             // Fallback dla botów których nie znaleziono
             const isPlayerTeam = bot.team === "player";
