@@ -1,18 +1,27 @@
-// game.js - główna logika gry i inicjalizacja
+// game.js - główna logika gry i inicjalizacja - POPRAWIONE
 
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+
+// SPRAWDŹ CZY CANVAS ISTNIEJE
+if (!canvas) {
+    console.error('❌ BŁĄD: Element <canvas id="gameCanvas"> nie został znaleziony w HTML!');
+    console.log('Dodaj do HTML: <canvas id="gameCanvas" width="800" height="400"></canvas>');
+} else {
+    console.log('✅ Canvas znaleziony:', canvas);
+}
+
+const ctx = canvas ? canvas.getContext('2d') : null;
 
 // Stan gry
 let gameMode = null; // 'tournament' or 'friendly'
 let selectedTeam = null;
 
-// POPRAWKA 1: Napraw gameState (przenieś linie do środka obiektu)
+// POPRAWKA 1: Napraw gameState (usuń komentarze)
 let gameState = {
     playerScore: 0,
     botScore: 0,
-    player1Score: 0,  // dla trybu PvP 1vs1 - PRZENIESIONE TUTAJ
-    player2Score: 0,  // dla trybu PvP 1vs1 - PRZENIESIONE TUTAJ
+    player1Score: 0,  // dla trybu PvP 1vs1
+    player2Score: 0,  // dla trybu PvP 1vs1
     gameWon: false,
     gameStarted: false,
     ballInPlay: false,
@@ -22,10 +31,20 @@ let gameState = {
     lastCollisionTime: 0  // Cooldown kolizji
 };
 
+// POPRAWKA 2: Bezpieczne sprawdzenie zmiennych PvP
+function safePvPCheck() {
+    return {
+        isPvP: typeof isPvPMode === 'function' && isPvPMode(),
+        fieldScale: typeof pvpFieldScale !== 'undefined' ? pvpFieldScale : 1.0,
+        selectedOpponent: typeof pvpSelectedOpponent !== 'undefined' ? pvpSelectedOpponent : 0,
+        player2Exists: typeof player2 !== 'undefined'
+    };
+}
+
 // Gracz (Marian Włodarski) - szybkość 8
 const player = {
     x: 100,
-    y: canvas.height / 2,
+    y: canvas ? canvas.height / 2 : 200,
     radius: 20,
     color: '#ff0000',
     vx: 0,
@@ -41,8 +60,8 @@ let playerGoalkeeper = null;
 
 // Piłka - prędkość zmniejszona o 15%
 const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
+    x: canvas ? canvas.width / 2 : 400,
+    y: canvas ? canvas.height / 2 : 200,
     radius: 8,
     vx: 0,
     vy: 0,
@@ -71,10 +90,14 @@ document.addEventListener('keyup', (e) => {
     keys[e.key.toLowerCase()] = false;
 });
 
-// POPRAWKA 2: Zmodyfikuj funkcję drawPlayer (dodaj obsługę PvP)
+// POPRAWKA 3: Bezpieczna funkcja drawPlayer
 function drawPlayer(playerObj, name, isBot = false) {
+    if (!canvas || !ctx) return;
+    
     // Pobierz skalę dla obecnego boiska  
     let scale = 1.0;
+    const pvpInfo = safePvPCheck();
+    
     if (gameMode === 'tournament') {
         const currentTeamData = teams[gameState.currentRound];
         scale = currentTeamData.fieldScale || 1.0;
@@ -82,10 +105,10 @@ function drawPlayer(playerObj, name, isBot = false) {
         const teamData = teams[selectedTeam];
         scale = teamData.fieldScale || 1.0;
     } else if (gameMode === 'pvp_1v1') {
-        scale = pvpFieldScale || 1.0;
+        scale = pvpInfo.fieldScale;
     } else if (gameMode === 'pvp_coop') {
         const opponentMapping = {0: 0, 1: 1};
-        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        const teamData = teams[opponentMapping[pvpInfo.selectedOpponent]];
         scale = teamData?.fieldScale || 1.0;
     }
     
@@ -136,10 +159,14 @@ function drawPlayer(playerObj, name, isBot = false) {
     ctx.fillText(name, drawX, nameY);
 }
 
-// POPRAWKA 3: Zmodyfikuj funkcję drawBall (dodaj obsługę PvP)
+// POPRAWKA 4: Bezpieczna funkcja drawBall
 function drawBall() {
+    if (!canvas || !ctx) return;
+    
     // Zawsze skaluj piłkę zgodnie z obecnym boiskiem
     let scale = 1.0;
+    const pvpInfo = safePvPCheck();
+    
     if (gameMode === 'tournament') {
         const currentTeamData = teams[gameState.currentRound];
         scale = currentTeamData.fieldScale || 1.0;
@@ -147,10 +174,10 @@ function drawBall() {
         const teamData = teams[selectedTeam];
         scale = teamData.fieldScale || 1.0;
     } else if (gameMode === 'pvp_1v1') {
-        scale = pvpFieldScale || 1.0;
+        scale = pvpInfo.fieldScale;
     } else if (gameMode === 'pvp_coop') {
         const opponentMapping = {0: 0, 1: 1};
-        const teamData = teams[opponentMapping[pvpSelectedOpponent]];
+        const teamData = teams[opponentMapping[pvpInfo.selectedOpponent]];
         scale = teamData?.fieldScale || 1.0;
     }
     
@@ -193,17 +220,36 @@ function drawBall() {
     ctx.fill();
 }
 
-// POPRAWKA 4: ZASTĄP całą funkcję gameLoop() tym kodem:
+// POPRAWKA 5: Bezpieczny gameLoop
 function gameLoop() {
+    if (!canvas || !ctx) {
+        console.error('❌ Canvas lub context nie są dostępne!');
+        return;
+    }
+    
     if (gameMode) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        drawField();
+        if (typeof drawField === 'function') {
+            drawField();
+        } else {
+            // Fallback - proste zielone tło
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
         
         if (gameState.gameStarted) {
+            const pvpInfo = safePvPCheck();
+            
             // Sprawdź czy to tryb PvP
-            if (typeof isPvPMode === 'function' && isPvPMode()) {
-                updatePlayersPvP(); // Użyj funkcji z pvp.js
+            if (pvpInfo.isPvP) {
+                if (typeof updatePlayersPvP === 'function') {
+                    updatePlayersPvP(); // Użyj funkcji z pvp.js
+                } else {
+                    console.warn('⚠️ updatePlayersPvP nie jest dostępna');
+                    updatePlayer(); // Fallback
+                }
+                
                 if (gameMode === 'pvp_coop') {
                     updateBots(); // W trybie coop również aktualizuj boty
                 }
@@ -216,8 +262,18 @@ function gameLoop() {
         }
         
         // Rysowanie graczy - sprawdź czy tryb PvP
-        if (typeof isPvPMode === 'function' && isPvPMode()) {
-            drawPlayersPvP(); // Użyj funkcji z pvp.js
+        const pvpInfo2 = safePvPCheck();
+        if (pvpInfo2.isPvP) {
+            if (typeof drawPlayersPvP === 'function') {
+                drawPlayersPvP(); // Użyj funkcji z pvp.js
+            } else {
+                console.warn('⚠️ drawPlayersPvP nie jest dostępna');
+                // Fallback
+                drawPlayer(player, 'WŁODARSKI', false);
+                if (pvpInfo2.player2Exists) {
+                    drawPlayer(player2, 'GRACZ 2', false);
+                }
+            }
         } else {
             // Oryginalny kod
             drawPlayer(player, 'WŁODARSKI', false);
@@ -239,5 +295,24 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Inicjalizacja
-gameLoop();
+// POPRAWKA 6: Bezpieczna inicjalizacja
+function initializeGame() {
+    console.log('🎮 Inicjalizacja gry...');
+    
+    if (!canvas) {
+        console.error('❌ Brak canvas - gra nie może się uruchomić!');
+        return;
+    }
+    
+    console.log('✅ Canvas OK:', canvas.width + 'x' + canvas.height);
+    console.log('✅ Uruchamianie gameLoop...');
+    
+    gameLoop();
+}
+
+// Inicjalizacja - z opóźnieniem żeby DOM się załadował
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGame);
+} else {
+    initializeGame();
+}
