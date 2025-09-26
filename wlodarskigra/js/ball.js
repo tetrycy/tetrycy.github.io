@@ -233,11 +233,11 @@ function resetBallAfterGoal() {
     ball.vy = 0;
     gameState.ballInPlay = false;
     
-    // NATYCHMIASTOWY reset pozycji wszystkich botów - UŻYJ ORYGINALNYCH POZYCJI
+    // NATYCHMIASTOWY reset pozycji wszystkich botów - ZNAJDŹ PO NAZWIE
     const scale = getCurrentFieldScale();
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
-    bots.forEach((bot, index) => {
+    bots.forEach(bot => {
         const isPlayerTeam = bot.team === "player";
         
         if (bot.isGoalkeeper) {
@@ -245,8 +245,9 @@ function resetBallAfterGoal() {
             bot.x = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
             bot.y = canvas.height / 2;
         } else {
-            // Użyj oryginalnych pozycji z definicji drużyny
-            const originalBotData = currentTeamData.bots[index];
+            // Znajdź oryginalną definicję tego bota po nazwie
+            const originalBotData = currentTeamData.bots.find(originalBot => originalBot.name === bot.name);
+            
             if (originalBotData) {
                 bot.x = originalBotData.x * scale;
                 bot.y = originalBotData.y * scale;
