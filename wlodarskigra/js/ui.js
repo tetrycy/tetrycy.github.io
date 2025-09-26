@@ -73,25 +73,19 @@ function loadTeamData(teamData) {
     document.getElementById('startSubtitle').textContent = "*** SPIEL BEGINNT! ***";
     const scale = teamData.fieldScale || 1.0;
     
-    
-// NOWY KOD:
-bots = teamData.bots.map(botData => ({
-    ...botData,
-    radius: Math.max(3, (botData.radius || 20) * scale),
-    vx: 0,
-    vy: 0,
-    shootPower: botData.shootPower || 1.2,
-    reactionSpeed: 0.2,
-    startY: botData.y,
-    // DODAJ TE LINIE:
-    originalX: botData.x,
-    originalY: botData.y,
-    // reszta bez zmian...
-    canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
-    isGoalkeeper: botData.isGoalkeeper || false,
-    role: botData.role || "midfielder",
-    preferredY: botData.preferredY || botData.y
-}));
+    bots = teamData.bots.map(botData => ({
+        ...botData,
+        radius: Math.max(3, (botData.radius || 20) * scale),
+        vx: 0,
+        vy: 0,
+        shootPower: botData.shootPower || 1.2,
+        reactionSpeed: 0.2,
+        startY: botData.y,
+        canCrossHalf: botData.canCrossHalf !== undefined ? botData.canCrossHalf : true,
+        isGoalkeeper: botData.isGoalkeeper || false,
+        role: botData.role || "midfielder",
+        preferredY: botData.preferredY || botData.y
+    }));
     
     // Ładuj bramkarza gracza jeśli istnieje
     if (teamData.hasPlayerGoalkeeper && teamData.playerGoalkeeper) {
