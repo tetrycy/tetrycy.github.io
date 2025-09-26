@@ -1,4 +1,4 @@
-// ball.js - fizyka piłki i kolizje - POPRAWIONE KOLIZJE
+// ball.js - fizyka piłki i kolizje - POPRAWIONE KOLIZJE + BRAMKI
 
 /**
  * Oblicza skalowane granice bramki
@@ -7,7 +7,11 @@ function getGoalBounds() {
     const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     const scale = currentTeamData.fieldScale || 1.0;
     
-    const goalAreaHeight = 0.3 * scale;
+    // Łagodniejsze skalowanie bramek - używaj pierwiastka ze skali
+    // Na skali 0.25: sqrt(0.25) = 0.5, więc bramka będzie 15% zamiast 7.5%
+    const goalScaling = Math.sqrt(scale);
+    const goalAreaHeight = 0.3 * goalScaling;
+    
     const goalTop = 0.5 - goalAreaHeight/2;
     const goalBottom = 0.5 + goalAreaHeight/2;
     
@@ -234,20 +238,28 @@ function resetBallAfterGoal() {
     ball.vy = 0;
     gameState.ballInPlay = false;
     
-    // NATYCHMIASTOWY reset pozycji wszystkich botów
+    // POWRÓT DO ORYGINALNYCH POZYCJI Z DEFINICJI DRUŻYNY
     const scale = getCurrentFieldScale();
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
     bots.forEach(bot => {
-        const isPlayerTeam = bot.team === "player";
+        // Znajdź oryginalną definicję tego bota po nazwie
+        const originalBotData = currentTeamData.bots.find(originalBot => originalBot.name === bot.name);
         
-        if (bot.isGoalkeeper) {
-            // Bramkarze na pozycje startowe
-            bot.x = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
-            bot.y = canvas.height / 2;
+        if (originalBotData) {
+            // Użyj oryginalnych pozycji X,Y ze skalowaniem
+            bot.x = originalBotData.x * scale;
+            bot.y = originalBotData.y * scale;
         } else {
-            // Boty polowe na pozycje przed startem
-            bot.x = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
-            bot.y = bot.startY || canvas.height / 2;
+            // Fallback dla botów których nie znaleziono
+            const isPlayerTeam = bot.team === "player";
+            if (bot.isGoalkeeper) {
+                bot.x = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
+                bot.y = canvas.height / 2;
+            } else {
+                bot.x = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
+                bot.y = canvas.height / 2;
+            }
         }
         
         // Wyzeruj prędkości
@@ -256,15 +268,15 @@ function resetBallAfterGoal() {
     });
     
     // Reset bramkarza gracza jeśli istnieje
-    if (playerGoalkeeper) {
-        playerGoalkeeper.x = playerGoalkeeper.startX;
-        playerGoalkeeper.y = playerGoalkeeper.startY;
+    if (playerGoalkeeper && currentTeamData.playerGoalkeeper) {
+        playerGoalkeeper.x = currentTeamData.playerGoalkeeper.x * scale;
+        playerGoalkeeper.y = currentTeamData.playerGoalkeeper.y * scale;
         playerGoalkeeper.vx = 0;
         playerGoalkeeper.vy = 0;
     }
     
     // Reset gracza na pozycję startową
-    player.x = 100;
+    player.x = 100 * scale;
     player.y = canvas.height / 2;
     player.vx = 0;
     player.vy = 0;
