@@ -4,10 +4,9 @@
 let pvpFieldScale = 1.0;
 let pvpSelectedOpponent = null;
 
-// Gracz 2 (niebieski) - dla trybu PvP
 const player2 = {
-    x: 700,  // ← ZMIEŃ
-    y: 200,  // ← ZMIEŃ
+    x: 700,
+    y: 200,
     radius: 20,
     color: '#0000ff',
     vx: 0,
