@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Press Start 2P:wght@400;700;900&display=swap');
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(45deg, #0d4a2d, #1a5c36, #0d4a2d);
+    font-family: 'Press Start 2P', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #00ff00;
+}
+
+h1 {
+    color: #ffff00;
+    text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8);
+    margin-bottom: 5px;
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-align: center;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 20px #ffff00; }
+    to { text-shadow: 3px 3px 0px #ff0000, 6px 6px 10px rgba(0,0,0,0.8), 0 0 40px #ffff00, 0 0 60px #ffff00; }
+}
+
+.subtitle {
+    color: #00ffff;
+    font-size: 12px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.main-menu {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #ffff00;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(255,255,0,0.5);
+}
+
+.team-selection {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #00ff00;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(0,255,0,0.5);
+    display: none;
+}
+
+.menu-btn, .team-btn {
+    background: linear-gradient(45deg, #ff0000, #ff4444);
+    color: #ffff00;
+    border: 3px solid #ffff00;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px;
+    font-family: 'Press Start 2P', monospace;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.team-btn {
+    background: linear-gradient(45deg, #00aa00, #00ff00);
+    color: #000033;
+    display: block;
+    width: 80%;
+    margin: 8px auto;
+    font-size: 14px;
+}
+
+.menu-btn:hover, .team-btn:hover {
+    box-shadow: 0 0 15px rgba(255,255,0,0.5);
+    transform: scale(1.05);
+}
+
+.round-info {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #ff4444;
+    padding: 8px 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+    color: #ffff00;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(255,68,68,0.5);
+}
+
+.score {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 3px solid #00ff00;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0,255,0,0.3);
+}
+
+.team-name {
+    font-size: 12px;
+    color: #ffff00;
+}
+
+.game-container {
+    position: relative;
+    border: 8px solid #8B4513;
+    border-radius: 15px;
+    background: #228B22;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(139,69,19,0.5);
+    display: none;
+}
+
+#gameCanvas {
+    display: block;
+    border-radius: 8px;
+}
+
+.controls {
+    background: linear-gradient(45deg, #000033, #000066);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+    box-shadow: 0 0 15px rgba(0,255,0,0.3);
+    display: none;
+}
+
+.reset-btn, .next-btn, #retryRoundBtn, .back-btn {
+    background: linear-gradient(45deg, #ff0000, #ff4444);
+    color: #ffff00;
+    border: 3px solid #ffff00;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    font-family: 'Press Start 2P', monospace;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.next-btn {
+    background: linear-gradient(45deg, #00aa00, #00ff00);
+    color: #000033;
+    border-color: #ffff00;
+}
+
+.back-btn {
+    background: linear-gradient(45deg, #666666, #999999);
+    color: #ffffff;
+}
+
+.reset-btn:hover, .next-btn:hover, #retryRoundBtn:hover, .back-btn:hover {
+    box-shadow: 0 0 15px rgba(255,255,0,0.5);
+}
+
+.winner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #000066, #000099);
+    border: 4px solid #ffff00;
+    color: #00ff00;
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 0 30px rgba(255,255,0,0.5);
+}
+
+.start-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #000066, #000099);
+    border: 4px solid #00ff00;
+    color: #ffff00;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 10;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 0 30px rgba(0,255,0,0.5);
+}
+
+.retro-text {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
