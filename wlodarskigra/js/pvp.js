@@ -60,12 +60,6 @@ function startPvPCoop(opponentIndex) {
     loadPvPCoopMode(opponentIndex);
 }
 
-// TAKŻE ZMODYFIKUJ funkcję showGame() w ui.js - DODAJ tę linię:
-// Na końcu funkcji showGame() DODAJ:
-// document.getElementById('pvpMenu').classList.add('hidden');
-// document.getElementById('fieldSizeSelection').classList.add('hidden');
-// document.getElementById('coopSelection').classList.add('hidden');
-
 // ============ ŁADOWANIE TRYBÓW PVP ============
 
 function loadPvP1v1Mode(scale) {
