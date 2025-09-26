@@ -1,4 +1,4 @@
-// ball.js - fizyka piłki i kolizje - Z RĘCZNYMI PRĘDKOŚCIAMI
+// ball.js - fizyka piłki i kolizje - POPRAWIONE KOLIZJE
 
 /**
  * Oblicza skalowane granice bramki
@@ -28,6 +28,14 @@ function getBallSpeeds() {
     };
 }
 
+/**
+ * Pobiera aktualną skalę boiska
+ */
+function getCurrentFieldScale() {
+    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
+    return currentTeamData.fieldScale || 1.0;
+}
+
 function updateBall() {
     if (!gameState.ballInPlay || gameState.gameWon) return;
 
@@ -38,14 +46,16 @@ function updateBall() {
     const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
     gameState.ballRotation += speed * 0.05;
 
+    const scale = getCurrentFieldScale();
+
     // Odbicia od ścian - bez efektów
-    if (ball.y <= ball.radius + 15 || ball.y >= canvas.height - ball.radius - 15) {
+    if (ball.y <= ball.radius + 15 * scale || ball.y >= canvas.height - ball.radius - 15 * scale) {
         ball.vy = -ball.vy;
-        ball.y = ball.y <= ball.radius + 15 ? ball.radius + 15 : canvas.height - ball.radius - 15;
+        ball.y = ball.y <= ball.radius + 15 * scale ? ball.radius + 15 * scale : canvas.height - ball.radius - 15 * scale;
     }
 
     // Sprawdzenie goli z bramkarzem gracza - wcześniejsza detekcja
-    if (ball.x <= 60 && ball.vx < 0) {
+    if (ball.x <= 60 * scale && ball.vx < 0) {
         const goalBounds = getGoalBounds();
         if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             // Sprawdź czy bramkarz gracza może zablokować
@@ -54,16 +64,17 @@ function updateBall() {
                 if (distanceToGoalkeeper < ball.radius + playerGoalkeeper.radius) {
                     // Bramkarz odbija piłkę ZAWSZE od bramki (w prawo)
                     ball.vx = Math.abs(ball.vx) * 1.5; // Mocniejsze odbicie
-                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6; // Losowy kierunek w pionie
+                    ball.vy = ball.vy * 0.7 + (Math.random() - 0.5) * 6 * scale; // Losowy kierunek w pionie - skalowany
                     
-                    // Upewnij się że piłka leci od bramki
-                    if (ball.vx < 4) ball.vx = 4; // Minimalna prędkość w prawo
+                    // Upewnij się że piłka leci od bramki - skalowane
+                    const minSpeed = 4 * scale;
+                    if (ball.vx < minSpeed) ball.vx = minSpeed;
                 }
             }
         }
     }
 
-    if (ball.x <= 15) {
+    if (ball.x <= 15 * scale) {
         const goalBounds = getGoalBounds();
         if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             // Jeśli dotarło tutaj, to gol (bramkarz nie złapał wcześniej)
@@ -72,11 +83,11 @@ function updateBall() {
             resetBallAfterGoal();
         } else {
             ball.vx = -ball.vx;
-            ball.x = ball.radius + 15;
+            ball.x = ball.radius + 15 * scale;
         }
     }
 
-    if (ball.x >= canvas.width - 15) {
+    if (ball.x >= canvas.width - 15 * scale) {
         const goalBounds = getGoalBounds();
         if (ball.y > goalBounds.top && ball.y < goalBounds.bottom) {
             gameState.playerScore++;
@@ -84,39 +95,42 @@ function updateBall() {
             resetBallAfterGoal();
         } else {
             ball.vx = -ball.vx;
-            ball.x = canvas.width - ball.radius - 15;
+            ball.x = canvas.width - ball.radius - 15 * scale;
         }
     }
 
-    // Kolizje z graczami - ulepszona wersja anty-chaos
+    // Kolizje z graczami - POPRAWIONE SKALOWANIE
     const currentTime = Date.now();
     const allPlayers = [player, ...bots];
     if (playerGoalkeeper) {
         allPlayers.push(playerGoalkeeper);
     }
+    
     allPlayers.forEach(p => {
         const dx = ball.x - p.x;
         const dy = ball.y - p.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < ball.radius + p.radius) {
-            // Dłuższy cooldown kolizji - zapobiega wielokrotnym kolizjom
-            if (currentTime - gameState.lastCollisionTime < 300) {
-                return; // Pomiń kolizję jeśli za wcześnie (zwiększone z 150ms)
+            // POPRAWIONY COOLDOWN - proporcjonalny do skali boiska
+            const cooldownTime = 300 * scale; // Na 0.25 będzie 75ms, na 0.5 będzie 150ms
+            if (currentTime - gameState.lastCollisionTime < cooldownTime) {
+                return; // Pomiń kolizję jeśli za wcześnie
             }
             
             const nx = dx / distance;
             const ny = dy / distance;
 
-            // Znacznie większe rozdzielenie obiektów
+            // POPRAWIONE ROZDZIELENIE - proporcjonalne do promienia gracza
             const overlap = ball.radius + p.radius - distance;
-            const separationDistance = overlap + 8; // Zwiększone z 2 do 8 pikseli bufora
+            const separationBuffer = Math.max(p.radius * 0.15, 1); // 15% promienia gracza, min 1 piksel
+            const separationDistance = overlap + separationBuffer;
             ball.x += nx * separationDistance;
             ball.y += ny * separationDistance;
 
             // Sprawdź czy piłka była praktycznie nieruchoma
             const ballSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            const wasStationary = ballSpeed < 1;
+            const wasStationary = ballSpeed < 1 * scale;
 
             const dotProduct = ball.vx * nx + ball.vy * ny;
             
@@ -126,15 +140,15 @@ function updateBall() {
                 // Określ docelową bramkę w zależności od drużyny bota
                 let targetGoalX;
                 if (p.team === "player") {
-                    targetGoalX = canvas.width - 15; // Drużyna gracza strzela w prawo
+                    targetGoalX = canvas.width - 15 * scale; // Drużyna gracza strzela w prawo
                 } else {
-                    targetGoalX = 15; // Drużyna przeciwnika strzela w lewo
+                    targetGoalX = 15 * scale; // Drużyna przeciwnika strzela w lewo
                 }
                 
                 const shootAngle = Math.atan2(goalCenterY - ball.y, targetGoalX - ball.x);
                 
-                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6;
-                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6;
+                const shootPowerX = Math.cos(shootAngle) * (p.shootPower || 1.2) * 6 * scale;
+                const shootPowerY = Math.sin(shootAngle) * (p.shootPower || 1.2) * 6 * scale;
                 
                 ball.vx = (ball.vx - 2 * dotProduct * nx) * 0.3 + shootPowerX + p.vx * 0.2;
                 ball.vy = (ball.vy - 2 * dotProduct * ny) * 0.3 + shootPowerY + p.vy * 0.2;
@@ -144,13 +158,13 @@ function updateBall() {
                     // Piłka była nieruchoma - mocne kopnięcie w kierunku ruchu gracza
                     const playerSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
                     if (playerSpeed > 0) {
-                     const kickPower = (player.shootPower || 8) ; // Użyj shootPower gracza
+                        const kickPower = (player.shootPower || 8) * scale; // SKALOWANE kopnięcie
                         ball.vx = (p.vx / playerSpeed) * kickPower;
                         ball.vy = (p.vy / playerSpeed) * kickPower;
                     } else {
-                        // Gracz stoi - delikatne odbicie
-                        ball.vx = nx * 3;
-                        ball.vy = ny * 3;
+                        // Gracz stoi - delikatne odbicie - SKALOWANE
+                        ball.vx = nx * 3 * scale;
+                        ball.vy = ny * 3 * scale;
                     }
                 } else {
                     // Piłka się toczyła - normalne odbicie z minimalnym wpływem gracza
@@ -158,22 +172,24 @@ function updateBall() {
                     ball.vy = ball.vy - 2 * dotProduct * ny + p.vy * 0.1;
                 }
                 
-                // KLUCZOWE: Odepchnij gracza od piłki
+                // KLUCZOWE: Odepchnij gracza od piłki - SKALOWANE
                 if (p === player) {
-                    const pushPower = 3;
+                    const pushPower = 3 * scale;
                     player.pushbackX = -nx * pushPower;  // Przeciwny kierunek do piłki
                     player.pushbackY = -ny * pushPower;
-                    player.stunned = 8;  // 8 klatek ograniczonej responsywności
+                    player.stunned = Math.max(4, 8 * scale);  // Skalowany czas ogłuszenia
                 }
             }
 
-            // Zapewnij minimalną prędkość piłki po kolizji - używaj prędkości z drużyny
+            // Zapewnij minimalną prędkość piłki po kolizji - SKALOWANE
             const ballSpeeds = getBallSpeeds();
             const newSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-            if (newSpeed < 2) {
+            const minSpeed = 2 * scale;
+            
+            if (newSpeed < minSpeed) {
                 // Jeśli piłka za wolna, nadaj jej minimalną prędkość
-                ball.vx = nx * 2;
-                ball.vy = ny * 2;
+                ball.vx = nx * minSpeed;
+                ball.vy = ny * minSpeed;
             } else if (newSpeed > ballSpeeds.maxSpeed) {
                 // Użyj maksymalnej prędkości z definicji drużyny
                 ball.vx = (ball.vx / newSpeed) * ballSpeeds.maxSpeed;
@@ -189,7 +205,9 @@ function updateBall() {
     ball.vx *= 0.998;
     ball.vy *= 0.998;
 
-    if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
+    // SKALOWANE progi zatrzymania piłki
+    const stopThreshold = 0.05 * scale;
+    if (Math.abs(ball.vx) < stopThreshold && Math.abs(ball.vy) < stopThreshold) {
         ball.vx = 0;
         ball.vy = 0;
         gameState.ballInPlay = false;
