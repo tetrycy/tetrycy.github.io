@@ -239,25 +239,20 @@ function resetBallAfterGoal() {
     ball.vy = 0;
     gameState.ballInPlay = false;
     
-    // POWRÓT DO ORYGINALNYCH POZYCJI Z DEFINICJI DRUŻYNY
+    // PROSTE ROZWIĄZANIE - używaj tej samej logiki co przed meczem
     const scale = getCurrentFieldScale();
-    const currentTeamData = gameMode === 'tournament' ? teams[gameState.currentRound] : teams[selectedTeam];
     
     bots.forEach(bot => {
-        if (bot.originalX !== undefined && bot.originalY !== undefined) {
-            // Użyj zapisanych oryginalnych pozycji
-            bot.x = bot.originalX * scale;
-            bot.y = bot.originalY * scale;
+        const isPlayerTeam = bot.team === "player";
+        
+        if (bot.isGoalkeeper) {
+            // Bramkarze - pozycje przy bramkach
+            bot.x = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
+            bot.y = canvas.height / 2;
         } else {
-            // Fallback dla botów których nie znaleziono
-            const isPlayerTeam = bot.team === "player";
-            if (bot.isGoalkeeper) {
-                bot.x = isPlayerTeam ? 40 * scale : canvas.width - 40 * scale;
-                bot.y = canvas.height / 2;
-            } else {
-                bot.x = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
-                bot.y = canvas.height / 2;
-            }
+            // Boty polowe - pozycje przy środkowej linii (jak przed meczem)
+            bot.x = isPlayerTeam ? canvas.width / 2 - 80 * scale : canvas.width / 2 + 80 * scale;
+            bot.y = bot.startY || canvas.height / 2;
         }
         
         // Wyzeruj prędkości
@@ -266,15 +261,15 @@ function resetBallAfterGoal() {
     });
     
     // Reset bramkarza gracza jeśli istnieje
-    if (playerGoalkeeper && currentTeamData.playerGoalkeeper) {
-        playerGoalkeeper.x = currentTeamData.playerGoalkeeper.x * scale;
-        playerGoalkeeper.y = currentTeamData.playerGoalkeeper.y * scale;
+    if (playerGoalkeeper) {
+        playerGoalkeeper.x = playerGoalkeeper.startX;
+        playerGoalkeeper.y = playerGoalkeeper.startY;
         playerGoalkeeper.vx = 0;
         playerGoalkeeper.vy = 0;
     }
     
     // Reset gracza na pozycję startową
-    player.x = 100 * scale;
+    player.x = 100;
     player.y = canvas.height / 2;
     player.vx = 0;
     player.vy = 0;
