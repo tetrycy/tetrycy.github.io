@@ -207,9 +207,9 @@
     <!-- SPIEL INTERFACE -->
     <div class="game-container" id="gameContainer">
         <div class="score" id="scoreDisplay">
-            <span style="color: #ff0000;">SPIELER 1 (WASD)</span>
+            <span style="color: #ff0000;">WLODARSKI (WASD)</span>
             <span id="player1Score">0</span> : <span id="player2Score">0</span>
-            <span style="color: #0066ff;">SPIELER 2 (IJKL)</span>
+            <span style="color: #0066ff;">KOSECKI (IJKL)</span>
         </div>
         
         <div style="position: relative;">
@@ -638,10 +638,10 @@
             
             if (gameState.player1Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('SPIELER 1 (ROT) GEWINNT!');
+                showWinMessage('WLODARSKI (ROT) GEWINNT!');
             } else if (gameState.player2Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('SPIELER 2 (BLAU) GEWINNT!');
+                showWinMessage('KOSECKI (BLAU) GEWINNT!');
             }
         }
         
@@ -961,8 +961,8 @@
                 updateBall();
             }
             
-            drawPlayer(player1, 'P1');
-            drawPlayer(player2, 'P2');
+            drawPlayer(player1, 'WLODARSKI');
+            drawPlayer(player2, 'KOSECKI');
             drawBall();
             
             requestAnimationFrame(gameLoop);
