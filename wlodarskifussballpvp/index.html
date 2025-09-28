@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
+    <title>MARIAN WŁODARSKI PvP FUSSBALL</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -161,8 +161,8 @@
     </style>
 </head>
 <body>
-    <h1>⚽🚬 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🚬⚽</h1>
-    <div class="subtitle">*** SPIELER vs SPIELER  ***</div>
+    <h1>⚽🚬 MARIAN WŁODARSKI PvP FUSSBALL 🚬⚽</h1>
+    <div class="subtitle">*** SPIELER vs SPIELER EDITION ***</div>
     
     <!-- HAUPTMENÜ -->
     <div id="mainMenu" class="main-menu">
@@ -192,10 +192,10 @@
         
         <div class="scale-selector">
             <h3 style="color: #ffff00; font-size: 10px;">FELDGRÖSSE:</h3>
-            <button class="scale-btn" data-scale="0.25" onclick="selectScale(0.25)"> GROßE FELD! (R:25)</button>
-            <button class="scale-btn" data-scale="0.5" onclick="selectScale(0.5)"> STREITIGKEITEN (R:20)</button>
-            <button class="scale-btn" data-scale="0.75" onclick="selectScale(0.75)"> MITTEL (R:17)</button>
-            <button class="scale-btn selected" data-scale="1.0" onclick="selectScale(1.0)"> KLEIN (R:15)</button>
+            <button class="scale-btn" data-scale="0.25" onclick="selectScale(0.25)">MINI (R:25)</button>
+            <button class="scale-btn" data-scale="0.5" onclick="selectScale(0.5)">KLEIN (R:20)</button>
+            <button class="scale-btn" data-scale="0.75" onclick="selectScale(0.75)">MITTEL (R:17)</button>
+            <button class="scale-btn selected" data-scale="1.0" onclick="selectScale(1.0)">VOLL (R:15)</button>
         </div>
         
         <div style="margin: 20px 0;">
@@ -207,9 +207,9 @@
     <!-- SPIEL INTERFACE -->
     <div class="game-container" id="gameContainer">
         <div class="score" id="scoreDisplay">
-            <span style="color: #ff0000;">WLODARSKI (WASD)</span>
+            <span style="color: #ff0000;">SPIELER 1 (WASD)</span>
             <span id="player1Score">0</span> : <span id="player2Score">0</span>
-            <span style="color: #0066ff;">KOSECKI (IJKL)</span>
+            <span style="color: #0066ff;">SPIELER 2 (IJKL)</span>
         </div>
         
         <div style="position: relative;">
@@ -638,10 +638,10 @@
             
             if (gameState.player1Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('WLODARSKI (ROT) GEWINNT!');
+                showWinMessage('SPIELER 1 (ROT) GEWINNT!');
             } else if (gameState.player2Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('KOSECKI (BLAU) GEWINNT!');
+                showWinMessage('SPIELER 2 (BLAU) GEWINNT!');
             }
         }
         
@@ -961,8 +961,8 @@
                 updateBall();
             }
             
-            drawPlayer(player1, 'WLODARSKI');
-            drawPlayer(player2, 'KOSECKI');
+            drawPlayer(player1, 'WŁODARSKI');
+            drawPlayer(player2, 'MÜLLER');
             drawBall();
             
             requestAnimationFrame(gameLoop);
