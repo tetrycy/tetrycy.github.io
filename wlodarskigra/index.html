@@ -5,173 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
     <link rel="stylesheet" href="styles/game.css">
-    <style>
-        /* NOWE STYLE DLA TRYBU PVP */
-        .pvp-btn {
-            background: linear-gradient(45deg, #ff4444, #4444ff);
-            border: 2px solid #ffffff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .coop-btn {
-            background: linear-gradient(45deg, #44ff44, #4444aa);
-            border: 2px solid #ffffff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .back-btn {
-            background: linear-gradient(45deg, #666666, #888888);
-            font-size: 8px;
-        }
-
-        .field-selection-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .field-btn {
-            width: 120px;
-            height: 70px;
-            border: 2px solid #ffff00;
-            background: linear-gradient(45deg, #006600, #008800);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 10px;
-            transition: all 0.3s ease;
-            padding: 5px;
-        }
-
-        .field-btn:hover {
-            background: linear-gradient(45deg, #008800, #00aa00);
-            transform: scale(1.05);
-        }
-
-        .coop-selection-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .team-btn-pvp {
-            width: 140px;
-            height: 60px;
-            border: 2px solid #ffffff;
-            background: linear-gradient(45deg, #333333, #555555);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 10px;
-            transition: all 0.3s ease;
-            padding: 5px;
-        }
-
-        .duisburg-btn:hover {
-            background: linear-gradient(45deg, #0000aa, #0000ff);
-        }
-
-        .mannheim-btn:hover {
-            background: linear-gradient(45deg, #aa00aa, #ff00ff);
-        }
-
-        /* Ukryj nowe menu domyślnie */
-        .hidden {
-            display: none !important;
-        }
-    </style>
 </head>
 <body>
     <h1>⚽🚬 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🚬⚽</h1>
-    <div class="subtitle">*** ⚫🔴🟠 ZWEITE BUNDESLIGA EDITION 1995/96 🔴🟠 ***</div>
+    <div class="subtitle">*** ⚫🔴🟠 ZWEITE BUNDESLIGA EDITION 1995/96 ⚫🔴🟠 ***</div>
     
     <!-- GŁÓWNE MENU -->
     <div id="mainMenu" class="main-menu">
         <h2 style="color: #ffff00; margin-bottom: 20px;">♞ HAUPTMENÜ ♞</h2>
         <button class="menu-btn" onclick="startTournament()">🌍 TURNIER</button>
         <button class="menu-btn" onclick="showTeamSelection()">🥂 FREUNDSCHAFTSSPIEL</button>
-        <!-- NOWY PRZYCISK PVP -->
-        <button class="menu-btn pvp-btn" onclick="showPvPMenu()">👥 MULTIPLAYER</button>
     </div>
 
-    <!-- NOWE MENU PVP -->
-    <div id="pvpMenu" class="main-menu hidden">
-        <h2 style="color: #ffff00; margin-bottom: 20px;">MULTIPLAYER MODUS</h2>
-        <p style="color: #00ffff; font-size: 12px; margin-bottom: 20px;">Wählen Sie einen Spielmodus</p>
-        
-        <button class="menu-btn pvp-btn" onclick="showFieldSizeSelection()">
-            ⚔️ 1 vs 1 DUELL
-        </button>
-        
-        <button class="menu-btn coop-btn" onclick="showCoopSelection()">
-            🤝 CO-OP GEGEN KI
-        </button>
-        
-        <button class="menu-btn back-btn" onclick="backToMenu()">
-            ← ZURÜCK
-        </button>
-    </div>
-
-    <!-- MENU WYBORU ROZMIARU BOISKA -->
-    <div id="fieldSizeSelection" class="main-menu hidden">
-        <h2 style="color: #ffff00; margin-bottom: 20px;">FELD AUSWÄHLEN</h2>
-        <p style="color: #00ffff; font-size: 12px; margin-bottom: 20px;">1 vs 1 Duell</p>
-        
-        <div class="field-selection-grid">
-            <button onclick="startPvP1v1(1.0)" class="field-btn">
-                <div>🏟️ NORMAL</div>
-                <div style="font-size: 8px;">Vollgröße</div>
-            </button>
-            <button onclick="startPvP1v1(0.75)" class="field-btn">
-                <div>🏟️ KLEIN</div>
-                <div style="font-size: 8px;">75% Größe</div>
-            </button>
-            <button onclick="startPvP1v1(0.5)" class="field-btn">
-                <div>🏟️ SEHR KLEIN</div>
-                <div style="font-size: 8px;">50% Größe</div>
-            </button>
-            <button onclick="startPvP1v1(0.25)" class="field-btn">
-                <div>🏟️ MINI</div>
-                <div style="font-size: 8px;">25% Größe</div>
-            </button>
-        </div>
-        
-        <button onclick="backToPvPMenu()" class="menu-btn back-btn">
-            ← ZURÜCK
-        </button>
-    </div>
-
-    <!-- MENU WYBORU PRZECIWNIKA CO-OP -->
-    <div id="coopSelection" class="main-menu hidden">
-        <h2 style="color: #ffff00; margin-bottom: 20px;">GEGNER AUSWÄHLEN</h2>
-        <p style="color: #00ffff; font-size: 12px; margin-bottom: 20px;">Co-Op Modus</p>
-        
-        <div class="coop-selection-grid">
-            <button onclick="startPvPCoop(0)" class="team-btn-pvp duisburg-btn">
-                <div>MSV DUISBURG</div>
-                <div style="font-size: 8px;">Leichter Gegner</div>
-            </button>
-            <button onclick="startPvPCoop(1)" class="team-btn-pvp mannheim-btn">
-                <div>SV WALDHOF MANNHEIM</div>
-                <div style="font-size: 8px;">Schwerer Gegner</div>
-            </button>
-        </div>
-        
-        <button onclick="backToPvPMenu()" class="menu-btn back-btn">
-            ← ZURÜCK
-        </button>
-    </div>
-    
     <!-- WYBÓR DRUŻYNY -->
     <div id="teamSelection" class="team-selection">
         <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
@@ -205,6 +50,7 @@
         </div>
         <div id="winnerMessage" class="winner" style="display: none;"></div>
     </div>
+
     <div class="controls" id="gameControls">
         <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
         <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
@@ -213,15 +59,13 @@
         <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
         <button class="reset-btn" id="retryBtn" onclick="retryMatch()" style="display: none;">🔄 WIEDERHOLEN</button>
     </div>
+
     <!-- ŁADOWANIE PLIKÓW JS W ODPOWIEDNIEJ KOLEJNOŚCI -->
     <script src="js/teams.js"></script>
-      <script src="js/roles.js"></script>
-        <script src="js/player.js"></script>
-    <script src="js/field.js"></script> 
-    <script src="js/pvp.js"></script>
+    <script src="js/field.js"></script>
+    <script src="js/player.js"></script>
     <script src="js/ball.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/game.js"></script>
-    <!-- NOWY MODUŁ PVP -->
 </body>
 </html>
