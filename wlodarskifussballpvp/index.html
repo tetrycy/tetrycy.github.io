@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARIAN WŁODARSKI PvP FUSSBALL</title>
+    <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -161,83 +161,83 @@
     </style>
 </head>
 <body>
-    <h1>⚽🚬 MARIAN WŁODARSKI PvP FUSSBALL 🚬⚽</h1>
-    <div class="subtitle">*** GRACZ vs GRACZ EDITION ***</div>
+    <h1>⚽🚬 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🚬⚽</h1>
+    <div class="subtitle">*** SPIELER vs SPIELER  ***</div>
     
-    <!-- GŁÓWNE MENU -->
+    <!-- HAUPTMENÜ -->
     <div id="mainMenu" class="main-menu">
-        <h2 style="color: #ffff00; margin-bottom: 20px;">♞ GŁÓWNE MENU ♞</h2>
-        <button class="menu-btn" onclick="showGameSetup()">🥊 GRACZ vs GRACZ</button>
+        <h2 style="color: #ffff00; margin-bottom: 20px;">♞ HAUPTMENÜ ♞</h2>
+        <button class="menu-btn" onclick="showGameSetup()">🥊 SPIELER vs SPIELER</button>
         <div style="margin-top: 20px; font-size: 8px; color: #00ffff;">
-            STEROWANIE:<br>
-            GRACZ 1: WASD | GRACZ 2: IJKL<br>
-            SPACJA: START/RESET PIŁKI
+            STEUERUNG:<br>
+            SPIELER 1: WASD | SPIELER 2: IJKL<br>
+            LEERTASTE: START/RESET BALL
         </div>
     </div>
     
-    <!-- SETUP GRY -->
+    <!-- SPIEL SETUP -->
     <div id="gameSetup" class="game-setup hidden">
-        <h2 style="color: #00ff00; margin-bottom: 20px;">USTAWIENIA MECZU</h2>
+        <h2 style="color: #00ff00; margin-bottom: 20px;">SPIEL EINSTELLUNGEN</h2>
         
         <div class="field-selector">
-            <h3 style="color: #ffff00; font-size: 10px;">WYBIERZ BOISKO:</h3>
-            <button class="field-btn selected" data-field="simple" onclick="selectField('simple')">ZWYKŁE</button>
-            <button class="field-btn" data-field="grass" onclick="selectField('grass')">TRAWA</button>
-            <button class="field-btn" data-field="muddy" onclick="selectField('muddy')">BŁOTO</button>
-            <button class="field-btn" data-field="winter" onclick="selectField('winter')">ZIMA</button>
-            <button class="field-btn" data-field="sandy" onclick="selectField('sandy')">PIASEK</button>
-            <button class="field-btn" data-field="asphalt" onclick="selectField('asphalt')">ASFALT</button>
-            <button class="field-btn" data-field="professional" onclick="selectField('professional')">STADION</button>
+            <h3 style="color: #ffff00; font-size: 10px;">SPIELFELD WÄHLEN:</h3>
+            <button class="field-btn selected" data-field="simple" onclick="selectField('simple')">EINFACH (normal)</button>
+            <button class="field-btn" data-field="grass" onclick="selectField('grass')">GRAS (langsamer)</button>
+            <button class="field-btn" data-field="muddy" onclick="selectField('muddy')">MATSCH (sehr langsam)</button>
+            <button class="field-btn" data-field="winter" onclick="selectField('winter')">WINTER (rutschig-schnell)</button>
+            <button class="field-btn" data-field="sandy" onclick="selectField('sandy')">SAND (sehr träge)</button>
+            <button class="field-btn" data-field="asphalt" onclick="selectField('asphalt')">ASPHALT (schnell)</button>
+            <button class="field-btn" data-field="professional" onclick="selectField('professional')">STADION (sehr schnell)</button>
         </div>
         
         <div class="scale-selector">
-            <h3 style="color: #ffff00; font-size: 10px;">SKALA BOISKA:</h3>
-            <button class="scale-btn" data-scale="0.25" onclick="selectScale(0.25)">MINI</button>
-            <button class="scale-btn" data-scale="0.5" onclick="selectScale(0.5)">MAŁE</button>
-            <button class="scale-btn" data-scale="0.75" onclick="selectScale(0.75)">ŚREDNIE</button>
-            <button class="scale-btn selected" data-scale="1.0" onclick="selectScale(1.0)">PEŁNE</button>
+            <h3 style="color: #ffff00; font-size: 10px;">FELDGRÖSSE:</h3>
+            <button class="scale-btn" data-scale="0.25" onclick="selectScale(0.25)"> GROßE FELD! (R:25)</button>
+            <button class="scale-btn" data-scale="0.5" onclick="selectScale(0.5)"> STREITIGKEITEN (R:20)</button>
+            <button class="scale-btn" data-scale="0.75" onclick="selectScale(0.75)"> MITTEL (R:17)</button>
+            <button class="scale-btn selected" data-scale="1.0" onclick="selectScale(1.0)"> KLEIN (R:15)</button>
         </div>
         
         <div style="margin: 20px 0;">
-            <button class="setup-btn" onclick="startPvPGame()">🚀 ROZPOCZNIJ MECZ</button>
-            <button class="setup-btn" onclick="backToMenu()">← POWRÓT</button>
+            <button class="setup-btn" onclick="startPvPGame()">🚀 SPIEL STARTEN</button>
+            <button class="setup-btn" onclick="backToMenu()">← ZURÜCK</button>
         </div>
     </div>
     
-    <!-- INTERFEJS GRY -->
+    <!-- SPIEL INTERFACE -->
     <div class="game-container" id="gameContainer">
         <div class="score" id="scoreDisplay">
-            <span style="color: #ff0000;">GRACZ 1 (WASD)</span>
+            <span style="color: #ff0000;">SPIELER 1 (WASD)</span>
             <span id="player1Score">0</span> : <span id="player2Score">0</span>
-            <span style="color: #0066ff;">GRACZ 2 (IJKL)</span>
+            <span style="color: #0066ff;">SPIELER 2 (IJKL)</span>
         </div>
         
         <div style="position: relative;">
             <canvas id="gameCanvas" width="800" height="400"></canvas>
             <div id="startMessage" class="start-message">
-                <h3>🚀 NACIŚNIJ SPACJĘ! 🚀</h3>
-                <p style="font-size: 8px;">*** MECZ ROZPOCZYNA SIĘ! ***</p>
+                <h3>🚀 LEERTASTE DRÜCKEN! 🚀</h3>
+                <p style="font-size: 8px;">*** SPIEL BEGINNT! ***</p>
             </div>
             <div id="winnerMessage" class="winner hidden"></div>
         </div>
         
         <div class="controls-info">
             <div class="player-controls">
-                <strong style="color: #ff0000;">GRACZ 1</strong><br>
-                W/A/S/D = RUCH
+                <strong style="color: #ff0000;">SPIELER 1</strong><br>
+                W/A/S/D = BEWEGUNG
             </div>
             <div class="player-controls">
-                <strong style="color: #0066ff;">GRACZ 2</strong><br>
-                I/J/K/L = RUCH
+                <strong style="color: #0066ff;">SPIELER 2</strong><br>
+                I/J/K/L = BEWEGUNG
             </div>
             <div style="margin: 10px 0;">
-                SPACJA: START/RESET PIŁKI | PIERWSZY DO 5 GOLI WYGRYWA!
+                LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!
             </div>
         </div>
         
         <div>
-            <button class="control-btn" onclick="backToMenu()">🏠 MENU GŁÓWNE</button>
-            <button class="control-btn" id="restartBtn" onclick="restartMatch()" style="display: none;">🔄 PONÓW MECZ</button>
+            <button class="control-btn" onclick="backToMenu()">🏠 HAUPTMENÜ</button>
+            <button class="control-btn" id="restartBtn" onclick="restartMatch()" style="display: none;">🔄 SPIEL WIEDERHOLEN</button>
         </div>
     </div>
 
@@ -292,7 +292,8 @@
             vy: 0,
             color: '#ffffff',
             maxSpeed: 12,
-            startSpeed: 6
+            startSpeed: 6,
+            friction: 0.998
         };
         
         // Sterowanie
@@ -332,6 +333,65 @@
             gameSettings.field = fieldType;
             document.querySelectorAll('.field-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelector(`[data-field="${fieldType}"]`).classList.add('selected');
+            
+            // Ustaw parametry piłki i graczy w zależności od typu boiska
+            switch(fieldType) {
+                case 'simple':
+                    ball.startSpeed = 6;
+                    ball.maxSpeed = 12;
+                    ball.friction = 0.998;
+                    player1.speed = 5;
+                    player2.speed = 5;
+                    break;
+                case 'grass':
+                    ball.startSpeed = 5.5;
+                    ball.maxSpeed = 11;
+                    ball.friction = 0.997; // Nieco więcej tarcia na trawie
+                    player1.speed = 4.5; // Wolniej na trawie
+                    player2.speed = 4.5;
+                    break;
+                case 'muddy':
+                    ball.startSpeed = 4;
+                    ball.maxSpeed = 8;
+                    ball.friction = 0.992; // Dużo tarcia w błocie
+                    player1.speed = 3.5; // Bardzo wolno w błocie
+                    player2.speed = 3.5;
+                    break;
+                case 'winter':
+                    ball.startSpeed = 7;
+                    ball.maxSpeed = 14;
+                    ball.friction = 0.999; // Ślisko - mniej tarcia
+                    player1.speed = 6; // Szybciej ale mniej kontroli
+                    player2.speed = 6;
+                    break;
+                case 'sandy':
+                    ball.startSpeed = 3.5;
+                    ball.maxSpeed = 7;
+                    ball.friction = 0.990; // Piasek bardzo spowalnia
+                    player1.speed = 3; // Bardzo trudno biegać w piasku
+                    player2.speed = 3;
+                    break;
+                case 'asphalt':
+                    ball.startSpeed = 7.5;
+                    ball.maxSpeed = 15;
+                    ball.friction = 0.999; // Gładki asfalt
+                    player1.speed = 5.5; // Szybko na asfalcie
+                    player2.speed = 5.5;
+                    break;
+                case 'professional':
+                    ball.startSpeed = 8;
+                    ball.maxSpeed = 16;
+                    ball.friction = 0.9995; // Najlepsza nawierzchnia
+                    player1.speed = 6; // Najszybciej na profesjonalnym boisku
+                    player2.speed = 6;
+                    break;
+                default:
+                    ball.startSpeed = 6;
+                    ball.maxSpeed = 12;
+                    ball.friction = 0.998;
+                    player1.speed = 5;
+                    player2.speed = 5;
+            }
         }
         
         function selectScale(scale) {
@@ -339,12 +399,32 @@
             document.querySelectorAll('.scale-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelector(`[data-scale="${scale}"]`).classList.add('selected');
             
-            // Zaktualizuj rozmiary graczy i piłki
-            const baseRadius = 15;
-            const baseBallRadius = 8;
-            player1.radius = Math.max(3, baseRadius * scale);
-            player2.radius = Math.max(3, baseRadius * scale);
-            ball.radius = Math.max(2, baseBallRadius * scale);
+            // Zaktualizuj rozmiary graczy i piłki - większe radiusy na mniejszych boiskach
+            let playerRadius, ballRadius;
+            
+            switch(scale) {
+                case 0.25:
+                    playerRadius = 25; // Największy radius na najmniejszym boisku
+                    ballRadius = 12;
+                    break;
+                case 0.5:
+                    playerRadius = 20; // Duży radius na małym boisku
+                    ballRadius = 10;
+                    break;
+                case 0.75:
+                    playerRadius = 17; // Średni radius na średnim boisku
+                    ballRadius = 9;
+                    break;
+                case 1.0:
+                default:
+                    playerRadius = 15; // Standardowy radius na pełnym boisku
+                    ballRadius = 8;
+                    break;
+            }
+            
+            player1.radius = playerRadius;
+            player2.radius = playerRadius;
+            ball.radius = ballRadius;
         }
         
         function startPvPGame() {
@@ -507,9 +587,9 @@
                 }
             });
             
-            // Tarcie
-            ball.vx *= 0.998;
-            ball.vy *= 0.998;
+            // Tarcie - używa parametr zależny od boiska
+            ball.vx *= ball.friction;
+            ball.vy *= ball.friction;
             
             if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
                 ball.vx = 0;
@@ -558,10 +638,10 @@
             
             if (gameState.player1Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('GRACZ 1 (CZERWONY) WYGRYWA!');
+                showWinMessage('SPIELER 1 (ROT) GEWINNT!');
             } else if (gameState.player2Score >= 5) {
                 gameState.gameWon = true;
-                showWinMessage('GRACZ 2 (NIEBIESKI) WYGRYWA!');
+                showWinMessage('SPIELER 2 (BLAU) GEWINNT!');
             }
         }
         
@@ -569,7 +649,7 @@
             document.getElementById('winnerMessage').innerHTML = `
                 <div style="font-size: 14px;">🎉 ${message} 🎉</div>
                 <div style="font-size: 10px; margin: 10px 0; color: #ffff00;">
-                    WYNIK: ${gameState.player1Score} - ${gameState.player2Score}
+                    ERGEBNIS: ${gameState.player1Score} - ${gameState.player2Score}
                 </div>
             `;
             document.getElementById('winnerMessage').classList.remove('hidden');
