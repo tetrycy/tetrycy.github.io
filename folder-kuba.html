@@ -164,7 +164,6 @@
             cursor: default;
         }
         
-        /* Responsywność dla telefonów */
         @media (max-width: 768px) {
             .file-item {
                 width: 60px;
@@ -249,7 +248,7 @@
         </div>
         
         <div class="status-bar">
-            <span id="status-count">11 obiektów</span>
+            <span id="status-count">13 obiektów</span>
             <span>Mój komputer</span>
         </div>
     </div>
@@ -258,18 +257,14 @@
         let currentPath = 'main';
         let pathHistory = [];
         
-        // Definicja zawartości folderów
         const folders = {
             main: {
                 title: 'Folder Kuby',
                 path: 'C:\\Moje dokumenty\\Folder Kuby',
                 items: [
-                    // Podfoldery
                     { type: 'folder', icon: '📁', name: 'Moja muzyka', target: 'music' },
                     { type: 'folder', icon: '📁', name: 'Gry', target: 'games' },
                     { type: 'folder', icon: '📁', name: 'Filmy', target: 'movies' },
-                    
-                    // Felietony
                     { type: 'file', icon: '📄', name: 'Jak co środę #1', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #2', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz2.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #3', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz3.html' },
@@ -277,9 +272,9 @@
                     { type: 'file', icon: '📄', name: 'Jak co środę #5', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz5.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #6', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz6.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #7', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz7.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #8', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz8.html' }
-                    type: 'file', icon: '📄', name: 'Jak co środę #9', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz9.html' }
-        type: 'file', icon: '📄', name: 'Jak co środę #10', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz10.html' }
+                    { type: 'file', icon: '📄', name: 'Jak co środę #8', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz8.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #9', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz9.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #10', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz10.html' }
                 ]
             },
             
@@ -287,23 +282,22 @@
                 title: 'Moja muzyka',
                 path: 'C:\\Moje dokumenty\\Folder Kuby\\Moja muzyka',
                 items: [
-                    // 6 plików MP3 - miejsca na tytuły i odsyłacze do YT
                     { type: 'music', icon: '🎵', name: 'Pro8l3m - Na ostatnią chwilę', target: 'https://www.youtube.com/watch?v=h4FJZCiIjqA&list=RDh4FJZCiIjqA&start_radio=1' },
                     { type: 'music', icon: '🎵', name: 'Avi/Louis Villain - Królestwo', target: 'https://www.youtube.com/watch?v=oj_ppt65nhE&list=RDoj_ppt65nhE&start_radio=1' },
                     { type: 'music', icon: '🎵', name: 'OSTR - Wierszokleta', target: 'https://www.youtube.com/watch?v=n11dpojCPMc&list=RDn11dpojCPMc&start_radio=1' },
                     { type: 'music', icon: '🎵', name: 'Eldo - Eternia', target: 'https://www.youtube.com/watch?v=6YeHvUt1lQw&list=RD6YeHvUt1lQw&start_radio=1' },
                     { type: 'music', icon: '🎵', name: 'The Libertines - What a waster', target: 'https://www.youtube.com/watch?v=R_c8aGMEjx4&list=RDR_c8aGMEjx4&start_radio=1' },
-                    { type: 'music', icon: '🎵', name: 'The Streets - How to win at Rock Paper Scissors', target: 'https://www.youtube.com/watch?v=d9qoTN542uM&list=RDd9qoTN542uM&start_radio=1' }
-                     { type: 'music', icon: '🎵', name: 'Morrowind - ost', target: 'https://www.youtube.com/watch?v=nJD-Ufi1jGk' }
-                 { type: 'music', icon: '🎵', name: 'Eldo - Na maksa', target: 'https://www.youtube.com/watch?v=1yLAhFksgls' }
-                 { type: 'music', icon: '🎵', name: 'Afront - Vlade Divac', target: 'www.youtube.com/watch?v=dk13In2jo3E' }
-                 { type: 'music', icon: '🎵', name: 'Proceente - Niezatapialność', target: 'www.youtube.com/watch?v=iRZcc2G0xys' }
-                 { type: 'music', icon: '🎵', name: 'Pjus - Fanatyk', target: 'www.youtube.com/watch?v=rTOj6rkjMMs' }
-                 { type: 'music', icon: '🎵', name: 'Echinacea - Dobranoc ', target: 'www.youtube.com/watch?v=k2jXRbigokE' }
-                 { type: 'music', icon: '🎵', name: 'Junes - Gra  ', target: 'www.youtube.com/watch?v=NN8m5FMj12U' }
-                 { type: 'music', icon: '🎵', name: 'Dizkret, Praktik, Majkel, Wankz, Pjus - Braggadocio ', target: 'www.youtube.com/watch?v=ZlDJYZXHy1E' }
-                 { type: 'music', icon: '🎵', name: 'Kamil Pivot - Pogoda na bluzę', target: 'www.youtube.com/watch?v=yy95fVnZvJ4' }
-                 { type: 'music', icon: '🎵', name: 'Afront - Cztery Żywioły', target: 'www.youtube.com/watch?v=UlXZgEEVVPg' }
+                    { type: 'music', icon: '🎵', name: 'The Streets - How to win at Rock Paper Scissors', target: 'https://www.youtube.com/watch?v=d9qoTN542uM&list=RDd9qoTN542uM&start_radio=1' },
+                    { type: 'music', icon: '🎵', name: 'Morrowind - ost', target: 'https://www.youtube.com/watch?v=nJD-Ufi1jGk' },
+                    { type: 'music', icon: '🎵', name: 'Eldo - Na maksa', target: 'https://www.youtube.com/watch?v=1yLAhFksgls' },
+                    { type: 'music', icon: '🎵', name: 'Afront - Vlade Divac', target: 'https://www.youtube.com/watch?v=dk13In2jo3E' },
+                    { type: 'music', icon: '🎵', name: 'Proceente - Niezatapialność', target: 'https://www.youtube.com/watch?v=iRZcc2G0xys' },
+                    { type: 'music', icon: '🎵', name: 'Pjus - Fanatyk', target: 'https://www.youtube.com/watch?v=rTOj6rkjMMs' },
+                    { type: 'music', icon: '🎵', name: 'Echinacea - Dobranoc', target: 'https://www.youtube.com/watch?v=k2jXRbigokE' },
+                    { type: 'music', icon: '🎵', name: 'Junes - Gra', target: 'https://www.youtube.com/watch?v=NN8m5FMj12U' },
+                    { type: 'music', icon: '🎵', name: 'Dizkret, Praktik, Majkel, Wankz, Pjus - Braggadocio', target: 'https://www.youtube.com/watch?v=ZlDJYZXHy1E' },
+                    { type: 'music', icon: '🎵', name: 'Kamil Pivot - Pogoda na bluzę', target: 'https://www.youtube.com/watch?v=yy95fVnZvJ4' },
+                    { type: 'music', icon: '🎵', name: 'Afront - Cztery Żywioły', target: 'https://www.youtube.com/watch?v=UlXZgEEVVPg' }
                 ]
             },
             
@@ -311,11 +305,10 @@
                 title: 'Filmy',
                 path: 'C:\\Moje dokumenty\\Folder Kuby\\Filmy',
                 items: [
-                    // Jeden film - odsyłacz do YouTube
-                    { type: 'movie', icon: '🎬', name: 'Snatch.avi', target: 'https://www.youtube.com/watch?v=2pIuncegdOc' }
-                    { type: 'movie', icon: '🎬', name: 'Jakub Olkiewicz - Danza Kuduro Remix', target: 'https://www.youtube.com/watch?v=nwq1Fpi1HUc' }
-                 { type: 'movie', icon: '🎬', name: 'JAKUB OLKIEWICZ CRAZY FOULS & SKILLS', target: 'https://www.youtube.com/watch?v=hwvFhgf5xqo&t=4s' }
-                 { type: 'movie', icon: '🎬', name: 'Lombard: Życie pod zastaw - LESZEK OLKIEWICZ', target: 'https://www.youtube.com/watch?v=8qOdRj027G0' }
+                    { type: 'movie', icon: '🎬', name: 'Snatch.avi', target: 'https://www.youtube.com/watch?v=2pIuncegdOc' },
+                    { type: 'movie', icon: '🎬', name: 'Jakub Olkiewicz - Danza Kuduro Remix', target: 'https://www.youtube.com/watch?v=nwq1Fpi1HUc' },
+                    { type: 'movie', icon: '🎬', name: 'JAKUB OLKIEWICZ CRAZY FOULS & SKILLS', target: 'https://www.youtube.com/watch?v=hwvFhgf5xqo&t=4s' },
+                    { type: 'movie', icon: '🎬', name: 'Lombard: Życie pod zastaw - LESZEK OLKIEWICZ', target: 'https://www.youtube.com/watch?v=8qOdRj027G0' }
                 ]
             },
             
@@ -323,7 +316,6 @@
                 title: 'Gry',
                 path: 'C:\\Moje dokumenty\\Folder Kuby\\Gry',
                 items: [
-                    // Jedna gra - miejsce na odsyłacz
                     { type: 'game', icon: '⚽', name: 'Goal3.exe', target: 'https://archive.org/details/kunio-kun-no-nekketsu-soccer-league-polska-wersja' }
                 ]
             }
@@ -333,18 +325,15 @@
             const folder = folders[folderKey];
             if (!folder) return;
             
-            // Aktualizuj historię ścieżki
             if (folderKey !== currentPath) {
                 pathHistory.push(currentPath);
             }
             currentPath = folderKey;
             
-            // Aktualizuj interfejs
             document.getElementById('window-title').textContent = folder.title;
             document.getElementById('path-text').textContent = folder.path;
             document.getElementById('status-count').textContent = folder.items.length + ' obiektów';
             
-            // Aktualizuj przycisk Wstecz
             const backBtn = document.getElementById('back-btn');
             if (pathHistory.length > 0) {
                 backBtn.classList.remove('disabled');
@@ -352,7 +341,6 @@
                 backBtn.classList.add('disabled');
             }
             
-            // Załaduj zawartość
             const content = document.getElementById('content');
             content.innerHTML = '';
             
@@ -385,16 +373,12 @@
         
         function openItem(item) {
             if (item.type === 'file') {
-                // Otwórz felieton w nowym oknie z panelem Windows
                 window.open(item.target, '_blank', 'width=800,height=600,toolbar=yes,menubar=yes,scrollbars=yes,resizable=yes,status=yes');
             } else if (item.type === 'music') {
-                // Otwórz YouTube w nowej karcie
                 window.open(item.target, '_blank');
             } else if (item.type === 'movie') {
-                // Otwórz film w nowej karcie
                 window.open(item.target, '_blank');
             } else if (item.type === 'game') {
-                // Otwórz grę na pełny ekran
                 window.open(item.target, '_blank', 'fullscreen=yes,scrollbars=yes,resizable=yes');
             }
         }
@@ -407,7 +391,6 @@
             }
         }
         
-        // Załaduj główny folder przy starcie
         loadFolder('main');
     </script>
 </body>
