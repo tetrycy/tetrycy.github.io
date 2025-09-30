@@ -99,6 +99,10 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 openSolitaire();
                 toggleStartMenu();
                 break;
+                case 'wojna':
+    openWojna();
+    toggleStartMenu();
+    break;
             case 'shutdown':
                 showShutdownDialog();
                 toggleStartMenu();
@@ -171,6 +175,10 @@ function openCalculator() {
         width: 250,
         height: 300
     });
+}
+
+function openWojna() {
+    window.open('https://www.tetrycy.com.pl/gry/wojna.html', '_blank');
 }
 
 function openMinesweeper() {
