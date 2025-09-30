@@ -299,7 +299,7 @@ case 'jakub-olkiewicz':
     window.open('https://tetrycy.github.io/felietony-kuby/olkiewicz8.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
     break;
 case 'marian-fussball':
-    window.open('https://tetrycy.github.io/gry/wlodarskifussball.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+    window.open('https://www.tetrycy.com.pl/wlodarskifussball/index.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
     break;
         }
     });
