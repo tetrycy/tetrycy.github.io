@@ -1,1 +1,396 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2</title>
+    <link rel="stylesheet" href="styles/game.css">
+    
+    <style>
+        /* Dodatkowe style dla nowych przycisków */
+        .wide-btn {
+            width: 100% !important;
+            min-width: 350px !important;
+            font-size: 16px !important;
+            padding: 15px 20px !important;
+            margin: 8px auto !important;
+            font-weight: bold !important;
+        }
+        
+        /* EKRAN STARTOWY Z OBRAZKIEM */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(45deg, #001122, #003344, #001a33);
+            background-size: 400% 400%;
+            animation: backgroundShift 6s ease-in-out infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: 'Press Start 2P', monospace;
+        }
+        
+        @keyframes backgroundShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Wyśrodkowany obrazek */
+        .splash-image {
+            max-width: 90vw;
+            max-height: 70vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.3), 0 0 60px rgba(255, 255, 0, 0.1);
+            animation: imageGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes imageGlow {
+            from { 
+                box-shadow: 0 0 30px rgba(255, 255, 0, 0.3), 0 0 60px rgba(255, 255, 0, 0.1);
+                transform: scale(1);
+            }
+            to { 
+                box-shadow: 0 0 40px rgba(255, 255, 0, 0.5), 0 0 80px rgba(255, 255, 0, 0.2);
+                transform: scale(1.02);
+            }
+        }
+        
+        .splash-instruction {
+            position: absolute;
+            bottom: 80px;
+            font-size: 16px;
+            color: #ffff00;
+            text-shadow: 3px 3px 6px #000;
+            animation: instructionBlink 1.5s ease-in-out infinite;
+            text-align: center;
+        }
+        
+        @keyframes instructionBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* Przycisk wyciszenia */
+        .mute-button {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffff00;
+            color: #ffff00;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .mute-button:hover {
+            background: rgba(255, 255, 0, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .mute-button.muted {
+            color: #ff6666;
+            border-color: #ff6666;
+        }
+        
+        /* Ukryj główną zawartość na początku */
+        .main-content {
+            display: none;
+        }
+        
+        .main-content.show {
+            display: block;
+        }
+        
+        /* POPRAWKA: Resetuj style dla zawartości gry */
+        .main-content #gameCanvas,
+        .main-content .game-container,
+        .main-content canvas {
+            max-width: none !important;
+            max-height: none !important;
+            width: 800px !important;
+            height: 400px !important;
+            object-fit: initial !important;
+        }
+        
+        .main-content img {
+            max-width: 100%;
+            object-fit: initial;
+        }
+        
+        /* Animacja znikania splash screen */
+        .splash-screen.fade-out {
+            animation: fadeOut 0.8s ease-out forwards;
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+        }
 
+       /* WYMUSZENIE CENTROWANIA TYLKO DLA GRY */
+#gameContainer,
+#scoreDisplay,
+#roundInfo,
+#gameControls {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+}
+
+#gameCanvas {
+    display: block !important;
+    margin: 0 auto !important;
+}
+    </style>
+</head>
+<body>
+    <!-- EKRAN STARTOWY Z OBRAZKIEM -->
+    <div id="splashScreen" class="splash-screen">
+        <button id="muteButton" class="mute-button" onclick="toggleMute()">🔊 SOUND</button>
+        <img src="okladka.jpg" alt="Włodarski Fussball" class="splash-image">
+        <div class="splash-instruction">
+            DRÜCKEN SIE LEERTASTE ZUM BEGINNEN
+        </div>
+    </div>
+    
+   
+    <!-- GŁÓWNA ZAWARTOŚĆ (UKRYTA NA POCZĄTKU) -->
+    <div id="mainContent" class="main-content">
+        <h1>⚽🚬 MARIAN WŁODARSKI GESUNDHEIT FUSSBALL 2 🚬⚽</h1>
+        <div class="subtitle">*** ⚫🔴🟠 ZWEITE BUNDESLIGA EDITION 1996/97 ⚫🔴🟠 ***</div>
+        
+  <!-- GŁÓWNE MENU -->
+        <div id="mainMenu" class="main-menu">
+            <h2 style="color: #ffff00; margin-bottom: 20px;">♞ HAUPTMENÜ ♞</h2>
+            
+            <!-- PRZYCISK WYCISZENIA W MENU -->
+            <button id="menuMuteButton" class="menu-mute-btn" onclick="toggleMenuMute()">
+                🔊 SOUND
+            </button>
+                        
+            <button class="menu-btn wide-btn" onclick="startTournament()">🌍 2. BUNDESLIGA!</button>
+            <button class="menu-btn wide-btn" onclick="showTeamSelection()">🥂 FREUNDSCHAFTSSPIEL!</button>
+            <button class="menu-btn wide-btn" onclick="goToDuel()">⚔️ 1 VS 1 DUEL!</button>
+            <button class="menu-btn wide-btn" onclick="goToCoopGame()">🤝 ZUSAMMEN SPIEL!</button>
+            <button class="menu-btn wide-btn" onclick="goToNationalGame()">🇵🇱🇩🇪 POLEN - DEUTSCHLAND: MANNSCHAFT!</button>
+        </div>
+        
+       <!-- WYBÓR DRUŻYNY -->
+    <div id="teamSelection" class="team-selection">
+        <h2 style="color: #00ff00; margin-bottom: 20px;">GEGNER WÄHLEN</h2>
+        <button class="menu-btn wide-btn" onclick="startFriendly(0)">VFL OLDENBURG (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(1)">MSV DUISBURG (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(2)">SV WALDHOF MANNHEIM (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(3)">FC KAISERSLAUTERN (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(4)">FC GUTERSLOH (1vsgk) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(5)">FC HANSA ROSTOCK (1vs2) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(6)">SV MEPPEN (2vs2) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(7)">FORTUNA KOLN (1vs4) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(8)">FC CARL ZEISS JENA (1vs3) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(9)">VFL BOCHUM (3vs3) </button>
+          <button class="menu-btn wide-btn" onclick="startFriendly(10)">KFC UERDINGEN (1vs1) </button>
+                <button class="menu-btn wide-btn" onclick="startFriendly(11)">STUTTGARTERS KICKERS (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(12)">FSV ZWICKAU (1vs1) </button>
+        <button class="menu-btn wide-btn" onclick="startFriendly(13)">HERTHA BERLIN (1vs2) </button>
+          <button class="menu-btn wide-btn" onclick="startFriendly(14)">SANKT PAULI (3vs3) </button>
+          <button class="menu-btn wide-btn" onclick="startFriendly(15)"> UNION BERLIN (4vs4) </button>
+        <button class="back-btn" onclick="backToMenu()">← ZURÜCK</button>
+    </div>
+        
+        <!-- INTERFEJS GRY -->
+        <div class="round-info hidden" id="roundInfo">
+            RUNDE 1: SV BABELSBERG 04 vs VFL OLDENBURG
+        </div>
+        
+        <div class="score hidden" id="scoreDisplay">
+            <div class="team-name" id="playerTeam">SV BABELSBERG 04</div>
+            <span id="playerScore">0</span> : <span id="botScore">0</span>
+            <div class="team-name" id="botTeam">VFL OLDENBURG</div>
+        </div>
+        
+        <div class="game-container" id="gameContainer">
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            <div id="startMessage" class="start-message">
+                <h3 id="startTitle">🚀 DRÜCKEN SIE LEERTASTE! 🚀</h3>
+                <p class="retro-text">WASD = STEUERUNG</p>
+                <p id="startSubtitle">*** SPIEL BEGINNT! ***</p>
+            </div>
+            <div id="winnerMessage" class="winner" style="display: none;"></div>
+        </div>
+        <div class="controls" id="gameControls">
+            <p class="retro-text"><strong>MARIAN WŁODARSKI:</strong> WASD STEUERUNG | <strong>GEGNER:</strong> COMPUTER KI</p>
+            <p>LEERTASTE: START/RESET BALL | ERSTER BIS 5 TORE GEWINNT!</p>
+            
+            <button class="reset-btn" onclick="backToMenu()">🏠 HAUPTMENÜ</button>
+            <button class="next-btn" id="nextRoundBtn" onclick="nextRound()" style="display: none;">➡️ NÄCHSTE RUNDE</button>
+            <button class="reset-btn" id="retryBtn" onclick="retryMatch()" style="display: none;">🔄 WIEDERHOLEN</button>
+        </div>
+    </div>
+    
+    <!-- ŁADOWANIE PLIKÓW JS W ODPOWIEDNIEJ KOLEJNOŚCI -->
+    <script src="js/teams.js"></script>
+    <script src="js/field.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/ball.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/game.js"></script>
+    
+<!-- OBSŁUGA EKRANU STARTOWEGO Z DŹWIĘKIEM -->
+<script>
+    let splashScreenActive = true;
+    let welcomeSoundPlayed = false;
+
+    // Obsługa klawiatury dla ekranu startowego
+    document.addEventListener('keydown', function(event) {
+        if (splashScreenActive && event.code === 'Space') {
+            event.preventDefault();
+            
+            if (!welcomeSoundPlayed) {
+                // PIERWSZA SPACJA - odtwórz wilkommen
+                if (!AudioSystem.isMuted) {
+                    AudioSystem.play('welcome');
+                }
+                welcomeSoundPlayed = true;
+                
+                // Zmień tekst instrukcji
+                const instruction = document.querySelector('.splash-instruction');
+                if (instruction) {
+                    instruction.textContent = 'DRÜCKEN SIE ERNEUT LEERTASTE FÜR HAUPTMENÜ';
+                }
+            } else {
+                // DRUGA SPACJA - ukryj splash screen
+                hideSplashScreen();
+            }
+        }
+    });
+    
+    // Ukryj splash screen i pokaż główne menu
+    function hideSplashScreen() {
+        const splashScreen = document.getElementById('splashScreen');
+        const mainContent = document.getElementById('mainContent');
+        
+        splashScreen.classList.add('fade-out');
+        
+        setTimeout(() => {
+            splashScreen.style.display = 'none';
+            mainContent.classList.add('show');
+            splashScreenActive = false;
+            
+            // Zatrzymaj dźwięk powitalny i uruchom muzykę menu
+            AudioSystem.stop('welcome');
+            
+            if (!AudioSystem.isMuted) {
+                AudioSystem.play('menu');
+            }
+        }, 800);
+    }
+    
+    // Opcjonalnie: ukryj splash screen po kliknięciu (drugie kliknięcie)
+    let clickCount = 0;
+    document.getElementById('splashScreen').addEventListener('click', function() {
+        if (splashScreenActive) {
+            clickCount++;
+            
+            if (clickCount === 1 && !welcomeSoundPlayed) {
+                // Pierwsze kliknięcie - odtwórz wilkommen
+                if (!AudioSystem.isMuted) {
+                    AudioSystem.play('welcome');
+                }
+                welcomeSoundPlayed = true;
+                
+                const instruction = document.querySelector('.splash-instruction');
+                if (instruction) {
+                    instruction.textContent = 'KLICKEN SIE ERNEUT FÜR HAUPTMENÜ';
+                }
+            } else if (clickCount >= 2 || welcomeSoundPlayed) {
+                // Drugie kliknięcie - ukryj splash screen
+                hideSplashScreen();
+            }
+        }
+    });
+    
+    // Przełączanie wyciszenia
+    function toggleMute() {
+        const muteButton = document.getElementById('muteButton');
+        const isMuted = AudioSystem.toggleMute();
+        
+        if (isMuted) {
+            muteButton.textContent = '🔇 MUTED';
+            muteButton.classList.add('muted');
+        } else {
+            muteButton.textContent = '🔊 SOUND';
+            muteButton.classList.remove('muted');
+            
+            // Odtwórz odpowiednią muzykę w zależności od ekranu
+            if (splashScreenActive && welcomeSoundPlayed) {
+                AudioSystem.play('welcome');
+            } else if (document.getElementById('mainMenu').style.display !== 'none') {
+                AudioSystem.play('menu');
+            }
+        }
+    }
+</script>
+    
+    <!-- FUNKCJE DO PRZEKIEROWANIA NA INNE GRY -->
+    <script>
+    function goToDuel() {
+        window.open("https://leszekmilewski.pl/wlodarskifussball/pvp/index.html", "_blank");
+    }
+    
+    function goToCoopGame() {
+        window.open("https://leszekmilewski.pl/wlodarskifussball/coop/index.html", "_blank");
+    }
+    
+    function goToNationalGame() {
+        window.open("https://leszekmilewski.pl/wlodarskifussball/mannschaft/index.html", "_blank");
+    }
+        
+        // Przełączanie wyciszenia w menu
+        function toggleMenuMute() {
+            const menuMuteButton = document.getElementById('menuMuteButton');
+            const isMuted = AudioSystem.toggleMute();
+            
+            if (isMuted) {
+                menuMuteButton.textContent = '🔇 MUTED';
+                menuMuteButton.classList.add('muted');
+            } else {
+                menuMuteButton.textContent = '🔊 SOUND';
+                menuMuteButton.classList.remove('muted');
+                
+                // Odtwórz muzykę menu jeśli jesteśmy w menu
+                if (document.getElementById('mainMenu').style.display !== 'none') {
+                    AudioSystem.play('menu');
+                }
+            }
+            
+            // Synchronizuj stan przycisku na splash screen
+            const splashMuteButton = document.getElementById('muteButton');
+            if (splashMuteButton) {
+                if (isMuted) {
+                    splashMuteButton.textContent = '🔇 MUTED';
+                    splashMuteButton.classList.add('muted');
+                } else {
+                    splashMuteButton.textContent = '🔊 SOUND';
+                    splashMuteButton.classList.remove('muted');
+                }
+            }
+        }
+    </script>
+            
+</body>
+</html>
