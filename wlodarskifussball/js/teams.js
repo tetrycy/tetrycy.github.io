@@ -70,7 +70,7 @@ const teams = [
         ]
     },
     {
-        number: 3, 
+        number: 2, 
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "SV WALDHOF MANNHEIM",
         field: "muddy",
@@ -103,7 +103,7 @@ const teams = [
         ]
     },
     {
-        number: 4, 
+        number: 3, 
         playerTeam: "SV BABELSBERG 04",
         opponentTeam: "FC KAISERSLAUTERN",
         field: "professional",
@@ -136,7 +136,7 @@ const teams = [
         ]
     },
 {
-    number: 2, 
+    number: 4, 
     playerTeam: "SV BABELSBERG 04",
     opponentTeam: "FC GUTERSLOH",
     field: "campnou",
