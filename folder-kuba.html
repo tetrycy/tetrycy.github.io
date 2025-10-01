@@ -256,6 +256,9 @@
     <script>
         let currentPath = 'main';
         let pathHistory = [];
+        function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+}
         
         const folders = {
             main: {
@@ -347,13 +350,27 @@
             folder.items.forEach(item => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
-                fileItem.onclick = () => selectItem(fileItem);
-                
-                if (item.type === 'folder') {
-                    fileItem.ondblclick = () => loadFolder(item.target);
-                } else {
-                    fileItem.ondblclick = () => openItem(item);
-                }
+         fileItem.onclick = () => {
+    selectItem(fileItem);
+    
+    // Na mobile użyj pojedynczego kliknięcia
+    if (isMobile()) {
+        if (item.type === 'folder') {
+            loadFolder(item.target);
+        } else {
+            openItem(item);
+        }
+    }
+};
+
+// Podwójne kliknięcie dla desktop
+if (!isMobile()) {
+    if (item.type === 'folder') {
+        fileItem.ondblclick = () => loadFolder(item.target);
+    } else {
+        fileItem.ondblclick = () => openItem(item);
+    }
+}
                 
                 fileItem.innerHTML = `
                     <span class="file-icon">${item.icon}</span>
