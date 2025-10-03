@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betclic x Tetrycy</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-size: 11px;
+            background: #c0c0c0;
+            overflow: hidden;
+        }
+        
+        .window {
+            width: 100%;
+            height: 100vh;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+        }
+        
+        .window-header {
+            background: linear-gradient(to right, #0a246a, #a6caf0);
+            color: white;
+            padding: 3px 6px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #808080;
+        }
+        
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .window-btn {
+            width: 16px;
+            height: 14px;
+            border: 1px outset #c0c0c0;
+            background: #c0c0c0;
+            font-size: 9px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .window-btn:active {
+            border: 1px inset #c0c0c0;
+        }
+        
+        .menubar {
+            background: #c0c0c0;
+            border-bottom: 1px solid #808080;
+            padding: 2px;
+        }
+        
+        .menubar-item {
+            display: inline-block;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+        
+        .menubar-item:hover {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .content {
+            background: white;
+            height: calc(100% - 70px);
+            margin: 2px;
+            border: 2px inset #c0c0c0;
+            position: relative;
+            overflow: auto;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+        
+        .file-item {
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            margin: 8px;
+            cursor: pointer;
+            padding: 4px;
+            border: 1px solid transparent;
+        }
+        
+        .file-item:hover {
+            background: #e0e0e0;
+            border: 1px solid #c0c0c0;
+        }
+        
+        .file-item.selected {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .file-name {
+            font-size: 10px;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+        
+        .status-bar {
+            background: #c0c0c0;
+            border-top: 1px solid #808080;
+            padding: 2px 8px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .address-bar {
+            background: white;
+            border: 1px inset #c0c0c0;
+            padding: 2px 4px;
+            margin: 2px;
+            font-size: 10px;
+        }
+        
+        .path-text {
+            color: #000;
+        }
+        
+        @media (max-width: 768px) {
+            .file-item {
+                width: 60px;
+                margin: 4px;
+                font-size: 9px;
+            }
+            
+            .file-icon {
+                font-size: 24px;
+            }
+            
+            .file-name {
+                font-size: 8px;
+            }
+            
+            .window-header {
+                padding: 2px 4px;
+            }
+            
+            .menubar-item {
+                padding: 2px 4px;
+                font-size: 10px;
+            }
+            
+            .address-bar {
+                font-size: 9px;
+            }
+            
+            .status-bar {
+                font-size: 9px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .file-item {
+                width: 50px;
+                margin: 2px;
+            }
+            
+            .file-icon {
+                font-size: 20px;
+            }
+            
+            .file-name {
+                font-size: 7px;
+                line-height: 1.1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="window-header">
+            <div class="window-title">
+                <span>📁</span>
+                <span>Betclic x Tetrycy</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-btn" onclick="window.close()">×</button>
+            </div>
+        </div>
+        
+        <div class="menubar">
+            <span class="menubar-item">Plik</span>
+            <span class="menubar-item">Edycja</span>
+            <span class="menubar-item">Widok</span>
+            <span class="menubar-item">Pomoc</span>
+        </div>
+        
+        <div class="address-bar">
+            <span class="path-text">C:\Moje dokumenty\Betclic x Tetrycy</span>
+        </div>
+        
+        <div class="content" id="content">
+            <!-- Zawartość będzie ładowana dynamicznie -->
+        </div>
+        
+        <div class="status-bar">
+            <span id="status-count">6 obiektów</span>
+            <span>Mój komputer</span>
+        </div>
+    </div>
+    
+    <script>
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
+        
+        const videos = [
+            { icon: '🎬', name: 'Film #1', target: 'WKLEJ_LINK_1' },
+            { icon: '🎬', name: 'Film #2', target: 'WKLEJ_LINK_2' },
+            { icon: '🎬', name: 'Film #3', target: 'WKLEJ_LINK_3' },
+            { icon: '🎬', name: 'Film #4', target: 'WKLEJ_LINK_4' },
+            { icon: '🎬', name: 'Film #5', target: 'WKLEJ_LINK_5' },
+            { icon: '🎬', name: 'Film #6', target: 'WKLEJ_LINK_6' }
+        ];
+        
+        function loadVideos() {
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            
+            videos.forEach(video => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                fileItem.onclick = () => {
+                    selectItem(fileItem);
+                    
+                    if (isMobile()) {
+                        openVideo(video);
+                    }
+                };
+                
+                if (!isMobile()) {
+                    fileItem.ondblclick = () => openVideo(video);
+                }
+                
+                fileItem.innerHTML = `
+                    <span class="file-icon">${video.icon}</span>
+                    <span class="file-name">${video.name}</span>
+                `;
+                
+                content.appendChild(fileItem);
+            });
+        }
+        
+        function selectItem(element) {
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function openVideo(video) {
+            window.open(video.target, '_blank');
+        }
+        
+        window.addEventListener('load', function() {
+            loadVideos();
+        });
+    </script>
+</body>
+</html>
