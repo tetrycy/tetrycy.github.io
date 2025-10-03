@@ -309,6 +309,9 @@ case 'jakub-olkiewicz':
 case 'marian-fussball':
     window.open('https://www.tetrycy.com.pl/wlodarskifussball/index.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
     break;
+                case 'folder-betclic':
+    window.open('betclic.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+    break;
         }
     });
 });
