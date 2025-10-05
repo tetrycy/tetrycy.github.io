@@ -1,80 +1,4 @@
-const completeCurrentPhase = () => {
-    const roundCountry = getCurrentCountry();
-    const roundCity = getCurrentCity();
-    
-    if (isQualifyingPhase) {
-      // Dokończ kwalifikacje
-      const playersInOrder = getPlayersInStartOrder();
-      const remainingPlayers = playersInOrder.slice(currentPlayerIndex);
-      
-      const newResults = [...qualifyingInProgress];
-      remainingPlayers.forEach(player => {
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
-        newResults.push({ ...player, dice, total, isHome });
-      });
-      
-      const sorted = sortPlayersByDice(newResults);
-      setCurrentQualifying(sorted);
-      setQualifyingInProgress(newResults);
-      setCurrentPlayerIndex(playersInOrder.length);
-    } else {
-      // Dokończ finał
-      const finalists = [...currentQualifying.slice(0, 10)].reverse();
-      const remainingPlayers = finalists.slice(currentPlayerIndex);
-      
-      const newResults = [...finalInProgress];
-      remainingPlayers.forEach(player => {
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
-        newResults.push({ ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome });
-      });
-      
-      const sorted = sortPlayersByDice(newResults.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
-        .map(p => ({...p, dice: p.finalDice}));
-      setCurrentFinal(sorted);
-      
-      const qualifyingBonuses = {
-        [currentQualifying[0].id]: 3,
-        [currentQualifying[1].id]: 2,
-        [currentQualifying[2].id]: 1
-      };
-      
-      // Aktualizuj statystyki
-      currentQualifying.forEach((player, qIndex) => {
-        const inFinal = qIndex < 10;
-        let finalPos = null;
-        let points = 0;
-        
-        if (inFinal) {
-          finalPos = sorted.findIndex(fp => fp.id === player.id) + 1;
-          const finalPoints = 10 - (finalPos - 1);
-          const bonusPoints = qualifyingBonuses[player.id] || 0;
-          points = finalPoints + bonusPoints;
-          
-          const playerIndex = players.findIndex(p => p.id === player.id);
-          players[playerIndex].seasonPoints += points;
-        }
-        
-        updatePlayerStats(player.id, currentRound + 1, roundCity, roundCountry, qIndex + 1, inFinal, finalPos, points);
-      });
-      
-      setHistory([...history, {
-        roundNumber: currentRound + 1,
-        country: roundCountry,
-        city: roundCity,
-        qualifying: currentQualifying,
-        final: sorted,
-        qualifyingBonuses
-      }]);
-      
-      setFinalInProgress(newResults);
-      setCurrentPlayerIndex(finalists.length);
-      setShowFinal(true);
-    }
-  };import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 const DiceChampionship = () => {
   const countries = [
@@ -345,14 +269,14 @@ const DiceChampionship = () => {
       setCurrentQualifying(result.qualifying);
       setCurrentFinal(result.final);
       setShowQualifying(true);
-      setShowFinal(true); // Pokazuj od razu finał
+      setShowFinal(false);
       setStepByStep(false);
       setDiceByDice(false);
     }
   };
 
   const startRoundStepByStep = () => {
-    if (currentRound < totalRounds) {
+    if (currentRound < 24) {
       setStepByStep(true);
       setDiceByDice(false);
       setShowQualifying(true);
@@ -367,7 +291,7 @@ const DiceChampionship = () => {
   };
 
   const startRoundDiceByDice = () => {
-    if (currentRound < totalRounds) {
+    if (currentRound < 24) {
       setStepByStep(false);
       setDiceByDice(true);
       setShowQualifying(true);
@@ -760,100 +684,6 @@ const DiceChampionship = () => {
         maxWidth: '900px',
         margin: '0 auto'
       }}>
-        {/* Ekran wyboru trybu sezonu */}
-        {seasonMode === null && (
-          <div style={{
-            backgroundColor: '#c0c0c0',
-            border: '2px outset #dfdfdf',
-            padding: '2px'
-          }}>
-            <div style={{
-              backgroundColor: '#000080',
-              color: 'white',
-              padding: '4px 8px',
-              fontWeight: 'bold',
-              marginBottom: '2px'
-            }}>
-              <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - WYBOR TRYBU</span>
-            </div>
-
-            <div style={{ padding: '32px', textAlign: 'center' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '24px',
-                marginBottom: '24px'
-              }}>
-                <h2 style={{ marginTop: 0, fontSize: '20px' }}>WYBIERZ TEMPO SEZONU</h2>
-                <p style={{ color: '#800000', fontSize: '14px', marginBottom: '24px' }}>
-                  UWAGA: Po wyborze nie bedzie mozna zmienic!
-                </p>
-
-                <div style={{ display: 'grid', gap: '16px', maxWidth: '500px', margin: '0 auto' }}>
-                  <button
-                    onClick={() => selectSeasonMode('fast')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>⚡ SZYBKIE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      12 rund (1 turniej w kazdym kraju)
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => selectSeasonMode('medium')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>⚖ SREDNIE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      24 rundy (2 turnieje w kazdym kraju)
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => selectSeasonMode('slow')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>🐌 WOLNE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      48 rund (4 turnieje w kazdym kraju)
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Główna gra - tylko gdy tryb został wybrany */}
-        {seasonMode !== null && (
         <div style={{
           backgroundColor: '#c0c0c0',
           border: '2px outset #dfdfdf',
@@ -930,7 +760,7 @@ const DiceChampionship = () => {
                     <strong>Laczne punkty:</strong> {selectedPlayer.seasonPoints}
                   </div>
                   <div style={{ marginBottom: '8px' }}>
-                    <strong>Liczba finalow:</strong> {selectedPlayer.finalsCount}/{totalRounds}
+                    <strong>Liczba finalow:</strong> {selectedPlayer.finalsCount}/24
                   </div>
                 </div>
 
@@ -1278,9 +1108,9 @@ const DiceChampionship = () => {
                     fontSize: '16px',
                     marginBottom: '8px'
                   }}>
-                    RUNDA {currentRound}/{totalRounds}
+                    RUNDA {currentRound}/24
                   </div>
-                  {currentRound < totalRounds && (
+                  {currentRound < 24 && (
                     <div style={{ fontSize: '14px' }}>
                       Lokalizacja: {getCurrentCity()}, {getCurrentCountry()}
                       <div style={{ fontSize: '11px', color: '#800000', marginTop: '4px' }}>
@@ -1290,7 +1120,7 @@ const DiceChampionship = () => {
                   )}
                 </div>
 
-                {currentRound < totalRounds && !showQualifying && (
+                {currentRound < 24 && !showQualifying && (
                   <div style={{ textAlign: 'center' }}>
                     <button
                       onClick={startRoundInstant}
@@ -1431,116 +1261,52 @@ const DiceChampionship = () => {
                     
                     <div style={{ textAlign: 'center', marginTop: '12px' }}>
                       {stepByStep && isQualifyingPhase && currentPlayerIndex < players.length && (
-                        <div>
-                          <button
-                            onClick={nextPlayer}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            NASTEPNY: {getPlayersInStartOrder()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/24)
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE KWALIFIKACJI
-                          </button>
-                        </div>
+                        <button
+                          onClick={nextPlayer}
+                          style={{
+                            backgroundColor: '#c0c0c0',
+                            border: '2px outset #dfdfdf',
+                            padding: '8px 24px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontFamily: 'MS Sans Serif, Arial'
+                          }}
+                        >
+                          NASTEPNY: {getPlayersInStartOrder()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/24)
+                        </button>
                       )}
                       {diceByDice && isQualifyingPhase && (currentPlayerIndex < players.length || currentDiceIndex < 6) && (
-                        <div>
-                          <button
-                            onClick={nextDice}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            RZUT: {getPlayersInStartOrder()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE KWALIFIKACJI
-                          </button>
-                        </div>
+                        <button
+                          onClick={nextDice}
+                          style={{
+                            backgroundColor: '#c0c0c0',
+                            border: '2px outset #dfdfdf',
+                            padding: '8px 24px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontFamily: 'MS Sans Serif, Arial'
+                          }}
+                        >
+                          RZUT: {getPlayersInStartOrder()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
+                        </button>
                       )}
                       {((!stepByStep && !diceByDice) || ((stepByStep || diceByDice) && currentPlayerIndex >= players.length)) && (
-                        <div>
-                          <button
-                            onClick={switchToFinal}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            POKAZ FINAL
-                          </button>
-                          <button
-                            onClick={() => {
-                              // Rozegraj całą resztę rundy (dokończ kwalifikacje i finał)
-                              if (isQualifyingPhase) {
-                                // Jeśli jesteśmy w kwalifikacjach, rozegraj całą rundę od nowa
-                                const result = simulateRoundInstant();
-                                setCurrentQualifying(result.qualifying);
-                                setCurrentFinal(result.final);
-                                setShowQualifying(true);
-                                setShowFinal(true);
-                              } else {
-                                // Jeśli jesteśmy w finale, dokończ tylko finał
-                                completeCurrentPhase();
-                              }
-                            }}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE RUNDY
-                          </button>
-                        </div>
+                        <button
+                          onClick={switchToFinal}
+                          style={{
+                            backgroundColor: '#c0c0c0',
+                            border: '2px outset #dfdfdf',
+                            padding: '8px 24px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontFamily: 'MS Sans Serif, Arial'
+                          }}
+                        >
+                          POKAZ FINAL
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1646,109 +1412,58 @@ const DiceChampionship = () => {
                     
                     <div style={{ textAlign: 'center', marginTop: '12px' }}>
                       {stepByStep && !isQualifyingPhase && currentPlayerIndex < 10 ? (
-                        <div>
-                          <button
-                            onClick={nextPlayer}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            NASTEPNY: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/10)
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE FINALU
-                          </button>
-                        </div>
+                        <button
+                          onClick={nextPlayer}
+                          style={{
+                            backgroundColor: '#c0c0c0',
+                            border: '2px outset #dfdfdf',
+                            padding: '8px 24px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontFamily: 'MS Sans Serif, Arial'
+                          }}
+                        >
+                          NASTEPNY: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/10)
+                        </button>
                       ) : diceByDice && !isQualifyingPhase && (currentPlayerIndex < 10 || currentDiceIndex < 6) ? (
-                        <div>
-                          <button
-                            onClick={nextDice}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            RZUT: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE FINALU
-                          </button>
-                        </div>
+                        <button
+                          onClick={nextDice}
+                          style={{
+                            backgroundColor: '#c0c0c0',
+                            border: '2px outset #dfdfdf',
+                            padding: '8px 24px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontFamily: 'MS Sans Serif, Arial'
+                          }}
+                        >
+                          RZUT: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
+                        </button>
                       ) : (
                         <>
-                          {currentRound < totalRounds ? (
-                            <div>
-                              <button
-                                onClick={() => {
-                                  setShowQualifying(false);
-                                  setShowFinal(false);
-                                  setStepByStep(false);
-                                  setDiceByDice(false);
-                                  setCurrentRound(currentRound + 1);
-                                }}
-                                style={{
-                                  backgroundColor: '#c0c0c0',
-                                  border: '2px outset #dfdfdf',
-                                  padding: '8px 24px',
-                                  fontSize: '14px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  fontFamily: 'MS Sans Serif, Arial',
-                                  marginRight: '8px'
-                                }}
-                              >
-                                NASTEPNA RUNDA
-                              </button>
-                              <button
-                                onClick={startRoundInstant}
-                                style={{
-                                  backgroundColor: '#c0c0c0',
-                                  border: '2px outset #dfdfdf',
-                                  padding: '8px 20px',
-                                  fontSize: '13px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  fontFamily: 'MS Sans Serif, Arial'
-                                }}
-                              >
-                                ROZEGRAJ CALA NASTEPNA RUNDE
-                              </button>
-                            </div>
+                          {currentRound < 24 ? (
+                            <button
+                              onClick={() => {
+                                setShowQualifying(false);
+                                setShowFinal(false);
+                                setStepByStep(false);
+                                setDiceByDice(false);
+                                setCurrentRound(currentRound + 1);
+                              }}
+                              style={{
+                                backgroundColor: '#c0c0c0',
+                                border: '2px outset #dfdfdf',
+                                padding: '8px 24px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                fontFamily: 'MS Sans Serif, Arial'
+                              }}
+                            >
+                              NASTEPNA RUNDA
+                            </button>
                           ) : (
                             <div>
                               <div style={{
@@ -1907,10 +1622,9 @@ const DiceChampionship = () => {
             marginTop: '2px',
             fontSize: '11px'
           }}>
-            Gospodarze: 2x rzut (lepszy) | Remis: 6&gt;5&gt;4&gt;3&gt;2&gt;1 | Historia: {history.length}/{totalRounds} | Sezon #{seasonNumber}
+            Gospodarze: 2x rzut (lepszy) | Remis: 6&gt;5&gt;4&gt;3&gt;2&gt;1 | Historia: {history.length}/24 | Sezon #{seasonNumber}
           </div>
         </div>
-        )}
       </div>
     </div>
   );
