@@ -52,10 +52,6 @@
             cursor: pointer;
         }
         
-        .menu-item.active {
-            text-decoration: underline;
-        }
-        
         .content {
             padding: 12px;
         }
@@ -96,11 +92,11 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 12px;
         }
         
         th, td {
-            padding: 3px;
+            padding: 4px;
             border: 1px solid #808080;
         }
         
@@ -143,32 +139,6 @@
             max-height: 350px;
             overflow-y: auto;
             border: 1px solid #808080;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #c0c0c0;
-            border: 2px outset #dfdfdf;
-            padding: 2px;
-            z-index: 1000;
-            min-width: 500px;
-            max-height: 80vh;
-            overflow: auto;
-            display: none;
         }
         
         .header-blue {
@@ -223,8 +193,9 @@
             width: 100%;
         }
         
-        .mode-button:hover {
-            background-color: #d0d0d0;
+        .highlighted-row {
+            border: 3px solid blue !important;
+            outline: 2px solid darkblue;
         }
     </style>
 </head>
@@ -234,7 +205,6 @@
     </div>
 
     <script>
-        // Dane gry
         const countries = [
             'Polska', 'Niemcy', 'Francja', 'Wlochy', 'Hiszpania', 'Tajlandia',
             'Brazylia', 'Turcja', 'Egipt', 'Japonia', 'Australia', 'Chiny'
@@ -291,7 +261,6 @@
             'Chiny': ['Wang', 'Li']
         };
 
-        // Stan gry
         let gameState = {
             seasonMode: null,
             totalRounds: 0,
@@ -299,14 +268,20 @@
             currentRound: 0,
             players: [],
             history: [],
-            allSeasons: [],
             showQualifying: false,
             showFinal: false,
             currentQualifying: null,
-            currentFinal: null
+            currentFinal: null,
+            stepByStep: false,
+            diceByDice: false,
+            currentPlayerIndex: 0,
+            currentDiceIndex: 0,
+            qualifyingInProgress: [],
+            finalInProgress: [],
+            isQualifyingPhase: true,
+            lastThrownPlayerId: null
         };
 
-        // Inicjalizacja graczy
         function initializePlayers() {
             const players = [];
             countries.forEach((country, countryIndex) => {
@@ -324,7 +299,6 @@
             return players;
         }
 
-        // Funkcje gry
         function rollSingleDice(isHome) {
             if (isHome) {
                 const roll1 = Math.floor(Math.random() * 6) + 1;
@@ -390,7 +364,20 @@
             return [...gameState.players].sort((a, b) => a.seasonPoints - b.seasonPoints);
         }
 
-        function simulateRound() {
+        function selectSeasonMode(mode) {
+            gameState.seasonMode = mode;
+            if (mode === 'fast') {
+                gameState.totalRounds = 12;
+            } else if (mode === 'medium') {
+                gameState.totalRounds = 24;
+            } else if (mode === 'slow') {
+                gameState.totalRounds = 48;
+            }
+            gameState.players = initializePlayers();
+            render();
+        }
+
+        function startRoundInstant() {
             const roundCountry = getCurrentCountry();
             const roundCity = getCurrentCity();
             
@@ -435,10 +422,7 @@
                     
                     const playerObj = gameState.players.find(p => p.id === player.id);
                     playerObj.seasonPoints += points;
-                    
-                    if (inFinal) {
-                        playerObj.finalsCount++;
-                    }
+                    playerObj.finalsCount++;
                     
                     playerObj.seasonStats.push({
                         roundNumber: gameState.currentRound + 1,
@@ -452,45 +436,329 @@
                 }
             });
 
-            const roundResult = {
+            gameState.history.push({
                 roundNumber: gameState.currentRound + 1,
                 country: roundCountry,
                 city: roundCity,
                 qualifying: sortedQualifying,
                 final: sortedFinal,
                 qualifyingBonuses
-            };
+            });
 
-            gameState.history.push(roundResult);
             gameState.currentQualifying = sortedQualifying;
             gameState.currentFinal = sortedFinal;
             gameState.showQualifying = true;
             gameState.showFinal = true;
-        }
-
-        function selectSeasonMode(mode) {
-            gameState.seasonMode = mode;
-            if (mode === 'fast') {
-                gameState.totalRounds = 12;
-            } else if (mode === 'medium') {
-                gameState.totalRounds = 24;
-            } else if (mode === 'slow') {
-                gameState.totalRounds = 48;
-            }
-            gameState.players = initializePlayers();
+            gameState.stepByStep = false;
+            gameState.diceByDice = false;
+            
             render();
         }
 
-        function startRound() {
-            if (gameState.currentRound < gameState.totalRounds) {
-                simulateRound();
-                render();
+        function startRoundStepByStep() {
+            gameState.stepByStep = true;
+            gameState.diceByDice = false;
+            gameState.showQualifying = true;
+            gameState.showFinal = false;
+            gameState.currentPlayerIndex = 0;
+            gameState.currentDiceIndex = 0;
+            gameState.qualifyingInProgress = [];
+            gameState.finalInProgress = [];
+            gameState.isQualifyingPhase = true;
+            gameState.lastThrownPlayerId = null;
+            render();
+        }
+
+        function startRoundDiceByDice() {
+            gameState.stepByStep = false;
+            gameState.diceByDice = true;
+            gameState.showQualifying = true;
+            gameState.showFinal = false;
+            gameState.currentPlayerIndex = 0;
+            gameState.currentDiceIndex = 0;
+            gameState.qualifyingInProgress = [];
+            gameState.finalInProgress = [];
+            gameState.isQualifyingPhase = true;
+            gameState.lastThrownPlayerId = null;
+            render();
+        }
+
+        function nextPlayer() {
+            const roundCountry = getCurrentCountry();
+            const roundCity = getCurrentCity();
+            
+            if (gameState.isQualifyingPhase) {
+                const playersInOrder = getPlayersInStartOrder();
+                if (gameState.currentPlayerIndex < playersInOrder.length) {
+                    const player = playersInOrder[gameState.currentPlayerIndex];
+                    gameState.lastThrownPlayerId = player.id;
+                    const isHome = player.country === roundCountry;
+                    const dice = rollDice(isHome);
+                    const total = sumDice(dice);
+                    
+                    gameState.qualifyingInProgress.push({ ...player, dice, total, isHome });
+                    gameState.currentPlayerIndex++;
+                    
+                    if (gameState.currentPlayerIndex === playersInOrder.length) {
+                        gameState.currentQualifying = sortPlayersByDice([...gameState.qualifyingInProgress]);
+                    }
+                }
+            } else {
+                const finalists = [...gameState.currentQualifying.slice(0, 10)].reverse();
+                if (gameState.currentPlayerIndex < finalists.length) {
+                    const player = finalists[gameState.currentPlayerIndex];
+                    gameState.lastThrownPlayerId = player.id;
+                    const isHome = player.country === roundCountry;
+                    const dice = rollDice(isHome);
+                    const total = sumDice(dice);
+                    
+                    gameState.finalInProgress.push({ ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome });
+                    gameState.currentPlayerIndex++;
+                    
+                    if (gameState.currentPlayerIndex === finalists.length) {
+                        const sorted = sortPlayersByDice(gameState.finalInProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
+                            .map(p => ({...p, dice: p.finalDice}));
+                        gameState.currentFinal = sorted;
+                        
+                        finishRound(sorted);
+                    }
+                }
             }
+            
+            render();
+        }
+
+        function nextDice() {
+            const roundCountry = getCurrentCountry();
+            const roundCity = getCurrentCity();
+            
+            if (gameState.isQualifyingPhase) {
+                const playersInOrder = getPlayersInStartOrder();
+                if (gameState.currentPlayerIndex < playersInOrder.length) {
+                    const player = playersInOrder[gameState.currentPlayerIndex];
+                    const isHome = player.country === roundCountry;
+                    
+                    if (gameState.currentDiceIndex === 0) {
+                        gameState.lastThrownPlayerId = player.id;
+                    }
+                    
+                    let playerInProgress = gameState.qualifyingInProgress.find(p => p.id === player.id);
+                    
+                    if (!playerInProgress) {
+                        playerInProgress = { ...player, dice: [], total: 0, isHome };
+                        gameState.qualifyingInProgress.push(playerInProgress);
+                    }
+                    
+                    if (gameState.currentDiceIndex < 6) {
+                        const newDice = rollSingleDice(isHome);
+                        playerInProgress.dice.push(newDice);
+                        playerInProgress.total = sumDice(playerInProgress.dice);
+                        
+                        gameState.currentDiceIndex++;
+                        
+                        if (gameState.currentDiceIndex === 6) {
+                            gameState.currentPlayerIndex++;
+                            gameState.currentDiceIndex = 0;
+                            
+                            if (gameState.currentPlayerIndex === playersInOrder.length) {
+                                gameState.currentQualifying = sortPlayersByDice([...gameState.qualifyingInProgress]);
+                            }
+                        }
+                    }
+                }
+            } else {
+                const finalists = [...gameState.currentQualifying.slice(0, 10)].reverse();
+                if (gameState.currentPlayerIndex < finalists.length) {
+                    const player = finalists[gameState.currentPlayerIndex];
+                    const isHome = player.country === roundCountry;
+                    
+                    if (gameState.currentDiceIndex === 0) {
+                        gameState.lastThrownPlayerId = player.id;
+                    }
+                    
+                    let playerInProgress = gameState.finalInProgress.find(p => p.id === player.id);
+                    
+                    if (!playerInProgress) {
+                        playerInProgress = { ...player, finalDice: [], finalTotal: 0, finalIsHome: isHome };
+                        gameState.finalInProgress.push(playerInProgress);
+                    }
+                    
+                    if (gameState.currentDiceIndex < 6) {
+                        const newDice = rollSingleDice(isHome);
+                        playerInProgress.finalDice.push(newDice);
+                        playerInProgress.finalTotal = sumDice(playerInProgress.finalDice);
+                        
+                        gameState.currentDiceIndex++;
+                        
+                        if (gameState.currentDiceIndex === 6) {
+                            gameState.currentPlayerIndex++;
+                            gameState.currentDiceIndex = 0;
+                            
+                            if (gameState.currentPlayerIndex === finalists.length) {
+                                const sorted = sortPlayersByDice(gameState.finalInProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
+                                    .map(p => ({...p, dice: p.finalDice}));
+                                gameState.currentFinal = sorted;
+                                
+                                finishRound(sorted);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            render();
+        }
+
+        function finishRound(sortedFinal) {
+            const roundCountry = getCurrentCountry();
+            const roundCity = getCurrentCity();
+            
+            const qualifyingBonuses = {
+                [gameState.currentQualifying[0].id]: 3,
+                [gameState.currentQualifying[1].id]: 2,
+                [gameState.currentQualifying[2].id]: 1
+            };
+            
+            gameState.currentQualifying.forEach((player, qIndex) => {
+                const inFinal = qIndex < 10;
+                let finalPos = null;
+                let points = 0;
+                
+                if (inFinal) {
+                    finalPos = sortedFinal.findIndex(fp => fp.id === player.id) + 1;
+                    const finalPoints = 10 - (finalPos - 1);
+                    const bonusPoints = qualifyingBonuses[player.id] || 0;
+                    points = finalPoints + bonusPoints;
+                    
+                    const playerObj = gameState.players.find(p => p.id === player.id);
+                    playerObj.seasonPoints += points;
+                    playerObj.finalsCount++;
+                    
+                    playerObj.seasonStats.push({
+                        roundNumber: gameState.currentRound + 1,
+                        city: roundCity,
+                        country: roundCountry,
+                        qualifyingPosition: qIndex + 1,
+                        inFinal,
+                        finalPosition: finalPos,
+                        pointsEarned: points
+                    });
+                }
+            });
+            
+            gameState.history.push({
+                roundNumber: gameState.currentRound + 1,
+                country: roundCountry,
+                city: roundCity,
+                qualifying: gameState.currentQualifying,
+                final: sortedFinal,
+                qualifyingBonuses
+            });
+        }
+
+        function completeCurrentPhase() {
+            const roundCountry = getCurrentCountry();
+            
+            if (gameState.isQualifyingPhase) {
+                const playersInOrder = getPlayersInStartOrder();
+                const remainingPlayers = playersInOrder.slice(gameState.currentPlayerIndex);
+                
+                remainingPlayers.forEach(player => {
+                    const isHome = player.country === roundCountry;
+                    const dice = rollDice(isHome);
+                    const total = sumDice(dice);
+                    gameState.qualifyingInProgress.push({ ...player, dice, total, isHome });
+                });
+                
+                gameState.currentQualifying = sortPlayersByDice([...gameState.qualifyingInProgress]);
+                gameState.currentPlayerIndex = playersInOrder.length;
+            } else {
+                const finalists = [...gameState.currentQualifying.slice(0, 10)].reverse();
+                const remainingPlayers = finalists.slice(gameState.currentPlayerIndex);
+                
+                remainingPlayers.forEach(player => {
+                    const isHome = player.country === roundCountry;
+                    const dice = rollDice(isHome);
+                    const total = sumDice(dice);
+                    gameState.finalInProgress.push({ ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome });
+                });
+                
+                const sorted = sortPlayersByDice(gameState.finalInProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
+                    .map(p => ({...p, dice: p.finalDice}));
+                gameState.currentFinal = sorted;
+                gameState.showFinal = true;
+                gameState.currentPlayerIndex = finalists.length;
+                
+                finishRound(sorted);
+            }
+            
+            render();
+        }
+
+        function switchToFinal() {
+            gameState.isQualifyingPhase = false;
+            gameState.currentPlayerIndex = 0;
+            gameState.currentDiceIndex = 0;
+            gameState.showFinal = true;
+            gameState.lastThrownPlayerId = null;
+            render();
+        }
+
+        function switchToDiceByDice() {
+            gameState.stepByStep = false;
+            gameState.diceByDice = true;
+            gameState.currentDiceIndex = 0;
+            render();
+        }
+
+        function switchToStepByStep() {
+            gameState.stepByStep = true;
+            gameState.diceByDice = false;
+            
+            if (gameState.currentDiceIndex > 0 && gameState.currentDiceIndex < 6) {
+                const roundCountry = getCurrentCountry();
+                
+                if (gameState.isQualifyingPhase) {
+                    const playersInOrder = getPlayersInStartOrder();
+                    const player = playersInOrder[gameState.currentPlayerIndex];
+                    const isHome = player.country === roundCountry;
+                    
+                    let playerInProgress = gameState.qualifyingInProgress.find(p => p.id === player.id);
+                    
+                    while (playerInProgress.dice.length < 6) {
+                        const newDice = rollSingleDice(isHome);
+                        playerInProgress.dice.push(newDice);
+                    }
+                    playerInProgress.total = sumDice(playerInProgress.dice);
+                    
+                    gameState.currentPlayerIndex++;
+                    gameState.currentDiceIndex = 0;
+                } else {
+                    const finalists = [...gameState.currentQualifying.slice(0, 10)].reverse();
+                    const player = finalists[gameState.currentPlayerIndex];
+                    const isHome = player.country === roundCountry;
+                    
+                    let playerInProgress = gameState.finalInProgress.find(p => p.id === player.id);
+                    
+                    while (playerInProgress.finalDice.length < 6) {
+                        const newDice = rollSingleDice(isHome);
+                        playerInProgress.finalDice.push(newDice);
+                    }
+                    playerInProgress.finalTotal = sumDice(playerInProgress.finalDice);
+                    
+                    gameState.currentPlayerIndex++;
+                    gameState.currentDiceIndex = 0;
+                }
+            }
+            
+            render();
         }
 
         function nextRound() {
             gameState.showQualifying = false;
             gameState.showFinal = false;
+            gameState.stepByStep = false;
+            gameState.diceByDice = false;
             gameState.currentRound++;
             render();
         }
@@ -498,7 +766,6 @@
         function startNewSeason() {
             const currentSeasonData = {
                 seasonNumber: gameState.seasonNumber,
-                rounds: [...gameState.history],
                 finalStandings: getStandings().map(p => ({
                     id: p.id,
                     name: p.name,
@@ -507,8 +774,6 @@
                     finalsCount: p.finalsCount
                 }))
             };
-            
-            gameState.allSeasons.push(currentSeasonData);
             
             gameState.players.forEach(player => {
                 player.seasonPoints = 0;
@@ -521,6 +786,8 @@
             gameState.history = [];
             gameState.showQualifying = false;
             gameState.showFinal = false;
+            gameState.stepByStep = false;
+            gameState.diceByDice = false;
             
             render();
         }
@@ -548,7 +815,18 @@
             return dice.map(d => `<span class="dice">${d}</span>`).join('');
         }
 
-        // Renderowanie
+        function formatIncompleteDice(dice, maxDice = 6) {
+            let html = '';
+            for (let i = 0; i < maxDice; i++) {
+                if (i < dice.length) {
+                    html += `<span class="dice">${dice[i]}</span>`;
+                } else {
+                    html += `<span class="dice dice-empty">?</span>`;
+                }
+            }
+            return html;
+        }
+
         function render() {
             const app = document.getElementById('app');
             
@@ -608,7 +886,7 @@
                     <div class="menu-bar">
                         <span class="menu-item">Plik</span>
                         <span class="menu-item">Edycja</span>
-                        <span class="menu-item ${gameState.history.length > 0 ? 'active' : ''}">Historia</span>
+                        <span class="menu-item">Historia</span>
                         <span class="menu-item">Pomoc</span>
                     </div>
                     
@@ -676,7 +954,9 @@
             if (gameState.currentRound < gameState.totalRounds && !gameState.showQualifying) {
                 return `
                     <div style="text-align: center;">
-                        <button class="button" onclick="startRound()">ROZPOCZNIJ RUNDE</button>
+                        <button class="button" onclick="startRoundInstant()">CALA RUNDA</button>
+                        <button class="button" onclick="startRoundStepByStep()">ZAWODNIK PO ZAWODNIKU</button>
+                        <button class="button" onclick="startRoundDiceByDice()">KOSC PO KOSCI</button>
                     </div>
                 `;
             }
@@ -694,7 +974,7 @@
             
             let html = '';
             
-            if (gameState.showQualifying) {
+            if (gameState.showQualifying && !gameState.showFinal) {
                 html += `
                     <div class="header-blue">KWALIFIKACJE - ${getCurrentCity()}, ${getCurrentCountry()}</div>
                     <div class="white-box" style="max-height: 350px; overflow-y: auto;">
@@ -713,6 +993,9 @@
                                 ${renderQualifying()}
                             </tbody>
                         </table>
+                    </div>
+                    <div style="text-align: center; margin-top: 12px;">
+                        ${renderQualifyingControls()}
                     </div>
                 `;
             }
@@ -738,14 +1021,7 @@
                         </table>
                     </div>
                     <div style="text-align: center; margin-top: 12px;">
-                        ${gameState.currentRound < gameState.totalRounds ? `
-                            <button class="button" onclick="nextRound()">NASTEPNA RUNDA</button>
-                        ` : `
-                            <div class="yellow-banner">*** KONIEC SEZONU #${gameState.seasonNumber} ***</div>
-                            <button class="button button-large button-green" onclick="startNewSeason()">
-                                ROZPOCZNIJ SEZON #${gameState.seasonNumber + 1}
-                            </button>
-                        `}
+                        ${renderFinalControls()}
                     </div>
                 `;
             }
@@ -753,7 +1029,97 @@
             return html;
         }
 
+        function renderQualifyingControls() {
+            const playersInOrder = getPlayersInStartOrder();
+            
+            if (gameState.stepByStep && gameState.isQualifyingPhase && gameState.currentPlayerIndex < playersInOrder.length) {
+                const currentPlayer = playersInOrder[gameState.currentPlayerIndex];
+                return `
+                    <button class="button" onclick="nextPlayer()">
+                        NASTEPNY: ${currentPlayer.name} (${gameState.currentPlayerIndex + 1}/24)
+                    </button>
+                    <button class="button" onclick="switchToDiceByDice()">KOSC PO KOSCI</button>
+                    <button class="button" onclick="completeCurrentPhase()">ROZEGRAJ RESZTE</button>
+                `;
+            }
+            
+            if (gameState.diceByDice && gameState.isQualifyingPhase && gameState.currentPlayerIndex < playersInOrder.length) {
+                const currentPlayer = playersInOrder[gameState.currentPlayerIndex];
+                return `
+                    <button class="button" onclick="nextDice()">
+                        RZUT: ${currentPlayer.name} - kosc ${gameState.currentDiceIndex + 1}/6
+                    </button>
+                    <button class="button" onclick="switchToStepByStep()">ZAWODNIK PO ZAWODNIKU</button>
+                    <button class="button" onclick="completeCurrentPhase()">ROZEGRAJ RESZTE</button>
+                `;
+            }
+            
+            return `
+                <button class="button" onclick="switchToFinal()">POKAZ FINAL</button>
+                <button class="button" onclick="startRoundInstant()">ROZEGRAJ RESZTE RUNDY</button>
+            `;
+        }
+
+        function renderFinalControls() {
+            const finalists = gameState.currentQualifying ? [...gameState.currentQualifying.slice(0, 10)].reverse() : [];
+            
+            if (gameState.stepByStep && !gameState.isQualifyingPhase && gameState.currentPlayerIndex < 10) {
+                const currentPlayer = finalists[gameState.currentPlayerIndex];
+                return `
+                    <button class="button" onclick="nextPlayer()">
+                        NASTEPNY: ${currentPlayer.name} (${gameState.currentPlayerIndex + 1}/10)
+                    </button>
+                    <button class="button" onclick="switchToDiceByDice()">KOSC PO KOSCI</button>
+                    <button class="button" onclick="completeCurrentPhase()">ROZEGRAJ RESZTE</button>
+                `;
+            }
+            
+            if (gameState.diceByDice && !gameState.isQualifyingPhase && (gameState.currentPlayerIndex < 10 || gameState.currentDiceIndex < 6)) {
+                const currentPlayer = finalists[gameState.currentPlayerIndex];
+                return `
+                    <button class="button" onclick="nextDice()">
+                        RZUT: ${currentPlayer.name} - kosc ${gameState.currentDiceIndex + 1}/6
+                    </button>
+                    <button class="button" onclick="switchToStepByStep()">ZAWODNIK PO ZAWODNIKU</button>
+                    <button class="button" onclick="completeCurrentPhase()">ROZEGRAJ RESZTE</button>
+                `;
+            }
+            
+            if (gameState.currentRound < gameState.totalRounds) {
+                return `
+                    <button class="button" onclick="nextRound()">NASTEPNA RUNDA</button>
+                    <button class="button" onclick="startRoundInstant()">ROZEGRAJ CALA NASTEPNA RUNDE</button>
+                `;
+            } else {
+                return `
+                    <div class="yellow-banner">*** KONIEC SEZONU #${gameState.seasonNumber} ***</div>
+                    <button class="button button-large button-green" onclick="startNewSeason()">
+                        ROZPOCZNIJ SEZON #${gameState.seasonNumber + 1}
+                    </button>
+                `;
+            }
+        }
+
         function renderQualifying() {
+            if (gameState.stepByStep || gameState.diceByDice) {
+                const sorted = sortPlayersByDice([...gameState.qualifyingInProgress]);
+                return sorted.map((player, index) => {
+                    const bgColor = index < 10 ? '#e0ffe0' : '#ffe0e0';
+                    const isHighlighted = player.id === gameState.lastThrownPlayerId;
+                    const rowClass = isHighlighted ? 'highlighted-row' : '';
+                    return `
+                        <tr class="${rowClass}" style="background-color: ${bgColor};">
+                            <td style="font-weight: bold;">${index + 1}</td>
+                            <td style="font-weight: bold;">${isHighlighted ? '►' : ''} ${flags[player.country]}</td>
+                            <td style="${isHighlighted ? 'font-weight: bold;' : ''}">${player.name}</td>
+                            <td>${gameState.diceByDice ? formatIncompleteDice(player.dice) : formatDice(player.dice)}</td>
+                            <td style="text-align: right; font-weight: bold;">${player.total}${player.isHome ? '*' : ''}</td>
+                            <td style="text-align: center;">${index < 10 ? 'Q' : 'X'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
             if (!gameState.currentQualifying) return '';
             
             return gameState.currentQualifying.map((player, index) => {
@@ -775,6 +1141,27 @@
         }
 
         function renderFinal() {
+            if (gameState.stepByStep || gameState.diceByDice) {
+                if (!gameState.isQualifyingPhase && gameState.currentPlayerIndex < 10) {
+                    const sorted = sortPlayersByDice(gameState.finalInProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})));
+                    return sorted.map((player, index) => {
+                        const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                        const isHighlighted = player.id === gameState.lastThrownPlayerId;
+                        const rowClass = isHighlighted ? 'highlighted-row' : '';
+                        return `
+                            <tr class="${rowClass}" style="background-color: ${bgColor};">
+                                <td style="font-weight: bold;">${index + 1}</td>
+                                <td style="font-weight: bold;">${isHighlighted ? '►' : ''} ${flags[player.country]}</td>
+                                <td style="${isHighlighted ? 'font-weight: bold;' : ''}">${player.name}</td>
+                                <td>${gameState.diceByDice ? formatIncompleteDice(player.dice) : formatDice(player.dice)}</td>
+                                <td style="text-align: right; font-weight: bold;">${player.total}${player.isHome ? '*' : ''}</td>
+                                <td style="text-align: right;">${10 - index} pkt</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+            
             if (!gameState.currentFinal) return '';
             
             const lastRound = gameState.history[gameState.history.length - 1];
@@ -830,7 +1217,6 @@
             }).join('');
         }
 
-        // Inicjalizacja
         render();
     </script>
 </body>
