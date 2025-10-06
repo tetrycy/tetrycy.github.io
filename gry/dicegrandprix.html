@@ -886,7 +886,6 @@ const DiceChampionship = () => {
               padding: '2px',
               zIndex: 1000,
               minWidth: '500px',
-              maxWidth: '90vw',
               maxHeight: '80vh',
               overflow: 'auto'
             }}>
@@ -897,10 +896,7 @@ const DiceChampionship = () => {
                 fontWeight: 'bold',
                 marginBottom: '2px',
                 display: 'flex',
-                justifyContent: 'space-between',
-                position: 'sticky',
-                top: '-2px',
-                zIndex: 1
+                justifyContent: 'space-between'
               }}>
                 <span>STATYSTYKI - {selectedPlayer.name}</span>
                 <span style={{ cursor: 'pointer' }} onClick={closePlayerStats}>X</span>
@@ -941,42 +937,40 @@ const DiceChampionship = () => {
                     WYNIKI W RUNDACH
                   </div>
                   
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                      <thead style={{ position: 'sticky', top: 0, backgroundColor: '#c0c0c0', zIndex: 1 }}>
-                        <tr style={{ backgroundColor: '#c0c0c0' }}>
-                          <th style={{ padding: '3px', border: '1px solid #808080' }}>Runda</th>
-                          <th style={{ padding: '3px', border: '1px solid #808080' }}>Lokalizacja</th>
-                          <th style={{ padding: '3px', border: '1px solid #808080' }}>Kwal.</th>
-                          <th style={{ padding: '3px', border: '1px solid #808080' }}>Final</th>
-                          <th style={{ padding: '3px', border: '1px solid #808080' }}>Pkt</th>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#c0c0c0' }}>
+                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Runda</th>
+                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Lokalizacja</th>
+                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Kwal.</th>
+                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Final</th>
+                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Pkt</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedPlayer.seasonStats.map((stat, index) => (
+                        <tr key={index} style={{
+                          backgroundColor: stat.inFinal ? '#e0ffe0' : '#ffe0e0'
+                        }}>
+                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
+                            {stat.roundNumber}
+                          </td>
+                          <td style={{ padding: '3px', border: '1px solid #808080' }}>
+                            {stat.city}
+                          </td>
+                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
+                            {stat.qualifyingPosition}
+                          </td>
+                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
+                            {stat.inFinal ? stat.finalPosition : '-'}
+                          </td>
+                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
+                            {stat.pointsEarned || 0}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {selectedPlayer.seasonStats.map((stat, index) => (
-                          <tr key={index} style={{
-                            backgroundColor: stat.inFinal ? '#e0ffe0' : '#ffe0e0'
-                          }}>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
-                              {stat.roundNumber}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080' }}>
-                              {stat.city}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
-                              {stat.qualifyingPosition}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
-                              {stat.inFinal ? stat.finalPosition : '-'}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
-                              {stat.pointsEarned || 0}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
                 <div style={{ textAlign: 'center', marginTop: '12px' }}>
