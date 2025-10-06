@@ -268,6 +268,7 @@
             currentRound: 0,
             players: [],
             history: [],
+            allSeasons: [],
             showQualifying: false,
             showFinal: false,
             currentQualifying: null,
@@ -282,7 +283,9 @@
             lastThrownPlayerId: null,
             viewingHistory: false,
             historyRoundIndex: null,
-            selectedPlayer: null
+            selectedPlayer: null,
+            viewingAllSeasons: false,
+            selectedSeasonIndex: null
         };
 
         function initializePlayers() {
@@ -426,17 +429,19 @@
                     const playerObj = gameState.players.find(p => p.id === player.id);
                     playerObj.seasonPoints += points;
                     playerObj.finalsCount++;
-                    
-                    playerObj.seasonStats.push({
-                        roundNumber: gameState.currentRound + 1,
-                        city: roundCity,
-                        country: roundCountry,
-                        qualifyingPosition: qIndex + 1,
-                        inFinal,
-                        finalPosition: finalPos,
-                        pointsEarned: points
-                    });
                 }
+                
+                // Zapisz statystyki dla WSZYSTKICH zawodników, nie tylko finalistów
+                const playerObj = gameState.players.find(p => p.id === player.id);
+                playerObj.seasonStats.push({
+                    roundNumber: gameState.currentRound + 1,
+                    city: roundCity,
+                    country: roundCountry,
+                    qualifyingPosition: qIndex + 1,
+                    inFinal,
+                    finalPosition: finalPos,
+                    pointsEarned: points
+                });
             });
 
             gameState.history.push({
@@ -636,17 +641,19 @@
                     const playerObj = gameState.players.find(p => p.id === player.id);
                     playerObj.seasonPoints += points;
                     playerObj.finalsCount++;
-                    
-                    playerObj.seasonStats.push({
-                        roundNumber: gameState.currentRound + 1,
-                        city: roundCity,
-                        country: roundCountry,
-                        qualifyingPosition: qIndex + 1,
-                        inFinal,
-                        finalPosition: finalPos,
-                        pointsEarned: points
-                    });
                 }
+                
+                // Zapisz statystyki dla WSZYSTKICH zawodników
+                const playerObj = gameState.players.find(p => p.id === player.id);
+                playerObj.seasonStats.push({
+                    roundNumber: gameState.currentRound + 1,
+                    city: roundCity,
+                    country: roundCountry,
+                    qualifyingPosition: qIndex + 1,
+                    inFinal,
+                    finalPosition: finalPos,
+                    pointsEarned: points
+                });
             });
             
             gameState.history.push({
@@ -769,6 +776,7 @@
         function startNewSeason() {
             const currentSeasonData = {
                 seasonNumber: gameState.seasonNumber,
+                rounds: [...gameState.history],
                 finalStandings: getStandings().map(p => ({
                     id: p.id,
                     name: p.name,
@@ -777,6 +785,8 @@
                     finalsCount: p.finalsCount
                 }))
             };
+            
+            gameState.allSeasons.push(currentSeasonData);
             
             gameState.players.forEach(player => {
                 player.seasonPoints = 0;
@@ -796,9 +806,11 @@
         }
 
         function openHistory() {
-            if (gameState.history.length > 0) {
+            if (gameState.history.length > 0 || gameState.allSeasons.length > 0) {
                 gameState.viewingHistory = true;
                 gameState.historyRoundIndex = null;
+                gameState.viewingAllSeasons = false;
+                gameState.selectedSeasonIndex = null;
                 render();
             }
         }
@@ -806,11 +818,31 @@
         function closeHistory() {
             gameState.viewingHistory = false;
             gameState.historyRoundIndex = null;
+            gameState.viewingAllSeasons = false;
+            gameState.selectedSeasonIndex = null;
             render();
         }
 
         function viewHistoryRound(index) {
             gameState.historyRoundIndex = index;
+            render();
+        }
+
+        function viewAllSeasons() {
+            gameState.viewingAllSeasons = true;
+            gameState.historyRoundIndex = null;
+            render();
+        }
+
+        function viewSeasonDetails(index) {
+            gameState.selectedSeasonIndex = index;
+            gameState.viewingAllSeasons = false;
+            render();
+        }
+
+        function backToAllSeasons() {
+            gameState.viewingAllSeasons = true;
+            gameState.selectedSeasonIndex = null;
             render();
         }
 
@@ -860,12 +892,83 @@
         }
 
         function renderHistoryModal() {
+            // Widok szczegółów wybranego sezonu z archiwum
+            if (gameState.selectedSeasonIndex !== null) {
+                const season = gameState.allSeasons[gameState.selectedSeasonIndex];
+                return `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 600px; max-height: 80vh; overflow: auto;">
+                        <div class="title-bar" style="background: #800080; color: yellow;">
+                            <span>SEZON #${season.seasonNumber}</span>
+                            <span style="cursor: pointer;" onclick="closeHistory()">X</span>
+                        </div>
+                        <div style="padding: 12px;">
+                            <div class="white-box">
+                                <strong>KLASYFIKACJA KONCOWA:</strong>
+                                <table style="margin-top: 4px; font-size: 11px;">
+                                    <tbody>
+                                        ${season.finalStandings.map((player, index) => {
+                                            const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                                            return `
+                                                <tr style="background-color: ${bgColor};">
+                                                    <td style="font-weight: bold;">${index + 1}</td>
+                                                    <td style="font-weight: bold;">${flags[player.country]}</td>
+                                                    <td>${player.name}</td>
+                                                    <td style="text-align: right;">${player.points}</td>
+                                                    <td style="text-align: center;">${player.finalsCount}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="text-align: center; margin-top: 12px;">
+                                <button class="button" onclick="backToAllSeasons()">Powrot do archiwum</button>
+                                <button class="button" onclick="closeHistory()">Zamknij</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Widok listy wszystkich sezonów
+            if (gameState.viewingAllSeasons) {
+                return `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
+                        <div class="title-bar" style="background: #800080; color: yellow;">
+                            <span>ARCHIWUM SEZONOW</span>
+                            <span style="cursor: pointer;" onclick="closeHistory()">X</span>
+                        </div>
+                        <div style="padding: 12px;">
+                            <div class="white-box" style="max-height: 400px; overflow-y: auto;">
+                                ${gameState.allSeasons.map((season, index) => `
+                                    <div style="background-color: #ffffff; border: 2px solid #808080; padding: 12px; margin-bottom: 8px; cursor: pointer;" onclick="viewSeasonDetails(${index})">
+                                        <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">SEZON #${season.seasonNumber}</div>
+                                        <div style="font-size: 12px;">
+                                            Mistrz: ${season.finalStandings[0].name} (${flags[season.finalStandings[0].country]}) - ${season.finalStandings[0].points} pkt
+                                        </div>
+                                        <div style="font-size: 11px; color: #666; margin-top: 4px;">
+                                            Kliknij aby zobaczyc szczegoly
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="text-align: center; margin-top: 12px;">
+                                <button class="button" onclick="closeHistory()">Powrot</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Widok szczegółów rundy z bieżącego sezonu
             if (gameState.historyRoundIndex !== null) {
                 const round = gameState.history[gameState.historyRoundIndex];
                 return `
                     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
                     <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
-                        <div class="title-bar">
+                        <div class="title-bar" style="background: #800080; color: yellow;">
                             <span>RUNDA ${round.roundNumber} - ${round.city}, ${round.country}</span>
                             <span style="cursor: pointer;" onclick="closeHistory()">X</span>
                         </div>
@@ -911,6 +1014,7 @@
                 `;
             }
             
+            // Domyślny widok - lista rund z bieżącego sezonu
             return `
                 <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
                 <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
@@ -919,15 +1023,20 @@
                         <span style="cursor: pointer;" onclick="closeHistory()">X</span>
                     </div>
                     <div style="padding: 12px;">
-                        <div class="white-box" style="max-height: 400px; overflow-y: auto;">
-                            ${gameState.history.map((round, index) => `
-                                <div style="background-color: #ffffff; border: 1px solid #808080; padding: 8px; margin-bottom: 4px; cursor: pointer;" onclick="viewHistoryRound(${index})">
-                                    <strong>Runda ${round.roundNumber}</strong> - ${round.city}, ${round.country}<br>
-                                    Zwyciezca: ${round.final[0].name} (${flags[round.final[0].country]})
-                                </div>
-                            `).join('')}
-                        </div>
+                        ${gameState.history.length > 0 ? `
+                            <div class="white-box" style="max-height: 400px; overflow-y: auto;">
+                                ${gameState.history.map((round, index) => `
+                                    <div style="background-color: #ffffff; border: 1px solid #808080; padding: 8px; margin-bottom: 4px; cursor: pointer;" onclick="viewHistoryRound(${index})">
+                                        <strong>Runda ${round.roundNumber}</strong> - ${round.city}, ${round.country}<br>
+                                        Zwyciezca: ${round.final[0].name} (${flags[round.final[0].country]})
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<div class="white-box"><em>Brak rund w tym sezonie</em></div>'}
                         <div style="text-align: center; margin-top: 12px;">
+                            ${gameState.allSeasons.length > 0 ? `
+                                <button class="button" onclick="viewAllSeasons()">Poprzednie sezony (${gameState.allSeasons.length})</button>
+                            ` : ''}
                             <button class="button" onclick="closeHistory()">Zamknij</button>
                         </div>
                     </div>
