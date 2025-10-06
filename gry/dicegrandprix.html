@@ -895,16 +895,29 @@
             // Widok szczegółów wybranego sezonu z archiwum
             if (gameState.selectedSeasonIndex !== null) {
                 const season = gameState.allSeasons[gameState.selectedSeasonIndex];
+                
+                // Oblicz klasyfikację krajów
+                const countryPoints = {};
+                countries.forEach(country => {
+                    countryPoints[country] = 0;
+                });
+                season.finalStandings.forEach(player => {
+                    countryPoints[player.country] += player.points;
+                });
+                const countryStandings = Object.entries(countryPoints)
+                    .map(([country, points]) => ({ country, points }))
+                    .sort((a, b) => b.points - a.points);
+                
                 return `
                     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
-                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 600px; max-height: 80vh; overflow: auto;">
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 700px; max-width: 90vw; max-height: 80vh; overflow: auto;">
                         <div class="title-bar" style="background: #800080; color: yellow;">
                             <span>SEZON #${season.seasonNumber}</span>
                             <span style="cursor: pointer;" onclick="closeHistory()">X</span>
                         </div>
                         <div style="padding: 12px;">
-                            <div class="white-box">
-                                <strong>KLASYFIKACJA KONCOWA:</strong>
+                            <div class="white-box" style="margin-bottom: 12px;">
+                                <strong>KLASYFIKACJA KONCOWA ZAWODNIKOW:</strong>
                                 <table style="margin-top: 4px; font-size: 11px;">
                                     <tbody>
                                         ${season.finalStandings.map((player, index) => {
@@ -922,6 +935,49 @@
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            <div class="white-box" style="margin-bottom: 12px;">
+                                <strong>KLASYFIKACJA KRAJOW:</strong>
+                                <table style="margin-top: 4px; font-size: 11px;">
+                                    <tbody>
+                                        ${countryStandings.map((item, index) => {
+                                            const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                                            return `
+                                                <tr style="background-color: ${bgColor};">
+                                                    <td style="font-weight: bold; width: 35px;">${index + 1}</td>
+                                                    <td style="font-weight: bold; width: 40px;">${flags[item.country]}</td>
+                                                    <td style="font-weight: bold;">${item.country}</td>
+                                                    <td style="text-align: right; font-weight: bold; width: 50px;">${item.points}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            ${season.rounds && season.rounds.length > 0 ? `
+                                <div class="white-box">
+                                    <strong>ZWYCIEZCY RUND:</strong>
+                                    <div style="max-height: 300px; overflow-y: auto; margin-top: 4px;">
+                                        <table style="font-size: 11px;">
+                                            <tbody>
+                                                ${season.rounds.map(round => {
+                                                    const winner = round.final[0];
+                                                    return `
+                                                        <tr>
+                                                            <td style="width: 60px;">Runda ${round.roundNumber}</td>
+                                                            <td style="width: 120px;">${round.city}</td>
+                                                            <td style="font-weight: bold;">${flags[winner.country]} ${winner.name}</td>
+                                                            <td style="text-align: right;">${winner.finalTotal}${winner.finalIsHome ? '*' : ''}</td>
+                                                        </tr>
+                                                    `;
+                                                }).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
                             <div style="text-align: center; margin-top: 12px;">
                                 <button class="button" onclick="backToAllSeasons()">Powrot do archiwum</button>
                                 <button class="button" onclick="closeHistory()">Zamknij</button>
