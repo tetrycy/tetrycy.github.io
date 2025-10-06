@@ -279,7 +279,10 @@
             qualifyingInProgress: [],
             finalInProgress: [],
             isQualifyingPhase: true,
-            lastThrownPlayerId: null
+            lastThrownPlayerId: null,
+            viewingHistory: false,
+            historyRoundIndex: null,
+            selectedPlayer: null
         };
 
         function initializePlayers() {
@@ -792,6 +795,35 @@
             render();
         }
 
+        function openHistory() {
+            if (gameState.history.length > 0) {
+                gameState.viewingHistory = true;
+                gameState.historyRoundIndex = null;
+                render();
+            }
+        }
+
+        function closeHistory() {
+            gameState.viewingHistory = false;
+            gameState.historyRoundIndex = null;
+            render();
+        }
+
+        function viewHistoryRound(index) {
+            gameState.historyRoundIndex = index;
+            render();
+        }
+
+        function openPlayerStats(playerId) {
+            gameState.selectedPlayer = gameState.players.find(p => p.id === playerId);
+            render();
+        }
+
+        function closePlayerStats() {
+            gameState.selectedPlayer = null;
+            render();
+        }
+
         function getStandings() {
             return [...gameState.players].sort((a, b) => b.seasonPoints - a.seasonPoints);
         }
@@ -825,6 +857,140 @@
                 }
             }
             return html;
+        }
+
+        function renderHistoryModal() {
+            if (gameState.historyRoundIndex !== null) {
+                const round = gameState.history[gameState.historyRoundIndex];
+                return `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
+                        <div class="title-bar">
+                            <span>RUNDA ${round.roundNumber} - ${round.city}, ${round.country}</span>
+                            <span style="cursor: pointer;" onclick="closeHistory()">X</span>
+                        </div>
+                        <div style="padding: 12px;">
+                            <div class="white-box">
+                                <strong>KWALIFIKACJE:</strong>
+                                <table style="margin-top: 4px;">
+                                    <tbody>
+                                        ${round.qualifying.slice(0, 10).map((player, index) => `
+                                            <tr style="background-color: ${index < 3 ? '#ffff00' : '#00ff00'};">
+                                                <td>${index + 1}</td>
+                                                <td>${flags[player.country]}</td>
+                                                <td>${player.name}</td>
+                                                <td>${player.total}${player.isHome ? '*' : ''}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="white-box">
+                                <strong>FINAL:</strong>
+                                <table style="margin-top: 4px;">
+                                    <tbody>
+                                        ${round.final.map((player, index) => {
+                                            const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                                            return `
+                                                <tr style="background-color: ${bgColor};">
+                                                    <td>${index + 1}</td>
+                                                    <td>${flags[player.country]}</td>
+                                                    <td>${player.name}</td>
+                                                    <td>${player.finalTotal}${player.finalIsHome ? '*' : ''}</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="text-align: center; margin-top: 12px;">
+                                <button class="button" onclick="closeHistory()">Powrot do historii</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closeHistory()"></div>
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
+                    <div class="title-bar">
+                        <span>HISTORIA RUND - SEZON #${gameState.seasonNumber}</span>
+                        <span style="cursor: pointer;" onclick="closeHistory()">X</span>
+                    </div>
+                    <div style="padding: 12px;">
+                        <div class="white-box" style="max-height: 400px; overflow-y: auto;">
+                            ${gameState.history.map((round, index) => `
+                                <div style="background-color: #ffffff; border: 1px solid #808080; padding: 8px; margin-bottom: 4px; cursor: pointer;" onclick="viewHistoryRound(${index})">
+                                    <strong>Runda ${round.roundNumber}</strong> - ${round.city}, ${round.country}<br>
+                                    Zwyciezca: ${round.final[0].name} (${flags[round.final[0].country]})
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: center; margin-top: 12px;">
+                            <button class="button" onclick="closeHistory()">Zamknij</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPlayerStatsModal() {
+            const player = gameState.selectedPlayer;
+            return `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="closePlayerStats()"></div>
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #c0c0c0; border: 2px outset #dfdfdf; padding: 2px; z-index: 1000; min-width: 500px; max-height: 80vh; overflow: auto;">
+                    <div class="title-bar">
+                        <span>STATYSTYKI - ${player.name}</span>
+                        <span style="cursor: pointer;" onclick="closePlayerStats()">X</span>
+                    </div>
+                    <div style="padding: 12px;">
+                        <div class="white-box" style="margin-bottom: 12px;">
+                            <div style="margin-bottom: 8px;">
+                                <strong>Kraj:</strong> ${flags[player.country]} ${player.country}
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <strong>Laczne punkty:</strong> ${player.seasonPoints}
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <strong>Liczba finalow:</strong> ${player.finalsCount}/${gameState.totalRounds}
+                            </div>
+                        </div>
+                        
+                        ${player.seasonStats.length > 0 ? `
+                            <div class="white-box">
+                                <div class="header-green">WYNIKI W RUNDACH</div>
+                                <table style="font-size: 11px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Runda</th>
+                                            <th>Lokalizacja</th>
+                                            <th>Kwal.</th>
+                                            <th>Final</th>
+                                            <th>Pkt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${player.seasonStats.map(stat => `
+                                            <tr style="background-color: ${stat.inFinal ? '#e0ffe0' : '#ffe0e0'};">
+                                                <td style="text-align: center;">${stat.roundNumber}</td>
+                                                <td>${stat.city}</td>
+                                                <td style="text-align: center;">${stat.qualifyingPosition}</td>
+                                                <td style="text-align: center; font-weight: bold;">${stat.inFinal ? stat.finalPosition : '-'}</td>
+                                                <td style="text-align: center; font-weight: bold;">${stat.pointsEarned || 0}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : '<div class="white-box"><em>Brak danych z rund</em></div>'}
+                        
+                        <div style="text-align: center; margin-top: 12px;">
+                            <button class="button" onclick="closePlayerStats()">Zamknij</button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function render() {
@@ -876,7 +1042,20 @@
         }
 
         function renderGame() {
+            let modals = '';
+            
+            // Modal historii
+            if (gameState.viewingHistory) {
+                modals += renderHistoryModal();
+            }
+            
+            // Modal statystyk zawodnika
+            if (gameState.selectedPlayer) {
+                modals += renderPlayerStatsModal();
+            }
+            
             return `
+                ${modals}
                 <div class="window">
                     <div class="title-bar">
                         <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - SEZON #${gameState.seasonNumber}</span>
@@ -886,7 +1065,7 @@
                     <div class="menu-bar">
                         <span class="menu-item">Plik</span>
                         <span class="menu-item">Edycja</span>
-                        <span class="menu-item">Historia</span>
+                        <span class="menu-item" style="cursor: pointer; ${gameState.history.length > 0 ? 'text-decoration: underline;' : ''}" onclick="openHistory()">Historia</span>
                         <span class="menu-item">Pomoc</span>
                     </div>
                     
@@ -894,7 +1073,7 @@
                         <div class="white-box">
                             <div style="text-align: center; margin-bottom: 12px;">
                                 <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
-                                    RUNDA ${gameState.currentRound}/${gameState.totalRounds}
+                                    RUNDA ${gameState.currentRound + 1}/${gameState.totalRounds}
                                 </div>
                                 ${gameState.currentRound < gameState.totalRounds ? `
                                     <div style="font-size: 14px;">
@@ -927,6 +1106,9 @@
                                             ${renderPlayerStandings()}
                                         </tbody>
                                     </table>
+                                </div>
+                                <div style="font-size: 10px; margin-top: 4px; text-align: center; color: #666;">
+                                    Kliknij na zawodnika aby zobaczyc statystyki
                                 </div>
                             </div>
                             
@@ -1063,7 +1245,7 @@
         function renderFinalControls() {
             const finalists = gameState.currentQualifying ? [...gameState.currentQualifying.slice(0, 10)].reverse() : [];
             
-            if (gameState.stepByStep && !gameState.isQualifyingPhase && gameState.currentPlayerIndex < 10) {
+            if (gameState.stepByStep && !gameState.isQualifyingPhase && gameState.currentPlayerIndex < 10 && finalists[gameState.currentPlayerIndex]) {
                 const currentPlayer = finalists[gameState.currentPlayerIndex];
                 return `
                     <button class="button" onclick="nextPlayer()">
@@ -1074,7 +1256,7 @@
                 `;
             }
             
-            if (gameState.diceByDice && !gameState.isQualifyingPhase && (gameState.currentPlayerIndex < 10 || gameState.currentDiceIndex < 6)) {
+            if (gameState.diceByDice && !gameState.isQualifyingPhase && gameState.currentPlayerIndex < 10 && finalists[gameState.currentPlayerIndex]) {
                 const currentPlayer = finalists[gameState.currentPlayerIndex];
                 return `
                     <button class="button" onclick="nextDice()">
@@ -1192,7 +1374,7 @@
             return getStandings().map((player, index) => {
                 const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
                 return `
-                    <tr style="background-color: ${bgColor};">
+                    <tr style="background-color: ${bgColor}; cursor: pointer;" onclick="openPlayerStats(${player.id})">
                         <td style="font-weight: bold;">${index + 1}</td>
                         <td style="font-weight: bold;">${flags[player.country]}</td>
                         <td>${player.name}</td>
