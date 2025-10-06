@@ -118,17 +118,17 @@ const DiceChampionship = () => {
   const selectSeasonMode = (mode) => {
     setSeasonMode(mode);
     if (mode === 'fast') {
-      setTotalRounds(12); // 1 turniej na kraj
+      setTotalRounds(12);
     } else if (mode === 'medium') {
-      setTotalRounds(24); // 2 turnieje na kraj
+      setTotalRounds(24);
     } else if (mode === 'slow') {
-      setTotalRounds(48); // 4 turnieje na kraj
+      setTotalRounds(48);
     }
   };
 
   const getCurrentCity = () => {
-    const cityIndex = Math.floor(currentRound / 12); // Która kolejka (0, 1, 2, 3)
-    const countryIndex = currentRound % 12; // Który kraj w kolejce
+    const cityIndex = Math.floor(currentRound / 12);
+    const countryIndex = currentRound % 12;
     return cities[countries[countryIndex]][cityIndex];
   };
 
@@ -876,6 +876,17 @@ const DiceChampionship = () => {
           </div>
 
           {selectedPlayer && (
+            <>
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 999
+            }} onClick={closePlayerStats} />
+            
             <div style={{
               position: 'fixed',
               top: '50%',
@@ -986,18 +997,7 @@ const DiceChampionship = () => {
                 </div>
               </div>
             </div>
-          )}
-
-          {selectedPlayer && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              zIndex: 999
-            }} onClick={closePlayerStats} />
+            </>
           )}
 
           {viewingAllSeasons && (
@@ -1540,14 +1540,12 @@ const DiceChampionship = () => {
                               setStepByStep(true);
                               setDiceByDice(false);
                               if (currentDiceIndex > 0 && currentDiceIndex < 6) {
-                                // Dokończ obecnego zawodnika jeśli zaczęliśmy jego rzuty
                                 const player = getPlayersInStartOrder()[currentPlayerIndex];
                                 const roundCountry = getCurrentCountry();
                                 const isHome = player.country === roundCountry;
                                 
                                 let playerInProgress = qualifyingInProgress.find(p => p.id === player.id);
                                 
-                                // Dokończ rzuty dla obecnego zawodnika
                                 while (playerInProgress.dice.length < 6) {
                                   const newDice = rollSingleDice(isHome);
                                   playerInProgress.dice.push(newDice);
