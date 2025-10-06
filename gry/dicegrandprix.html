@@ -1,2059 +1,837 @@
-import React, { useState } from 'react';
-
-const DiceChampionship = () => {
-  const countries = [
-    'Polska', 'Niemcy', 'Francja', 'Wlochy', 'Hiszpania', 'Tajlandia',
-    'Brazylia', 'Turcja', 'Egipt', 'Japonia', 'Australia', 'Chiny'
-  ];
-  
-  const cities = {
-    'Polska': ['Warszawa', 'Krakow', 'Gdansk', 'Wroclaw'],
-    'Niemcy': ['Berlin', 'Monachium', 'Hamburg', 'Frankfurt'],
-    'Francja': ['Paryz', 'Marsylia', 'Lyon', 'Nicea'],
-    'Wlochy': ['Rzym', 'Mediolan', 'Wenecja', 'Florencja'],
-    'Hiszpania': ['Madryt', 'Barcelona', 'Sewilla', 'Walencja'],
-    'Tajlandia': ['Bangkok', 'Phuket', 'Chiang Mai', 'Pattaya'],
-    'Brazylia': ['Rio', 'Sao Paulo', 'Brasilia', 'Salvador'],
-    'Turcja': ['Stambuł', 'Ankara', 'Izmir', 'Antalya'],
-    'Egipt': ['Kair', 'Aleksandria', 'Giza', 'Luksor'],
-    'Japonia': ['Tokio', 'Osaka', 'Kioto', 'Jokohama'],
-    'Australia': ['Sydney', 'Melbourne', 'Brisbane', 'Perth'],
-    'Chiny': ['Pekin', 'Szanghaj', 'Guangzhou', 'Shenzhen']
-  };
-  
-  const flags = {
-    'Polska': 'PL', 'Niemcy': 'DE', 'Francja': 'FR', 'Wlochy': 'IT',
-    'Hiszpania': 'ES', 'Tajlandia': 'TH', 'Brazylia': 'BR', 'Turcja': 'TR',
-    'Egipt': 'EG', 'Japonia': 'JP', 'Australia': 'AU', 'Chiny': 'CN'
-  };
-
-  const maleNames = {
-    'Polska': ['Janusz', 'Waldemar'],
-    'Niemcy': ['Hans', 'Fritz'],
-    'Francja': ['Pierre', 'Jean'],
-    'Wlochy': ['Marco', 'Luigi'],
-    'Hiszpania': ['Carlos', 'Jose'],
-    'Tajlandia': ['Somchai', 'Niran'],
-    'Brazylia': ['Lucas', 'Pedro'],
-    'Turcja': ['Mehmet', 'Ahmet'],
-    'Egipt': ['Ahmed', 'Mohamed'],
-    'Japonia': ['Yuki', 'Kenji'],
-    'Australia': ['Jack', 'Oliver'],
-    'Chiny': ['Wei', 'Chen']
-  };
-
-  const lastNames = {
-    'Polska': ['Sobczak', 'Wiaz'],
-    'Niemcy': ['Schmidt', 'Muller'],
-    'Francja': ['Dubois', 'Martin'],
-    'Wlochy': ['Rossi', 'Bianchi'],
-    'Hiszpania': ['Garcia', 'Rodriguez'],
-    'Tajlandia': ['Srisai', 'Panya'],
-    'Brazylia': ['Silva', 'Santos'],
-    'Turcja': ['Yilmaz', 'Kaya'],
-    'Egipt': ['Hassan', 'Ali'],
-    'Japonia': ['Tanaka', 'Suzuki'],
-    'Australia': ['Wilson', 'Taylor'],
-    'Chiny': ['Wang', 'Li']
-  };
-
-  const initializePlayers = () => {
-    let players = [];
-    countries.forEach((country, countryIndex) => {
-      for (let i = 0; i < 2; i++) {
-        players.push({
-          id: countryIndex * 2 + i,
-          name: `${maleNames[country][i]} ${lastNames[country][i]}`,
-          country: country,
-          seasonPoints: 0,
-          finalsCount: 0,
-          seasonStats: []
-        });
-      }
-    });
-    return players;
-  };
-
-  const [seasonNumber, setSeasonNumber] = useState(1);
-  const [players] = useState(initializePlayers());
-  const [currentRound, setCurrentRound] = useState(0);
-  const [history, setHistory] = useState([]);
-  const [allSeasons, setAllSeasons] = useState([]);
-  const [seasonMode, setSeasonMode] = useState(null);
-  const [totalRounds, setTotalRounds] = useState(0);
-  const [showQualifying, setShowQualifying] = useState(false);
-  const [showFinal, setShowFinal] = useState(false);
-  const [currentQualifying, setCurrentQualifying] = useState(null);
-  const [currentFinal, setCurrentFinal] = useState(null);
-  const [stepByStep, setStepByStep] = useState(false);
-  const [diceByDice, setDiceByDice] = useState(false);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [currentDiceIndex, setCurrentDiceIndex] = useState(0);
-  const [qualifyingInProgress, setQualifyingInProgress] = useState([]);
-  const [finalInProgress, setFinalInProgress] = useState([]);
-  const [isQualifyingPhase, setIsQualifyingPhase] = useState(true);
-  const [viewingHistory, setViewingHistory] = useState(false);
-  const [historyRoundIndex, setHistoryRoundIndex] = useState(null);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [lastThrownPlayerId, setLastThrownPlayerId] = useState(null);
-  const [viewingAllSeasons, setViewingAllSeasons] = useState(false);
-  const [selectedSeasonIndex, setSelectedSeasonIndex] = useState(null);
-
-  const rollSingleDice = (isHome) => {
-    if (isHome) {
-      const roll1 = Math.floor(Math.random() * 6) + 1;
-      const roll2 = Math.floor(Math.random() * 6) + 1;
-      return Math.max(roll1, roll2);
-    } else {
-      return Math.floor(Math.random() * 6) + 1;
-    }
-  };
-
-  const rollDice = (isHome) => {
-    return Array.from({ length: 6 }, () => rollSingleDice(isHome));
-  };
-
-  const sumDice = (dice) => dice.reduce((a, b) => a + b, 0);
-
-  const selectSeasonMode = (mode) => {
-    setSeasonMode(mode);
-    if (mode === 'fast') {
-      setTotalRounds(12);
-    } else if (mode === 'medium') {
-      setTotalRounds(24);
-    } else if (mode === 'slow') {
-      setTotalRounds(48);
-    }
-  };
-
-  const getCurrentCity = () => {
-    const cityIndex = Math.floor(currentRound / 12);
-    const countryIndex = currentRound % 12;
-    return cities[countries[countryIndex]][cityIndex];
-  };
-
-  const getCurrentCountry = () => {
-    const countryIndex = currentRound % 12;
-    return countries[countryIndex];
-  };
-
-  const compareByHighestDice = (diceA, diceB) => {
-    const sortedA = [...diceA].sort((a, b) => b - a);
-    const sortedB = [...diceB].sort((a, b) => b - a);
-    
-    for (let i = 0; i < 6; i++) {
-      if (sortedA[i] !== sortedB[i]) {
-        return sortedB[i] - sortedA[i];
-      }
-    }
-    
-    for (let value = 6; value >= 1; value--) {
-      const indexA = diceA.indexOf(value);
-      const indexB = diceB.indexOf(value);
-      
-      if (indexA !== -1 && indexB !== -1) {
-        if (indexA !== indexB) {
-          return indexA - indexB;
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistrzostwa Świata - Rzut Kośćmi</title>
+    <style>
+        * {
+            box-sizing: border-box;
         }
-      }
-    }
-    
-    return 0;
-  };
-
-  const sortPlayersByDice = (playersWithDice) => {
-    return playersWithDice.sort((a, b) => {
-      const sumA = a.total;
-      const sumB = b.total;
-      
-      if (sumA !== sumB) {
-        return sumB - sumA;
-      }
-      
-      return compareByHighestDice(a.dice, b.dice);
-    });
-  };
-
-  const updatePlayerStats = (playerId, roundNumber, city, country, qualifyingPos, inFinal, finalPos, points) => {
-    const player = players.find(p => p.id === playerId);
-    if (player) {
-      player.seasonStats.push({
-        roundNumber,
-        city,
-        country,
-        qualifyingPosition: qualifyingPos,
-        inFinal,
-        finalPosition: finalPos,
-        pointsEarned: points
-      });
-      
-      if (inFinal) {
-        player.finalsCount++;
-      }
-    }
-  };
-
-  const getPlayersInStartOrder = () => {
-    return [...players].sort((a, b) => a.seasonPoints - b.seasonPoints);
-  };
-
-  const simulateRoundInstant = () => {
-    const roundCountry = getCurrentCountry();
-    const roundCity = getCurrentCity();
-    
-    const playersInOrder = getPlayersInStartOrder();
-    
-    const qualifyingResults = playersInOrder.map(player => {
-      const isHome = player.country === roundCountry;
-      const dice = rollDice(isHome);
-      const total = sumDice(dice);
-      return { ...player, dice, total, isHome };
-    });
-    
-    const sortedQualifying = sortPlayersByDice(qualifyingResults);
-
-    const finalistsReversed = [...sortedQualifying.slice(0, 10)].reverse();
-    
-    const qualifyingBonuses = {
-      [sortedQualifying[0].id]: 3,
-      [sortedQualifying[1].id]: 2,
-      [sortedQualifying[2].id]: 1
-    };
-
-    const finalResults = finalistsReversed.map(player => {
-      const isHome = player.country === roundCountry;
-      const dice = rollDice(isHome);
-      const total = sumDice(dice);
-      return { ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome };
-    });
-    
-    const sortedFinal = sortPlayersByDice(finalResults.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
-      .map(p => ({...p, dice: p.finalDice}));
-
-    const updatedPlayers = [...players];
-    
-    sortedQualifying.forEach((player, qIndex) => {
-      const inFinal = qIndex < 10;
-      let finalPos = null;
-      let points = 0;
-      
-      if (inFinal) {
-        finalPos = sortedFinal.findIndex(fp => fp.id === player.id) + 1;
-        const finalPoints = 10 - (finalPos - 1);
-        const bonusPoints = qualifyingBonuses[player.id] || 0;
-        points = finalPoints + bonusPoints;
         
-        const playerIndex = updatedPlayers.findIndex(p => p.id === player.id);
-        updatedPlayers[playerIndex].seasonPoints += points;
-      }
-      
-      updatePlayerStats(player.id, currentRound + 1, roundCity, roundCountry, qIndex + 1, inFinal, finalPos, points);
-    });
-
-    const roundResult = {
-      roundNumber: currentRound + 1,
-      country: roundCountry,
-      city: roundCity,
-      qualifying: sortedQualifying,
-      final: sortedFinal,
-      qualifyingBonuses
-    };
-
-    updatedPlayers.forEach((updatedPlayer, index) => {
-      players[index].seasonPoints = updatedPlayer.seasonPoints;
-    });
-
-    setHistory([...history, roundResult]);
-    return roundResult;
-  };
-
-  const startRoundInstant = () => {
-    if (currentRound < totalRounds) {
-      const result = simulateRoundInstant();
-      setCurrentQualifying(result.qualifying);
-      setCurrentFinal(result.final);
-      setShowQualifying(true);
-      setShowFinal(true);
-      setStepByStep(false);
-      setDiceByDice(false);
-    }
-  };
-
-  const startRoundStepByStep = () => {
-    if (currentRound < totalRounds) {
-      setStepByStep(true);
-      setDiceByDice(false);
-      setShowQualifying(true);
-      setShowFinal(false);
-      setCurrentPlayerIndex(0);
-      setCurrentDiceIndex(0);
-      setQualifyingInProgress([]);
-      setFinalInProgress([]);
-      setIsQualifyingPhase(true);
-      setLastThrownPlayerId(null);
-    }
-  };
-
-  const startRoundDiceByDice = () => {
-    if (currentRound < totalRounds) {
-      setStepByStep(false);
-      setDiceByDice(true);
-      setShowQualifying(true);
-      setShowFinal(false);
-      setCurrentPlayerIndex(0);
-      setCurrentDiceIndex(0);
-      setQualifyingInProgress([]);
-      setFinalInProgress([]);
-      setIsQualifyingPhase(true);
-      setLastThrownPlayerId(null);
-    }
-  };
-
-  const nextPlayer = () => {
-    const roundCountry = getCurrentCountry();
-    const roundCity = getCurrentCity();
-    
-    if (isQualifyingPhase) {
-      const playersInOrder = getPlayersInStartOrder();
-      if (currentPlayerIndex < playersInOrder.length) {
-        const player = playersInOrder[currentPlayerIndex];
-        setLastThrownPlayerId(player.id);
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
-        
-        const newResults = [...qualifyingInProgress, { ...player, dice, total, isHome }];
-        setQualifyingInProgress(newResults);
-        setCurrentPlayerIndex(currentPlayerIndex + 1);
-        
-        if (currentPlayerIndex === playersInOrder.length - 1) {
-          const sorted = sortPlayersByDice(newResults);
-          setCurrentQualifying(sorted);
+        body {
+            margin: 0;
+            padding: 8px;
+            font-family: 'MS Sans Serif', Arial, sans-serif;
+            background-color: #008080;
+            min-height: 100vh;
         }
-      }
-    } else {
-      const finalists = [...currentQualifying.slice(0, 10)].reverse();
-      if (currentPlayerIndex < finalists.length) {
-        const player = finalists[currentPlayerIndex];
-        setLastThrownPlayerId(player.id);
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
         
-        const newResults = [...finalInProgress, { ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome }];
-        setFinalInProgress(newResults);
-        setCurrentPlayerIndex(currentPlayerIndex + 1);
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
         
-        if (currentPlayerIndex === finalists.length - 1) {
-          const sorted = sortPlayersByDice(newResults.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
-            .map(p => ({...p, dice: p.finalDice}));
-          setCurrentFinal(sorted);
-          
-          const qualifyingBonuses = {
-            [currentQualifying[0].id]: 3,
-            [currentQualifying[1].id]: 2,
-            [currentQualifying[2].id]: 1
-          };
-          
-          currentQualifying.forEach((player, qIndex) => {
-            const inFinal = qIndex < 10;
-            let finalPos = null;
-            let points = 0;
+        .window {
+            background-color: #c0c0c0;
+            border: 2px outset #dfdfdf;
+            padding: 2px;
+        }
+        
+        .title-bar {
+            background-color: #000080;
+            color: white;
+            padding: 4px 8px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-bar {
+            background-color: #c0c0c0;
+            border-bottom: 2px solid #808080;
+            padding: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .menu-item {
+            padding: 4px 8px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .menu-item.active {
+            text-decoration: underline;
+        }
+        
+        .content {
+            padding: 12px;
+        }
+        
+        .white-box {
+            background-color: #ffffff;
+            border: 2px inset #808080;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .button {
+            background-color: #c0c0c0;
+            border: 2px outset #dfdfdf;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'MS Sans Serif', Arial;
+            margin: 3px;
+        }
+        
+        .button:active {
+            border-style: inset;
+        }
+        
+        .button-large {
+            padding: 12px 32px;
+            font-size: 16px;
+        }
+        
+        .button-green {
+            background-color: #008000;
+            color: white;
+            border: 2px outset #00a000;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        th, td {
+            padding: 3px;
+            border: 1px solid #808080;
+        }
+        
+        thead tr {
+            background-color: #c0c0c0;
+        }
+        
+        .dice {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border: 2px solid black;
+            text-align: center;
+            line-height: 20px;
+            font-weight: bold;
+            margin-right: 2px;
+            font-family: Arial;
+        }
+        
+        .dice-empty {
+            background-color: #c0c0c0;
+        }
+        
+        .status-bar {
+            background-color: #c0c0c0;
+            border-top: 2px solid #dfdfdf;
+            padding: 4px 8px;
+            margin-top: 2px;
+            font-size: 11px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .scroll-box {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #808080;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #c0c0c0;
+            border: 2px outset #dfdfdf;
+            padding: 2px;
+            z-index: 1000;
+            min-width: 500px;
+            max-height: 80vh;
+            overflow: auto;
+            display: none;
+        }
+        
+        .header-blue {
+            background-color: #000080;
+            color: white;
+            padding: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .header-green {
+            background-color: #008000;
+            color: white;
+            padding: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .header-purple {
+            background-color: #800080;
+            color: yellow;
+            padding: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .yellow-banner {
+            background-color: #ffff00;
+            border: 2px solid black;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .mode-button {
+            background-color: #c0c0c0;
+            border: 2px outset #dfdfdf;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'MS Sans Serif', Arial;
+            text-align: left;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        
+        .mode-button:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app"></div>
+    </div>
+
+    <script>
+        // Dane gry
+        const countries = [
+            'Polska', 'Niemcy', 'Francja', 'Wlochy', 'Hiszpania', 'Tajlandia',
+            'Brazylia', 'Turcja', 'Egipt', 'Japonia', 'Australia', 'Chiny'
+        ];
+        
+        const cities = {
+            'Polska': ['Warszawa', 'Krakow', 'Gdansk', 'Wroclaw'],
+            'Niemcy': ['Berlin', 'Monachium', 'Hamburg', 'Frankfurt'],
+            'Francja': ['Paryz', 'Marsylia', 'Lyon', 'Nicea'],
+            'Wlochy': ['Rzym', 'Mediolan', 'Wenecja', 'Florencja'],
+            'Hiszpania': ['Madryt', 'Barcelona', 'Sewilla', 'Walencja'],
+            'Tajlandia': ['Bangkok', 'Phuket', 'Chiang Mai', 'Pattaya'],
+            'Brazylia': ['Rio', 'Sao Paulo', 'Brasilia', 'Salvador'],
+            'Turcja': ['Stambuł', 'Ankara', 'Izmir', 'Antalya'],
+            'Egipt': ['Kair', 'Aleksandria', 'Giza', 'Luksor'],
+            'Japonia': ['Tokio', 'Osaka', 'Kioto', 'Jokohama'],
+            'Australia': ['Sydney', 'Melbourne', 'Brisbane', 'Perth'],
+            'Chiny': ['Pekin', 'Szanghaj', 'Guangzhou', 'Shenzhen']
+        };
+        
+        const flags = {
+            'Polska': '🇵🇱', 'Niemcy': '🇩🇪', 'Francja': '🇫🇷', 'Wlochy': '🇮🇹',
+            'Hiszpania': '🇪🇸', 'Tajlandia': '🇹🇭', 'Brazylia': '🇧🇷', 'Turcja': '🇹🇷',
+            'Egipt': '🇪🇬', 'Japonia': '🇯🇵', 'Australia': '🇦🇺', 'Chiny': '🇨🇳'
+        };
+
+        const maleNames = {
+            'Polska': ['Janusz', 'Waldemar'],
+            'Niemcy': ['Hans', 'Fritz'],
+            'Francja': ['Pierre', 'Jean'],
+            'Wlochy': ['Marco', 'Luigi'],
+            'Hiszpania': ['Carlos', 'Jose'],
+            'Tajlandia': ['Somchai', 'Niran'],
+            'Brazylia': ['Lucas', 'Pedro'],
+            'Turcja': ['Mehmet', 'Ahmet'],
+            'Egipt': ['Ahmed', 'Mohamed'],
+            'Japonia': ['Yuki', 'Kenji'],
+            'Australia': ['Jack', 'Oliver'],
+            'Chiny': ['Wei', 'Chen']
+        };
+
+        const lastNames = {
+            'Polska': ['Sobczak', 'Wiaz'],
+            'Niemcy': ['Schmidt', 'Muller'],
+            'Francja': ['Dubois', 'Martin'],
+            'Wlochy': ['Rossi', 'Bianchi'],
+            'Hiszpania': ['Garcia', 'Rodriguez'],
+            'Tajlandia': ['Srisai', 'Panya'],
+            'Brazylia': ['Silva', 'Santos'],
+            'Turcja': ['Yilmaz', 'Kaya'],
+            'Egipt': ['Hassan', 'Ali'],
+            'Japonia': ['Tanaka', 'Suzuki'],
+            'Australia': ['Wilson', 'Taylor'],
+            'Chiny': ['Wang', 'Li']
+        };
+
+        // Stan gry
+        let gameState = {
+            seasonMode: null,
+            totalRounds: 0,
+            seasonNumber: 1,
+            currentRound: 0,
+            players: [],
+            history: [],
+            allSeasons: [],
+            showQualifying: false,
+            showFinal: false,
+            currentQualifying: null,
+            currentFinal: null
+        };
+
+        // Inicjalizacja graczy
+        function initializePlayers() {
+            const players = [];
+            countries.forEach((country, countryIndex) => {
+                for (let i = 0; i < 2; i++) {
+                    players.push({
+                        id: countryIndex * 2 + i,
+                        name: `${maleNames[country][i]} ${lastNames[country][i]}`,
+                        country: country,
+                        seasonPoints: 0,
+                        finalsCount: 0,
+                        seasonStats: []
+                    });
+                }
+            });
+            return players;
+        }
+
+        // Funkcje gry
+        function rollSingleDice(isHome) {
+            if (isHome) {
+                const roll1 = Math.floor(Math.random() * 6) + 1;
+                const roll2 = Math.floor(Math.random() * 6) + 1;
+                return Math.max(roll1, roll2);
+            }
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function rollDice(isHome) {
+            return Array.from({ length: 6 }, () => rollSingleDice(isHome));
+        }
+
+        function sumDice(dice) {
+            return dice.reduce((a, b) => a + b, 0);
+        }
+
+        function getCurrentCity() {
+            const cityIndex = Math.floor(gameState.currentRound / 12);
+            const countryIndex = gameState.currentRound % 12;
+            return cities[countries[countryIndex]][cityIndex];
+        }
+
+        function getCurrentCountry() {
+            const countryIndex = gameState.currentRound % 12;
+            return countries[countryIndex];
+        }
+
+        function compareByHighestDice(diceA, diceB) {
+            const sortedA = [...diceA].sort((a, b) => b - a);
+            const sortedB = [...diceB].sort((a, b) => b - a);
             
-            if (inFinal) {
-              finalPos = sorted.findIndex(fp => fp.id === player.id) + 1;
-              const finalPoints = 10 - (finalPos - 1);
-              const bonusPoints = qualifyingBonuses[player.id] || 0;
-              points = finalPoints + bonusPoints;
-              
-              const playerIndex = players.findIndex(p => p.id === player.id);
-              players[playerIndex].seasonPoints += points;
+            for (let i = 0; i < 6; i++) {
+                if (sortedA[i] !== sortedB[i]) {
+                    return sortedB[i] - sortedA[i];
+                }
             }
             
-            updatePlayerStats(player.id, currentRound + 1, roundCity, roundCountry, qIndex + 1, inFinal, finalPos, points);
-          });
-          
-          setHistory([...history, {
-            roundNumber: currentRound + 1,
-            country: roundCountry,
-            city: roundCity,
-            qualifying: currentQualifying,
-            final: sorted,
-            qualifyingBonuses
-          }]);
+            for (let value = 6; value >= 1; value--) {
+                const indexA = diceA.indexOf(value);
+                const indexB = diceB.indexOf(value);
+                
+                if (indexA !== -1 && indexB !== -1) {
+                    if (indexA !== indexB) {
+                        return indexA - indexB;
+                    }
+                }
+            }
+            
+            return 0;
         }
-      }
-    }
-  };
 
-  const nextDice = () => {
-    const roundCountry = getCurrentCountry();
-    const roundCity = getCurrentCity();
-    
-    if (isQualifyingPhase) {
-      const playersInOrder = getPlayersInStartOrder();
-      if (currentPlayerIndex < playersInOrder.length) {
-        const player = playersInOrder[currentPlayerIndex];
-        const isHome = player.country === roundCountry;
-        
-        if (currentDiceIndex === 0) {
-          setLastThrownPlayerId(player.id);
+        function sortPlayersByDice(playersWithDice) {
+            return playersWithDice.sort((a, b) => {
+                if (a.total !== b.total) {
+                    return b.total - a.total;
+                }
+                return compareByHighestDice(a.dice, b.dice);
+            });
         }
-        
-        let updatedProgress = [...qualifyingInProgress];
-        let playerInProgress = updatedProgress.find(p => p.id === player.id);
-        
-        if (!playerInProgress) {
-          playerInProgress = { ...player, dice: [], total: 0, isHome };
-          updatedProgress.push(playerInProgress);
+
+        function getPlayersInStartOrder() {
+            return [...gameState.players].sort((a, b) => a.seasonPoints - b.seasonPoints);
         }
-        
-        if (currentDiceIndex < 6) {
-          const newDice = rollSingleDice(isHome);
-          
-          updatedProgress = updatedProgress.map(p => {
-            if (p.id === player.id) {
-              const newDiceArray = [...p.dice, newDice];
-              return {
-                ...p,
-                dice: newDiceArray,
-                total: sumDice(newDiceArray)
-              };
-            }
-            return p;
-          });
-          
-          setQualifyingInProgress(updatedProgress);
-          setCurrentDiceIndex(currentDiceIndex + 1);
-          
-          if (currentDiceIndex === 5) {
-            setCurrentPlayerIndex(currentPlayerIndex + 1);
-            setCurrentDiceIndex(0);
+
+        function simulateRound() {
+            const roundCountry = getCurrentCountry();
+            const roundCity = getCurrentCity();
             
-            if (currentPlayerIndex === playersInOrder.length - 1) {
-              const sorted = sortPlayersByDice(updatedProgress);
-              setCurrentQualifying(sorted);
-            }
-          }
-        }
-      }
-    } else {
-      const finalists = [...currentQualifying.slice(0, 10)].reverse();
-      if (currentPlayerIndex < finalists.length) {
-        const player = finalists[currentPlayerIndex];
-        const isHome = player.country === roundCountry;
-        
-        if (currentDiceIndex === 0) {
-          setLastThrownPlayerId(player.id);
-        }
-        
-        let updatedProgress = [...finalInProgress];
-        let playerInProgress = updatedProgress.find(p => p.id === player.id);
-        
-        if (!playerInProgress) {
-          playerInProgress = { ...player, finalDice: [], finalTotal: 0, finalIsHome: isHome };
-          updatedProgress.push(playerInProgress);
-        }
-        
-        if (currentDiceIndex < 6) {
-          const newDice = rollSingleDice(isHome);
-          
-          updatedProgress = updatedProgress.map(p => {
-            if (p.id === player.id) {
-              const newDiceArray = [...p.finalDice, newDice];
-              return {
-                ...p,
-                finalDice: newDiceArray,
-                finalTotal: sumDice(newDiceArray)
-              };
-            }
-            return p;
-          });
-          
-          setFinalInProgress(updatedProgress);
-          setCurrentDiceIndex(currentDiceIndex + 1);
-          
-          if (currentDiceIndex === 5) {
-            setCurrentPlayerIndex(currentPlayerIndex + 1);
-            setCurrentDiceIndex(0);
+            const playersInOrder = getPlayersInStartOrder();
             
-            if (currentPlayerIndex === finalists.length - 1) {
-              const sorted = sortPlayersByDice(updatedProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
+            const qualifyingResults = playersInOrder.map(player => {
+                const isHome = player.country === roundCountry;
+                const dice = rollDice(isHome);
+                const total = sumDice(dice);
+                return { ...player, dice, total, isHome };
+            });
+            
+            const sortedQualifying = sortPlayersByDice(qualifyingResults);
+            const finalistsReversed = [...sortedQualifying.slice(0, 10)].reverse();
+            
+            const qualifyingBonuses = {
+                [sortedQualifying[0].id]: 3,
+                [sortedQualifying[1].id]: 2,
+                [sortedQualifying[2].id]: 1
+            };
+
+            const finalResults = finalistsReversed.map(player => {
+                const isHome = player.country === roundCountry;
+                const dice = rollDice(isHome);
+                const total = sumDice(dice);
+                return { ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome };
+            });
+            
+            const sortedFinal = sortPlayersByDice(finalResults.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
                 .map(p => ({...p, dice: p.finalDice}));
-              setCurrentFinal(sorted);
-              
-              const qualifyingBonuses = {
-                [currentQualifying[0].id]: 3,
-                [currentQualifying[1].id]: 2,
-                [currentQualifying[2].id]: 1
-              };
-              
-              currentQualifying.forEach((player, qIndex) => {
+
+            sortedQualifying.forEach((player, qIndex) => {
                 const inFinal = qIndex < 10;
                 let finalPos = null;
                 let points = 0;
                 
                 if (inFinal) {
-                  finalPos = sorted.findIndex(fp => fp.id === player.id) + 1;
-                  const finalPoints = 10 - (finalPos - 1);
-                  const bonusPoints = qualifyingBonuses[player.id] || 0;
-                  points = finalPoints + bonusPoints;
-                  
-                  const playerIndex = players.findIndex(p => p.id === player.id);
-                  players[playerIndex].seasonPoints += points;
+                    finalPos = sortedFinal.findIndex(fp => fp.id === player.id) + 1;
+                    const finalPoints = 10 - (finalPos - 1);
+                    const bonusPoints = qualifyingBonuses[player.id] || 0;
+                    points = finalPoints + bonusPoints;
+                    
+                    const playerObj = gameState.players.find(p => p.id === player.id);
+                    playerObj.seasonPoints += points;
+                    
+                    if (inFinal) {
+                        playerObj.finalsCount++;
+                    }
+                    
+                    playerObj.seasonStats.push({
+                        roundNumber: gameState.currentRound + 1,
+                        city: roundCity,
+                        country: roundCountry,
+                        qualifyingPosition: qIndex + 1,
+                        inFinal,
+                        finalPosition: finalPos,
+                        pointsEarned: points
+                    });
                 }
-                
-                updatePlayerStats(player.id, currentRound + 1, roundCity, roundCountry, qIndex + 1, inFinal, finalPos, points);
-              });
-              
-              setHistory([...history, {
-                roundNumber: currentRound + 1,
+            });
+
+            const roundResult = {
+                roundNumber: gameState.currentRound + 1,
                 country: roundCountry,
                 city: roundCity,
-                qualifying: currentQualifying,
-                final: sorted,
+                qualifying: sortedQualifying,
+                final: sortedFinal,
                 qualifyingBonuses
-              }]);
+            };
+
+            gameState.history.push(roundResult);
+            gameState.currentQualifying = sortedQualifying;
+            gameState.currentFinal = sortedFinal;
+            gameState.showQualifying = true;
+            gameState.showFinal = true;
+        }
+
+        function selectSeasonMode(mode) {
+            gameState.seasonMode = mode;
+            if (mode === 'fast') {
+                gameState.totalRounds = 12;
+            } else if (mode === 'medium') {
+                gameState.totalRounds = 24;
+            } else if (mode === 'slow') {
+                gameState.totalRounds = 48;
             }
-          }
+            gameState.players = initializePlayers();
+            render();
         }
-      }
-    }
-  };
 
-  const completeCurrentPhase = () => {
-    const roundCountry = getCurrentCountry();
-    const roundCity = getCurrentCity();
-    
-    if (isQualifyingPhase) {
-      const playersInOrder = getPlayersInStartOrder();
-      const remainingPlayers = playersInOrder.slice(currentPlayerIndex);
-      
-      const newResults = [...qualifyingInProgress];
-      remainingPlayers.forEach(player => {
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
-        newResults.push({ ...player, dice, total, isHome });
-      });
-      
-      const sorted = sortPlayersByDice(newResults);
-      setCurrentQualifying(sorted);
-      setQualifyingInProgress(newResults);
-      setCurrentPlayerIndex(playersInOrder.length);
-    } else {
-      const finalists = [...currentQualifying.slice(0, 10)].reverse();
-      const remainingPlayers = finalists.slice(currentPlayerIndex);
-      
-      const newResults = [...finalInProgress];
-      remainingPlayers.forEach(player => {
-        const isHome = player.country === roundCountry;
-        const dice = rollDice(isHome);
-        const total = sumDice(dice);
-        newResults.push({ ...player, finalDice: dice, finalTotal: total, finalIsHome: isHome });
-      });
-      
-      const sorted = sortPlayersByDice(newResults.map(p => ({...p, dice: p.finalDice, total: p.finalTotal})))
-        .map(p => ({...p, dice: p.finalDice}));
-      setCurrentFinal(sorted);
-      
-      const qualifyingBonuses = {
-        [currentQualifying[0].id]: 3,
-        [currentQualifying[1].id]: 2,
-        [currentQualifying[2].id]: 1
-      };
-      
-      currentQualifying.forEach((player, qIndex) => {
-        const inFinal = qIndex < 10;
-        let finalPos = null;
-        let points = 0;
-        
-        if (inFinal) {
-          finalPos = sorted.findIndex(fp => fp.id === player.id) + 1;
-          const finalPoints = 10 - (finalPos - 1);
-          const bonusPoints = qualifyingBonuses[player.id] || 0;
-          points = finalPoints + bonusPoints;
-          
-          const playerIndex = players.findIndex(p => p.id === player.id);
-          players[playerIndex].seasonPoints += points;
+        function startRound() {
+            if (gameState.currentRound < gameState.totalRounds) {
+                simulateRound();
+                render();
+            }
         }
-        
-        updatePlayerStats(player.id, currentRound + 1, roundCity, roundCountry, qIndex + 1, inFinal, finalPos, points);
-      });
-      
-      setHistory([...history, {
-        roundNumber: currentRound + 1,
-        country: roundCountry,
-        city: roundCity,
-        qualifying: currentQualifying,
-        final: sorted,
-        qualifyingBonuses
-      }]);
-      
-      setFinalInProgress(newResults);
-      setCurrentPlayerIndex(finalists.length);
-      setShowFinal(true);
-    }
-  };
 
-  const switchToFinal = () => {
-    setIsQualifyingPhase(false);
-    setCurrentPlayerIndex(0);
-    setCurrentDiceIndex(0);
-    setShowFinal(true);
-    setLastThrownPlayerId(null);
-  };
+        function nextRound() {
+            gameState.showQualifying = false;
+            gameState.showFinal = false;
+            gameState.currentRound++;
+            render();
+        }
 
-  const formatDice = (dice) => {
-    return dice.map((d, i) => (
-      <span key={i} style={{
-        display: 'inline-block',
-        width: '24px',
-        height: '24px',
-        backgroundColor: 'white',
-        border: '2px solid black',
-        textAlign: 'center',
-        lineHeight: '20px',
-        fontWeight: 'bold',
-        marginRight: '2px',
-        fontFamily: 'Arial'
-      }}>
-        {d}
-      </span>
-    ));
-  };
-
-  const formatIncompleteDice = (dice, maxDice = 6) => {
-    const elements = [];
-    for (let i = 0; i < maxDice; i++) {
-      if (i < dice.length) {
-        elements.push(
-          <span key={i} style={{
-            display: 'inline-block',
-            width: '24px',
-            height: '24px',
-            backgroundColor: 'white',
-            border: '2px solid black',
-            textAlign: 'center',
-            lineHeight: '20px',
-            fontWeight: 'bold',
-            marginRight: '2px',
-            fontFamily: 'Arial'
-          }}>
-            {dice[i]}
-          </span>
-        );
-      } else {
-        elements.push(
-          <span key={i} style={{
-            display: 'inline-block',
-            width: '24px',
-            height: '24px',
-            backgroundColor: '#c0c0c0',
-            border: '2px solid black',
-            textAlign: 'center',
-            lineHeight: '20px',
-            marginRight: '2px',
-            fontFamily: 'Arial'
-          }}>
-            ?
-          </span>
-        );
-      }
-    }
-    return elements;
-  };
-
-  const getStandings = () => {
-    return [...players].sort((a, b) => b.seasonPoints - a.seasonPoints);
-  };
-
-  const getCountryStandings = () => {
-    const countryPoints = {};
-    countries.forEach(country => {
-      countryPoints[country] = 0;
-    });
-    
-    players.forEach(player => {
-      countryPoints[player.country] += player.seasonPoints;
-    });
-    
-    return Object.entries(countryPoints)
-      .map(([country, points]) => ({ country, points }))
-      .sort((a, b) => b.points - a.points);
-  };
-
-  const viewHistoryRound = (index) => {
-    setHistoryRoundIndex(index);
-    setViewingHistory(true);
-    setViewingAllSeasons(false);
-    setSelectedSeasonIndex(null);
-  };
-
-  const closeHistory = () => {
-    setViewingHistory(false);
-    setHistoryRoundIndex(null);
-    setViewingAllSeasons(false);
-    setSelectedSeasonIndex(null);
-  };
-
-  const viewPlayerStats = (player) => {
-    setSelectedPlayer(player);
-  };
-
-  const closePlayerStats = () => {
-    setSelectedPlayer(null);
-  };
-
-  const startNewSeason = () => {
-    const currentSeasonData = {
-      seasonNumber: seasonNumber,
-      rounds: [...history],
-      finalStandings: getStandings().map(p => ({
-        id: p.id,
-        name: p.name,
-        country: p.country,
-        points: p.seasonPoints,
-        finalsCount: p.finalsCount
-      }))
-    };
-    
-    setAllSeasons([...allSeasons, currentSeasonData]);
-    
-    players.forEach(player => {
-      player.seasonPoints = 0;
-      player.finalsCount = 0;
-      player.seasonStats = [];
-    });
-    
-    setSeasonNumber(seasonNumber + 1);
-    setCurrentRound(0);
-    setHistory([]);
-    setShowQualifying(false);
-    setShowFinal(false);
-    setStepByStep(false);
-    setDiceByDice(false);
-    setLastThrownPlayerId(null);
-  };
-
-  const historyRound = historyRoundIndex !== null ? history[historyRoundIndex] : null;
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#008080',
-      padding: '8px',
-      fontFamily: 'MS Sans Serif, Arial, sans-serif'
-    }}>
-      <div style={{
-        maxWidth: '900px',
-        margin: '0 auto'
-      }}>
-        {seasonMode === null && (
-          <div style={{
-            backgroundColor: '#c0c0c0',
-            border: '2px outset #dfdfdf',
-            padding: '2px'
-          }}>
-            <div style={{
-              backgroundColor: '#000080',
-              color: 'white',
-              padding: '4px 8px',
-              fontWeight: 'bold',
-              marginBottom: '2px'
-            }}>
-              <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - WYBOR TRYBU</span>
-            </div>
-
-            <div style={{ padding: '32px', textAlign: 'center' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '24px',
-                marginBottom: '24px'
-              }}>
-                <h2 style={{ marginTop: 0, fontSize: '20px' }}>WYBIERZ TEMPO SEZONU</h2>
-                <p style={{ color: '#800000', fontSize: '14px', marginBottom: '24px' }}>
-                  UWAGA: Po wyborze nie bedzie mozna zmienic!
-                </p>
-
-                <div style={{ display: 'grid', gap: '16px', maxWidth: '500px', margin: '0 auto' }}>
-                  <button
-                    onClick={() => selectSeasonMode('fast')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>⚡ SZYBKIE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      12 rund (1 turniej w kazdym kraju)
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => selectSeasonMode('medium')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>⚖ SREDNIE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      24 rundy (2 turnieje w kazdym kraju)
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => selectSeasonMode('slow')}
-                    style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '16px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      fontFamily: 'MS Sans Serif, Arial',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>🐌 WOLNE SEZONY</div>
-                    <div style={{ fontSize: '13px', fontWeight: 'normal' }}>
-                      48 rund (4 turnieje w kazdym kraju)
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {seasonMode !== null && (
-        <div style={{
-          backgroundColor: '#c0c0c0',
-          border: '2px outset #dfdfdf',
-          padding: '2px'
-        }}>
-          <div style={{
-            backgroundColor: '#000080',
-            color: 'white',
-            padding: '4px 8px',
-            fontWeight: 'bold',
-            marginBottom: '2px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - SEZON #{seasonNumber}</span>
-            <span style={{ fontSize: '16px' }}>█</span>
-          </div>
-
-          <div style={{
-            backgroundColor: '#c0c0c0',
-            borderBottom: '2px solid #808080',
-            padding: '4px',
-            marginBottom: '8px'
-          }}>
-            <span style={{ padding: '4px 8px' }}>Plik</span>
-            <span style={{ padding: '4px 8px' }}>Edycja</span>
-            <span style={{ padding: '4px 8px', cursor: 'pointer', textDecoration: history.length > 0 ? 'underline' : 'none' }}
-              onClick={() => history.length > 0 && setViewingHistory(!viewingHistory)}>
-              Historia
-            </span>
-            <span style={{ padding: '4px 8px' }}>Pomoc</span>
-          </div>
-
-          {selectedPlayer && (
-            <>
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              zIndex: 999
-            }} onClick={closePlayerStats} />
+        function startNewSeason() {
+            const currentSeasonData = {
+                seasonNumber: gameState.seasonNumber,
+                rounds: [...gameState.history],
+                finalStandings: getStandings().map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    country: p.country,
+                    points: p.seasonPoints,
+                    finalsCount: p.finalsCount
+                }))
+            };
             
-            <div style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              backgroundColor: '#c0c0c0',
-              border: '2px outset #dfdfdf',
-              padding: '2px',
-              zIndex: 1000,
-              minWidth: '500px',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }}>
-              <div style={{
-                backgroundColor: '#000080',
-                color: 'white',
-                padding: '4px 8px',
-                fontWeight: 'bold',
-                marginBottom: '2px',
-                display: 'flex',
-                justifyContent: 'space-between'
-              }}>
-                <span>STATYSTYKI - {selectedPlayer.name}</span>
-                <span style={{ cursor: 'pointer' }} onClick={closePlayerStats}>X</span>
-              </div>
-              
-              <div style={{ padding: '12px' }}>
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: '2px inset #808080',
-                  padding: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Kraj:</strong> {flags[selectedPlayer.country]} {selectedPlayer.country}
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Laczne punkty:</strong> {selectedPlayer.seasonPoints}
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Liczba finalow:</strong> {selectedPlayer.finalsCount}/{totalRounds}
-                  </div>
-                </div>
+            gameState.allSeasons.push(currentSeasonData);
+            
+            gameState.players.forEach(player => {
+                player.seasonPoints = 0;
+                player.finalsCount = 0;
+                player.seasonStats = [];
+            });
+            
+            gameState.seasonNumber++;
+            gameState.currentRound = 0;
+            gameState.history = [];
+            gameState.showQualifying = false;
+            gameState.showFinal = false;
+            
+            render();
+        }
 
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: '2px inset #808080',
-                  padding: '8px'
-                }}>
-                  <div style={{
-                    backgroundColor: '#008000',
-                    color: 'white',
-                    padding: '4px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginBottom: '8px',
-                    fontSize: '12px'
-                  }}>
-                    WYNIKI W RUNDACH
-                  </div>
-                  
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#c0c0c0' }}>
-                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Runda</th>
-                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Lokalizacja</th>
-                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Kwal.</th>
-                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Final</th>
-                        <th style={{ padding: '3px', border: '1px solid #808080' }}>Pkt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedPlayer.seasonStats.map((stat, index) => (
-                        <tr key={index} style={{
-                          backgroundColor: stat.inFinal ? '#e0ffe0' : '#ffe0e0'
-                        }}>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
-                            {stat.roundNumber}
-                          </td>
-                          <td style={{ padding: '3px', border: '1px solid #808080' }}>
-                            {stat.city}
-                          </td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>
-                            {stat.qualifyingPosition}
-                          </td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
-                            {stat.inFinal ? stat.finalPosition : '-'}
-                          </td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
-                            {stat.pointsEarned || 0}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+        function getStandings() {
+            return [...gameState.players].sort((a, b) => b.seasonPoints - a.seasonPoints);
+        }
 
-                <div style={{ textAlign: 'center', marginTop: '12px' }}>
-                  <button onClick={closePlayerStats} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer',
-                    fontFamily: 'MS Sans Serif, Arial'
-                  }}>
-                    Zamknij
-                  </button>
-                </div>
-              </div>
-            </div>
-            </>
-          )}
+        function getCountryStandings() {
+            const countryPoints = {};
+            countries.forEach(country => {
+                countryPoints[country] = 0;
+            });
+            
+            gameState.players.forEach(player => {
+                countryPoints[player.country] += player.seasonPoints;
+            });
+            
+            return Object.entries(countryPoints)
+                .map(([country, points]) => ({ country, points }))
+                .sort((a, b) => b.points - a.points);
+        }
 
-          {viewingAllSeasons && (
-            <div style={{ padding: '12px' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '12px',
-                maxHeight: '70vh',
-                overflowY: 'auto'
-              }}>
-                <div style={{
-                  backgroundColor: '#800080',
-                  color: 'yellow',
-                  padding: '6px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '8px',
-                  position: 'sticky',
-                  top: '-12px',
-                  zIndex: 1
-                }}>
-                  ARCHIWUM SEZONOW
-                </div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {allSeasons.map((season, index) => (
-                    <div key={index} style={{
-                      backgroundColor: '#ffffff',
-                      border: '2px solid #808080',
-                      padding: '12px',
-                      marginBottom: '8px',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => { setSelectedSeasonIndex(index); setViewingAllSeasons(false); }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                        SEZON #{season.seasonNumber}
-                      </div>
-                      <div style={{ fontSize: '12px' }}>
-                        Mistrz: {season.finalStandings[0].name} ({flags[season.finalStandings[0].country]}) - {season.finalStandings[0].points} pkt
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
-                        Kliknij aby zobaczyc szczegoly
-                      </div>
+        function formatDice(dice) {
+            return dice.map(d => `<span class="dice">${d}</span>`).join('');
+        }
+
+        // Renderowanie
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (gameState.seasonMode === null) {
+                app.innerHTML = renderModeSelection();
+            } else {
+                app.innerHTML = renderGame();
+            }
+        }
+
+        function renderModeSelection() {
+            return `
+                <div class="window">
+                    <div class="title-bar">
+                        <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - WYBOR TRYBU</span>
                     </div>
-                  ))}
-                </div>
-                <div style={{ textAlign: 'center', marginTop: '8px', position: 'sticky', bottom: '-12px', backgroundColor: '#ffffff', padding: '8px 0' }}>
-                  <button onClick={() => setViewingAllSeasons(false)} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer'
-                  }}>
-                    Powrot
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!viewingAllSeasons && selectedSeasonIndex !== null && (
-            <div style={{ padding: '12px' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '12px',
-                maxHeight: '70vh',
-                overflowY: 'auto'
-              }}>
-                <div style={{
-                  backgroundColor: '#800080',
-                  color: 'yellow',
-                  padding: '6px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '8px',
-                  position: 'sticky',
-                  top: '-12px',
-                  zIndex: 1
-                }}>
-                  SEZON #{allSeasons[selectedSeasonIndex].seasonNumber}
-                </div>
-                
-                <div style={{ marginBottom: '12px' }}>
-                  <strong>KLASYFIKACJA KONCOWA:</strong>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px', fontSize: '11px' }}>
-                    <tbody>
-                      {allSeasons[selectedSeasonIndex].finalStandings.map((player, index) => (
-                        <tr key={player.id} style={{
-                          backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff'
-                        }}>
-                          <td style={{ padding: '3px', border: '1px solid #808080', fontWeight: 'bold' }}>{index + 1}</td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', fontWeight: 'bold' }}>{flags[player.country]}</td>
-                          <td style={{ padding: '3px', border: '1px solid #808080' }}>{player.name}</td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'right' }}>{player.points}</td>
-                          <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center' }}>{player.finalsCount}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div style={{ textAlign: 'center', marginTop: '12px', position: 'sticky', bottom: '-12px', backgroundColor: '#ffffff', padding: '8px 0' }}>
-                  <button onClick={() => setViewingAllSeasons(true)} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer',
-                    marginRight: '8px'
-                  }}>
-                    Powrot do archiwum
-                  </button>
-                  <button onClick={() => { setSelectedSeasonIndex(null); closeHistory(); }} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer'
-                  }}>
-                    Zamknij
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {viewingHistory && !historyRound && !viewingAllSeasons && selectedSeasonIndex === null && (
-            <div style={{ padding: '12px' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '12px',
-                maxHeight: '70vh',
-                overflowY: 'auto'
-              }}>
-                <div style={{
-                  backgroundColor: '#000080',
-                  color: 'white',
-                  padding: '6px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '8px',
-                  position: 'sticky',
-                  top: '-12px',
-                  zIndex: 1
-                }}>
-                  HISTORIA RUND - SEZON #{seasonNumber}
-                </div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {history.map((round, index) => (
-                    <div key={index} style={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #808080',
-                      padding: '8px',
-                      marginBottom: '4px',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => viewHistoryRound(index)}>
-                      <strong>Runda {round.roundNumber}</strong> - {round.city}, {round.country}
-                      <br />
-                      Zwyciezca: {round.final[0].name} ({flags[round.final[0].country]})
-                    </div>
-                  ))}
-                </div>
-                <div style={{ textAlign: 'center', marginTop: '8px', position: 'sticky', bottom: '-12px', backgroundColor: '#ffffff', padding: '8px 0' }}>
-                  {allSeasons.length > 0 && (
-                    <button onClick={() => setViewingAllSeasons(true)} style={{
-                      backgroundColor: '#c0c0c0',
-                      border: '2px outset #dfdfdf',
-                      padding: '6px 16px',
-                      cursor: 'pointer',
-                      marginRight: '8px'
-                    }}>
-                      Poprzednie sezony ({allSeasons.length})
-                    </button>
-                  )}
-                  <button onClick={closeHistory} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer'
-                  }}>
-                    Zamknij
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {viewingHistory && historyRound && (
-            <div style={{ padding: '12px' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '12px',
-                maxHeight: '70vh',
-                overflowY: 'auto'
-              }}>
-                <div style={{
-                  backgroundColor: '#800080',
-                  color: 'yellow',
-                  padding: '6px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginBottom: '8px',
-                  position: 'sticky',
-                  top: '-12px',
-                  zIndex: 1
-                }}>
-                  RUNDA {historyRound.roundNumber} - {historyRound.city}, {historyRound.country}
-                </div>
-                
-                <div style={{ marginBottom: '12px' }}>
-                  <strong>KWALIFIKACJE:</strong>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px', fontSize: '12px' }}>
-                    <tbody>
-                      {historyRound.qualifying.slice(0, 10).map((player, index) => (
-                        <tr key={player.id} style={{ backgroundColor: index < 3 ? '#ffff00' : '#00ff00' }}>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{index + 1}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{flags[player.country]}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{player.name}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{player.total}{player.isHome && '*'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div>
-                  <strong>FINAL:</strong>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px', fontSize: '12px' }}>
-                    <tbody>
-                      {historyRound.final.map((player, index) => (
-                        <tr key={player.id} style={{
-                          backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff'
-                        }}>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{index + 1}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{flags[player.country]}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{player.name}</td>
-                          <td style={{ padding: '2px', border: '1px solid black' }}>{player.finalTotal}{player.finalIsHome && '*'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div style={{ textAlign: 'center', marginTop: '12px', position: 'sticky', bottom: '-12px', backgroundColor: '#ffffff', padding: '8px 0' }}>
-                  <button onClick={closeHistory} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer',
-                    marginRight: '8px'
-                  }}>
-                    Powrot do historii
-                  </button>
-                  <button onClick={() => { closeHistory(); }} style={{
-                    backgroundColor: '#c0c0c0',
-                    border: '2px outset #dfdfdf',
-                    padding: '6px 16px',
-                    cursor: 'pointer'
-                  }}>
-                    Zamknij
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!viewingHistory && !viewingAllSeasons && selectedSeasonIndex === null && (
-            <div style={{ padding: '12px' }}>
-              <div style={{
-                backgroundColor: '#ffffff',
-                border: '2px inset #808080',
-                padding: '12px',
-                marginBottom: '12px'
-              }}>
-                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-                  <div style={{
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    marginBottom: '8px'
-                  }}>
-                    RUNDA {currentRound}/{totalRounds}
-                  </div>
-                  {currentRound < totalRounds && (
-                    <div style={{ fontSize: '14px' }}>
-                      Lokalizacja: {getCurrentCity()}, {getCurrentCountry()}
-                      <div style={{ fontSize: '11px', color: '#800000', marginTop: '4px' }}>
-                        * Zawodnicy z {getCurrentCountry()} maja wieksze szczescie (rzucaja 2x i bierze sie lepszy wynik)
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {currentRound < totalRounds && !showQualifying && (
-                  <div style={{ textAlign: 'center' }}>
-                    <button
-                      onClick={startRoundInstant}
-                      style={{
-                        backgroundColor: '#c0c0c0',
-                        border: '2px outset #dfdfdf',
-                        padding: '8px 20px',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontFamily: 'MS Sans Serif, Arial',
-                        marginRight: '6px',
-                        marginBottom: '6px'
-                      }}
-                    >
-                      CALA RUNDA
-                    </button>
-                    <button
-                      onClick={startRoundStepByStep}
-                      style={{
-                        backgroundColor: '#c0c0c0',
-                        border: '2px outset #dfdfdf',
-                        padding: '8px 20px',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontFamily: 'MS Sans Serif, Arial',
-                        marginRight: '6px',
-                        marginBottom: '6px'
-                      }}
-                    >
-                      ZAWODNIK PO ZAWODNIKU
-                    </button>
-                    <button
-                      onClick={startRoundDiceByDice}
-                      style={{
-                        backgroundColor: '#c0c0c0',
-                        border: '2px outset #dfdfdf',
-                        padding: '8px 20px',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontFamily: 'MS Sans Serif, Arial',
-                        marginBottom: '6px'
-                      }}
-                    >
-                      KOSC PO KOSCI
-                    </button>
-                  </div>
-                )}
-
-                {currentRound >= totalRounds && !showQualifying && !showFinal && (
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{
-                      backgroundColor: '#ffff00',
-                      border: '2px solid black',
-                      padding: '12px',
-                      fontWeight: 'bold',
-                      fontSize: '16px',
-                      marginBottom: '12px'
-                    }}>
-                      *** KONIEC SEZONU #{seasonNumber} ***
-                    </div>
-                    <button
-                      onClick={startNewSeason}
-                      style={{
-                        backgroundColor: '#008000',
-                        color: 'white',
-                        border: '2px outset #00a000',
-                        padding: '12px 32px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        fontFamily: 'MS Sans Serif, Arial'
-                      }}
-                    >
-                      ROZPOCZNIJ SEZON #{seasonNumber + 1}
-                    </button>
-                  </div>
-                )}
-
-                {showQualifying && !showFinal && (
-                  <div>
-                    <div style={{
-                      backgroundColor: '#000080',
-                      color: 'white',
-                      padding: '6px',
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      marginBottom: '8px'
-                    }}>
-                      KWALIFIKACJE - {getCurrentCity()}, {getCurrentCountry()}
-                    </div>
-                    
-                    <div style={{
-                      backgroundColor: '#ffffff',
-                      border: '2px inset #808080',
-                      padding: '8px',
-                      maxHeight: '350px',
-                      overflowY: 'auto'
-                    }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#c0c0c0' }}>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Poz</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Kraj</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Zawodnik</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Kosci</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Suma</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(stepByStep || diceByDice) && isQualifyingPhase ? (
-                            sortPlayersByDice([...qualifyingInProgress]).map((player, index) => {
-                              const isLastThrown = player.id === lastThrownPlayerId;
-                              return (
-                                <tr key={player.id} style={{
-                                  backgroundColor: index < 10 ? '#e0ffe0' : '#ffe0e0',
-                                  border: isLastThrown ? '3px solid blue' : '',
-                                  outline: isLastThrown ? '2px solid darkblue' : ''
-                                }}>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>{index + 1}</td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {isLastThrown && '►'} {flags[player.country]}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: isLastThrown ? 'bold' : 'normal' }}>
-                                    {player.name}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080' }}>
-                                    {diceByDice ? formatIncompleteDice(player.dice) : formatDice(player.dice)}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold' }}>
-                                    {player.total}{player.isHome && '*'}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'center' }}>
-                                    {index < 10 ? 'Q' : 'X'}
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            currentQualifying && currentQualifying.map((player, index) => (
-                              <tr key={player.id} style={{
-                                backgroundColor: index < 10 ? '#00ff00' : '#ff0000'
-                              }}>
-                                <td style={{ padding: '4px', border: '1px solid #808080' }}>{index + 1}</td>
-                                <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                  {flags[player.country]}
-                                </td>
-                                <td style={{ padding: '4px', border: '1px solid #808080' }}>{player.name}</td>
-                                <td style={{ padding: '4px', border: '1px solid #808080' }}>
-                                  {formatDice(player.dice)}
-                                </td>
-                                <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold' }}>
-                                  {player.total}{player.isHome && '*'}
-                                </td>
-                                <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'center', fontWeight: 'bold' }}>
-                                  {index < 10 ? 'FINAL' : 'OUT'}
-                                  {index < 3 && ` +${3-index}`}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <div style={{ textAlign: 'center', marginTop: '12px' }}>
-                      {stepByStep && isQualifyingPhase && currentPlayerIndex < players.length && (
-                        <div>
-                          <button
-                            onClick={nextPlayer}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            NASTEPNY: {getPlayersInStartOrder()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/24)
-                          </button>
-                          <button
-                            onClick={() => {
-                              setStepByStep(false);
-                              setDiceByDice(true);
-                              setCurrentDiceIndex(0);
-                            }}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            KOSC PO KOSCI
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE
-                          </button>
-                        </div>
-                      )}
-                      {diceByDice && isQualifyingPhase && (currentPlayerIndex < players.length || currentDiceIndex < 6) && (
-                        <div>
-                          <button
-                            onClick={nextDice}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            RZUT: {getPlayersInStartOrder()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
-                          </button>
-                          <button
-                            onClick={() => {
-                              setStepByStep(true);
-                              setDiceByDice(false);
-                              if (currentDiceIndex > 0 && currentDiceIndex < 6) {
-                                const player = getPlayersInStartOrder()[currentPlayerIndex];
-                                const roundCountry = getCurrentCountry();
-                                const isHome = player.country === roundCountry;
-                                
-                                let playerInProgress = qualifyingInProgress.find(p => p.id === player.id);
-                                
-                                while (playerInProgress.dice.length < 6) {
-                                  const newDice = rollSingleDice(isHome);
-                                  playerInProgress.dice.push(newDice);
-                                }
-                                playerInProgress.total = sumDice(playerInProgress.dice);
-                                
-                                setQualifyingInProgress([...qualifyingInProgress]);
-                                setCurrentPlayerIndex(currentPlayerIndex + 1);
-                                setCurrentDiceIndex(0);
-                              }
-                            }}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ZAWODNIK PO ZAWODNIKU
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE
-                          </button>
-                        </div>
-                      )}
-                      {((!stepByStep && !diceByDice) || ((stepByStep || diceByDice) && currentPlayerIndex >= players.length)) && (
-                        <div>
-                          <button
-                            onClick={switchToFinal}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px'
-                            }}
-                          >
-                            POKAZ FINAL
-                          </button>
-                          <button
-                            onClick={startRoundInstant}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE RUNDY
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {showFinal && (
-                  <div>
-                    <div style={{
-                      backgroundColor: '#800080',
-                      color: 'yellow',
-                      padding: '6px',
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      marginBottom: '8px'
-                    }}>
-                      *** FINAL - {getCurrentCity()}, {getCurrentCountry()} ***
-                    </div>
-                    
-                    <div style={{
-                      backgroundColor: '#ffffff',
-                      border: '2px inset #808080',
-                      padding: '8px'
-                    }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#c0c0c0' }}>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Msc</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Kraj</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Zawodnik</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Kosci</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Suma</th>
-                            <th style={{ padding: '4px', border: '1px solid #808080' }}>Punkty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(stepByStep || diceByDice) && !isQualifyingPhase && currentPlayerIndex < 10 ? (
-                            sortPlayersByDice(finalInProgress.map(p => ({...p, dice: p.finalDice, total: p.finalTotal}))).map((player, index) => {
-                              const isLastThrown = player.id === lastThrownPlayerId;
-                              return (
-                                <tr key={player.id} style={{
-                                  backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff',
-                                  border: isLastThrown ? '3px solid blue' : '',
-                                  outline: isLastThrown ? '2px solid darkblue' : ''
-                                }}>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {index + 1}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {isLastThrown && '►'} {flags[player.country]}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: isLastThrown ? 'bold' : 'normal' }}>
-                                    {player.name}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080' }}>
-                                    {diceByDice ? formatIncompleteDice(player.finalDice || player.dice) : formatDice(player.finalDice || player.dice)}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold' }}>
-                                    {player.finalTotal || player.total}{(player.finalIsHome || player.isHome) && '*'}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right' }}>
-                                    {10 - index} pkt
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            currentFinal && currentFinal.map((player, index) => {
-                              const lastHistory = history.length > 0 ? history[history.length - 1] : null;
-                              const bonus = lastHistory ? (lastHistory.qualifyingBonuses[player.id] || 0) : 0;
-                              const finalPoints = 10 - index;
-                              const totalPoints = finalPoints + bonus;
-                              
-                              return (
-                                <tr key={player.id} style={{
-                                  backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff'
-                                }}>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {index + 1}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {flags[player.country]}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                                    {player.name}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080' }}>
-                                    {formatDice(player.finalDice || player.dice)}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold' }}>
-                                    {player.finalTotal}{player.finalIsHome && '*'}
-                                  </td>
-                                  <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold' }}>
-                                    +{totalPoints}
-                                    {bonus > 0 && <span style={{ fontSize: '10px' }}> ({finalPoints}+{bonus})</span>}
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <div style={{ textAlign: 'center', marginTop: '12px' }}>
-                      {stepByStep && !isQualifyingPhase && currentPlayerIndex < 10 ? (
-                        <div>
-                          <button
-                            onClick={nextPlayer}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            NASTEPNY: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} ({currentPlayerIndex + 1}/10)
-                          </button>
-                          <button
-                            onClick={() => {
-                              setStepByStep(false);
-                              setDiceByDice(true);
-                              setCurrentDiceIndex(0);
-                            }}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            KOSC PO KOSCI
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE
-                          </button>
-                        </div>
-                      ) : diceByDice && !isQualifyingPhase && (currentPlayerIndex < 10 || currentDiceIndex < 6) ? (
-                        <div>
-                          <button
-                            onClick={nextDice}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 24px',
-                              fontSize: '14px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            RZUT: {[...currentQualifying.slice(0, 10)].reverse()[currentPlayerIndex].name} - kosc {currentDiceIndex + 1}/6
-                          </button>
-                          <button
-                            onClick={() => {
-                              setStepByStep(true);
-                              setDiceByDice(false);
-                              if (currentDiceIndex > 0 && currentDiceIndex < 6) {
-                                const finalists = [...currentQualifying.slice(0, 10)].reverse();
-                                const player = finalists[currentPlayerIndex];
-                                const roundCountry = getCurrentCountry();
-                                const isHome = player.country === roundCountry;
-                                
-                                let playerInProgress = finalInProgress.find(p => p.id === player.id);
-                                
-                                while (playerInProgress.finalDice.length < 6) {
-                                  const newDice = rollSingleDice(isHome);
-                                  playerInProgress.finalDice.push(newDice);
-                                }
-                                playerInProgress.finalTotal = sumDice(playerInProgress.finalDice);
-                                
-                                setFinalInProgress([...finalInProgress]);
-                                setCurrentPlayerIndex(currentPlayerIndex + 1);
-                                setCurrentDiceIndex(0);
-                              }
-                            }}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginRight: '8px',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ZAWODNIK PO ZAWODNIKU
-                          </button>
-                          <button
-                            onClick={completeCurrentPhase}
-                            style={{
-                              backgroundColor: '#c0c0c0',
-                              border: '2px outset #dfdfdf',
-                              padding: '8px 20px',
-                              fontSize: '13px',
-                              fontWeight: 'bold',
-                              cursor: 'pointer',
-                              fontFamily: 'MS Sans Serif, Arial',
-                              marginBottom: '6px'
-                            }}
-                          >
-                            ROZEGRAJ RESZTE
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          {currentRound < totalRounds ? (
-                            <div>
-                              <button
-                                onClick={() => {
-                                  setShowQualifying(false);
-                                  setShowFinal(false);
-                                  setStepByStep(false);
-                                  setDiceByDice(false);
-                                  setCurrentRound(currentRound + 1);
-                                }}
-                                style={{
-                                  backgroundColor: '#c0c0c0',
-                                  border: '2px outset #dfdfdf',
-                                  padding: '8px 24px',
-                                  fontSize: '14px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  fontFamily: 'MS Sans Serif, Arial',
-                                  marginRight: '8px'
-                                }}
-                              >
-                                NASTEPNA RUNDA
-                              </button>
-                              <button
-                                onClick={startRoundInstant}
-                                style={{
-                                  backgroundColor: '#c0c0c0',
-                                  border: '2px outset #dfdfdf',
-                                  padding: '8px 20px',
-                                  fontSize: '13px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  fontFamily: 'MS Sans Serif, Arial'
-                                }}
-                              >
-                                ROZEGRAJ CALA NASTEPNA RUNDE
-                              </button>
+                    <div style="padding: 32px; text-align: center;">
+                        <div class="white-box">
+                            <h2 style="margin-top: 0; font-size: 20px;">WYBIERZ TEMPO SEZONU</h2>
+                            <p style="color: #800000; font-size: 14px; margin-bottom: 24px;">
+                                UWAGA: Po wyborze nie bedzie mozna zmienic!
+                            </p>
+                            <div style="max-width: 500px; margin: 0 auto;">
+                                <button class="mode-button" onclick="selectSeasonMode('fast')">
+                                    <div style="font-size: 18px; margin-bottom: 8px;">⚡ SZYBKIE SEZONY</div>
+                                    <div style="font-size: 13px; font-weight: normal;">
+                                        12 rund (1 turniej w kazdym kraju)
+                                    </div>
+                                </button>
+                                <button class="mode-button" onclick="selectSeasonMode('medium')">
+                                    <div style="font-size: 18px; margin-bottom: 8px;">⚖ SREDNIE SEZONY</div>
+                                    <div style="font-size: 13px; font-weight: normal;">
+                                        24 rundy (2 turnieje w kazdym kraju)
+                                    </div>
+                                </button>
+                                <button class="mode-button" onclick="selectSeasonMode('slow')">
+                                    <div style="font-size: 18px; margin-bottom: 8px;">🐌 WOLNE SEZONY</div>
+                                    <div style="font-size: 13px; font-weight: normal;">
+                                        48 rund (4 turnieje w kazdym kraju)
+                                    </div>
+                                </button>
                             </div>
-                          ) : (
-                            <div>
-                              <div style={{
-                                backgroundColor: '#ffff00',
-                                border: '2px solid black',
-                                padding: '12px',
-                                fontWeight: 'bold',
-                                fontSize: '16px',
-                                marginBottom: '12px'
-                              }}>
-                                *** KONIEC SEZONU #{seasonNumber} ***
-                              </div>
-                              <button
-                                onClick={startNewSeason}
-                                style={{
-                                  backgroundColor: '#008000',
-                                  color: 'white',
-                                  border: '2px outset #00a000',
-                                  padding: '12px 32px',
-                                  fontSize: '16px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  fontFamily: 'MS Sans Serif, Arial'
-                                }}
-                              >
-                                ROZPOCZNIJ SEZON #{seasonNumber + 1}
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
+                        </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: '2px inset #808080',
-                  padding: '12px'
-                }}>
-                  <div style={{
-                    backgroundColor: '#000080',
-                    color: 'white',
-                    padding: '6px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginBottom: '8px',
-                    fontSize: '12px'
-                  }}>
-                    KLASYFIKACJA ZAWODNIKOW
-                  </div>
-                  
-                  <div style={{
-                    maxHeight: '350px',
-                    overflowY: 'auto',
-                    border: '1px solid #808080'
-                  }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#c0c0c0' }}>
-                          <th style={{ padding: '2px', border: '1px solid #808080' }}>Poz</th>
-                          <th style={{ padding: '2px', border: '1px solid #808080' }}>Kraj</th>
-                          <th style={{ padding: '2px', border: '1px solid #808080' }}>Zawodnik</th>
-                          <th style={{ padding: '2px', border: '1px solid #808080' }}>Pkt</th>
-                          <th style={{ padding: '2px', border: '1px solid #808080' }}>F</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {getStandings().map((player, index) => (
-                          <tr key={player.id} style={{
-                            backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff',
-                            cursor: 'pointer'
-                          }}
-                          onClick={() => viewPlayerStats(player)}>
-                            <td style={{ padding: '3px', border: '1px solid #808080', fontWeight: 'bold', width: '30px' }}>
-                              {index + 1}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', fontWeight: 'bold', width: '30px' }}>
-                              {flags[player.country]}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080' }}>
-                              {player.name}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold', width: '40px' }}>
-                              {player.seasonPoints}
-                            </td>
-                            <td style={{ padding: '3px', border: '1px solid #808080', textAlign: 'center', width: '25px' }}>
-                              {player.finalsCount}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div style={{ fontSize: '10px', marginTop: '4px', textAlign: 'center', color: '#666' }}>
-                    Kliknij na zawodnika aby zobaczyc statystyki
-                  </div>
                 </div>
+            `;
+        }
 
-                <div style={{
-                  backgroundColor: '#ffffff',
-                  border: '2px inset #808080',
-                  padding: '12px'
-                }}>
-                  <div style={{
-                    backgroundColor: '#008000',
-                    color: 'white',
-                    padding: '6px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    marginBottom: '8px',
-                    fontSize: '12px'
-                  }}>
-                    KLASYFIKACJA KRAJOW
-                  </div>
-                  
-                  <div style={{
-                    maxHeight: '350px',
-                    overflowY: 'auto',
-                    border: '1px solid #808080'
-                  }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                      <tbody>
-                        {getCountryStandings().map((item, index) => (
-                          <tr key={item.country} style={{
-                            backgroundColor: index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff'
-                          }}>
-                            <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold', width: '35px' }}>
-                              {index + 1}
-                            </td>
-                            <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold', width: '40px' }}>
-                              {flags[item.country]}
-                            </td>
-                            <td style={{ padding: '4px', border: '1px solid #808080', fontWeight: 'bold' }}>
-                              {item.country}
-                            </td>
-                            <td style={{ padding: '4px', border: '1px solid #808080', textAlign: 'right', fontWeight: 'bold', width: '50px' }}>
-                              {item.points}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+        function renderGame() {
+            return `
+                <div class="window">
+                    <div class="title-bar">
+                        <span>MISTRZOSTWA SWIATA - RZUT KOSCMI - SEZON #${gameState.seasonNumber}</span>
+                        <span style="font-size: 16px;">█</span>
+                    </div>
+                    
+                    <div class="menu-bar">
+                        <span class="menu-item">Plik</span>
+                        <span class="menu-item">Edycja</span>
+                        <span class="menu-item ${gameState.history.length > 0 ? 'active' : ''}">Historia</span>
+                        <span class="menu-item">Pomoc</span>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="white-box">
+                            <div style="text-align: center; margin-bottom: 12px;">
+                                <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
+                                    RUNDA ${gameState.currentRound}/${gameState.totalRounds}
+                                </div>
+                                ${gameState.currentRound < gameState.totalRounds ? `
+                                    <div style="font-size: 14px;">
+                                        Lokalizacja: ${getCurrentCity()}, ${getCurrentCountry()}
+                                        <div style="font-size: 11px; color: #800000; margin-top: 4px;">
+                                            * Zawodnicy z ${getCurrentCountry()} maja wieksze szczescie (rzucaja 2x i bierze sie lepszy wynik)
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${renderMainContent()}
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="white-box">
+                                <div class="header-blue">KLASYFIKACJA ZAWODNIKOW</div>
+                                <div class="scroll-box">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Poz</th>
+                                                <th>Kraj</th>
+                                                <th>Zawodnik</th>
+                                                <th>Pkt</th>
+                                                <th>F</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${renderPlayerStandings()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="white-box">
+                                <div class="header-green">KLASYFIKACJA KRAJOW</div>
+                                <div class="scroll-box">
+                                    <table>
+                                        <tbody>
+                                            ${renderCountryStandings()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-bar">
+                        Gospodarze: 2x rzut (lepszy) | Remis: 6&gt;5&gt;4&gt;3&gt;2&gt;1 | Historia: ${gameState.history.length}/${gameState.totalRounds} | Sezon #${gameState.seasonNumber}
+                    </div>
                 </div>
-              </div>
-            </div>
-          )}
+            `;
+        }
 
-          <div style={{
-            backgroundColor: '#c0c0c0',
-            borderTop: '2px solid #dfdfdf',
-            padding: '4px 8px',
-            marginTop: '2px',
-            fontSize: '11px'
-          }}>
-            Gospodarze: 2x rzut (lepszy) | Remis: 6&gt;5&gt;4&gt;3&gt;2&gt;1 | Historia: {history.length}/{totalRounds} | Sezon #{seasonNumber}
-          </div>
-        </div>
-        )}
-      </div>
-    </div>
-  );
-};
+        function renderMainContent() {
+            if (gameState.currentRound < gameState.totalRounds && !gameState.showQualifying) {
+                return `
+                    <div style="text-align: center;">
+                        <button class="button" onclick="startRound()">ROZPOCZNIJ RUNDE</button>
+                    </div>
+                `;
+            }
+            
+            if (gameState.currentRound >= gameState.totalRounds && !gameState.showQualifying) {
+                return `
+                    <div style="text-align: center;">
+                        <div class="yellow-banner">*** KONIEC SEZONU #${gameState.seasonNumber} ***</div>
+                        <button class="button button-large button-green" onclick="startNewSeason()">
+                            ROZPOCZNIJ SEZON #${gameState.seasonNumber + 1}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            let html = '';
+            
+            if (gameState.showQualifying) {
+                html += `
+                    <div class="header-blue">KWALIFIKACJE - ${getCurrentCity()}, ${getCurrentCountry()}</div>
+                    <div class="white-box" style="max-height: 350px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Poz</th>
+                                    <th>Kraj</th>
+                                    <th>Zawodnik</th>
+                                    <th>Kosci</th>
+                                    <th>Suma</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${renderQualifying()}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            if (gameState.showFinal) {
+                html += `
+                    <div class="header-purple" style="margin-top: 12px;">*** FINAL - ${getCurrentCity()}, ${getCurrentCountry()} ***</div>
+                    <div class="white-box">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Msc</th>
+                                    <th>Kraj</th>
+                                    <th>Zawodnik</th>
+                                    <th>Kosci</th>
+                                    <th>Suma</th>
+                                    <th>Punkty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${renderFinal()}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="text-align: center; margin-top: 12px;">
+                        ${gameState.currentRound < gameState.totalRounds ? `
+                            <button class="button" onclick="nextRound()">NASTEPNA RUNDA</button>
+                        ` : `
+                            <div class="yellow-banner">*** KONIEC SEZONU #${gameState.seasonNumber} ***</div>
+                            <button class="button button-large button-green" onclick="startNewSeason()">
+                                ROZPOCZNIJ SEZON #${gameState.seasonNumber + 1}
+                            </button>
+                        `}
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
 
-export default DiceChampionship;
+        function renderQualifying() {
+            if (!gameState.currentQualifying) return '';
+            
+            return gameState.currentQualifying.map((player, index) => {
+                const bgColor = index < 10 ? '#00ff00' : '#ff0000';
+                return `
+                    <tr style="background-color: ${bgColor};">
+                        <td style="font-weight: bold;">${index + 1}</td>
+                        <td style="font-weight: bold;">${flags[player.country]}</td>
+                        <td>${player.name}</td>
+                        <td>${formatDice(player.dice)}</td>
+                        <td style="text-align: right; font-weight: bold;">${player.total}${player.isHome ? '*' : ''}</td>
+                        <td style="text-align: center; font-weight: bold;">
+                            ${index < 10 ? 'FINAL' : 'OUT'}
+                            ${index < 3 ? ` +${3-index}` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderFinal() {
+            if (!gameState.currentFinal) return '';
+            
+            const lastRound = gameState.history[gameState.history.length - 1];
+            
+            return gameState.currentFinal.map((player, index) => {
+                const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                const bonus = lastRound ? (lastRound.qualifyingBonuses[player.id] || 0) : 0;
+                const finalPoints = 10 - index;
+                const totalPoints = finalPoints + bonus;
+                
+                return `
+                    <tr style="background-color: ${bgColor};">
+                        <td style="font-weight: bold;">${index + 1}</td>
+                        <td style="font-weight: bold;">${flags[player.country]}</td>
+                        <td style="font-weight: bold;">${player.name}</td>
+                        <td>${formatDice(player.dice)}</td>
+                        <td style="text-align: right; font-weight: bold;">${player.finalTotal}${player.finalIsHome ? '*' : ''}</td>
+                        <td style="text-align: right; font-weight: bold;">
+                            +${totalPoints}
+                            ${bonus > 0 ? `<span style="font-size: 10px;"> (${finalPoints}+${bonus})</span>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPlayerStandings() {
+            return getStandings().map((player, index) => {
+                const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                return `
+                    <tr style="background-color: ${bgColor};">
+                        <td style="font-weight: bold;">${index + 1}</td>
+                        <td style="font-weight: bold;">${flags[player.country]}</td>
+                        <td>${player.name}</td>
+                        <td style="text-align: right; font-weight: bold;">${player.seasonPoints}</td>
+                        <td style="text-align: center;">${player.finalsCount}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderCountryStandings() {
+            return getCountryStandings().map((item, index) => {
+                const bgColor = index === 0 ? '#ffff00' : index === 1 ? '#c0c0c0' : index === 2 ? '#ff8000' : '#ffffff';
+                return `
+                    <tr style="background-color: ${bgColor};">
+                        <td style="font-weight: bold;">${index + 1}</td>
+                        <td style="font-weight: bold;">${flags[item.country]}</td>
+                        <td style="font-weight: bold;">${item.country}</td>
+                        <td style="text-align: right; font-weight: bold;">${item.points}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Inicjalizacja
+        render();
+    </script>
+</body>
+</html>
