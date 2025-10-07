@@ -133,16 +133,7 @@
     background-position: center;
 }
 
-.icon-video .icon-image {
-    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
-    position: relative;
-}
-
-.icon-video .icon-image::before {
+/* Ikona video */
+.icon-video .icon-image::before { 
     content: "🎬";
-    font-size: clamp(16px, 3vw, 24px);  /* ← ZMIANA TUTAJ */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
