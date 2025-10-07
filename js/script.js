@@ -123,6 +123,7 @@ document.querySelectorAll('.start-menu-item').forEach(item => {
                 openRun();
                 toggleStartMenu();
                 break;
+                
            
             default:
                 alert(`Otwieranie: ${this.querySelector('.menu-text').textContent}`);
@@ -309,9 +310,13 @@ case 'jakub-olkiewicz':
 case 'marian-fussball':
     window.open('https://www.tetrycy.com.pl/wlodarskifussball/index.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
     break;
-                case 'folder-betclic':
+  case 'folder-betclic':
     window.open('betclic.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
     break;
+case 'fanatyk-pilkarstwa':
+    window.open('https://www.youtube.com/watch?v=6GUBoXCrDQM&t=1s', '_blank');
+    break;
+
         }
     });
 });
