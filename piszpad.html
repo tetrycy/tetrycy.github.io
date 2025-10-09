@@ -901,6 +901,42 @@
         }
         
         document.addEventListener('DOMContentLoaded', init);
+
+        // Auto-wczytywanie tekstu z innych stron
+window.addEventListener('load', function() {
+    var textToRead = localStorage.getItem('textToRead');
+    var shouldAutoRead = localStorage.getItem('autoReadText');
+    
+    if (textToRead && shouldAutoRead === 'true') {
+        // Wklej tekst do editora
+        var htmlContent = '<p>' + textToRead.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+        editor.innerHTML = htmlContent;
+        
+        // Wyczyść localStorage
+        localStorage.removeItem('textToRead');
+        localStorage.removeItem('autoReadText');
+        
+        // Zapisz stan
+        undoHistory = [];
+        historyIndex = -1;
+        saveState();
+        
+        // Ustaw kursor na początku
+        editor.focus();
+        var range = document.createRange();
+        var sel = window.getSelection();
+        range.setStart(editor.firstChild, 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        
+        // Uruchom czytanie po małym opóźnieniu
+        setTimeout(function() {
+            startReading();
+        }, 500);
+    }
+});
+        
     </script>
 </body>
 </html>
