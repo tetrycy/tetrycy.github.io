@@ -129,7 +129,7 @@
   
   <div class="speech-controls">
     <button id="speechBtn" class="speech-btn">🔊 Posłuchaj tekstu</button>
-    <button id="downloadBtn" class="speech-btn" style="margin-left: 0.5rem; background-color: #2b8a3e;">💾 Pobierz HTML</button>
+    <button id="downloadBtn" class="speech-btn" style="margin-left: 0.5rem; background-color: #2b8a3e;">📖 Czytaj w Piszpadzie</button>
   </div>
 
   <div id="textContent">
@@ -268,6 +268,30 @@
         synth.getVoices();
       };
     }
+
+    // Funkcja otwarcia w Piszpadzie
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      // Zbierz cały tekst z paragrafów
+      const paragraphs = document.querySelectorAll('#textContent p');
+      let fullText = '';
+      paragraphs.forEach(p => {
+        fullText += p.textContent.trim() + '\n\n';
+      });
+
+      // Zapisz w localStorage
+      try {
+        localStorage.setItem('textToRead', fullText.trim());
+        localStorage.setItem('autoReadText', 'true');
+        
+        // Otwórz Piszpad
+        window.open('https://www.tetrycy.com.pl/piszpad.html', '_blank');
+        
+        // Pokaż potwierdzenie
+        alert('✅ Tekst wysłany do Piszpada!\n\nPiszpad otworzy się w nowej karcie i automatycznie zacznie czytać.');
+      } catch (e) {
+        alert('❌ Błąd: ' + e.message);
+      }
+    });
   </script>
 
 </body>
