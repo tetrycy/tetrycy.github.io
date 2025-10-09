@@ -907,8 +907,16 @@ window.addEventListener('load', function() {
     var shouldAutoRead = localStorage.getItem('autoReadText');
     
     if (textToRead && shouldAutoRead === 'true') {
-        // Wklej jako JEDEN prosty akapit
-        editor.innerHTML = '<p>' + textToRead + '</p>';
+        // Wklej z akapitami
+        var paragraphs = textToRead.split('\n\n');
+        var htmlContent = '';
+        for (var i = 0; i < paragraphs.length; i++) {
+            var para = paragraphs[i].trim();
+            if (para) {
+                htmlContent += '<p>' + para + '</p>';
+            }
+        }
+        editor.innerHTML = htmlContent;
         
         // Wyczyść localStorage
         localStorage.removeItem('textToRead');
@@ -919,9 +927,45 @@ window.addEventListener('load', function() {
         historyIndex = -1;
         saveState();
         
-        // Uruchom czytanie
+        // Czytaj CAŁY tekst (nie od kursora!)
         setTimeout(function() {
-            toggleReading();
+            if (!speechSynthesis) return;
+            
+            // Pobierz CAŁY tekst z editora
+            var fullText = editor.innerText || editor.textContent || '';
+            if (!fullText.trim()) return;
+            
+            var utterance = new SpeechSynthesisUtterance(fullText);
+            utterance.lang = 'pl-PL';
+            utterance.rate = speechRate;
+            utterance.pitch = 1;
+            
+            // Szukaj polskiego głosu
+            var voices = speechSynthesis.getVoices();
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.includes('pl')) {
+                    utterance.voice = voices[i];
+                    break;
+                }
+            }
+            
+            var btn = document.getElementById('readBtn');
+            
+            utterance.onstart = function() {
+                isReading = true;
+                btn.classList.add('active');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+            };
+            
+            utterance.onend = function() {
+                stopReading();
+            };
+            
+            utterance.onerror = function() {
+                stopReading();
+            };
+            
+            speechSynthesis.speak(utterance);
         }, 800);
     }
 });
