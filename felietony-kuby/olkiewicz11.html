@@ -89,6 +89,12 @@
 
   <h2>Jak co środę... JAKUB OLKIEWICZ #11</h2>
   <time datetime="2025-10-08">8.10.2025</time>
+  
+  <div style="text-align: center; margin: 1.5rem 0;">
+    <button id="speechBtn" style="background-color: #111; color: white; border: none; padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 6px; cursor: pointer; font-family: 'Libre Baskerville', serif; transition: all 0.3s ease;">
+      ▶ Czytaj tekst
+    </button>
+  </div>
 
   <p>Nie ma sensu udawać, że czuję się w pełni komfortowo, tak jak nie ma sensu udawać, że ocenianie przewrotu w wykonaniu własnego syna z perspektywy nauczyciela WF-u jest w pełni komfortowe. Oczywiście z naczelnym portalu horyzontalnego leszekmilewski.pl, moim bezpośrednim przełożonym w kwestii tekstów, łączy mnie więź nieco mniej silna, niż z którymkolwiek spośród moich synów. Ale też własny debiut literacki to sytuacja zgoła inna niż wykonanie przewrotu na lekcji wychowania fizycznego.</p>
 
@@ -131,6 +137,59 @@
       OGLĄDAJ TETRYKÓW NA KANALE TETRYCY
     </a>
   </div>
+
+  <script>
+    const speechBtn = document.getElementById('speechBtn');
+    let speechSynthesis = window.speechSynthesis;
+    let utterance = null;
+    let isPaused = false;
+    let isReading = false;
+
+    speechBtn.addEventListener('click', function() {
+      if (!isReading) {
+        // Zbierz cały tekst z paragrafów
+        const paragraphs = document.querySelectorAll('p');
+        let fullText = '';
+        paragraphs.forEach(p => {
+          fullText += p.textContent + ' ';
+        });
+
+        utterance = new SpeechSynthesisUtterance(fullText);
+        utterance.lang = 'pl-PL';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        utterance.onend = function() {
+          isReading = false;
+          isPaused = false;
+          speechBtn.textContent = '▶ Czytaj tekst';
+          speechBtn.style.backgroundColor = '#111';
+        };
+
+        speechSynthesis.speak(utterance);
+        isReading = true;
+        speechBtn.textContent = '⏸ Zatrzymaj';
+        speechBtn.style.backgroundColor = '#c92a2a';
+      } else {
+        if (isPaused) {
+          speechSynthesis.resume();
+          isPaused = false;
+          speechBtn.textContent = '⏸ Zatrzymaj';
+        } else {
+          speechSynthesis.pause();
+          isPaused = true;
+          speechBtn.textContent = '▶ Wznów';
+        }
+      }
+    });
+
+    // Reset gdy użytkownik opuści stronę
+    window.addEventListener('beforeunload', function() {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+    });
+  </script>
 
 </body>
 </html>
