@@ -276,7 +276,7 @@ document.getElementById('downloadBtn').addEventListener('click', function() {
   let simpleText = '';
   
   paragraphs.forEach(p => {
-    simpleText += p.textContent.trim() + ' '; // POJEDYNCZA SPACJA
+simpleText += p.textContent.trim() + '\n\n'; // ← NOWA
   });
 
   try {
