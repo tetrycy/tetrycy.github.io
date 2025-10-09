@@ -270,28 +270,23 @@
     }
 
     // Funkcja otwarcia w Piszpadzie
-    document.getElementById('downloadBtn').addEventListener('click', function() {
-      // Zbierz cały tekst z paragrafów
-      const paragraphs = document.querySelectorAll('#textContent p');
-      let fullText = '';
-      paragraphs.forEach(p => {
-        fullText += p.textContent.trim() + '\n\n';
-      });
+document.getElementById('downloadBtn').addEventListener('click', function() {
+  // Zbierz CZYSTY tekst - wszystko w jednej linii
+  const paragraphs = document.querySelectorAll('#textContent p');
+  let simpleText = '';
+  
+  paragraphs.forEach(p => {
+    simpleText += p.textContent.trim() + ' '; // POJEDYNCZA SPACJA
+  });
 
-      // Zapisz w localStorage
-      try {
-        localStorage.setItem('textToRead', fullText.trim());
-        localStorage.setItem('autoReadText', 'true');
-        
-        // Otwórz Piszpad
-        window.open('https://www.tetrycy.com.pl/piszpad.html', '_blank');
-        
-        // Pokaż potwierdzenie
-        alert('✅ Tekst wysłany do Piszpada!\n\nPiszpad otworzy się w nowej karcie i automatycznie zacznie czytać.');
-      } catch (e) {
-        alert('❌ Błąd: ' + e.message);
-      }
-    });
+  try {
+    localStorage.setItem('textToRead', simpleText.trim());
+    localStorage.setItem('autoReadText', 'true');
+    window.open('https://www.tetrycy.com.pl/piszpad.html', '_blank');
+  } catch (e) {
+    alert('❌ Błąd: ' + e.message);
+  }
+});
   </script>
 
 </body>
