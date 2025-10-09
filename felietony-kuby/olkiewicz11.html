@@ -65,6 +65,38 @@
       margin-bottom: 1.2em;
     }
 
+    .speech-controls {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .speech-btn {
+      background-color: #111;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Libre Baskerville', serif;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .speech-btn:active {
+      transform: scale(0.95);
+    }
+
+    .speech-btn.playing {
+      background-color: #c92a2a;
+    }
+
+    .speech-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 600px) {
       body {
         font-size: 16px;
@@ -82,6 +114,11 @@
       nav a {
         font-size: 1rem;
       }
+
+      .speech-btn {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -90,47 +127,48 @@
   <h2>Jak co środę... JAKUB OLKIEWICZ #11</h2>
   <time datetime="2025-10-08">8.10.2025</time>
   
-  <div style="text-align: center; margin: 1.5rem 0;">
-    <button id="speechBtn" style="background-color: #111; color: white; border: none; padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 6px; cursor: pointer; font-family: 'Libre Baskerville', serif; transition: all 0.3s ease;">
-      ▶ Czytaj tekst
-    </button>
+  <div class="speech-controls">
+    <button id="speechBtn" class="speech-btn">🔊 Posłuchaj tekstu</button>
+    <button id="downloadBtn" class="speech-btn" style="margin-left: 0.5rem; background-color: #2b8a3e;">💾 Pobierz HTML</button>
   </div>
 
-  <p>Nie ma sensu udawać, że czuję się w pełni komfortowo, tak jak nie ma sensu udawać, że ocenianie przewrotu w wykonaniu własnego syna z perspektywy nauczyciela WF-u jest w pełni komfortowe. Oczywiście z naczelnym portalu horyzontalnego leszekmilewski.pl, moim bezpośrednim przełożonym w kwestii tekstów, łączy mnie więź nieco mniej silna, niż z którymkolwiek spośród moich synów. Ale też własny debiut literacki to sytuacja zgoła inna niż wykonanie przewrotu na lekcji wychowania fizycznego.</p>
+  <div id="textContent">
+    <p>Nie ma sensu udawać, że czuję się w pełni komfortowo, tak jak nie ma sensu udawać, że ocenianie przewrotu w wykonaniu własnego syna z perspektywy nauczyciela WF-u jest w pełni komfortowe. Oczywiście z naczelnym portalu horyzontalnego leszekmilewski.pl, moim bezpośrednim przełożonym w kwestii tekstów, łączy mnie więź nieco mniej silna, niż z którymkolwiek spośród moich synów. Ale też własny debiut literacki to sytuacja zgoła inna niż wykonanie przewrotu na lekcji wychowania fizycznego.</p>
 
-  <p>Na pytanie: co ty właściwie w życiu robisz, zawsze mam przygotowane przynajmniej cztery scenariusze odpowiedzi. Pierwszy, ulubiony, pochodzi prosto z gry Morrowind, gdzie członkowie gildii złodziei, nie mogąc wprost odpowiedzieć, czym zajmują się na co dzień, odpowiadali szczerze, choć wymijająco: robię trochę tego, trochę tamtego. Im dłużej o tym myślę - tym bardziej uważam, że to zresztą odpowiedź najbliższa prawdy, bo i zawodowo, i prywatnie, i w kwestii życiowych pasji - robię trochę tego i trochę tamtego. Natomiast najlepiej ta odpowiedź wybrzmiewa w gronie dość bliskich, w dodatku zaznajomionych z ponad 20-letnią grą RPG, starszą nawet od niektórych piłkarzy ŁKS-u Łódź.</p>
+    <p>Na pytanie: co ty właściwie w życiu robisz, zawsze mam przygotowane przynajmniej cztery scenariusze odpowiedzi. Pierwszy, ulubiony, pochodzi prosto z gry Morrowind, gdzie członkowie gildii złodziei, nie mogąc wprost odpowiedzieć, czym zajmują się na co dzień, odpowiadali szczerze, choć wymijająco: robię trochę tego, trochę tamtego. Im dłużej o tym myślę - tym bardziej uważam, że to zresztą odpowiedź najbliższa prawdy, bo i zawodowo, i prywatnie, i w kwestii życiowych pasji - robię trochę tego i trochę tamtego. Natomiast najlepiej ta odpowiedź wybrzmiewa w gronie dość bliskich, w dodatku zaznajomionych z ponad 20-letnią grą RPG, starszą nawet od niektórych piłkarzy ŁKS-u Łódź.</p>
 
-  <p>Dlatego bywa, że odpowiadam formalnie, że trochę wufeista, trochę występuję przed kamerą, trochę marketing, trochę reklama, czasem kawałeczek dziennikarstwa. Trzecia odpowiedź jest na potrzeby biznesowe i powstała niedawno: jestem członkiem zarządu pewnej małej spółki, to dynamiczny start-up, w kwestiach biznes inkłirys skontaktujcie się z nami na linkedinie albo poprzez adres mailowy.</p>
+    <p>Dlatego bywa, że odpowiadam formalnie, że trochę wufeista, trochę występuję przed kamerą, trochę marketing, trochę reklama, czasem kawałeczek dziennikarstwa. Trzecia odpowiedź jest na potrzeby biznesowe i powstała niedawno: jestem członkiem zarządu pewnej małej spółki, to dynamiczny start-up, w kwestiach biznes inkłirys skontaktujcie się z nami na linkedinie albo poprzez adres mailowy.</p>
 
-  <p>No i jest ta czwarta odpowiedź: robię w słowie.</p>
+    <p>No i jest ta czwarta odpowiedź: robię w słowie.</p>
 
-  <p>"Weź mi powiedz, czy jest coś lepszego niż zarabianie słowem?" - zapytał kiedyś w swoim utworze Leszek "Eldo" Kaźmierczak, moim zdaniem zapytał czysto retorycznie. Niby nagrywam filmy, niby prowadzę WF-y, niby jestem w ciągłym kontakcie z panią księgową, a przy tym trudnię się również szeroko rozumianym pajacowaniem. Natomiast na początku było Słowo. Zresztą, chyba niezależnie od tego, jak daleko się cofniemy i jakie przyjmiemy widełki w czasie oraz przestrzeni, ostatecznie na początku będzie Słowo. Było tak w którejś ważnej książce, ostatnio czytam ich tyle, że już nie pamiętam, czy to był Tyrmand, czy jednak Milewski. Ale na pewno na początku było Słowo, to słowo po słowie powstały moje pierwsze teksty, za które otrzymałem pierwsze pieniądze i pochwały, nie musicie zgadywać kolejności. Od słowa do słowa doszło do tego, że to od słowa zależała jakość hotelu podczas lipcowych wakacji, od słowa zależało, czy nie będę musiał stać się trenerem na pełen, jak zwykle niedoinwestowany etat. Słowo było trochę studnią, trochę bankomatem, trochę ostatnim gwoździem, trzymającym odpadający szyld z jakiejś bałuckiej rudery.</p>
+    <p>"Weź mi powiedz, czy jest coś lepszego niż zarabianie słowem?" - zapytał kiedyś w swoim utworze Leszek "Eldo" Kaźmierczak, moim zdaniem zapytał czysto retorycznie. Niby nagrywam filmy, niby prowadzę WF-y, niby jestem w ciągłym kontakcie z panią księgową, a przy tym trudnię się również szeroko rozumianym pajacowaniem. Natomiast na początku było Słowo. Zresztą, chyba niezależnie od tego, jak daleko się cofniemy i jakie przyjmiemy widełki w czasie oraz przestrzeni, ostatecznie na początku będzie Słowo. Było tak w którejś ważnej książce, ostatnio czytam ich tyle, że już nie pamiętam, czy to był Tyrmand, czy jednak Milewski. Ale na pewno na początku było Słowo, to słowo po słowie powstały moje pierwsze teksty, za które otrzymałem pierwsze pieniądze i pochwały, nie musicie zgadywać kolejności. Od słowa do słowa doszło do tego, że to od słowa zależała jakość hotelu podczas lipcowych wakacji, od słowa zależało, czy nie będę musiał stać się trenerem na pełen, jak zwykle niedoinwestowany etat. Słowo było trochę studnią, trochę bankomatem, trochę ostatnim gwoździem, trzymającym odpadający szyld z jakiejś bałuckiej rudery.</p>
 
-  <p>Zresztą prawdopodobnie robienie w słowie, zarabianie słowem, było moim przeznaczeniem już od 1998 roku, gdy ŁKS mierzył się z Manchesterem United, gdy uznałem, że moim ulubionym piłkarzem jest Ryan Giggs, a moją ulubioną pozycją lewe skrzydło. Ryan fajnie brzmiało, Giggs brzmiał jeszcze lepiej, a pośród wszystkich nudziarskich boiskowych pozycji (obrońca co broni, no niemożliwe, może jeszcze napastnik napada?!) skrzydło brzmiało wręcz uskrzydlająco. Kiedyś opowiem bardzo dokładnie, że w moim życiu brzmienie odgrywało kluczową rolę - brzmienie słowa "asysta" stawiane ponad słowem "gol" sprawiło, że do dzisiaj nie umiem oddawać strzałów na bramkę, brzmienie słowa "ultras" - że do dziś wolę oprawy niż jakiekolwiek inne aspekty kibicowania. Od brzmienia w panteonie moich ulubieńców znaleźli się Edgar Davids, Dejan Stanković i oczywiście Arjen Robben, to brzmienie zadecydowało, że Vlade Divac, że Steve Yzerman, że raczej Grammatik i Dizkret, niż Gib-Gibon.</p>
+    <p>Zresztą prawdopodobnie robienie w słowie, zarabianie słowem, było moim przeznaczeniem już od 1998 roku, gdy ŁKS mierzył się z Manchesterem United, gdy uznałem, że moim ulubionym piłkarzem jest Ryan Giggs, a moją ulubioną pozycją lewe skrzydło. Ryan fajnie brzmiało, Giggs brzmiał jeszcze lepiej, a pośród wszystkich nudziarskich boiskowych pozycji (obrońca co broni, no niemożliwe, może jeszcze napastnik napada?!) skrzydło brzmiało wręcz uskrzydlająco. Kiedyś opowiem bardzo dokładnie, że w moim życiu brzmienie odgrywało kluczową rolę - brzmienie słowa "asysta" stawiane ponad słowem "gol" sprawiło, że do dzisiaj nie umiem oddawać strzałów na bramkę, brzmienie słowa "ultras" - że do dziś wolę oprawy niż jakiekolwiek inne aspekty kibicowania. Od brzmienia w panteonie moich ulubieńców znaleźli się Edgar Davids, Dejan Stanković i oczywiście Arjen Robben, to brzmienie zadecydowało, że Vlade Divac, że Steve Yzerman, że raczej Grammatik i Dizkret, niż Gib-Gibon.</p>
 
-  <p>Lubię literki, słowa, zdania, zawsze płaczę przy 40-sekundowym utworze "Ojczysty", sprawdźcie koniecznie na YouTube. Wiem, ile zawdzięczam plastyczności języka polskiego, wiem, ile dumy daje fakt, gdy sformułowane przeze mnie hasła krążą potem gdzieś dalej, czasem jako hashtagi, czasem napisane sprejem na materiale. Piszę tekst na klawiaturze kupionej z pieniędzy, które ktoś przelał za moje słowa, w kuchni, wyremontowanej dziesięć lat temu również dzięki tym wszystkim potokom liter.</p>
+    <p>Lubię literki, słowa, zdania, zawsze płaczę przy 40-sekundowym utworze "Ojczysty", sprawdźcie koniecznie na YouTube. Wiem, ile zawdzięczam plastyczności języka polskiego, wiem, ile dumy daje fakt, gdy sformułowane przeze mnie hasła krążą potem gdzieś dalej, czasem jako hashtagi, czasem napisane sprejem na materiale. Piszę tekst na klawiaturze kupionej z pieniędzy, które ktoś przelał za moje słowa, w kuchni, wyremontowanej dziesięć lat temu również dzięki tym wszystkim potokom liter.</p>
 
-  <p>Dlatego nie wiem właściwie, jak powinienem traktować książkę Leszka Milewskiego, debiut literacki bezsprzecznie najbiższego mi autora. Najbliższego w sensie geograficznym, bo siedzimy dosłownie przy jednym stole przez ogromną część tygodnia. Gdybym miał to skończyć szybko - a początkowo tak planowałem - napisałbym po prostu, że to piękny list miłosny w kierunku słowa. To zmieściłoby się na Twitterze, wraz ze zdjęciem strony z dedykacją od autora, byłoby prawdziwe, szczere i spokojnie mógłbym dzisiaj napisać sobie o Manchesterze United, albo nawet o Janie Urbanie.</p>
+    <p>Dlatego nie wiem właściwie, jak powinienem traktować książkę Leszka Milewskiego, debiut literacki bezsprzecznie najbiższego mi autora. Najbliższego w sensie geograficznym, bo siedzimy dosłownie przy jednym stole przez ogromną część tygodnia. Gdybym miał to skończyć szybko - a początkowo tak planowałem - napisałbym po prostu, że to piękny list miłosny w kierunku słowa. To zmieściłoby się na Twitterze, wraz ze zdjęciem strony z dedykacją od autora, byłoby prawdziwe, szczere i spokojnie mógłbym dzisiaj napisać sobie o Manchesterze United, albo nawet o Janie Urbanie.</p>
 
-  <p>Ale to jest za mało. Trzeba to jakoś rozwinąć, bo mam wrażenie, że głupio byłoby to pozostawić zapakowane w papierek, jak jakiś cukierek prawoślazowy, czymkolwiek on jest, pierwszy raz się spotkałem z takim cukierkiem w twórczości Leszka Milewskiego.</p>
+    <p>Ale to jest za mało. Trzeba to jakoś rozwinąć, bo mam wrażenie, że głupio byłoby to pozostawić zapakowane w papierek, jak jakiś cukierek prawoślazowy, czymkolwiek on jest, pierwszy raz się spotkałem z takim cukierkiem w twórczości Leszka Milewskiego.</p>
 
-  <p>Robimy z Leszkiem w słowie, ale robimy trochę inaczej. Ja mam gigantyczny problem z poprawianiem tekstów - zazwyczaj, gdy ktoś prosił mnie o poprawki w jakimś moim artykule, pisałem go od nowa, albo poddawałem się: trudno, lepszy nie będzie, inaczej nie umiem. Konieczność skrócenia tekstu o dwa czy trzy zdania była dla mnie osobistą tragedią, bo żadnego nie potrafiłem uciąć, a samo czytanie czegoś, co już napisałem, było i pozostaje nadal katorgą. Jak minie parę dni czy tygodni - okej, niektóre spośród moich tekstów nawet mi się podobały! Ale na bieżąco - nie. Już to napisałem, to chyba wiem, co napisałem, nie? No.</p>
+    <p>Robimy z Leszkiem w słowie, ale robimy trochę inaczej. Ja mam gigantyczny problem z poprawianiem tekstów - zazwyczaj, gdy ktoś prosił mnie o poprawki w jakimś moim artykule, pisałem go od nowa, albo poddawałem się: trudno, lepszy nie będzie, inaczej nie umiem. Konieczność skrócenia tekstu o dwa czy trzy zdania była dla mnie osobistą tragedią, bo żadnego nie potrafiłem uciąć, a samo czytanie czegoś, co już napisałem, było i pozostaje nadal katorgą. Jak minie parę dni czy tygodni - okej, niektóre spośród moich tekstów nawet mi się podobały! Ale na bieżąco - nie. Już to napisałem, to chyba wiem, co napisałem, nie? No.</p>
 
-  <p>Leszek z kolei tekstów nie tworzy, Leszek je maluje. Tak ogółem, jeszcze w czasach, gdy był jednym z najlepszych felietonistów sportowych w Polsce, jak i teraz, pracując nad książkami czy innymi tekstami. Widziałem to parę razy, przyglądając się artykułom czy felietonom na różnych etapach pracy. Ja jestem jak wyrobnik składający blokowiska z wielkiej płyty. Leszek to Gaudi i nawet spoko, że jego literacki debiut niemal zbiega się z ukończeniem dopieszczanej od 2399 lat katedry Sagrada Familia. Nie chodzi tu naturalnie o tempo, chodzi tutaj o detale, o dokręcanie śrubek, o sprawdzanie, czy zdanie dobrze brzmi przeczytane na głos i czy liczba powtórzeń jeszcze doskonale parodiuje styl opowiadania małomiasteczkowej dziewczyny, czy już wnerwia.</p>
+    <p>Leszek z kolei tekstów nie tworzy, Leszek je maluje. Tak ogółem, jeszcze w czasach, gdy był jednym z najlepszych felietonistów sportowych w Polsce, jak i teraz, pracując nad książkami czy innymi tekstami. Widziałem to parę razy, przyglądając się artykułom czy felietonom na różnych etapach pracy. Ja jestem jak wyrobnik składający blokowiska z wielkiej płyty. Leszek to Gaudi i nawet spoko, że jego literacki debiut niemal zbiega się z ukończeniem dopieszczanej od 2399 lat katedry Sagrada Familia. Nie chodzi tu naturalnie o tempo, chodzi tutaj o detale, o dokręcanie śrubek, o sprawdzanie, czy zdanie dobrze brzmi przeczytane na głos i czy liczba powtórzeń jeszcze doskonale parodiuje styl opowiadania małomiasteczkowej dziewczyny, czy już wnerwia.</p>
 
-  <p>Bo ktoś mógłby tutaj się przyczepić, że akcja niespieszna, że nie dzieje się wiele. Ale w którym małym miasteczku się dzieje wiele? W którym małym miasteczku się dzieje cokolwiek, poza ewentualnym pożarem pieczarkarni albo plajtą lokalnego biznesmena? Ktoś inny mógłby stwierdzić, że wystarczy dziesięć razy przypomnieć, że Bulzacki jakieś kobiety miał, jak każdy, jedenaste przypomnienie jest już zbędne. Ale to właśnie ta konstrukcja uświadamia cały sens tej powieści, cały sens małomiasteczkowości. Człowiek przemieniony w trzy, cztery sytuacje, w dwie cechy, w jakąś wiodącą anegdotę. I nic więcej, żadnych wgłębień, żadnych rys - ot, co mu żona zmarła, ale kobiety jakieś miał, kto nie miał.</p>
+    <p>Bo ktoś mógłby tutaj się przyczepić, że akcja niespieszna, że nie dzieje się wiele. Ale w którym małym miasteczku się dzieje wiele? W którym małym miasteczku się dzieje cokolwiek, poza ewentualnym pożarem pieczarkarni albo plajtą lokalnego biznesmena? Ktoś inny mógłby stwierdzić, że wystarczy dziesięć razy przypomnieć, że Bulzacki jakieś kobiety miał, jak każdy, jedenaste przypomnienie jest już zbędne. Ale to właśnie ta konstrukcja uświadamia cały sens tej powieści, cały sens małomiasteczkowości. Człowiek przemieniony w trzy, cztery sytuacje, w dwie cechy, w jakąś wiodącą anegdotę. I nic więcej, żadnych wgłębień, żadnych rys - ot, co mu żona zmarła, ale kobiety jakieś miał, kto nie miał.</p>
 
-  <p>Widać, że Leszek tu wszystko dokręcił, dokręcił ze szczerej miłości do słowa, które może oddać nie tylko obrazy czy dźwięki, ale może odmalować sposób myślenia, sposób opowiadania, może uchwycić tempo życia.</p>
+    <p>Widać, że Leszek tu wszystko dokręcił, dokręcił ze szczerej miłości do słowa, które może oddać nie tylko obrazy czy dźwięki, ale może odmalować sposób myślenia, sposób opowiadania, może uchwycić tempo życia.</p>
 
-  <p>Uważam, że tak trzeba odbierać książkę Leszka, która stanowi mój pomost z poezją. Jestem wielkim ultrasem słowa, jestem wiernym karnetowiczem języka polskiego. Ale poezja to dla mnie stadion derbowego rywala, odwiedzany z konieczności, raz na kilka sezonów, z pewnym szacunkiem, ale i świadomością, że nie zostanę tam na dłużej, niż to konieczne. A czytając "Dziewczynę o wyjątkowych dłoniach" czułem się trochę, jakbym czytał poezję. Ale taką inną, taką, co nie denerwuję się, że można to było napisać prościej, czytelniej, inaczej. Taką, której chcę więcej.</p>
+    <p>Uważam, że tak trzeba odbierać książkę Leszka, która stanowi mój pomost z poezją. Jestem wielkim ultrasem słowa, jestem wiernym karnetowiczem języka polskiego. Ale poezja to dla mnie stadion derbowego rywala, odwiedzany z konieczności, raz na kilka sezonów, z pewnym szacunkiem, ale i świadomością, że nie zostanę tam na dłużej, niż to konieczne. A czytając "Dziewczynę o wyjątkowych dłoniach" czułem się trochę, jakbym czytał poezję. Ale taką inną, taką, co nie denerwuję się, że można to było napisać prościej, czytelniej, inaczej. Taką, której chcę więcej.</p>
 
-  <p>Mógłbym tutaj uderzać w tony, że fantastycznie odmalowany klimat małego miasteczka, ale co ja, kurwa, wiem o małych miasteczkach. Że opis męskiego "stania" to jedna z najlepszych rzeczy, jakie czytałem w ostatnich tygodniach, a czytam naprawdę dużo naprawdę dobrych autorów. Mógłbym chwalić fabułę, czy poczucie humoru. Ale to wszystko są tylko kokardki, jakieś pudełeczka, torebeczki, inne wstążeczki. Dopiero jak to wszystko zdzierasz, to jest ten właściwy prezent - piękny hołd dla języka polskiego, dla słowa, dla zabawy z tym słowem, czasem w chowanego, a czasem w berka. Gdy pewne konstrukcje wracają po czterdziestu stronach wiesz, że to efekt działania fanatyka słowa na przestrzeni setek minut, albo i może kilkudziesięciu godzin (wybaczcie, jeśli okaże się, że setki minut to więcej niż kilkadziesiąt godzin, kocham litery, a nie cyfry).</p>
+    <p>Mógłbym tutaj uderzać w tony, że fantastycznie odmalowany klimat małego miasteczka, ale co ja, kurwa, wiem o małych miasteczkach. Że opis męskiego "stania" to jedna z najlepszych rzeczy, jakie czytałem w ostatnich tygodniach, a czytam naprawdę dużo naprawdę dobrych autorów. Mógłbym chwalić fabułę, czy poczucie humoru. Ale to wszystko są tylko kokardki, jakieś pudełeczka, torebeczki, inne wstążeczki. Dopiero jak to wszystko zdzierasz, to jest ten właściwy prezent - piękny hołd dla języka polskiego, dla słowa, dla zabawy z tym słowem, czasem w chowanego, a czasem w berka. Gdy pewne konstrukcje wracają po czterdziestu stronach wiesz, że to efekt działania fanatyka słowa na przestrzeni setek minut, albo i może kilkudziesięciu godzin (wybaczcie, jeśli okaże się, że setki minut to więcej niż kilkadziesiąt godzin, kocham litery, a nie cyfry).</p>
 
-  <p>To nie jest jeszcze najlepszy Leszek, jakiego możecie przeczytać - bo wiem, co szykuje następne. Ale to jest Leszek, który trafił do mnie na tyle mocno, że postanowiłem się z wami podzielić historią mojej miłości do słowa - o tyle pięknej, że skromnej, rzadko artykułowanej. Opowiadałem wam wszystkim wielokrotnie o żonie, synach, rodzicach, o piłce, ŁKS-ie, o Bałutach i Limance, o kuzynostwie i Morrowindzie, o wszystkich rzeczach, które kocham, albo przynajmniej uważam za niezbędne do życia. O słowie rzadziej.</p>
+    <p>To nie jest jeszcze najlepszy Leszek, jakiego możecie przeczytać - bo wiem, co szykuje następne. Ale to jest Leszek, który trafił do mnie na tyle mocno, że postanowiłem się z wami podzielić historią mojej miłości do słowa - o tyle pięknej, że skromnej, rzadko artykułowanej. Opowiadałem wam wszystkim wielokrotnie o żonie, synach, rodzicach, o piłce, ŁKS-ie, o Bałutach i Limance, o kuzynostwie i Morrowindzie, o wszystkich rzeczach, które kocham, albo przynajmniej uważam za niezbędne do życia. O słowie rzadziej.</p>
 
-  <p>Aż przychodzi debiut literacki Leszka, najbliższego mi literata w sensie geograficznym, bo siedzimy centralnie przy tym samym stole przez sporą część tygodnia, i sobie przypominam.</p>
+    <p>Aż przychodzi debiut literacki Leszka, najbliższego mi literata w sensie geograficznym, bo siedzimy centralnie przy tym samym stole przez sporą część tygodnia, i sobie przypominam.</p>
 
-  <p>Że na początku było Słowo. I nie ma nic lepszego niż zarabianie słowem.</p>
+    <p>Że na początku było Słowo. I nie ma nic lepszego niż zarabianie słowem.</p>
+  </div>
 
   <div style="text-align: center; margin-top: 3rem; margin-bottom: 2rem;">
     <a href="https://www.youtube.com/@Tetrycy" target="_blank" style="text-decoration: none; color: crimson; font-weight: bold; font-size: 1.5rem; display: block; padding: 1rem; border: 2px solid crimson; border-radius: 8px; transition: all 0.3s ease;">
@@ -139,56 +177,97 @@
   </div>
 
   <script>
-    const speechBtn = document.getElementById('speechBtn');
-    let speechSynthesis = window.speechSynthesis;
+    let synth = window.speechSynthesis;
     let utterance = null;
-    let isPaused = false;
-    let isReading = false;
+    let isPlaying = false;
+    const btn = document.getElementById('speechBtn');
 
-    speechBtn.addEventListener('click', function() {
-      if (!isReading) {
-        // Zbierz cały tekst z paragrafów
-        const paragraphs = document.querySelectorAll('p');
-        let fullText = '';
-        paragraphs.forEach(p => {
-          fullText += p.textContent + ' ';
-        });
+    function getText() {
+      const paragraphs = document.querySelectorAll('#textContent p');
+      let text = '';
+      paragraphs.forEach(p => {
+        text += p.textContent.trim() + '. ';
+      });
+      return text;
+    }
 
-        utterance = new SpeechSynthesisUtterance(fullText);
-        utterance.lang = 'pl-PL';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
+    function startSpeech() {
+      // Zatrzymaj poprzednie jeśli jakieś jest
+      synth.cancel();
+      
+      const text = getText();
+      utterance = new SpeechSynthesisUtterance(text);
+      
+      // Ustawienia
+      utterance.lang = 'pl-PL';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
 
-        utterance.onend = function() {
-          isReading = false;
-          isPaused = false;
-          speechBtn.textContent = '▶ Czytaj tekst';
-          speechBtn.style.backgroundColor = '#111';
-        };
+      // Event handlers
+      utterance.onstart = function() {
+        isPlaying = true;
+        btn.textContent = '⏹ Zatrzymaj';
+        btn.classList.add('playing');
+      };
 
-        speechSynthesis.speak(utterance);
-        isReading = true;
-        speechBtn.textContent = '⏸ Zatrzymaj';
-        speechBtn.style.backgroundColor = '#c92a2a';
+      utterance.onend = function() {
+        isPlaying = false;
+        btn.textContent = '🔊 Posłuchaj tekstu';
+        btn.classList.remove('playing');
+      };
+
+      utterance.onerror = function(e) {
+        console.error('Błąd syntesy mowy:', e);
+        isPlaying = false;
+        btn.textContent = '🔊 Posłuchaj tekstu';
+        btn.classList.remove('playing');
+      };
+
+      // Uruchom po małym opóźnieniu (pomaga na mobile)
+      setTimeout(() => {
+        synth.speak(utterance);
+      }, 100);
+    }
+
+    function stopSpeech() {
+      synth.cancel();
+      isPlaying = false;
+      btn.textContent = '🔊 Posłuchaj tekstu';
+      btn.classList.remove('playing');
+    }
+
+    // Główny event listener
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      if (!isPlaying) {
+        startSpeech();
       } else {
-        if (isPaused) {
-          speechSynthesis.resume();
-          isPaused = false;
-          speechBtn.textContent = '⏸ Zatrzymaj';
-        } else {
-          speechSynthesis.pause();
-          isPaused = true;
-          speechBtn.textContent = '▶ Wznów';
-        }
+        stopSpeech();
       }
     });
 
-    // Reset gdy użytkownik opuści stronę
+    // Sprawdź czy API jest dostępne
+    if (!('speechSynthesis' in window)) {
+      btn.textContent = '❌ Niedostępne';
+      btn.disabled = true;
+      console.error('Web Speech API nie jest dostępne');
+    }
+
+    // Cleanup przy opuszczeniu strony
     window.addEventListener('beforeunload', function() {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
+      if (synth.speaking) {
+        synth.cancel();
       }
     });
+
+    // Dla iOS - załaduj głosy
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = function() {
+        synth.getVoices();
+      };
+    }
   </script>
 
 </body>
