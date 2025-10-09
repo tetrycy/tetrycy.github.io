@@ -927,14 +927,25 @@ window.addEventListener('load', function() {
         historyIndex = -1;
         saveState();
         
-        // Czytaj CAŁY tekst (nie od kursora!)
+        // Czytaj CAŁY tekst (nie od kursora!) - Z DEBUGIEM
         setTimeout(function() {
-            if (!speechSynthesis) return;
+            alert('DEBUG: Timeout uruchomiony');
+            
+            if (!speechSynthesis) {
+                alert('DEBUG: Brak speechSynthesis API!');
+                return;
+            }
             
             // Pobierz CAŁY tekst z editora
             var fullText = editor.innerText || editor.textContent || '';
-            if (!fullText.trim()) return;
+            alert('DEBUG: Tekst długość = ' + fullText.length);
             
+            if (!fullText.trim()) {
+                alert('DEBUG: Tekst pusty!');
+                return;
+            }
+            
+            alert('DEBUG: Tworzę utterance...');
             var utterance = new SpeechSynthesisUtterance(fullText);
             utterance.lang = 'pl-PL';
             utterance.rate = speechRate;
@@ -942,9 +953,12 @@ window.addEventListener('load', function() {
             
             // Szukaj polskiego głosu
             var voices = speechSynthesis.getVoices();
+            alert('DEBUG: Liczba głosów = ' + voices.length);
+            
             for (var i = 0; i < voices.length; i++) {
                 if (voices[i].lang.includes('pl')) {
                     utterance.voice = voices[i];
+                    alert('DEBUG: Znaleziony polski głos: ' + voices[i].name);
                     break;
                 }
             }
@@ -952,19 +966,23 @@ window.addEventListener('load', function() {
             var btn = document.getElementById('readBtn');
             
             utterance.onstart = function() {
+                alert('DEBUG: Czytanie rozpoczęte!');
                 isReading = true;
                 btn.classList.add('active');
                 btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
             };
             
             utterance.onend = function() {
+                alert('DEBUG: Czytanie zakończone!');
                 stopReading();
             };
             
-            utterance.onerror = function() {
+            utterance.onerror = function(e) {
+                alert('DEBUG: BŁĄD! ' + e.error + ' / ' + e.message);
                 stopReading();
             };
             
+            alert('DEBUG: Wywołuję speak()...');
             speechSynthesis.speak(utterance);
         }, 800);
     }
@@ -972,3 +990,4 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
+
