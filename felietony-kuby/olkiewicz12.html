@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jak co środę... JAKUB OLKIEWICZ #12</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Libre Baskerville', serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #fff;
+      color: #111;
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 0.5em;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    nav {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    nav a {
+      display: block;
+      margin: 0.3rem 0;
+      font-size: 1.2rem;
+      text-decoration: none;
+      color: #333;
+    }
+
+    nav a[href="/"] {
+      font-weight: bold;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+      margin: 2rem auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    time {
+      display: block;
+      color: #777;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    p {
+      margin-bottom: 1.2em;
+    }
+
+    .speech-controls {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .speech-btn {
+      background-color: #111;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Libre Baskerville', serif;
+      transition: all 0.3s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .speech-btn:active {
+      transform: scale(0.95);
+    }
+
+    .speech-btn.playing {
+      background-color: #c92a2a;
+    }
+
+    .speech-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 16px;
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      nav a {
+        font-size: 1rem;
+      }
+
+      .speech-btn {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Jak co środę... JAKUB OLKIEWICZ #12</h2>
+  <time datetime="2025-10-15">15.10.2025</time>
+  
+  <div class="speech-controls">
+    <button id="speechBtn" class="speech-btn">🔊 Posłuchaj tekstu</button>
+    <button id="downloadBtn" class="speech-btn" style="margin-left: 0.5rem; background-color: #2b8a3e;">Posłuchaj tekstu 2</button>
+  </div>
+
+  <div id="textContent">
+    <p>Przerwa na kadrę od dłuższego czasu w moim życiu jest przede wszystkim momentem odpoczynku od rozczarowań, które napotykają mnie w trakcie wielkiej przygody, jaką jest kibicowanie Łódzkiemu Klubowi Sportowemu. Wiadomość o tym, że w 2026 roku jest przewidziana bardzo długa, aż 3-tygodniowa przerwa na całą serię meczów reprezentacyjnych znalazła mnie w środku bezdennej rozpaczy po starciu ŁKS-u z Pogonią Grodzisk Mazowiecki - i była niczym kojący balsam. Niemal miesiąc bez goryczy porażki, ale co jeszcze ważniejsze i bardziej istotne dla zdrowia - niemal miesiąc bez obgryzania paznokci gdzieś w klatce gości na końcu świata, niemal miesiąc bez naprzemiennego modlenia się o szybszy upływ czasu, gdy prowadzimy 1:0 i wolniejszy, gdy przegrywamy 1:2.</p>
+
+    <p>Gdybyście zapytali mnie wtedy, tuż po wielkiej wiktorii Piotra Stokowca, o futbol reprezentacyjny, prawdopodobnie prześcignąłbym Aleksandra Ceferina w zachwalaniu pomysłów europejskiej federacji. Stanąłbym w szranki z Giannim Infantino na to, kto wymyśli więcej synonimów słowa "wspaniały" opisując kolejny międzynarodowy gówno-turniej zapychający terminarze. Byłbym rzecznikiem prasowym każdej możliwej reprezentacyjnej głupoty, łącznie z pomysłem, by finały Mistrzostw Europy rozgrywać w dziesięciu różnych państwach, a mundial pomiędzy Toronto i Guadalajarą.</p>
+
+    <p>Ale ŁKS dawno nie grał, a przed przerwą na kadrę nawet wygrał, więc mogę napisać tak, jak jest: obecny format eliminacji Mistrzostw Świata w strefie UEFA to straszne gówno.</p>
+
+    <p>To o tyle dziwne i o tyle ciekawe, że przecież żyjemy w świecie wielkich zmian, burzenia porządku, który wydawał się nie tylko odwieczny, ale i wieczny. Wykonano spektakularny zamach na świętą ideę Ligi Mistrzów, Ligi Mistrzów Fergusona, Henry'ego, Ronaldinho, Materazziego i Eto'o, Ligę Mistrzów Gerrarda, Lamparda i Deco. Po raz pierwszy od zmiany nazwy Pucharu UEFA stworzono coś zupełnie nowego, dla zupełnie nowych - Liga Konferencji odpowiedziała w piękny sposób na rosnącą liczbę klubów przygotowanych na międzynarodową rywalizację, a jednak zbyt słabych, by dobić do tej ścisłej elity. Widmo Superligi na horyzoncie, a przy tym powtarzana jak mantra śpiewka o tym, że futbol musi czymś przyciągnąć młodych sprawił, że futbol stał się w ostatnich latach jednym wielkim laboratorium. Wprowadzono VAR, a wcześniej nawet najdoskonalszy wynalazek w historii cywilizacji ziemskiej, sędziów zabramkowych. Otwarto szerzej Mistrzostwa Europy, otwarto szerzej Mistrzostwa Świata. Liczne problemy, rzeczywiste i naciągane, zaczęły być taśmowo rozwiązywane czasem w rewolucyjny sposób.</p>
+
+    <p>Część pomysłów to strzały w dyszkę, by wymienić Ligę Konferencji czy poszerzenie Euro. Część to strzały w piątkę, może szóstkę - tu pewnie nowa Liga Mistrzów czy wciąż bardzo niedoskonały VAR. No i jest jeszcze ten pomysł na trwające eliminacje do Mistrzostw Świata w strefie UEFA.</p>
+
+    <p>Tak wąskie, 4-zespołowe grupy i jednocześnie tak skomplikowana ścieżka barażowa. Tak skromny zestaw meczów o stawkę, a jednocześnie premiowanie nie bezpośredniego grupowego starcia, ale goli nastrzelanych słabiakom. Te zasady stanowią zestaw błędnych odpowiedzi na pytania, które faktycznie urodził w ostatniej dekadzie futbol reprezentacyjny. Jeśli bowiem spojrzymy na całość z dystansem, tak jak staramy się obiektywnie traktować choćby Ligę Konferencji, zauważymy, że pewne ruchy wypadało podjąć.</p>
+
+    <p>Po pierwsze - coraz mniej jest reprezentacji jednoznacznie fatalnych, które przegrywają wszystko, zawsze i wszędzie, kilkoma golami. Najlepiej ten rozwój widać pewnie w przypadku Luksemburgu czy Wysp Owczych, ale chodzi również o łatwiejszy doskok do klasy średniej. Gruzja, Estonia, Finlandia czy Armenia mają zdecydowanie prostszą drogę do posiadania zawodników klasy europejskiej - świat zmienił się, a raczej skurczył się na tyle, że wszędzie jest dostęp do wiedzy, wszędzie zaglądają skauci z najmocniejszych klubów, wszędzie da się postawić pierwsze kilka kroków na drodze do Realu czy Bayernu. Oczywiście, są pewne stałe rzeczy - San Marino czy Andora. Są również zmiany, które można by określić jako jeden do jednego - upraszczając: coraz mocniejszych Mołdawian w roli chłopców do obijania zastąpili Łotysze.</p>
+
+    <p>Natomiast to wyrównanie poziomów jest widoczne. Jednocześnie jednak najbogatsi bogacą się najszybciej, najmocniejsi zbroją się w sposób najbardziej spektakularny. Do stołu przy którym zasiadają trzeci zespół Francji i zestaw angielskich dublerów mają problemy doskoczyć nawet mocne kraje z dużymi piłkarskimi tradycjami. Coraz trudniej jest pobić ekipę z tego europejskiego TOP 5. UEFA, przy wszystkich swoich wadach, pokazała, że jest w stanie w miarę trafnie diagnozować trendy w futbolu, a następnie dostoswywać swoje rozgrywki do tych trendów - i wcale nie chodzi wyłącznie o Ligę Konferencji, bo przecież i odświeżona Liga Europy to ukłon w stronę tych klubów z lig mocniejszych od europejskiego żwiru, ale wciąż zbyt słabych, by walczyć z Anglią czy Hiszpanią.</p>
+
+    <p>A w międzynarodowym futbolu? Kierunek zmian wydawał się jasny - zwiększyć liczbę starć środka ze środkiem, zwiększyć liczbę potencjalnych potknięć dla faworytów, jeśli chcą faktycznie jeździć regularnie na wielkie turnieje, to w meczach z Serbią, Polską czy Danią muszą grać najsilniejszymi składami, muszą się nagimnastykować, bo strata punktów może być wyjątkowo kosztowna. Ze swojej, polskiej perspektywy najlepiej czujemy różnicę w meczach przeciw Szkotom, Walijczykom, Szwedom czy innym ekipom z naszej półki a tymi rozgrywanymi albo ze słabeuszami pokroju Malty, albo mocarzami jak Francja. Oklepywanie kiepskich i wyłapywanie od najmocniejszych jest nudnawe - solą są właśnie starcia ekip o choćby zbliżonym potencjale.</p>
+
+    <p>Sprawdzam, jak to było 20 lat temu, eliminacje mundialu 2006. Hiszpania w barażach, bo potknęła się z Bośniakami, awans w grupie robi Serbia i Czarnogóra (wówczas jeszcze razem). Szwajcaria, Irlandia i jeszcze jedno państwo na I kończą grupę właściwie o krok za Francuzami - czwarte i pierwsze miejsce dzielą ledwie 3 punkty różnicy. Czesi walczą z Rumunami o baraż do ostatniej serii spotkań. Rzeźnia w grupie 2 to zasługa losowania, ale i tak robi wrażenie - Ukraina o dwa punkty przed Turcją, ci z punkcikiem przewagi nad Duńczykami, jeszcze jeden punkt i czwarta Grecja.</p>
+
+    <p>To oczywiście czysty cherrypicking, nie ma żadnej gwarancji, że mocarze w obecnych okolicznościach nie wygraliby swoich grup z kompletem zwycięstw i jednym remisem w ostatnim meczu granym rezerwowym składem ligowym. Natomiast chodzi o dostrzeganie pewnych trendów i reagowanie na nie regulaminem rozgrywek. Instynktownie czuć, że grupy z siedmioma czy ośmioma zespołami mogłyby w obecnej rzeczywistości piłkarskie (Czesi przegrywający z Farerami!) obfitować w takie multiligi, jakich nie powstydziłaby się I liga w latach dziewięćdziesiątych. Tymczasem zamiast tego kierunku - zwiększania liczby możliwych potknięć dla faworytów, zwiększania liczby atrakcyjnych meczów dwóch równych rywali - mamy odwrotność. Małe, krótkie grupy, gdzie w dodatku liczą się gole, sprawiają, że nawet w naszej piątce, gdzie doszło przecież do sensacyjnych wyników jak nasz remis z Holandią czy porażka z Finlandią, wszystko jest już właściwie jasne. Rozumiem zamysł z postawieniem akcentu na ścieżkę barażową, rozumiem, że to tam teraz ma się przenieść największe zainteresowanie, rozumiem, że mogą tam spaść nawet bardzo mocne ekipy.</p>
+
+    <p>Ale mimo wszystko brakuje mi twardej, zdecydowanej reakcji, takiej, jak stworzenie Ligi Konferencji. Konstruowaliśmy z Leszkiem kupony dla Betclica pod obecną przerwę na kadrę - w pojedynczych meczach udawało się znaleźć coś powyżej 1,70. Prawie wszędzie starcie gołej dupy z batem, prawie wszędzie pewniaki, gdzie nawet kursy na trzy, cztery gole różnicy nie były szalone. Jasne, zawsze jakaś Andora urwie punkty Łotwie, zawsze Serbowie zwariują, przeniosą prestiżowy mecz gdzieś na wieś i przerżną u siebie z Albanią. Ale to zwykłe, nieodłączne elementy futbolu, a nie przemyślana strategia układania rozgrywek.</p>
+
+    <p>Bo te, przynajmniej moim zdaniem i obserwując przebieg tych eliminacji, zostały ułożone po prostu bez elementarnej logiki. San Marino zmuszone do wysokiej porażki, by Rumunów wepchnąć do baraży i zająć ich miejsce w barażach via Liga Narodów? Nasze wyliczenia, czy 7:0 z Holandią wystarczy? Ale przede wszystkim - gigantyczna, sącząca się z każdej dziury nuda? Przegląd tematów dotyczących reprezentacji Polski to jedno, ale śledzę przecież też międzynarodowe nagłówki. Hitem tej przerwy jest szczur, który gdzieś tam wbiegł na boisko, no i polityczna zawierucha w Serbii, która zaowocowała haniebnym meczem przeciw Albanii - haniebnym, bo granym z dala od Belgradu, przyćmionym ich wewnętrznymi politycznymi sporami i awanturami. Może jeszcze kryzys Szwedów, absolutnie bezprecedensowy zjazd. Zresztą, post był tak ścisły, że w poszukiwaniu pożywienia musieliśmy się jarać kiepskim startem Ancelottiego w Brazylii oraz awansem na mundial Republiki Zielonego Przylądka.</p>
+
+    <p>Nie żądam, by Francuzi, Anglicy i Hiszpanie grali z opaskami na oczy, a Niemcy i Szwedzi w dodatku po każdym strzelonym golu musieli oddawać jeden zrabowany nam obraz. Nie chcę jakichś wyjątkowych udziwnień, nie pragnę, by futbol reprezentacyjny ratować za wszelką cenę, sprowadzać Harlem Globettrotters, by w przerwie dawali pokazy koszykówki. Ale nie róbmy z tego aż takiego obowiązku do odbębniania jak obecnie, nie róbmy z tego koniecznej przygrywki przed właściwą grą, która zacznie się w barażach. UEFA, wiem, że mnie czytasz, wsłuchaj się dokładnie w ten głos, bo Ligą Konferencji i wykluczeniem jednego ze zbrodniczych państw narobiłaś sporych nadziei, że czasem coś robisz nieźle. Teraz czas na dobry, przemyślany i atrakcyjny format eliminacji, no i wykluczenie drugiego zbrodniczego państwa, o co przecież dopomina się już pół świata.</p>
+
+    <p>Znamienne, że w sumie więcej wiary mam w dobry, przemyślany i atrakcyjny format eliminacji...</p>
+  </div>
+
+  <div style="text-align: center; margin-top: 3rem; margin-bottom: 2rem;">
+    <a href="https://www.youtube.com/@Tetrycy" target="_blank" style="text-decoration: none; color: crimson; font-weight: bold; font-size: 1.5rem; display: block; padding: 1rem; border: 2px solid crimson; border-radius: 8px; transition: all 0.3s ease;">
+      OGLĄDAJ TETRYKÓW NA KANALE TETRYCY
+    </a>
+  </div>
+
+  <script>
+    let synth = window.speechSynthesis;
+    let utterance = null;
+    let isPlaying = false;
+    const btn = document.getElementById('speechBtn');
+
+    function getText() {
+      const paragraphs = document.querySelectorAll('#textContent p');
+      let text = '';
+      paragraphs.forEach(p => {
+        text += p.textContent.trim() + '. ';
+      });
+      return text;
+    }
+
+    function startSpeech() {
+      // Zatrzymaj poprzednie jeśli jakieś jest
+      synth.cancel();
+      
+      const text = getText();
+      utterance = new SpeechSynthesisUtterance(text);
+      
+      // Ustawienia
+      utterance.lang = 'pl-PL';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      // Event handlers
+      utterance.onstart = function() {
+        isPlaying = true;
+        btn.textContent = '⏹ Zatrzymaj';
+        btn.classList.add('playing');
+      };
+
+      utterance.onend = function() {
+        isPlaying = false;
+        btn.textContent = '🔊 Posłuchaj tekstu';
+        btn.classList.remove('playing');
+      };
+
+      utterance.onerror = function(e) {
+        console.error('Błąd syntesy mowy:', e);
+        isPlaying = false;
+        btn.textContent = '🔊 Posłuchaj tekstu';
+        btn.classList.remove('playing');
+      };
+
+      // Uruchom po małym opóźnieniu (pomaga na mobile)
+      setTimeout(() => {
+        synth.speak(utterance);
+      }, 100);
+    }
+
+    function stopSpeech() {
+      synth.cancel();
+      isPlaying = false;
+      btn.textContent = '🔊 Posłuchaj tekstu';
+      btn.classList.remove('playing');
+    }
+
+    // Główny event listener
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      if (!isPlaying) {
+        startSpeech();
+      } else {
+        stopSpeech();
+      }
+    });
+
+    // Sprawdź czy API jest dostępne
+    if (!('speechSynthesis' in window)) {
+      btn.textContent = '❌ Niedostępne';
+      btn.disabled = true;
+      console.error('Web Speech API nie jest dostępne');
+    }
+
+    // Cleanup przy opuszczeniu strony
+    window.addEventListener('beforeunload', function() {
+      if (synth.speaking) {
+        synth.cancel();
+      }
+    });
+
+    // Dla iOS - załaduj głosy
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = function() {
+        synth.getVoices();
+      };
+    }
+
+    // Funkcja otwarcia w Piszpadzie
+document.getElementById('downloadBtn').addEventListener('click', function() {
+  // Zbierz CZYSTY tekst - wszystko w jednej linii
+  const paragraphs = document.querySelectorAll('#textContent p');
+  let simpleText = '';
+  
+  paragraphs.forEach(p => {
+simpleText += p.textContent.trim() + '\n\n'; // ← NOWA
+  });
+
+  try {
+    localStorage.setItem('textToRead', simpleText.trim());
+    localStorage.setItem('autoReadText', 'true');
+    window.open('https://www.tetrycy.com.pl/piszpad.html', '_blank');
+  } catch (e) {
+    alert('❌ Błąd: ' + e.message);
+  }
+});
+  </script>
+
+</body>
+</html>
