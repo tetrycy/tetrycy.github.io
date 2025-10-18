@@ -34,6 +34,7 @@
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
             overflow: hidden;
+            position: relative;
         }
         
         .toolbar {
@@ -87,7 +88,7 @@
         }
         
         .filename {
-            margin-left: 1rem;
+            margin-left: auto;
             font-size: 0.875rem;
             color: #6b7280;
         }
@@ -327,7 +328,7 @@
         .options-menu {
             position: absolute;
             top: 100%;
-            right: 0;
+            left: 0;
             margin-top: 0.25rem;
             background: white;
             border: 1px solid #d1d5db;
@@ -364,44 +365,97 @@
             background: #f3f4f6;
         }
         
-        .word-count {
-            margin-left: auto;
+        .word-count-display {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
             font-size: 0.75rem;
             color: #6b7280;
-            padding: 0.25rem 0.75rem;
-            background: #f9fafb;
-            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border-radius: 0.375rem;
             border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .word-count-display.hidden {
+            display: none;
+        }
+        
+        .focus-word-count {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: #999;
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-word-count.hidden-counter {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-counter-hover-zone {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-counter-hover-zone:hover ~ .focus-word-count.hidden-counter {
+            opacity: 1;
+        }
+        
+        .focus-word-count.hidden-counter:hover {
+            opacity: 1;
+        }
+        
+        .focus-counter-hide-btn {
+            margin-top: 0.25rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-counter-hide-btn:hover {
+            color: #999;
         }
     </style>
 </head>
 <body>
     <div class="editor-container">
         <div class="toolbar">
-            <button class="btn" id="newBtn" title="Nowy (Ctrl+N)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                    <polyline points="14,2 14,8 20,8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10,9 9,9 8,9"/>
-                </svg>
-            </button>
+            <div class="options-menu-container">
+                <button class="btn" id="optionsBtn" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="options-menu" id="optionsMenu">
+                    <div class="options-menu-item" id="newBtn">Nowy</div>
+                    <div class="options-menu-item" id="openBtn">Otwórz</div>
+                    <div class="options-menu-item" id="saveBtn">Zapisz jako RTF</div>
+                    <div class="options-menu-item" id="exportTxtBtn">Export do TXT</div>
+                    <div class="options-menu-item" id="openAsTextBtn">Otwórz jako tekst</div>
+                    <div class="options-menu-item" id="exportPdfBtn">Export do PDF</div>
+                </div>
+            </div>
             
-            <button class="btn" id="openBtn" title="Otwórz (Ctrl+O)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14,2 14,8 20,8"/>
-                </svg>
-            </button>
-            
-            <button class="btn" id="saveBtn" title="Zapisz (Ctrl+S)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17,21 17,13 7,13 7,21"/>
-                    <polyline points="7,3 7,8 15,8"/>
-                </svg>
-            </button>
+            <div class="separator"></div>
             
             <button class="btn" id="undoBtn" title="Cofnij (Ctrl+Z)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -493,22 +547,12 @@
             
             <div class="separator"></div>
             
-            <div class="options-menu-container">
-                <button class="btn" id="optionsBtn" title="Opcje">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"/>
-                        <circle cx="12" cy="5" r="1"/>
-                        <circle cx="12" cy="19" r="1"/>
-                    </svg>
-                </button>
-                <div class="options-menu" id="optionsMenu">
-                    <div class="options-menu-item" id="exportTxtBtn">Export do TXT</div>
-                    <div class="options-menu-item" id="openAsTextBtn">Otwórz jako tekst</div>
-                    <div class="options-menu-item" id="exportPdfBtn">Export do PDF</div>
-                </div>
-            </div>
-            
-            <div class="word-count" id="wordCount">0 słów | 0 znaków</div>
+            <button class="btn" id="toggleCounterBtn" title="Pokaż/ukryj licznik">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                </svg>
+            </button>
             
             <div class="filename" id="fileName">dokument.rtf</div>
         </div>
@@ -527,6 +571,8 @@
             </div>
         </div>
         
+        <div class="word-count-display" id="wordCountDisplay">0 słów | 0 znaków</div>
+        
         <input type="file" class="hidden" id="fileInput" accept=".rtf">
         <input type="file" class="hidden" id="textFileInput" accept=".txt,.rtf">
     </div>
@@ -543,11 +589,18 @@
             </button>
             <button class="focus-hide-btn" id="focusHideBtn">ukryj</button>
         </div>
+        
+        <div class="focus-counter-hover-zone"></div>
+        <div class="focus-word-count" id="focusWordCount">
+            <div id="focusCounterText">0 słów | 0 znaków</div>
+            <div class="focus-counter-hide-btn" id="focusCounterHideBtn">ukryj</div>
+        </div>
+        
         <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
     </div>
 
     <script>
-        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden, selectedVoice, lastCursorPosition, openAsTextMode;
+        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden, selectedVoice, lastCursorPosition, openAsTextMode, wordCountVisible, focusCounterHidden;
         
         function init() {
             editor = document.getElementById('editor');
@@ -565,6 +618,8 @@
             selectedVoice = null;
             lastCursorPosition = 0;
             openAsTextMode = false;
+            wordCountVisible = true;
+            focusCounterHidden = false;
             
             // Załaduj głosy
             loadVoices();
@@ -584,6 +639,7 @@
             document.getElementById('searchBtn').onclick = toggleSearch;
             document.getElementById('readBtn').onclick = toggleReading;
             document.getElementById('focusBtn').onclick = toggleFocusMode;
+            document.getElementById('toggleCounterBtn').onclick = toggleWordCount;
             
             document.getElementById('fontSelect').onchange = function() { 
                 fontFamily = this.value; 
@@ -755,10 +811,12 @@
             historyIndex = -1;
             saveState();
             updateWordCount();
+            document.getElementById('optionsMenu').classList.remove('show');
         }
         
         function openDoc() {
             document.getElementById('fileInput').click();
+            document.getElementById('optionsMenu').classList.remove('show');
         }
         
         function saveDoc() {
@@ -771,6 +829,7 @@
             a.download = fileName;
             a.click();
             URL.revokeObjectURL(url);
+            document.getElementById('optionsMenu').classList.remove('show');
         }
         
         function loadFile(e) {
@@ -827,7 +886,27 @@
             var text = editor.innerText || editor.textContent || '';
             var words = text.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
             var chars = text.length;
-            document.getElementById('wordCount').textContent = words.length + ' słów | ' + chars + ' znaków';
+            var countText = words.length + ' słów | ' + chars + ' znaków';
+            
+            document.getElementById('wordCountDisplay').textContent = countText;
+            
+            if (isFocusMode) {
+                document.getElementById('focusCounterText').textContent = countText;
+            }
+        }
+        
+        function toggleWordCount() {
+            wordCountVisible = !wordCountVisible;
+            var display = document.getElementById('wordCountDisplay');
+            var btn = document.getElementById('toggleCounterBtn');
+            
+            if (wordCountVisible) {
+                display.classList.remove('hidden');
+                btn.classList.add('active');
+            } else {
+                display.classList.add('hidden');
+                btn.classList.remove('active');
+            }
         }
         
         function toggleOptionsMenu() {
@@ -999,7 +1078,6 @@
             };
             
             utterance.onerror = function(e) {
-                // Ignoruj błędy spowodowane przez cancel/pause
                 if (e.error === 'canceled' || e.error === 'interrupted') {
                     return;
                 }
@@ -1073,9 +1151,7 @@
             var i = 0;
             
             while (i < text.length) {
-                // Szukaj początku tagu formatowania
                 if (text[i] === '{' && text[i+1] === '\\') {
-                    // Sprawdź typ formatowania
                     var formatType = '';
                     if (text.substr(i, 3) === '{\\b' && text[i+3] !== '0') {
                         formatType = 'BOLD';
@@ -1086,10 +1162,8 @@
                     }
                     
                     if (formatType) {
-                        // Znajdź koniec tego bloku (licząc zagnieżdżone nawiasy)
                         var depth = 1;
                         var start = i + (formatType === 'UNDERLINE' ? 4 : 3);
-                        // Pomiń spacje po kodzie
                         while (start < text.length && text[start] === ' ') start++;
                         
                         var j = start;
@@ -1106,10 +1180,8 @@
                             j++;
                         }
                         
-                        // Rekurencyjnie parsuj zawartość
                         var parsedContent = parseRTFFormatting(content);
                         
-                        // Dodaj markery
                         if (formatType === 'BOLD') {
                             result += '|||BOLD_START|||' + parsedContent + '|||BOLD_END|||';
                         } else if (formatType === 'ITALIC') {
@@ -1118,7 +1190,7 @@
                             result += '|||UNDERLINE_START|||' + parsedContent + '|||UNDERLINE_END|||';
                         }
                         
-                        i = j + 1; // Pomiń zamykający }
+                        i = j + 1;
                         continue;
                     }
                 }
@@ -1167,7 +1239,6 @@
             text = text.replace(/^\{\\rtf[^{}]*/, '');
             text = text.replace(/\}$/, '');
             
-            // Parsuj formatowanie z obsługą zagnieżdżonych tagów
             text = parseRTFFormatting(text);
             
             text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
@@ -1250,7 +1321,6 @@
             var mainText = editor.innerText || editor.textContent || '';
             focusEditor.value = mainText;
             
-            // Reset pozycji kursora na początek
             lastCursorPosition = 0;
             
             var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
@@ -1264,21 +1334,24 @@
             var focusReadBtn = document.getElementById('focusReadBtn');
             var focusHideBtn = document.getElementById('focusHideBtn');
             var focusControls = document.getElementById('focusControls');
+            var focusCounter = document.getElementById('focusWordCount');
+            var focusCounterHideBtn = document.getElementById('focusCounterHideBtn');
             
-            // Upewnij się że kontrolki są widoczne na początku
             focusControls.classList.remove('hidden-controls');
             focusControlsHidden = false;
             
+            focusCounter.classList.remove('hidden-counter');
+            focusCounterHidden = false;
+            
+            updateWordCount();
+            
             focusReadBtn.onclick = function() {
                 if (isReading) {
-                    // Jeśli czyta → STOP
                     stopFocusReading();
                 } else {
-                    // Jeśli nie czyta → START od aktualnej pozycji kursora
                     focusEditor.focus();
                     
                     setTimeout(function() {
-                        // Odczytaj AKTUALNĄ pozycję kursora
                         lastCursorPosition = focusEditor.selectionStart || 0;
                         startFocusReading();
                     }, 10);
@@ -1288,6 +1361,11 @@
             focusHideBtn.onclick = function() {
                 focusControls.classList.add('hidden-controls');
                 focusControlsHidden = true;
+            };
+            
+            focusCounterHideBtn.onclick = function() {
+                focusCounter.classList.add('hidden-counter');
+                focusCounterHidden = true;
             };
             
             setTimeout(function() {
@@ -1327,7 +1405,6 @@
                 }
             };
             
-            // Zapisuj pozycję kursora przy kliknięciu i pisaniu
             focusEditor.addEventListener('mouseup', function() {
                 lastCursorPosition = focusEditor.selectionStart;
             });
@@ -1349,7 +1426,6 @@
             
             var focusEditor = document.getElementById('focusEditor');
             
-            // Użyj zapamiętanej pozycji kursora
             var cursorPos = lastCursorPosition || 0;
             var text = focusEditor.value.substring(cursorPos);
             
@@ -1379,7 +1455,6 @@
             };
             
             utterance.onerror = function(e) {
-                // Ignoruj błędy spowodowane przez cancel/pause
                 if (e.error === 'canceled' || e.error === 'interrupted') {
                     return;
                 }
@@ -1419,17 +1494,20 @@
             
             isFocusMode = false;
             
-            // Przywróć kontrolki tylko jeśli nie były ukryte
             var focusControls = document.getElementById('focusControls');
             if (!focusControlsHidden) {
                 focusControls.classList.remove('hidden-controls');
             }
-            // Reset stanu dla następnego wejścia
             focusControlsHidden = false;
+            
+            var focusCounter = document.getElementById('focusWordCount');
+            if (!focusCounterHidden) {
+                focusCounter.classList.remove('hidden-counter');
+            }
+            focusCounterHidden = false;
             
             document.body.classList.remove('focus-active');
             
-            // NAPRAWIONE: Usuń event listenery (Problem 1 - memory leak)
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
@@ -1520,7 +1598,6 @@
                     };
                     
                     utterance.onerror = function(e) {
-                        // Ignoruj błędy spowodowane przez cancel/pause
                         if (e.error === 'canceled' || e.error === 'interrupted') {
                             return;
                         }
