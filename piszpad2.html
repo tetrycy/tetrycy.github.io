@@ -472,7 +472,7 @@
     </div>
 
     <script>
-        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden;
+        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden, selectedVoice;
         
         function init() {
             editor = document.getElementById('editor');
@@ -487,6 +487,13 @@
             readingParagraphs = [];
             currentParagraphIndex = -1;
             focusControlsHidden = false;
+            selectedVoice = null;
+            
+            // Załaduj głosy
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
             
             saveState();
             
@@ -530,6 +537,32 @@
             editor.addEventListener('keyup', updateFormatButtons);
             
             updateStyle();
+        }
+        
+        function loadVoices() {
+            var voices = speechSynthesis.getVoices();
+            
+            if (voices.length === 0) return;
+            
+            // Najpierw szukaj Pauliny (Windows)
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
+                    selectedVoice = voices[i];
+                    console.log('Używam głosu:', voices[i].name);
+                    return;
+                }
+            }
+            
+            // Jeśli nie ma Pauliny, wybierz PIERWSZY polski głos
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.includes('pl')) {
+                    selectedVoice = voices[i];
+                    console.log('Używam głosu:', voices[i].name);
+                    return;
+                }
+            }
+            
+            console.log('Brak polskiego głosu, używam domyślnego');
         }
         
         function updateFormatButtons() {
@@ -782,12 +815,8 @@
             utterance.rate = speechRate;
             utterance.pitch = 1;
             
-            var voices = speechSynthesis.getVoices();
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
-                    utterance.voice = voices[i];
-                    break;
-                }
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
             }
             
             utterance.onend = function() {
@@ -797,9 +826,13 @@
                 }
             };
             
-            utterance.onerror = function() {
+            utterance.onerror = function(e) {
+                // Ignoruj błędy spowodowane przez cancel/pause
+                if (e.error === 'canceled' || e.error === 'interrupted') {
+                    return;
+                }
                 stopReading();
-                alert('Błąd podczas czytania.');
+                alert('Błąd podczas czytania: ' + e.error);
             };
             
             speechSynthesis.speak(utterance);
@@ -1132,12 +1165,8 @@
             utterance.rate = speechRate;
             utterance.pitch = 1;
             
-            var voices = speechSynthesis.getVoices();
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
-                    utterance.voice = voices[i];
-                    break;
-                }
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
             }
             
             var focusReadBtn = document.getElementById('focusReadBtn');
@@ -1152,7 +1181,11 @@
                 stopFocusReading();
             };
             
-            utterance.onerror = function() {
+            utterance.onerror = function(e) {
+                // Ignoruj błędy spowodowane przez cancel/pause
+                if (e.error === 'canceled' || e.error === 'interrupted') {
+                    return;
+                }
                 stopFocusReading();
             };
             
@@ -1271,14 +1304,8 @@
                     utterance.rate = speechRate;
                     utterance.pitch = 1;
                     
-                    var voices = speechSynthesis.getVoices();
-                    
-                    for (var i = 0; i < voices.length; i++) {
-                        if (voices[i].lang.includes('pl')) {
-                            utterance.voice = voices[i];
-                            console.log('Używam głosu:', voices[i].name);
-                            break;
-                        }
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
                     }
                     
                     var btn = document.getElementById('readBtn');
@@ -1294,6 +1321,10 @@
                     };
                     
                     utterance.onerror = function(e) {
+                        // Ignoruj błędy spowodowane przez cancel/pause
+                        if (e.error === 'canceled' || e.error === 'interrupted') {
+                            return;
+                        }
                         console.error('Błąd czytania:', e.error);
                         stopReading();
                     };
