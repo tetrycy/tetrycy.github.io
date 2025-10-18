@@ -460,7 +460,7 @@
     <div class="focus-mode" id="focusMode">
         <div class="focus-hover-zone"></div>
         <div class="focus-controls" id="focusControls">
-            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Pauza">
+            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Stop">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
@@ -1099,26 +1099,19 @@
             focusControlsHidden = false;
             
             focusReadBtn.onclick = function() {
-                // Najpierw przywróć focus na textarea i odczytaj pozycję kursora
-                focusEditor.focus();
-                
-                // Poczekaj moment aż focus wróci
-                setTimeout(function() {
-                    // Zapisz pozycję kursora TERAZ
-                    lastCursorPosition = focusEditor.selectionStart || 0;
+                if (isReading) {
+                    // Jeśli czyta → STOP
+                    stopFocusReading();
+                } else {
+                    // Jeśli nie czyta → START od aktualnej pozycji kursora
+                    focusEditor.focus();
                     
-                    // Sprawdź stan Speech API
-                    if (speechSynthesis.paused && isReading) {
-                        // Stan: zapauzowane → wznów
-                        resumeFocusReading();
-                    } else if (speechSynthesis.speaking && isReading) {
-                        // Stan: czyta → zapauzuj
-                        pauseFocusReading();
-                    } else {
-                        // Stan: nie czyta → rozpocznij
+                    setTimeout(function() {
+                        // Odczytaj AKTUALNĄ pozycję kursora
+                        lastCursorPosition = focusEditor.selectionStart || 0;
                         startFocusReading();
-                    }
-                }, 10);
+                    }, 10);
+                }
             };
             
             focusHideBtn.onclick = function() {
@@ -1161,6 +1154,15 @@
                 }
             };
             
+            // Zapisuj pozycję kursora przy kliknięciu i pisaniu
+            focusEditor.addEventListener('mouseup', function() {
+                lastCursorPosition = focusEditor.selectionStart;
+            });
+            
+            focusEditor.addEventListener('keyup', function() {
+                lastCursorPosition = focusEditor.selectionStart;
+            });
+            
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
@@ -1174,7 +1176,7 @@
             
             var focusEditor = document.getElementById('focusEditor');
             
-            // Użyj zapamiętanej pozycji kursora (bo kliknięcie przycisku resetuje selectionStart)
+            // Użyj zapamiętanej pozycji kursora
             var cursorPos = lastCursorPosition || 0;
             var text = focusEditor.value.substring(cursorPos);
             
@@ -1212,27 +1214,6 @@
             };
             
             speechSynthesis.speak(utterance);
-        }
-        
-        function pauseFocusReading() {
-            // Spróbuj użyć pause (może nie działać na wszystkich przeglądarkach)
-            if (speechSynthesis.speaking) {
-                speechSynthesis.pause();
-                
-                var focusReadBtn = document.getElementById('focusReadBtn');
-                focusReadBtn.classList.remove('active');
-                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-            }
-        }
-        
-        function resumeFocusReading() {
-            if (speechSynthesis.paused) {
-                speechSynthesis.resume();
-                
-                var focusReadBtn = document.getElementById('focusReadBtn');
-                focusReadBtn.classList.add('active');
-                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
-            }
         }
         
         function stopFocusReading() {
