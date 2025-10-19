@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edytor RTF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f3f4f6;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        
+        .editor-container {
+            min-height: 600px;
+            width: 100%;
+            max-width: 80rem;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .toolbar {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f9fafb;
+        }
+        
+        .btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn.active {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .separator {
+            width: 1px;
+            height: 1.5rem;
+            background: #d1d5db;
+            margin: 0 0.25rem;
+        }
+        
+        .select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            background: white;
+        }
+        
+        .filename {
+            margin-left: auto;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .search-panel {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            background: #fef3c7;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .search-panel.show {
+            display: flex;
+        }
+        
+        .search-input {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            flex: 1;
+            max-width: 20rem;
+        }
+        
+        .search-btn {
+            padding: 0.25rem 0.75rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .search-btn.primary:hover {
+            background: #2563eb;
+        }
+        
+        .search-btn.secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .search-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .editor-area {
+            flex: 1;
+            padding: 1.5rem;
+        }
+        
+        .editor {
+            min-height: 100%;
+            outline: none;
+            color: black;
+            line-height: 1.8;
+        }
+        
+        .editor p {
+            margin-bottom: 1em;
+        }
+        
+        .editor p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .reading-highlight {
+            background: rgba(255, 235, 59, 0.2);
+            transition: background 0.3s ease;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0;
+        }
+        
+        /* TRYB FOCUS */
+        .focus-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a1a;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+        
+        .focus-mode.active {
+            display: flex;
+        }
+        
+        .focus-mode.active ~ * {
+            display: none !important;
+        }
+        
+        body.focus-active {
+            overflow: hidden;
+        }
+        
+        body.focus-active > *:not(.focus-mode) {
+            display: none !important;
+        }
+        
+        .focus-editor {
+            width: 100%;
+            max-width: 50rem;
+            min-height: 60vh;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e5e5e5;
+            font-size: 18px;
+            line-height: 1.8;
+            padding: 2rem;
+            resize: none;
+            font-family: inherit;
+            overflow: hidden;
+        }
+        
+        .focus-editor::placeholder {
+            color: #666;
+        }
+        
+        .focus-mode::-webkit-scrollbar,
+        .focus-editor::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .focus-mode {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .focus-editor {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .focus-controls {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-controls.hidden-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-hover-zone {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-hover-zone:hover ~ .focus-controls.hidden-controls {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-controls.hidden-controls:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-read-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .focus-read-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .focus-read-btn.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .focus-read-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke: #e5e5e5;
+        }
+        
+        .focus-hide-btn {
+            width: 2.5rem;
+            height: 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 0.625rem;
+            transition: color 0.2s;
+            text-align: center;
+        }
+        
+        .focus-hide-btn:hover {
+            color: #999;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .options-menu-container {
+            position: relative;
+        }
+        
+        .options-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.25rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+            min-width: 12rem;
+            z-index: 1000;
+        }
+        
+        .options-menu.show {
+            display: block;
+        }
+        
+        .options-menu-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .options-menu-item:first-child {
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+        }
+        
+        .options-menu-item:last-child {
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+        }
+        
+        .options-menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .word-count-display {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .word-count-display.hidden {
+            display: none;
+        }
+        
+        .focus-word-count {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: #999;
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-word-count.hidden-counter {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-counter-hover-zone {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-counter-hover-zone:hover ~ .focus-word-count.hidden-counter {
+            opacity: 1;
+        }
+        
+        .focus-word-count.hidden-counter:hover {
+            opacity: 1;
+        }
+        
+        .focus-counter-hide-btn {
+            margin-top: 0.25rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-counter-hide-btn:hover {
+            color: #999;
+        }
+        
+        /* TIMER */
+        .timer-setup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+        }
+        
+        .timer-setup-modal.show {
+            display: flex;
+        }
+        
+        .timer-setup-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            min-width: 20rem;
+        }
+        
+        .timer-setup-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .timer-preset-btn {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .timer-preset-btn:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .timer-preset-btn.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        
+        .timer-custom {
+            margin-bottom: 1rem;
+        }
+        
+        .timer-custom-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timer-custom-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        
+        .timer-setup-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .timer-setup-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .timer-setup-btn.start {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .timer-setup-btn.start:hover {
+            background: #2563eb;
+        }
+        
+        .timer-setup-btn.cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .timer-setup-btn.cancel:hover {
+            background: #d1d5db;
+        }
+        
+        .timer-display {
+            position: fixed;
+            bottom: 4.5rem;
+            right: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            padding: 0.75rem 1rem;
+            background: white;
+            border-radius: 0.375rem;
+            border: 2px solid #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: none;
+        }
+        
+        .timer-display.active {
+            display: block;
+        }
+        
+        .timer-display.finished {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        
+        .timer-time {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .timer-control-btn {
+            padding: 0.25rem 0.75rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .timer-control-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .timer-message {
+            font-size: 0.75rem;
+            color: #059669;
+            font-style: italic;
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        /* Timer w trybie Focus */
+        .focus-timer {
+            position: fixed;
+            bottom: 4.5rem;
+            right: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e5e5e5;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-timer.active {
+            display: block;
+        }
+        
+        .focus-timer.hidden-timer {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-timer-hover-zone {
+            position: fixed;
+            bottom: 60px;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-timer-hover-zone:hover ~ .focus-timer.hidden-timer {
+            opacity: 1;
+        }
+        
+        .focus-timer.hidden-timer:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-timer.finished {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .focus-timer .timer-time {
+            color: #e5e5e5;
+        }
+        
+        .focus-timer .timer-control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #e5e5e5;
+        }
+        
+        .focus-timer .timer-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .focus-timer .timer-message {
+            color: #6ee7b7;
+        }
+        
+        .focus-timer-hide-btn {
+            margin-top: 0.5rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-timer-hide-btn:hover {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <div class="options-menu-container">
+                <button class="btn" id="optionsBtn" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="options-menu" id="optionsMenu">
+                    <div class="options-menu-item" id="newBtn">Nowy</div>
+                    <div class="options-menu-item" id="openBtn">Otwórz</div>
+                    <div class="options-menu-item" id="saveBtn">Zapisz jako RTF</div>
+                    <div class="options-menu-item" id="exportTxtBtn">Export do TXT</div>
+                    <div class="options-menu-item" id="openAsTextBtn">Otwórz jako tekst</div>
+                    <div class="options-menu-item" id="exportPdfBtn">Export do PDF</div>
+                </div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="undoBtn" title="Cofnij (Ctrl+Z)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 7v6h6"/>
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="boldBtn" title="Pogrubienie (Ctrl+B)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="italicBtn" title="Kursywa (Ctrl+I)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="4" x2="10" y2="4"/>
+                    <line x1="14" y1="20" x2="5" y2="20"/>
+                    <line x1="15" y1="4" x2="9" y2="20"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="underlineBtn" title="Podkreślenie (Ctrl+U)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+                    <line x1="4" y1="21" x2="20" y2="21"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="focusBtn" title="Tryb Focus (F11)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <select class="select" id="fontSelect" title="Czcionka">
+                <option value="Libre Baskerville" selected>Libre Baskerville</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+            
+            <select class="select" id="fontSizeSelect" title="Rozmiar" style="width: 4rem;">
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12" selected>12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+                <option value="28">28</option>
+                <option value="32">32</option>
+                <option value="36">36</option>
+            </select>
+            
+            <select class="select" id="speechRateSelect" title="Szybkość czytania" style="width: 4rem;">
+                <option value="0.75">0.75x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2.0">2.0x</option>
+            </select>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="readBtn" title="Czytaj od miejsca kursora (Ctrl+R)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="searchBtn" title="Wyszukaj (Ctrl+F)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="timerBtn" title="Timer pisania">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="toggleCounterBtn" title="Pokaż/ukryj licznik">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                </svg>
+            </button>
+            
+            <div class="filename" id="fileName">dokument.rtf</div>
+        </div>
+        
+        <div class="search-panel" id="searchPanel">
+            <input type="text" class="search-input" id="searchInput" placeholder="Wyszukaj...">
+            <button class="search-btn primary" id="findBtn">Znajdź</button>
+            <button class="search-btn secondary" id="closeSearchBtn">Zamknij</button>
+        </div>
+        
+        <div class="editor-area">
+            <div class="editor" id="editor" contenteditable="true">
+                <p>Windows 11 pozbawił mnie Wordpada, postanowiłem więc napisać swojego.</p>
+                 <p> Piszpad posiada tryb Focus, umiejętność czytania tekstu, a także dwie moje ulubione czcionki.</p>
+                 <p> Z czym Piszpad ma problemy, to z otwieraniem plików nienapisanych w nim. Na razie lepiej skopiować tekst i mu wkleić ręcznie.</p>
+            </div>
+        </div>
+        
+        <div class="word-count-display" id="wordCountDisplay">0 słów | 0 znaków</div>
+        
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-time" id="timerTime">25:00</div>
+            <div class="timer-controls">
+                <button class="timer-control-btn" id="timerPauseBtn">Pauza</button>
+                <button class="timer-control-btn" id="timerResetBtn">Reset</button>
+            </div>
+            <div class="timer-message" id="timerMessage"></div>
+        </div>
+        
+        <input type="file" class="hidden" id="fileInput" accept=".rtf">
+        <input type="file" class="hidden" id="textFileInput" accept=".txt,.rtf">
+    </div>
+
+    <!-- Modal ustawień timera -->
+    <div class="timer-setup-modal" id="timerSetupModal">
+        <div class="timer-setup-box">
+            <div class="timer-setup-title">Ustaw timer pisania</div>
+            <div class="timer-presets">
+                <button class="timer-preset-btn" data-minutes="5">5 min</button>
+                <button class="timer-preset-btn" data-minutes="10">10 min</button>
+                <button class="timer-preset-btn" data-minutes="15">15 min</button>
+                <button class="timer-preset-btn" data-minutes="25">25 min</button>
+                <button class="timer-preset-btn" data-minutes="30">30 min</button>
+                <button class="timer-preset-btn" data-minutes="45">45 min</button>
+                <button class="timer-preset-btn" data-minutes="60">60 min</button>
+                <button class="timer-preset-btn" data-minutes="90">90 min</button>
+                <button class="timer-preset-btn" data-minutes="120">120 min</button>
+            </div>
+            <div class="timer-custom">
+                <div class="timer-custom-label">Lub własny czas (minuty):</div>
+                <input type="number" class="timer-custom-input" id="timerCustomInput" min="1" max="999" placeholder="np. 45">
+            </div>
+            <div class="timer-setup-buttons">
+                <button class="timer-setup-btn cancel" id="timerCancelBtn">Anuluj</button>
+                <button class="timer-setup-btn start" id="timerStartBtn">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRYB FOCUS -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-hover-zone"></div>
+        <div class="focus-controls" id="focusControls">
+            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Stop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            <button class="focus-hide-btn" id="focusHideBtn">ukryj</button>
+        </div>
+        
+        <div class="focus-counter-hover-zone"></div>
+        <div class="focus-word-count" id="focusWordCount">
+            <div id="focusCounterText">0 słów | 0 znaków</div>
+            <div class="focus-counter-hide-btn" id="focusCounterHideBtn">ukryj</div>
+        </div>
+        
+        <div class="focus-timer-hover-zone"></div>
+        <div class="focus-timer" id="focusTimer">
+            <div class="timer-time" id="focusTimerTime">25:00</div>
+            <div class="timer-controls">
+                <button class="timer-control-btn" id="focusTimerPauseBtn">Pauza</button>
+                <button class="timer-control-btn" id="focusTimerResetBtn">Reset</button>
+            </div>
+            <div class="timer-message" id="focusTimerMessage"></div>
+            <div class="focus-timer-hide-btn" id="focusTimerHideBtn">ukryj</div>
+        </div>
+        
+        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
+    </div>
+
+    <script>
+        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden, selectedVoice, lastCursorPosition, openAsTextMode, wordCountVisible, focusCounterHidden;
+        var timerMinutes, timerSeconds, timerInterval, timerRunning, timerPaused, focusTimerHidden;
+        
+        // Gratulacje w stylu 100 pisarzy (90 światowych + 10 polskich)
+        var writerCongratulations = [
+            // 1-12: już istniejące
+            "Gratulacje. Sesja została zakończona. Choć sam akt pisania jest absurdalny w swojej istocie, zdołałeś wypełnić wyznaczony czas. Biurokratyczny aparat twojej woli zatwierdził ten dokument.", // Kafka
+            "Pisanie - ta najgorsza z ludzkich działalności - zostało przez ciebie kontynuowane. Gratuluję, choć sam fakt że musimy sobie gratulować pisania jest dowodem naszego upadku.", // Cioran
+            "Dobrze. Pisałeś. To było dobre. Czas minął.", // Hemingway
+            "I oto, w tej chwili, gdy ostatnie sekundy twojej sesji pisarskiej rozpłynęły się niczym wspomnienia z Combray, odnalazłem w tobie prawdziwego pisarza...", // Proust
+            "Ukończyłeś sesję. Syzyfowa skała pisania została zepchnięta. Jutro znów będziesz pchać. To wystarczy, by uznać cię za szczęśliwego.", // Camus
+            "Pisałeś. Skończyłeś. Nie możesz dalej. Będziesz dalej.", // Beckett
+            "Cóż za cierpienie! Cóż za radość! Ukończyłeś sesję, dręcząc się każdym słowem, każdą literą - i właśnie to czyni cię pisarzem!", // Dostojewski
+            "Sesja zakończona. Strumień świadomości zatrzymany. Tak, tak, tak napisałeś.", // Joyce
+            "Sesja zakończona. Labirynt słów został przejrzany. W tej bibliotece Babel każda minuta pisania tworzy nową księgę nieskończoności.", // Borges
+            "Gratulacje. Napisałeś swoje zdania i one są dobre. To wystarczy. Reszta to tylko milczenie między słowami.", // Bellow
+            // 11-20
+            "Ukończyłeś. W tę noc, gdy granice między snem a pisaniem się zacierają, stworzyłeś coś rzeczywistego. Rayuela twojego czasu została przejścia.", // Cortázar
+            "Zeit ist vergangen. Czas minął. Sesja zakończona z całą powagą, jakiej wymaga niemiecka dusza.", // Mann
+            "Napisałeś. Południe minęło. Zdania układały się jak strumień płynący przez hrabstwo Yoknapatawpha twojej wyobraźni.", // Faulkner
+            "Czas się skończył, lekko i dokładnie, jak konstrukcja niewidzialnego miasta, które właśnie zbudowałeś słowo po słowie.", // Calvino
+            "Cien años... Sto lat samotności pisania minęło w te kilkadziesiąt minut. Makondo twoich słów pozostaje.", // García Márquez
+            "Sesja zakończona. W studni wyobraźni znalazłeś swoje słowa. Kot Kafki może spać spokojnie.", // Murakami
+            "Has terminado. Skończyłeś. Czas to tylko mara, ale napisane słowa pozostają - niepewne, ulotne, lecz jednak istniejące.", // Marías
+            "Merde! Koniec! Pisałeś jak wszyscy ci durnie, ale przynajmniej pisałeś! To już coś, do cholery!", // Céline
+            "Eine Sitzung beendet eine Sitzung beendet eine Sitzung beendet. To wstrętne. To okropne. To upokarzające. Gratuluję.", // Bernhard
+            "Sesja zakończona z elegancją szachowego gambit. Każde słowo - ruch w grze przeciw czasowi. Nieźle zagrałeś.", // Nabokov
+            // 21-30
+            "Escreveste. Napisałeś. Heteronimy twojego ja spisały swoje fragmenty. Fernando, Álvaro, Ricardo - wszyscy gratulują.", // Pessoa
+            "Sesja zakończona. Chodziłeś po pokoju. Pisałeś. Znowu chodziłeś. To była dobra sesja spaceru-pisania.", // Walser
+            "Gratulacje. Nieznośna lekkość pisania została przez ciebie udźwignięta. Kundera zamykająca kurtynę uśmiecha się ironicznie.", // Kundera
+            "Sessione conclusa. Labirynt znaków został przejrzany. W bibliotece twoich myśli pojawiła się nowa półka.", // Eco
+            "Du hast geschrieben. Masa słów narosła. Metamorfoza czasu w tekst dokonała się. Die Blendung trwa.", // Canetti
+            "Sesja zakończona. Strumień świadomości spłynął na kartkę. Pani Dalloway twojego czasu powiedziałaby: Doskonale.", // Woolf
+            "Zeit ist vorbei. Przeszłość jest teraz tekstem. Sebald swojej pamięci spisałeś. Ringi Saturna zataczają się dalej.", // Sebald
+            "C'est fini. Pisanie jak mdłości. Słowa jak zepsute owoce. Ale sesja zakończona. L'amant twojego czasu odchodzi.", // Duras
+            "Sesja zakończona obiektywnie. Nowy romans nie potrzebuje gratulacji - tylko stwierdzenia faktu. Napisano.", // Sarraute
+            "Le temps est fini. Spojrzenie opisało rzeczy. Przedmioty zostały spisane. Zazdrosna została zrealizowana.", // Robbe-Grillet
+            // 31-40
+            "Gratulacje. Bęben twojego czasu przestał bić. Blaszany bęben sesji pisarskiej ucichł. Gdańsk twojej wyobraźni spoczywa.", // Grass
+            "Die Sitzung ist zu Ende. Sesja jak dom bez pana - zakończona, pusta, ale pełna znaczenia.", // Böll
+            "Schön. Steppenwolf twojego pisania przebył swoją wędrówkę. Czas gry w klasy dobiegł końca. Siddhartha spokojny.", // Hesse
+            "Zeit - diese unerträgliche Last - minęła. Człowiek bez właściwości napisał swoje właściwości. Sesja zakończona.", // Musil
+            "Herbstlich leuchtet die Zeit. Jesiennie świeci czas zakończonej sesji. Elegia słów została spisana.", // Rilke
+            "Zeit sprach. Meridian został przekroczony. Todesfuge czasu wybrzmiała. Korona twojego pisania spoczywa.", // Celan
+            "Gratulacje. Böhmen liegt am Meer. Czechy leżą nad morzem twojej wyobraźni. Sesja - jak Malina - zakończona.", // Bachmann
+            "Schreibzeit ist vorbei. Czas pisania minął w powtórzeniu i powolności. Publikum odprawiać nie można - publiczności nie ma.", // Handke
+            "Ende. Koniec jak fortepian nauczycielka. Pasja pisania została wyczerpana. Pornografia słów zakończona.", // Jelinek
+            "Sesja zakończona sucho i precyzyjnie, jak konstrukcja szwajcarskiego zegara. Stiller może odetchnąć.", // Frisch
+            // 41-50
+            "Gratulacje. Sesja zakończona. Fizycy twojego pisania odkryli swoją prawdę. Wizyta starej damy minęła.", // Dürrenmatt
+            "Skrevet ferdig. Głód pisania został zaspokojony. Pan z Misteli twojej sesji może spocząć. Gratulerer.", // Hamsun
+            "Kristin, Lavrans, datter - córka czasu napisała swój rozdział. Kransen sesji został spleciony. Gratulerer.", // Undset
+            "Lokað. Zamknięte. Islandska saga twojej sesji dobiegła końca. Niezależni ludzie są wolni. Gratulerer.", // Laxness
+            "Avslutad. Zakończone. Haiku twojego czasu zapisane. Cisza między wierszami przemawia głośniej. Tack.", // Tranströmer
+            "Färdigt. Panna Julia twojego pisania tańczy ostatni taniec. Sesja zamknięta jak szwedzka noc letnia. Bra jobbat.", // Strindberg
+            "Fullført. Nora zamknęła drzwi. Dom lalki sesji pusty, ale pełen. To był dobry akt pisania. Gratulerer.", // Ibsen
+            "Klart. Spalony dziecko twojego czasu urósł. Niemiecka jesień minęła. Sesja zakończona cicho, po szwedzku.", // Dagerman
+            "Terminado. Ślepota pisania stała się widzeniem. Kamienni tratwy słów dopłynęli do brzegu. Parabéns.", // Saramago
+            "Concluído. Fatima albo brama bez klucza - sesja otwarta została zamknięta. Requiem dla pamięci odśpiewane. Parabéns.", // Lobo Antunes
+            // 51-60
+            "Terminado. Strumień życia spłynął. Godzina gwiazdy twojej sesji wybiła. Paixão segundo G.H. zakończona. Parabéns.", // Lispector
+            "Concluído. Grande Sertão twojego pisania przebyte. Diadorim czasu ujawniony. Sesja jak Veredas - zakończona. Parabéns.", // Guimarães Rosa
+            "Terminado. Brás Cubas twojej sesji spisał swoje pośmiertne wspomnienia. Quincas Borba czasu może spocząć. Parabéns.", // Machado de Assis
+            "Terminado. Labirynt samotności przebadany. El arco y la lira sesji napisane. Gratuluję z meksykańską godnością.", // Paz
+            "Terminado. Terra nostra twojego czasu została odkryta. Śmierć Artemio Cruz odroczona. Aura sesji przemija. Felicidades.", // Fuentes
+            "Terminado. Cywilizacja i barbarzyństwo pisania spotkały się. Królestwo tego świata zostało zapisane. Excelente.", // Carpentio
+            "Terminado. Pedro Páramo twojej sesji szuka spokoju. Równina w płomieniach ucichła. Comala może spać. Felicidades.", // Rulfo
+            "Terminado. Dzikie detektywi odnaleźli swój koniec. 2666 minut sesji minęło. Amulet czasu został odczytany. Bien hecho.", // Bolaño
+            "Terminado. Sesja zakończona przypadkiem. Kongresy literatury odbyte. Argentyńska lekkość pisania triumfuje. Excelente.", // Aira
+            "Terminado. Vinas i Borges gratulują. Sesja jak wynalazek Morela - zakończona, ale pozostająca. Perfecto.", // Bioy Casares
+            // 61-70
+            "Zikh gemakht a sof. Sesja zakończona jak opowieść Bashevis Singera - prosto, z ciepłem Lublin, z mądrością czasu. Mazel tov.", // Singer
+            "Session complete. Newark twojego pisania ma swój Kontrażywot. Skazę ludzką spisałeś. Amerika, ameryka twojego czasu. Well done.", // Roth
+            "Done. Królik spoczywa. Czteroczęściowa sesja zakończona. Witraże małżeńskie domknięte. Kentaur czasu przebiegł swoją ścieżkę. Good job.", // Updike
+            "Finished. Biały szum ucichł. Underworld sesji zapisany. Libra czasu wyważona. Spadający człowiek wylądował. Well done.", // DeLillo
+            "Session terminated. Tęcza grawitacji opisana. V. odnalezione. Entropijny koniec sesji. Mason i Dixon mogą spać. Acceptable.", // Pynchon
+            "Done. Droga twojej sesji przebyta. Krew południka wyschnięta. Cormac McCarthy gratuluje - rzadko, szorstko, ale szczerze. Good.", // McCarthy
+            "Session complete. Rozpoznania wykonane. J R Corp. zanotowało sukces. Gotyczne złudzenia rozwiązane. Agapē Agape. Well done.", // Gaddis
+            "Finished. Nieskończony żart się zakończył. Blady król sesji oddał koronę. Miotła systemu zamiatała. Good job and consider it.", // Wallace
+            "Done, honey. Dobry człowiek jest trudny do znalezienia, ale ty znalazłeś dobre słowa. Wszystko co się wznosi, musi zbiec. Well done.", // O'Connor
+            "Finished, darlin'. Serce jest samotnym myśliwym, ale sesja była towarzyszem. Ballada o smutnej kawiarni dobiegła końca. Fine work.", // McCullers
+            // 71-80
+            "Curtain. Tramwaj zwany pożądaniem odjechał. Szklana menażeria została zamknięta. Sesja zakończona gorąco, po południowemu. Bravo.", // Williams
+            "Final curtain. Długa podróż do nocy dobiegła końca. Księżyc dla pokrzywdzonych świecił. Ale dom zakończył swoją sztukę. Well done.", // O'Neill
+            "Act complete. Śmierć komiwojażera zakończona. Próba ogniowa przebyta. Wszystko moje synowie. Gratuluję z brooklyńską powagą. Good job.", // Miller
+            "Fini. Sartre twojej egzystencji napisał swoją Mdłość. Bycie i nicość sesji spotkały się. Ściany zamknęły się. Bien joué.", // Sartre
+            "C'est fini. Drugi płci twojego pisania odnalazł swój głos. Mandarynka sesji dojrzała. Krew innych rozlana. Très bien.", // Beauvoir
+            "Terminé. Watykańskie lochy spisane. Wąskie wrota zamknięte. Ziemskie pożywienie sesji spożyte. Les faux-monnayeurs. Bien.", // Gide
+            "Fini. Los człowieczy spisany. Nadzieja sesji odżywa. Walkers zmęczyli się. Metamorfoza bogów zakończona. Très bien.", // Malraux
+            "Terminé. Urok poezji zadziałał. Wariacje na temat sesji zakończone. Młody Parka może spać spokojnie. Bon travail.", // Valéry
+            "C'est fini. Teatr okrucieństwa zakończony. Sesja jak Van Gogh le suicidé. Heliogabal twojego czasu panował krótko, ale intensywnie. Bien.", // Artaud
+            "Terminé. Doświadczenie wewnętrzne spisane. Erotyzm sesji wyczerpany. Część przeklęta zakończona. Ciemny Eros spoczywa. Félicitations.", // Bataille
+            // 81-90
+            "Конец. Wojna i pokój pisania dobiegły końca. Anna Karenina czasu zakończyła swoją podróż. Воскресение sesji nastąpiło. Отлично.", // Tołstoj
+            "Готово. Wiśniowy sad sesji ucichł. Trzy siostry czasu mogą spocząć. Чайка twojego pisania odleciała. Прекрасно.", // Czechow
+            "Конец. Mistrz i Małgorzata zakończyli bal. Gwardio diabeł odpoczywać może. Białe widmo sesji przemija. Отлично работа.", // Bułhakow
+            "Готово. Martwe dusze twojego czasu znalazły spokój. Płaszcz sesji można zdjąć. Nos pisania przestał węszyć. Хорошая работа.", // Gogol
+            "Конец. Ojcowie i dzieci pogodzili się. Записки охотника zakończone. Дворянское гнездо sesji spoczywa. Прекрасно.", // Turgieniew
+            "Готово. Котлован został wykopany. Dżan może spocząć. Чевенгур sesji zbudowany. Czewengur twojego czasu istnieje. Отлично.", // Płatonow
+            "Finished. Less than one - but you wrote more than one word. Watermark pozostawiony. Elegy czasu wybrzmiała. Very well done.", // Brodsky
+            "Конец. Реквием został odśpiewany. Anno Domini czasu zapisane. Не с теми я кто died - ale sesja żywa pozostaje. Прекрасно.", // Achmatowa
+            "Готово. Вечер twojego pisania minął. Wiersze do Bloka zapisane. Крысолов czasu zagrał swoją melodię. Gratulacje.", // Cwietajewa
+            "Конец. Мастер i Маргарита вашего времени закончили свой бал. Собачье сердце спокойно. Сеанс zakończony.", // Duplikat Bułhakow - zamienię
+            // 91-100: Polscy pisarze
+            "Brawo. Napisałeś. W wielkim teatrze świata zagrałeś swoją scenę - małą, nieistotną, lecz swoją. Kurtyna opada.", // Gombrowicz
+            "Gratulacje. Czas minął jak sen o kolorze cynamonu. Twoje słowa, jak ptaki Schulza, odleciały już w nieznane.", // Schulz
+            "Pisanie zakończone. W mechanizmie wszechświata zapisałeś kolejną informację. Entropia literacka wzrosła o kilka bitów.", // Lem
+            "Sesja ukończona. Słowa, jak kamienie - ciężkie, konieczne, niewzruszone. Położyłeś je jedno po drugim. Dobrze.", // Herbert
+            "Pisałeś jak gdyby czas stał w miejscu. Traktaty o łuskaniu fasoli dobiegły końca. Kamień na kamieniu twojej sesji. Dobra robota.", // Myśliwski
+            "Sesja zakończona. Świat był w niewoli, ale ty pisałeś. Traktat poetycki spisany. Ocalony z Ulro spoczywa. Gratulacje.", // Miłosz
+            "Koniec zabawy. Kot w pustym mieszkaniu obserwuje. Koniec i początek sesji - jak zawsze. Dlatego żyjemy. To wystarczy.", // Szymborska
+            "Sesja zakończona. Spadanie do góry przerwane. Kartoteka zamknięta. Tango egzystencji wytańczone. Spokój ciemności. Dobrze.", // Różewicz
+            "Gratulacje. Tango twojego pisania zakończone. Emigranci wrócili do domu. Na pełnym morzu sesji zarzucono kotwicę. Brawo.", // Mrożek
+            "Czas minął. Księgi Jakubowe zamknięte. Bieguni zatrzymali się. Prowadź swój pług przez kości umarłych - sesja zakończona. Gratuluję." // Tokarczuk
+        ];
+        
+        function init() {
+            editor = document.getElementById('editor');
+            fileName = 'dokument.rtf';
+            isReading = false;
+            fontFamily = 'Libre Baskerville';
+            fontSize = 12;
+            speechRate = 1.0;
+            isFocusMode = false;
+            undoHistory = [];
+            historyIndex = -1;
+            readingParagraphs = [];
+            currentParagraphIndex = -1;
+            focusControlsHidden = false;
+            selectedVoice = null;
+            lastCursorPosition = 0;
+            openAsTextMode = false;
+            wordCountVisible = true;
+            focusCounterHidden = false;
+            timerMinutes = 0;
+            timerSeconds = 0;
+            timerInterval = null;
+            timerRunning = false;
+            timerPaused = false;
+            focusTimerHidden = false;
+            
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            
+            saveState();
+            
+            document.getElementById('newBtn').onclick = newDoc;
+            document.getElementById('openBtn').onclick = openDoc;
+            document.getElementById('saveBtn').onclick = saveDoc;
+            document.getElementById('undoBtn').onclick = undo;
+            document.getElementById('boldBtn').onclick = function() { formatText('bold'); };
+            document.getElementById('italicBtn').onclick = function() { formatText('italic'); };
+            document.getElementById('underlineBtn').onclick = function() { formatText('underline'); };
+            document.getElementById('searchBtn').onclick = toggleSearch;
+            document.getElementById('readBtn').onclick = toggleReading;
+            document.getElementById('focusBtn').onclick = toggleFocusMode;
+            document.getElementById('toggleCounterBtn').onclick = toggleWordCount;
+            document.getElementById('timerBtn').onclick = openTimerSetup;
+            
+            document.getElementById('fontSelect').onchange = function() { 
+                fontFamily = this.value; 
+                updateStyle();
+            };
+            document.getElementById('fontSizeSelect').onchange = function() { 
+                fontSize = parseInt(this.value); 
+                updateStyle();
+            };
+            document.getElementById('speechRateSelect').onchange = function() { 
+                speechRate = parseFloat(this.value); 
+            };
+            
+            document.getElementById('findBtn').onclick = doSearch;
+            document.getElementById('closeSearchBtn').onclick = toggleSearch;
+            document.getElementById('searchInput').onkeydown = function(e) {
+                if (e.key === 'Enter') doSearch();
+            };
+            
+            document.getElementById('fileInput').onchange = loadFile;
+            document.getElementById('textFileInput').onchange = loadFileAsText;
+            document.getElementById('optionsBtn').onclick = toggleOptionsMenu;
+            document.getElementById('exportTxtBtn').onclick = exportToTxt;
+            document.getElementById('openAsTextBtn').onclick = openAsText;
+            document.getElementById('exportPdfBtn').onclick = exportToPdf;
+            
+            // Timer setup
+            var presetBtns = document.querySelectorAll('.timer-preset-btn');
+            for (var i = 0; i < presetBtns.length; i++) {
+                presetBtns[i].onclick = function() {
+                    var allBtns = document.querySelectorAll('.timer-preset-btn');
+                    for (var j = 0; j < allBtns.length; j++) {
+                        allBtns[j].classList.remove('selected');
+                    }
+                    this.classList.add('selected');
+                    document.getElementById('timerCustomInput').value = '';
+                };
+            }
+            
+            document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
+            document.getElementById('timerStartBtn').onclick = startTimer;
+            document.getElementById('timerPauseBtn').onclick = toggleTimerPause;
+            document.getElementById('timerResetBtn').onclick = resetTimer;
+            document.getElementById('focusTimerPauseBtn').onclick = toggleTimerPause;
+            document.getElementById('focusTimerResetBtn').onclick = resetTimer;
+            document.getElementById('focusTimerHideBtn').onclick = function() {
+                document.getElementById('focusTimer').classList.add('hidden-timer');
+                focusTimerHidden = true;
+            };
+            
+            document.onkeydown = keyHandler;
+            
+            editor.addEventListener('input', function() {
+                saveState();
+                updateWordCount();
+            });
+            
+            editor.addEventListener('mouseup', updateFormatButtons);
+            editor.addEventListener('keyup', updateFormatButtons);
+            
+            updateStyle();
+            updateWordCount();
+            
+            document.addEventListener('click', function(e) {
+                var optionsMenu = document.getElementById('optionsMenu');
+                var optionsBtn = document.getElementById('optionsBtn');
+                var timerSetupModal = document.getElementById('timerSetupModal');
+                
+                if (!optionsMenu.contains(e.target) && !optionsBtn.contains(e.target)) {
+                    optionsMenu.classList.remove('show');
+                }
+                
+                if (e.target === timerSetupModal) {
+                    closeTimerSetup();
+                }
+            });
+        }
+        
+        function loadVoices() {
+            var voices = speechSynthesis.getVoices();
+            if (voices.length === 0) return;
+            
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
+                    selectedVoice = voices[i];
+                    console.log('Używam głosu:', voices[i].name);
+                    return;
+                }
+            }
+            
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.includes('pl')) {
+                    selectedVoice = voices[i];
+                    console.log('Używam głosu:', voices[i].name);
+                    return;
+                }
+            }
+            
+            console.log('Brak polskiego głosu, używam domyślnego');
+        }
+        
+        function updateFormatButtons() {
+            var commands = ['bold', 'italic', 'underline'];
+            for (var i = 0; i < commands.length; i++) {
+                var cmd = commands[i];
+                var btn = document.getElementById(cmd + 'Btn');
+                if (btn) {
+                    if (document.queryCommandState(cmd)) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                }
+            }
+        }
+        
+        function saveState() {
+            var currentState = editor.innerHTML;
+            
+            if (undoHistory.length === 0 || undoHistory[historyIndex] !== currentState) {
+                undoHistory = undoHistory.slice(0, historyIndex + 1);
+                undoHistory.push(currentState);
+                historyIndex = undoHistory.length - 1;
+                
+                if (undoHistory.length > 50) {
+                    undoHistory = undoHistory.slice(-50);
+                    historyIndex = undoHistory.length - 1;
+                }
+            }
+        }
+        
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                editor.innerHTML = undoHistory[historyIndex];
+                editor.focus();
+                
+                var range = document.createRange();
+                var sel = window.getSelection();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+        
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            editor.focus();
+            
+            var btnId = command + 'Btn';
+            var btn = document.getElementById(btnId);
+            if (btn) {
+                var isFormatted = document.queryCommandState(command);
+                if (isFormatted) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            }
+            
+            saveState();
+        }
+        
+        function keyHandler(e) {
+            if (e.ctrlKey) {
+                if (e.key === 'n') { e.preventDefault(); newDoc(); }
+                if (e.key === 's') { e.preventDefault(); saveDoc(); }
+                if (e.key === 'o') { e.preventDefault(); openDoc(); }
+                if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
+                if (e.key === 'r') { e.preventDefault(); toggleReading(); }
+                if (e.key === 'z') { e.preventDefault(); undo(); }
+                if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
+                if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
+                if (e.key === 'u') { e.preventDefault(); formatText('underline'); }
+            }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                toggleFocusMode();
+            }
+            if (e.key === 'Escape') {
+                if (isFocusMode) {
+                    exitFocusMode();
+                } else {
+                    closeSearch();
+                    if (isReading) stopReading();
+                }
+            }
+        }
+        
+        function newDoc() {
+            editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
+            fileName = 'dokument.rtf';
+            document.getElementById('fileName').textContent = fileName;
+            
+            undoHistory = [];
+            historyIndex = -1;
+            saveState();
+            updateWordCount();
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function openDoc() {
+            document.getElementById('fileInput').click();
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function saveDoc() {
+            var html = editor.innerHTML;
+            var rtf = toRTF(html);
+            var blob = new Blob([rtf], { type: 'application/rtf' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function loadFile(e) {
+            var file = e.target.files[0];
+            if (file) {
+                fileName = file.name;
+                document.getElementById('fileName').textContent = fileName;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var rtf = e.target.result;
+                    var html = fromRTF(rtf);
+                    editor.innerHTML = html;
+                    
+                    undoHistory = [];
+                    historyIndex = -1;
+                    saveState();
+                    updateWordCount();
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function toggleSearch() {
+            var panel = document.getElementById('searchPanel');
+            var btn = document.getElementById('searchBtn');
+            if (panel.classList.contains('show')) {
+                closeSearch();
+            } else {
+                panel.classList.add('show');
+                btn.classList.add('active');
+                document.getElementById('searchInput').focus();
+            }
+        }
+        
+        function closeSearch() {
+            document.getElementById('searchPanel').classList.remove('show');
+            document.getElementById('searchBtn').classList.remove('active');
+        }
+        
+        function doSearch() {
+            var term = document.getElementById('searchInput').value;
+            if (term && window.find) {
+                window.find(term, false, false, true);
+            }
+        }
+        
+        function updateStyle() {
+            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            editor.style.fontFamily = family;
+            editor.style.fontSize = fontSize + 'pt';
+        }
+        
+        function updateWordCount() {
+            var text = editor.innerText || editor.textContent || '';
+            var words = text.trim().split(/\s+/).filter(function(w) { return w.length > 0; });
+            var chars = text.length;
+            var countText = words.length + ' słów | ' + chars + ' znaków';
+            
+            document.getElementById('wordCountDisplay').textContent = countText;
+            
+            if (isFocusMode) {
+                document.getElementById('focusCounterText').textContent = countText;
+            }
+        }
+        
+        function toggleWordCount() {
+            wordCountVisible = !wordCountVisible;
+            var display = document.getElementById('wordCountDisplay');
+            var btn = document.getElementById('toggleCounterBtn');
+            
+            if (wordCountVisible) {
+                display.classList.remove('hidden');
+                btn.classList.add('active');
+            } else {
+                display.classList.add('hidden');
+                btn.classList.remove('active');
+            }
+        }
+        
+        function toggleOptionsMenu() {
+            var menu = document.getElementById('optionsMenu');
+            menu.classList.toggle('show');
+        }
+        
+        function exportToTxt() {
+            var text = editor.innerText || editor.textContent || '';
+            var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName.replace(/\.rtf$/, '.txt');
+            a.click();
+            URL.revokeObjectURL(url);
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function openAsText() {
+            openAsTextMode = true;
+            document.getElementById('textFileInput').click();
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function loadFileAsText(e) {
+            var file = e.target.files[0];
+            if (file) {
+                fileName = file.name;
+                document.getElementById('fileName').textContent = fileName;
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var text = e.target.result;
+                    var htmlContent = '<p>' + text.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                    editor.innerHTML = htmlContent;
+                    
+                    undoHistory = [];
+                    historyIndex = -1;
+                    saveState();
+                    updateWordCount();
+                };
+                reader.readAsText(file);
+            }
+            openAsTextMode = false;
+        }
+        
+        function exportToPdf() {
+            var jsPDF = window.jspdf.jsPDF;
+            var doc = new jsPDF();
+            
+            var text = editor.innerText || editor.textContent || '';
+            
+            var pageHeight = doc.internal.pageSize.height;
+            var lineHeight = 7;
+            var margin = 20;
+            var maxWidth = 170;
+            var yPosition = margin;
+            
+            var lines = doc.splitTextToSize(text, maxWidth);
+            
+            for (var i = 0; i < lines.length; i++) {
+                if (yPosition + lineHeight > pageHeight - margin) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                doc.text(lines[i], margin, yPosition);
+                yPosition += lineHeight;
+            }
+            
+            doc.save(fileName.replace(/\.rtf$/, '.pdf'));
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        // TIMER FUNCTIONS
+        function openTimerSetup() {
+            document.getElementById('timerSetupModal').classList.add('show');
+        }
+        
+        function closeTimerSetup() {
+            document.getElementById('timerSetupModal').classList.remove('show');
+            var allBtns = document.querySelectorAll('.timer-preset-btn');
+            for (var i = 0; i < allBtns.length; i++) {
+                allBtns[i].classList.remove('selected');
+            }
+            document.getElementById('timerCustomInput').value = '';
+        }
+        
+        function startTimer() {
+            var selectedBtn = document.querySelector('.timer-preset-btn.selected');
+            var customInput = document.getElementById('timerCustomInput');
+            var minutes = 0;
+            
+            if (customInput.value) {
+                minutes = parseInt(customInput.value);
+            } else if (selectedBtn) {
+                minutes = parseInt(selectedBtn.getAttribute('data-minutes'));
+            } else {
+                alert('Wybierz czas lub wpisz własny');
+                return;
+            }
+            
+            if (minutes < 1) {
+                alert('Czas musi być większy niż 0');
+                return;
+            }
+            
+            timerMinutes = minutes;
+            timerSeconds = 0;
+            timerRunning = true;
+            timerPaused = false;
+            
+            updateTimerDisplay();
+            
+            var normalDisplay = document.getElementById('timerDisplay');
+            var focusDisplay = document.getElementById('focusTimer');
+            
+            normalDisplay.classList.add('active');
+            normalDisplay.classList.remove('finished');
+            document.getElementById('timerMessage').textContent = '';
+            
+            if (isFocusMode) {
+                focusDisplay.classList.add('active');
+                focusDisplay.classList.remove('finished');
+                focusDisplay.classList.remove('hidden-timer');
+                focusTimerHidden = false;
+                document.getElementById('focusTimerMessage').textContent = '';
+            }
+            
+            document.getElementById('timerPauseBtn').textContent = 'Pauza';
+            document.getElementById('focusTimerPauseBtn').textContent = 'Pauza';
+            
+            closeTimerSetup();
+            
+            timerInterval = setInterval(function() {
+                if (!timerPaused) {
+                    if (timerSeconds === 0) {
+                        if (timerMinutes === 0) {
+                            finishTimer();
+                            return;
+                        }
+                        timerMinutes--;
+                        timerSeconds = 59;
+                    } else {
+                        timerSeconds--;
+                    }
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            var timeStr = timerMinutes + ':' + (timerSeconds < 10 ? '0' : '') + timerSeconds;
+            document.getElementById('timerTime').textContent = timeStr;
+            document.getElementById('focusTimerTime').textContent = timeStr;
+        }
+        
+        function toggleTimerPause() {
+            if (!timerRunning) return;
+            
+            timerPaused = !timerPaused;
+            var btnText = timerPaused ? 'Wznów' : 'Pauza';
+            document.getElementById('timerPauseBtn').textContent = btnText;
+            document.getElementById('focusTimerPauseBtn').textContent = btnText;
+        }
+        
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            timerRunning = false;
+            timerPaused = false;
+            timerMinutes = 0;
+            timerSeconds = 0;
+            
+            document.getElementById('timerDisplay').classList.remove('active');
+            document.getElementById('timerDisplay').classList.remove('finished');
+            document.getElementById('focusTimer').classList.remove('active');
+            document.getElementById('focusTimer').classList.remove('finished');
+            document.getElementById('timerMessage').textContent = '';
+            document.getElementById('focusTimerMessage').textContent = '';
+        }
+        
+        function finishTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            timerRunning = false;
+            
+            var randomIndex = Math.floor(Math.random() * writerCongratulations.length);
+            var congratulation = writerCongratulations[randomIndex];
+            
+            document.getElementById('timerDisplay').classList.add('finished');
+            document.getElementById('timerMessage').textContent = congratulation;
+            
+            if (isFocusMode) {
+                document.getElementById('focusTimer').classList.add('finished');
+                document.getElementById('focusTimerMessage').textContent = congratulation;
+            }
+        }
+        
+        function getCursor() {
+            var sel = window.getSelection();
+            if (sel.rangeCount === 0) return 0;
+            var range = sel.getRangeAt(0);
+            var pre = range.cloneRange();
+            pre.selectNodeContents(editor);
+            pre.setEnd(range.startContainer, range.startOffset);
+            return pre.toString().length;
+        }
+        
+        function toggleReading() {
+            if (isReading) {
+                stopReading();
+            } else {
+                startReading();
+            }
+        }
+        
+        function startReading() {
+            if (!speechSynthesis) {
+                alert('Brak obsługi czytania.');
+                return;
+            }
+            
+            var allParagraphs = editor.querySelectorAll('p');
+            var cursorPos = getCursor();
+            
+            var textSoFar = 0;
+            var startParagraphIndex = 0;
+            
+            for (var i = 0; i < allParagraphs.length; i++) {
+                var paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
+                if (textSoFar + paraText.length >= cursorPos) {
+                    startParagraphIndex = i;
+                    break;
+                }
+                textSoFar += paraText.length;
+            }
+            
+            readingParagraphs = [];
+            for (var j = startParagraphIndex; j < allParagraphs.length; j++) {
+                var text = allParagraphs[j].innerText || allParagraphs[j].textContent || '';
+                if (text.trim()) {
+                    readingParagraphs.push({
+                        element: allParagraphs[j],
+                        text: text.trim()
+                    });
+                }
+            }
+            
+            if (readingParagraphs.length === 0) {
+                alert('Brak tekstu do czytania od pozycji kursora.');
+                return;
+            }
+            
+            currentParagraphIndex = 0;
+            isReading = true;
+            
+            var btn = document.getElementById('readBtn');
+            btn.classList.add('active');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+            
+            readNextParagraph();
+        }
+        
+        function readNextParagraph() {
+            if (!isReading || currentParagraphIndex >= readingParagraphs.length) {
+                stopReading();
+                return;
+            }
+            
+            var currentPara = readingParagraphs[currentParagraphIndex];
+            
+            var highlighted = editor.querySelectorAll('.reading-highlight');
+            for (var i = 0; i < highlighted.length; i++) {
+                highlighted[i].classList.remove('reading-highlight');
+            }
+            
+            currentPara.element.classList.add('reading-highlight');
+            currentPara.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            var utterance = new SpeechSynthesisUtterance(currentPara.text);
+            utterance.lang = 'pl-PL';
+            utterance.rate = speechRate;
+            utterance.pitch = 1;
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            
+            utterance.onend = function() {
+                if (isReading) {
+                    currentParagraphIndex++;
+                    readNextParagraph();
+                }
+            };
+            
+            utterance.onerror = function(e) {
+                if (e.error === 'canceled' || e.error === 'interrupted') {
+                    return;
+                }
+                stopReading();
+                alert('Błąd podczas czytania: ' + e.error);
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        function stopReading() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            isReading = false;
+            
+            var highlighted = editor.querySelectorAll('.reading-highlight');
+            for (var i = 0; i < highlighted.length; i++) {
+                highlighted[i].classList.remove('reading-highlight');
+            }
+            
+            readingParagraphs = [];
+            currentParagraphIndex = -1;
+            
+            var btn = document.getElementById('readBtn');
+            btn.classList.remove('active');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+        }
+        
+        function toRTF(html) {
+            var font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
+            var rtf = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
+            
+            var cleanText = html
+                .replace(/<br\s*\/?>/gi, '\\line ')
+                .replace(/<\/p>/gi, '\\par ')
+                .replace(/<p[^>]*>/gi, '')
+                .replace(/<b[^>]*>(.*?)<\/b>/gi, '{\\b $1}')
+                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '{\\b $1}')
+                .replace(/<i[^>]*>(.*?)<\/i>/gi, '{\\i $1}')
+                .replace(/<em[^>]*>(.*?)<\/em>/gi, '{\\i $1}')
+                .replace(/<u[^>]*>(.*?)<\/u>/gi, '{\\ul $1}')
+                .replace(/<[^>]+>/g, '');
+            
+            cleanText = cleanText
+                .replace(/ą/g, "\\'b1")
+                .replace(/Ą/g, "\\'a1")
+                .replace(/ć/g, "\\'e6")
+                .replace(/Ć/g, "\\'c6")
+                .replace(/ę/g, "\\'ea")
+                .replace(/Ę/g, "\\'ca")
+                .replace(/ł/g, "\\'b3")
+                .replace(/Ł/g, "\\'a3")
+                .replace(/ń/g, "\\'f1")
+                .replace(/Ń/g, "\\'d1")
+                .replace(/ó/g, "\\'f3")
+                .replace(/Ó/g, "\\'d3")
+                .replace(/ś/g, "\\'9c")
+                .replace(/Ś/g, "\\'8c")
+                .replace(/ź/g, "\\'9f")
+                .replace(/Ź/g, "\\'8f")
+                .replace(/ż/g, "\\'bf")
+                .replace(/Ż/g, "\\'af");
+            
+            rtf += cleanText + '}';
+            return rtf;
+        }
+        
+        function parseRTFFormatting(text) {
+            var result = '';
+            var i = 0;
+            
+            while (i < text.length) {
+                if (text[i] === '{' && text[i+1] === '\\') {
+                    var formatType = '';
+                    if (text.substr(i, 3) === '{\\b' && text[i+3] !== '0') {
+                        formatType = 'BOLD';
+                    } else if (text.substr(i, 3) === '{\\i' && text[i+3] !== '0') {
+                        formatType = 'ITALIC';
+                    } else if (text.substr(i, 4) === '{\\ul' && text[i+4] !== '0') {
+                        formatType = 'UNDERLINE';
+                    }
+                    
+                    if (formatType) {
+                        var depth = 1;
+                        var start = i + (formatType === 'UNDERLINE' ? 4 : 3);
+                        while (start < text.length && text[start] === ' ') start++;
+                        
+                        var j = start;
+                        var content = '';
+                        
+                        while (j < text.length && depth > 0) {
+                            if (text[j] === '{') {
+                                depth++;
+                            } else if (text[j] === '}') {
+                                depth--;
+                                if (depth === 0) break;
+                            }
+                            content += text[j];
+                            j++;
+                        }
+                        
+                        var parsedContent = parseRTFFormatting(content);
+                        
+                        if (formatType === 'BOLD') {
+                            result += '|||BOLD_START|||' + parsedContent + '|||BOLD_END|||';
+                        } else if (formatType === 'ITALIC') {
+                            result += '|||ITALIC_START|||' + parsedContent + '|||ITALIC_END|||';
+                        } else if (formatType === 'UNDERLINE') {
+                            result += '|||UNDERLINE_START|||' + parsedContent + '|||UNDERLINE_END|||';
+                        }
+                        
+                        i = j + 1;
+                        continue;
+                    }
+                }
+                
+                result += text[i];
+                i++;
+            }
+            
+            return result;
+        }
+        
+        function fromRTF(rtf) {
+            if (rtf.indexOf('\\rtf') === -1) {
+                return '<p>' + rtf.replace(/\n/g, '</p><p>') + '</p>';
+            }
+            
+            var text = rtf;
+            
+            text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
+            text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
+            
+            text = text
+                .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
+                .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
+                .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
+                .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
+                .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
+                .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
+                .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
+                .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
+                .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
+                .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
+                .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
+                .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
+                .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
+                .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
+                .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
+                .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
+                .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
+                .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
+                .replace(/\\'84/g, '"').replace(/'84/g, '"')
+                .replace(/\\'94/g, '"').replace(/'94/g, '"')
+                .replace(/\\'96/g, '–').replace(/'96/g, '–')
+                .replace(/\\'97/g, '—').replace(/'97/g, '—');
+            
+            text = text.replace(/^\{\\rtf[^{}]*/, '');
+            text = text.replace(/\}$/, '');
+            
+            text = parseRTFFormatting(text);
+            
+            text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
+            text = text.replace(/\{[^}]*\}/g, '');
+            text = text.replace(/\\/g, '');
+            
+            text = text.replace(/\s+/g, ' ').trim();
+            text = text.replace(/^\{+/, '').replace(/\}+$/, '');
+            
+            text = text.replace(/\|\|\|BOLD_START\|\|\|/g, '<strong>');
+            text = text.replace(/\|\|\|BOLD_END\|\|\|/g, '</strong>');
+            text = text.replace(/\|\|\|ITALIC_START\|\|\|/g, '<em>');
+            text = text.replace(/\|\|\|ITALIC_END\|\|\|/g, '</em>');
+            text = text.replace(/\|\|\|UNDERLINE_START\|\|\|/g, '<u>');
+            text = text.replace(/\|\|\|UNDERLINE_END\|\|\|/g, '</u>');
+            
+            var paragraphs = text.split('|||PARAGRAPH|||');
+            var html = '';
+            
+            for (var i = 0; i < paragraphs.length; i++) {
+                var para = paragraphs[i].trim();
+                if (para && para.length > 3) {
+                    para = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
+                    html += '<p>' + para + '</p>';
+                }
+            }
+            
+            if (!html || paragraphs.length < 2) {
+                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
+                
+                var sections = text.split(/\n\s*\n/);
+                if (sections.length > 1) {
+                    for (var j = 0; j < sections.length; j++) {
+                        var section = sections[j].trim();
+                        if (section) {
+                            html += '<p>' + section + '</p>';
+                        }
+                    }
+                } else {
+                    var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
+                    var currentPara = '';
+                    
+                    for (var k = 0; k < sentences.length; k++) {
+                        var sentence = sentences[k].trim();
+                        if (sentence) {
+                            currentPara += sentence + (k < sentences.length - 1 ? '. ' : '');
+                            
+                            if (currentPara.length > 300) {
+                                html += '<p>' + currentPara + '</p>';
+                                currentPara = '';
+                            }
+                        }
+                    }
+                    
+                    if (currentPara.trim()) {
+                        html += '<p>' + currentPara + '</p>';
+                    }
+                }
+            }
+            
+            if (!html) {
+                html = '<p>' + text + '</p>';
+            }
+            
+            return html;
+        }
+        
+        function toggleFocusMode() {
+            if (isFocusMode) {
+                exitFocusMode();
+            } else {
+                enterFocusMode();
+            }
+        }
+        
+        function enterFocusMode() {
+            isFocusMode = true;
+            
+            var focusEditor = document.getElementById('focusEditor');
+            var mainText = editor.innerText || editor.textContent || '';
+            focusEditor.value = mainText;
+            
+            lastCursorPosition = 0;
+            
+            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            focusEditor.style.fontFamily = family;
+            
+            document.body.classList.add('focus-active');
+            
+            var focusMode = document.getElementById('focusMode');
+            focusMode.classList.add('active');
+            
+            var focusReadBtn = document.getElementById('focusReadBtn');
+            var focusHideBtn = document.getElementById('focusHideBtn');
+            var focusControls = document.getElementById('focusControls');
+            var focusCounter = document.getElementById('focusWordCount');
+            var focusCounterHideBtn = document.getElementById('focusCounterHideBtn');
+            var focusTimer = document.getElementById('focusTimer');
+            var focusTimerHideBtn = document.getElementById('focusTimerHideBtn');
+            
+            focusControls.classList.remove('hidden-controls');
+            focusControlsHidden = false;
+            
+            focusCounter.classList.remove('hidden-counter');
+            focusCounterHidden = false;
+            
+            if (timerRunning) {
+                focusTimer.classList.remove('hidden-timer');
+                focusTimerHidden = false;
+            }
+            
+            updateWordCount();
+            
+            focusReadBtn.onclick = function() {
+                if (isReading) {
+                    stopFocusReading();
+                } else {
+                    focusEditor.focus();
+                    
+                    setTimeout(function() {
+                        lastCursorPosition = focusEditor.selectionStart || 0;
+                        startFocusReading();
+                    }, 10);
+                }
+            };
+            
+            focusHideBtn.onclick = function() {
+                focusControls.classList.add('hidden-controls');
+                focusControlsHidden = true;
+            };
+            
+            focusCounterHideBtn.onclick = function() {
+                focusCounter.classList.add('hidden-counter');
+                focusCounterHidden = true;
+            };
+            
+            setTimeout(function() {
+                var elem = document.documentElement;
+                
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(function(err) {
+                        console.log('Fullscreen error:', err);
+                    });
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                }
+                
+                setTimeout(function() {
+                    focusEditor.focus();
+                    focusEditor.setSelectionRange(0, 0);
+                    focusEditor.scrollTop = 0;
+                }, 100);
+                
+            }, 50);
+            
+            focusEditor.oninput = null;
+            focusEditor.oninput = function() {
+                var newContent = focusEditor.value;
+                if (newContent.trim()) {
+                    var htmlContent = '<p>' + newContent.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                    editor.innerHTML = htmlContent;
+                    saveState();
+                    updateWordCount();
+                } else {
+                    editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
+                    updateWordCount();
+                }
+            };
+            
+            focusEditor.addEventListener('mouseup', function() {
+                lastCursorPosition = focusEditor.selectionStart;
+            });
+            
+            focusEditor.addEventListener('keyup', function() {
+                lastCursorPosition = focusEditor.selectionStart;
+            });
+            
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        }
+        
+        function startFocusReading() {
+            if (!speechSynthesis) {
+                return;
+            }
+            
+            var focusEditor = document.getElementById('focusEditor');
+            
+            var cursorPos = lastCursorPosition || 0;
+            var text = focusEditor.value.substring(cursorPos);
+            
+            if (!text.trim()) {
+                return;
+            }
+            
+            var utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pl-PL';
+            utterance.rate = speechRate;
+            utterance.pitch = 1;
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            
+            var focusReadBtn = document.getElementById('focusReadBtn');
+            
+            utterance.onstart = function() {
+                isReading = true;
+                focusReadBtn.classList.add('active');
+                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+            };
+            
+            utterance.onend = function() {
+                stopFocusReading();
+            };
+            
+            utterance.onerror = function(e) {
+                if (e.error === 'canceled' || e.error === 'interrupted') {
+                    return;
+                }
+                stopFocusReading();
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        function stopFocusReading() {
+            if (speechSynthesis.speaking || speechSynthesis.paused) {
+                speechSynthesis.cancel();
+            }
+            isReading = false;
+            var focusReadBtn = document.getElementById('focusReadBtn');
+            if (focusReadBtn) {
+                focusReadBtn.classList.remove('active');
+                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+            }
+        }
+        
+        function handleFullscreenChange() {
+            var isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                document.mozFullScreenElement || document.msFullscreenElement);
+            
+            if (!isFullscreen && isFocusMode) {
+                exitFocusMode();
+            }
+        }
+        
+        function exitFocusMode() {
+            if (!isFocusMode) return;
+            
+            if (isReading) {
+                stopFocusReading();
+            }
+            
+            isFocusMode = false;
+            
+            var focusControls = document.getElementById('focusControls');
+            if (!focusControlsHidden) {
+                focusControls.classList.remove('hidden-controls');
+            }
+            focusControlsHidden = false;
+            
+            var focusCounter = document.getElementById('focusWordCount');
+            if (!focusCounterHidden) {
+                focusCounter.classList.remove('hidden-counter');
+            }
+            focusCounterHidden = false;
+            
+            var focusTimer = document.getElementById('focusTimer');
+            if (!focusTimerHidden) {
+                focusTimer.classList.remove('hidden-timer');
+            }
+            focusTimerHidden = false;
+            
+            document.body.classList.remove('focus-active');
+            
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(function(err) {
+                    console.log('Exit fullscreen error:', err);
+                });
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            }
+            
+            document.getElementById('focusMode').classList.remove('active');
+            
+            var focusEditor = document.getElementById('focusEditor');
+            if (focusEditor.value.trim()) {
+                var htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                editor.innerHTML = htmlContent;
+                saveState();
+                updateWordCount();
+            }
+            
+            setTimeout(function() {
+                editor.focus();
+            }, 200);
+        }
+        
+        document.addEventListener('DOMContentLoaded', init);
+
+        window.addEventListener('load', function() {
+            var textToRead = localStorage.getItem('textToRead');
+            var shouldAutoRead = localStorage.getItem('autoReadText');
+            
+            if (textToRead && shouldAutoRead === 'true') {
+                var paragraphs = textToRead.split('\n\n');
+                var htmlContent = '';
+                for (var i = 0; i < paragraphs.length; i++) {
+                    var para = paragraphs[i].trim();
+                    if (para) {
+                        htmlContent += '<p>' + para + '</p>';
+                    }
+                }
+                editor.innerHTML = htmlContent;
+                
+                localStorage.removeItem('textToRead');
+                localStorage.removeItem('autoReadText');
+                
+                undoHistory = [];
+                historyIndex = -1;
+                saveState();
+                updateWordCount();
+                
+                setTimeout(function() {
+                    if (!speechSynthesis) {
+                        return;
+                    }
+                    
+                    var fullText = editor.innerText || editor.textContent || '';
+                    
+                    if (!fullText.trim()) {
+                        return;
+                    }
+                    
+                    var utterance = new SpeechSynthesisUtterance(fullText);
+                    utterance.lang = 'pl-PL';
+                    utterance.rate = speechRate;
+                    utterance.pitch = 1;
+                    
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                    
+                    var btn = document.getElementById('readBtn');
+                    
+                    utterance.onstart = function() {
+                        isReading = true;
+                        btn.classList.add('active');
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                    };
+                    
+                    utterance.onend = function() {
+                        stopReading();
+                    };
+                    
+                    utterance.onerror = function(e) {
+                        if (e.error === 'canceled' || e.error === 'interrupted') {
+                            return;
+                        }
+                        console.error('Błąd czytania:', e.error);
+                        stopReading();
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                }, 800);
+            }
+        });
+    </script>
+</body>
+</html>
