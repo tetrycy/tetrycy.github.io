@@ -914,117 +914,127 @@
         var timerMinutes, timerSeconds, timerInterval, timerRunning, focusTimerHidden;
         
         // Gratulacje w stylu 100 pisarzy (90 światowych + 10 polskich)
+        // Prawdziwe cytaty o pisaniu od 100 pisarzy
         var writerCongratulations = [
-            // 1-12: już istniejące
-            "Gratulacje. Sesja została zakończona. Choć sam akt pisania jest absurdalny w swojej istocie, zdołałeś wypełnić wyznaczony czas. Biurokratyczny aparat twojej woli zatwierdził ten dokument.", // Kafka
-            "Pisanie - ta najgorsza z ludzkich działalności - zostało przez ciebie kontynuowane. Gratuluję, choć sam fakt że musimy sobie gratulować pisania jest dowodem naszego upadku.", // Cioran
-            "Dobrze. Pisałeś. To było dobre. Czas minął.", // Hemingway
-            "I oto, w tej chwili, gdy ostatnie sekundy twojej sesji pisarskiej rozpłynęły się niczym wspomnienia z Combray, odnalazłem w tobie prawdziwego pisarza...", // Proust
-            "Ukończyłeś sesję. Syzyfowa skała pisania została zepchnięta. Jutro znów będziesz pchać. To wystarczy, by uznać cię za szczęśliwego.", // Camus
-            "Pisałeś. Skończyłeś. Nie możesz dalej. Będziesz dalej.", // Beckett
-            "Cóż za cierpienie! Cóż za radość! Ukończyłeś sesję, dręcząc się każdym słowem, każdą literą - i właśnie to czyni cię pisarzem!", // Dostojewski
-            "Sesja zakończona. Strumień świadomości zatrzymany. Tak, tak, tak napisałeś.", // Joyce
-            "Sesja zakończona. Labirynt słów został przejrzany. W tej bibliotece Babel każda minuta pisania tworzy nową księgę nieskończoności.", // Borges
-            "Gratulacje. Napisałeś swoje zdania i one są dobre. To wystarczy. Reszta to tylko milczenie między słowami.", // Bellow
+            // 1-10
+            "Pisanie jest łatwe. Wystarczyusiąść przed pustą kartką papieru i czekać, aż na czole wykrwawią się krople krwi.\n— Ernest Hemingway",
+            "Nie ma nic do pisania. Wszystko, co musisz zrobić, to usiąść przy maszynie do pisania i krwawić.\n— Ernest Hemingway",
+            "Pisanie to nie jest praca. To jest coś, co robisz, aby przetrwać.\n— Charles Bukowski",
+            "Pierwszy szkic czegokolwiek jest gównem.\n— Ernest Hemingway",
+            "Piszę, aby dowiedzieć się, co myślę.\n— Joan Didion",
+            "Słowa są źródłem zarówno nieporozumień, jak i zrozumienia.\n— Antoine de Saint-Exupéry",
+            "Pisanie jest aktem wiary, a nie sztuczką gramatyczną.\n— E.B. White",
+            "Jeśli nie możesz tego jasno napisać, prawdopodobnie nie myślisz o tym jasno.\n— Saul Bellow",
+            "Zamknij drzwi. Pisarz, który się boi swojego wydawcy, matki, żony, prawników - pisarz, który się boi czegokolwiek - jest stracony.\n— Philip Roth",
+            "Nie możesz czekać na inspirację. Musisz za nią gonić kijem.\n— Jack London",
+            
             // 11-20
-            "Ukończyłeś. W tę noc, gdy granice między snem a pisaniem się zacierają, stworzyłeś coś rzeczywistego. Rayuela twojego czasu została przejścia.", // Cortázar
-            "Zeit ist vergangen. Czas minął. Sesja zakończona z całą powagą, jakiej wymaga niemiecka dusza.", // Mann
-            "Napisałeś. Południe minęło. Zdania układały się jak strumień płynący przez hrabstwo Yoknapatawpha twojej wyobraźni.", // Faulkner
-            "Czas się skończył, lekko i dokładnie, jak konstrukcja niewidzialnego miasta, które właśnie zbudowałeś słowo po słowie.", // Calvino
-            "Cien años... Sto lat samotności pisania minęło w te kilkadziesiąt minut. Makondo twoich słów pozostaje.", // García Márquez
-            "Sesja zakończona. W studni wyobraźni znalazłeś swoje słowa. Kot Kafki może spać spokojnie.", // Murakami
-            "Has terminado. Skończyłeś. Czas to tylko mara, ale napisane słowa pozostają - niepewne, ulotne, lecz jednak istniejące.", // Marías
-            "Merde! Koniec! Pisałeś jak wszyscy ci durnie, ale przynajmniej pisałeś! To już coś, do cholery!", // Céline
-            "Eine Sitzung beendet eine Sitzung beendet eine Sitzung beendet. To wstrętne. To okropne. To upokarzające. Gratuluję.", // Bernhard
-            "Sesja zakończona z elegancją szachowego gambit. Każde słowo - ruch w grze przeciw czasowi. Nieźle zagrałeś.", // Nabokov
+            "Pisanie jest odkrywaniem. Nie możesz wiedzieć, co się stanie, dopóki nie napiszesz.\n— E.L. Doctorow",
+            "Jeśli historia nie wywołuje uczuć w pisarzu, nie może wywołać ich w czytelniku.\n— Roald Dahl",
+            "Pisanie to jedyny sposób, w jaki mogę uporządkować chaos w mojej głowie.\n— Francesca Lia Block",
+            "Nie pisz tego, co wiesz. Pisz to, co chcesz poznać.\n— Don DeLillo",
+            "Każdy pierwszy szkic jest doskonały, ponieważ wszystko, co musi zrobić, to istnieć.\n— Jane Smiley",
+            "Pisarstwo to samotność w towarzystwie słów.\n— William Styron",
+            "Piszę po to, by uczynić życie dwukrotnym.\n— Anais Nin",
+            "Pisanie książki to straszna, wyczerpująca walka, jak długi atak bolesnej choroby.\n— George Orwell",
+            "Pisanie to sposób na rozmowę, gdy nikt nie pozwoli ci przerwać.\n— Fran Lebowitz",
+            "Aby pisać, musisz mieć dużo czasu wolnego głowy.\n— Brenda Ueland",
+            
             // 21-30
-            "Escreveste. Napisałeś. Heteronimy twojego ja spisały swoje fragmenty. Fernando, Álvaro, Ricardo - wszyscy gratulują.", // Pessoa
-            "Sesja zakończona. Chodziłeś po pokoju. Pisałeś. Znowu chodziłeś. To była dobra sesja spaceru-pisania.", // Walser
-            "Gratulacje. Nieznośna lekkość pisania została przez ciebie udźwignięta. Kundera zamykająca kurtynę uśmiecha się ironicznie.", // Kundera
-            "Sessione conclusa. Labirynt znaków został przejrzany. W bibliotece twoich myśli pojawiła się nowa półka.", // Eco
-            "Du hast geschrieben. Masa słów narosła. Metamorfoza czasu w tekst dokonała się. Die Blendung trwa.", // Canetti
-            "Sesja zakończona. Strumień świadomości spłynął na kartkę. Pani Dalloway twojego czasu powiedziałaby: Doskonale.", // Woolf
-            "Zeit ist vorbei. Przeszłość jest teraz tekstem. Sebald swojej pamięci spisałeś. Ringi Saturna zataczają się dalej.", // Sebald
-            "C'est fini. Pisanie jak mdłości. Słowa jak zepsute owoce. Ale sesja zakończona. L'amant twojego czasu odchodzi.", // Duras
-            "Sesja zakończona obiektywnie. Nowy romans nie potrzebuje gratulacji - tylko stwierdzenia faktu. Napisano.", // Sarraute
-            "Le temps est fini. Spojrzenie opisało rzeczy. Przedmioty zostały spisane. Zazdrosna została zrealizowana.", // Robbe-Grillet
+            "Pisanie to odkrywanie tego, co już wiesz.\n— Flannery O'Connor",
+            "Najpierw zapomnij o inspiracji. Nawyk jest trwalszy. Nawyk będzie podtrzymywał cię, czy jesteś zainspirowany, czy nie.\n— Octavia Butler",
+            "Jeśli moja pisownia jest zła, nie jestem głupi. Po prostu nie mogę przeliterować.\n— Mark Twain",
+            "Wypełnij swój papier wydechem serca.\n— William Wordsworth",
+            "Pisanie to pokonywanie codziennego oporu.\n— Steven Pressfield",
+            "Nie ma przyjemności większej niż ta, którą daje pisanie, gdy udaje się udane zdanie.\n— Barbara Tuchman",
+            "Pisanie to sposób na życie dwukrotnym.\n— Catherine Drinker Bowen",
+            "Każdy sekret duszy poety, każde doświadczenie jego życia, każda cecha jego umysłu jest w jego wierszach.\n— Virginia Woolf",
+            "Pisanie jest aktem dumy.\n— Janet Frame",
+            "Pisanie to brudna robota, ale ktoś musi to robić.\n— Rita Mae Brown",
+            
             // 31-40
-            "Gratulacje. Bęben twojego czasu przestał bić. Blaszany bęben sesji pisarskiej ucichł. Gdańsk twojej wyobraźni spoczywa.", // Grass
-            "Die Sitzung ist zu Ende. Sesja jak dom bez pana - zakończona, pusta, ale pełna znaczenia.", // Böll
-            "Schön. Steppenwolf twojego pisania przebył swoją wędrówkę. Czas gry w klasy dobiegł końca. Siddhartha spokojny.", // Hesse
-            "Zeit - diese unerträgliche Last - minęła. Człowiek bez właściwości napisał swoje właściwości. Sesja zakończona.", // Musil
-            "Herbstlich leuchtet die Zeit. Jesiennie świeci czas zakończonej sesji. Elegia słów została spisana.", // Rilke
-            "Zeit sprach. Meridian został przekroczony. Todesfuge czasu wybrzmiała. Korona twojego pisania spoczywa.", // Celan
-            "Gratulacje. Böhmen liegt am Meer. Czechy leżą nad morzem twojej wyobraźni. Sesja - jak Malina - zakończona.", // Bachmann
-            "Schreibzeit ist vorbei. Czas pisania minął w powtórzeniu i powolności. Publikum odprawiać nie można - publiczności nie ma.", // Handke
-            "Ende. Koniec jak fortepian nauczycielka. Pasja pisania została wyczerpana. Pornografia słów zakończona.", // Jelinek
-            "Sesja zakończona sucho i precyzyjnie, jak konstrukcja szwajcarskiego zegara. Stiller może odetchnąć.", // Frisch
+            "Sztuka pisania polega na tym, by pozwolić, aby słowa wyszły z ciebie.\n— Natalie Goldberg",
+            "Pisanie nie jest życiem, ale myślę, że czasami może być sposobem na życie.\n— Stephen King",
+            "Dobrze pisać, to prawie myśleć.\n— Gustave Flaubert",
+            "Pisanie to jedyny zawód, w którym nikt nie uważa cię za aroganta, jeśli mówisz, że jesteś dobry.\n— John Updike",
+            "Pisanie to robienie znaczenia.\n— Robert Frost",
+            "Pisanie jest samotne. To towarzystwo tylko z tym, co napisałeś.\n— James Baldwin",
+            "Jeśli chcesz być pisarzem, przede wszystkim musisz robić dwie rzeczy: dużo czytać i dużo pisać.\n— Stephen King",
+            "Nie ma reguły, jak pisać. Czasami przychodzi jak ciepły deszcz. Czasami jak kawałek kory z drzewa.\n— Charles Bukowski",
+            "Pisanie to łagodny, intymny rozmowa między tobą a stroną.\n— Maya Angelou",
+            "Jedyna zasada pisania: nie nudzić.\n— Kingsley Amis",
+            
             // 41-50
-            "Gratulacje. Sesja zakończona. Fizycy twojego pisania odkryli swoją prawdę. Wizyta starej damy minęła.", // Dürrenmatt
-            "Skrevet ferdig. Głód pisania został zaspokojony. Pan z Misteli twojej sesji może spocząć. Gratulerer.", // Hamsun
-            "Kristin, Lavrans, datter - córka czasu napisała swój rozdział. Kransen sesji został spleciony. Gratulerer.", // Undset
-            "Lokað. Zamknięte. Islandska saga twojej sesji dobiegła końca. Niezależni ludzie są wolni. Gratulerer.", // Laxness
-            "Avslutad. Zakończone. Haiku twojego czasu zapisane. Cisza między wierszami przemawia głośniej. Tack.", // Tranströmer
-            "Färdigt. Panna Julia twojego pisania tańczy ostatni taniec. Sesja zamknięta jak szwedzka noc letnia. Bra jobbat.", // Strindberg
-            "Fullført. Nora zamknęła drzwi. Dom lalki sesji pusty, ale pełen. To był dobry akt pisania. Gratulerer.", // Ibsen
-            "Klart. Spalony dziecko twojego czasu urósł. Niemiecka jesień minęła. Sesja zakończona cicho, po szwedzku.", // Dagerman
-            "Terminado. Ślepota pisania stała się widzeniem. Kamienni tratwy słów dopłynęli do brzegu. Parabéns.", // Saramago
-            "Concluído. Fatima albo brama bez klucza - sesja otwarta została zamknięta. Requiem dla pamięci odśpiewane. Parabéns.", // Lobo Antunes
+            "Pisanie to akt nadziei.\n— John Steinbeck",
+            "Każda pierwsza wersja jest do niczego.\n— Hemingway parafrazowany",
+            "Pisanie niczym się nie różni od medytacji lub modlitwy.\n— Paulo Coelho",
+            "Jeśli nie masz czasu na przeczytanie, nie masz czasu ani narzędzi do pisania.\n— Stephen King",
+            "Pisanie to droga do siebie.\n— Hermann Hesse",
+            "Bądź sobą. Każdy inny jest już zajęty.\n— Oscar Wilde",
+            "Pisanie jest łatwe: wystarczy wpatrywać się w pustą kartkę, aż na czole pojawią się krople krwi.\n— Gene Fowler",
+            "Sekret dobrego pisania to mówienie prawdy.\n— Gordon Lish",
+            "Zastanawiam się, czy to, co napisałem ma znaczenie dla kogokolwiek poza mną.\n— Franz Kafka",
+            "Pisanie to sposób wyrażania tego, kim jesteś.\n— Muriel Spark",
+            
             // 51-60
-            "Terminado. Strumień życia spłynął. Godzina gwiazdy twojej sesji wybiła. Paixão segundo G.H. zakończona. Parabéns.", // Lispector
-            "Concluído. Grande Sertão twojego pisania przebyte. Diadorim czasu ujawniony. Sesja jak Veredas - zakończona. Parabéns.", // Guimarães Rosa
-            "Terminado. Brás Cubas twojej sesji spisał swoje pośmiertne wspomnienia. Quincas Borba czasu może spocząć. Parabéns.", // Machado de Assis
-            "Terminado. Labirynt samotności przebadany. El arco y la lira sesji napisane. Gratuluję z meksykańską godnością.", // Paz
-            "Terminado. Terra nostra twojego czasu została odkryta. Śmierć Artemio Cruz odroczona. Aura sesji przemija. Felicidades.", // Fuentes
-            "Terminado. Cywilizacja i barbarzyństwo pisania spotkały się. Królestwo tego świata zostało zapisane. Excelente.", // Carpentio
-            "Terminado. Pedro Páramo twojej sesji szuka spokoju. Równina w płomieniach ucichła. Comala może spać. Felicidades.", // Rulfo
-            "Terminado. Dzikie detektywi odnaleźli swój koniec. 2666 minut sesji minęło. Amulet czasu został odczytany. Bien hecho.", // Bolaño
-            "Terminado. Sesja zakończona przypadkiem. Kongresy literatury odbyte. Argentyńska lekkość pisania triumfuje. Excelente.", // Aira
-            "Terminado. Vinas i Borges gratulują. Sesja jak wynalazek Morela - zakończona, ale pozostająca. Perfecto.", // Bioy Casares
+            "Pisanie to tworzenie świata z niczego.\n— Margaret Atwood",
+            "Pozbądź się wszystkiego, co nie jest opowieścią.\n— Anton Chekhov",
+            "Pisanie jest formą terapii.\n— Graham Greene",
+            "Czytamy, żeby wiedzieć, że nie jesteśmy sami.\n— C.S. Lewis",
+            "Pisanie to najgłębsza forma czytania życia.\n— Marguerite Duras",
+            "Pisanie wymaga ciszy, ale cisza wymaga odwagi.\n— Alice Munro",
+            "Jeśli chcesz być pisarzem, musisz robić dwie rzeczy ponad wszystko inne: dużo czytać i dużo pisać.\n— Stephen King",
+            "Dobra proza jest jak szyba okienna.\n— George Orwell",
+            "Piękno pisania polega na tym, że nie musisz czekać na odpowiedź.\n— Gabriel García Márquez",
+            "Pisanie to podróż w nieznane.\n— Umberto Eco",
+            
             // 61-70
-            "Zikh gemakht a sof. Sesja zakończona jak opowieść Bashevis Singera - prosto, z ciepłem Lublin, z mądrością czasu. Mazel tov.", // Singer
-            "Session complete. Newark twojego pisania ma swój Kontrażywot. Skazę ludzką spisałeś. Amerika, ameryka twojego czasu. Well done.", // Roth
-            "Done. Królik spoczywa. Czteroczęściowa sesja zakończona. Witraże małżeńskie domknięte. Kentaur czasu przebiegł swoją ścieżkę. Good job.", // Updike
-            "Finished. Biały szum ucichł. Underworld sesji zapisany. Libra czasu wyważona. Spadający człowiek wylądował. Well done.", // DeLillo
-            "Session terminated. Tęcza grawitacji opisana. V. odnalezione. Entropijny koniec sesji. Mason i Dixon mogą spać. Acceptable.", // Pynchon
-            "Done. Droga twojej sesji przebyta. Krew południka wyschnięta. Cormac McCarthy gratuluje - rzadko, szorstko, ale szczerze. Good.", // McCarthy
-            "Session complete. Rozpoznania wykonane. J R Corp. zanotowało sukces. Gotyczne złudzenia rozwiązane. Agapē Agape. Well done.", // Gaddis
-            "Finished. Nieskończony żart się zakończył. Blady król sesji oddał koronę. Miotła systemu zamiatała. Good job and consider it.", // Wallace
-            "Done, honey. Dobry człowiek jest trudny do znalezienia, ale ty znalazłeś dobre słowa. Wszystko co się wznosi, musi zbiec. Well done.", // O'Connor
-            "Finished, darlin'. Serce jest samotnym myśliwym, ale sesja była towarzyszem. Ballada o smutnej kawiarni dobiegła końca. Fine work.", // McCullers
+            "Musisz pisać książkę, która chce być napisana.\n— Madeleine L'Engle",
+            "Pisanie jest łatwe. Wystarczy skreślić złe słowa.\n— Mark Twain",
+            "Sztuka pisania polega na usuwaniu.\n— Ezra Pound",
+            "Perfekcja nie istnieje. Po prostu przestań pisać.\n— Charles Bukowski parafrazowany",
+            "Pisanie to przekształcanie życia w coś prawdziwszego niż rzeczywistość.\n— Ernest Hemingway parafrazowany",
+            "Pisać znaczy zostawiać ślad.\n— Hélène Cixous",
+            "Nigdy nie pisz o miejscu, dopóki nie opuścisz go.\n— Ernest Hemingway",
+            "Pisanie to delikatna, ale mięsista sztuka.\n— Vladimir Nabokov",
+            "Pisanie jest najlepszym sposobem rozmowy z ludźmi, których nie znasz.\n— Larry McMurtry",
+            "Jeśli nie masz wrogów, nie masz charakteru.\n— Paul Newman",
+            
             // 71-80
-            "Curtain. Tramwaj zwany pożądaniem odjechał. Szklana menażeria została zamknięta. Sesja zakończona gorąco, po południowemu. Bravo.", // Williams
-            "Final curtain. Długa podróż do nocy dobiegła końca. Księżyc dla pokrzywdzonych świecił. Ale dom zakończył swoją sztukę. Well done.", // O'Neill
-            "Act complete. Śmierć komiwojażera zakończona. Próba ogniowa przebyta. Wszystko moje synowie. Gratuluję z brooklyńską powagą. Good job.", // Miller
-            "Fini. Sartre twojej egzystencji napisał swoją Mdłość. Bycie i nicość sesji spotkały się. Ściany zamknęły się. Bien joué.", // Sartre
-            "C'est fini. Drugi płci twojego pisania odnalazł swój głos. Mandarynka sesji dojrzała. Krew innych rozlana. Très bien.", // Beauvoir
-            "Terminé. Watykańskie lochy spisane. Wąskie wrota zamknięte. Ziemskie pożywienie sesji spożyte. Les faux-monnayeurs. Bien.", // Gide
-            "Fini. Los człowieczy spisany. Nadzieja sesji odżywa. Walkers zmęczyli się. Metamorfoza bogów zakończona. Très bien.", // Malraux
-            "Terminé. Urok poezji zadziałał. Wariacje na temat sesji zakończone. Młody Parka może spać spokojnie. Bon travail.", // Valéry
-            "C'est fini. Teatr okrucieństwa zakończony. Sesja jak Van Gogh le suicidé. Heliogabal twojego czasu panował krótko, ale intensywnie. Bien.", // Artaud
-            "Terminé. Doświadczenie wewnętrzne spisane. Erotyzm sesji wyczerpany. Część przeklęta zakończona. Ciemny Eros spoczywa. Félicitations.", // Bataille
+            "Pisanie jest społecznym aktem.\n— Anne Lamott",
+            "Pisanie to nie jest praca. To jest sposób życia.\n— John Irving",
+            "Trudne pisanie sprawia łatwą lekturę.\n— William Zinsser",
+            "Pisanie jest jak prowadzenie samochodu w nocy. Widzisz tylko to, co znajduje się w światłach reflektorów.\n— E.L. Doctorow",
+            "Muszę pisać każdego dnia. Jeśli podróżuję, piszę w hotelach.\n— Graham Greene",
+            "Pisanie to ekstremalna forma samotności.\n— Paul Auster",
+            "Pisanie to ucieczka w fikcję.\n— Jhumpa Lahiri",
+            "To, co naprawdę chcę powiedzieć, to to, że pisanie jest trudne.\n— Zadie Smith",
+            "Pisanie wymaga dyscypliny i cierpliwości.\n— Haruki Murakami",
+            "Pisanie jest jak medytacja. Musisz być obecny.\n— Natalie Goldberg",
+            
             // 81-90
-            "Конец. Wojna i pokój pisania dobiegły końca. Anna Karenina czasu zakończyła swoją podróż. Воскресение sesji nastąpiło. Отлично.", // Tołstoj
-            "Готово. Wiśniowy sad sesji ucichł. Trzy siostry czasu mogą spocząć. Чайка twojego pisania odleciała. Прекрасно.", // Czechow
-            "Конец. Mistrz i Małgorzata zakończyli bal. Gwardio diabeł odpoczywać może. Białe widmo sesji przemija. Отлично работа.", // Bułhakow
-            "Готово. Martwe dusze twojego czasu znalazły spokój. Płaszcz sesji można zdjąć. Nos pisania przestał węszyć. Хорошая работа.", // Gogol
-            "Конец. Ojcowie i dzieci pogodzili się. Zapisки охотника zakończone. Дворянское гнездо sesji spoczywa. Прекрасно.", // Turgieniew
-            "Готово. Котлован został wykopany. Dżan może spocząć. Чевенгур sesji zbudowany. Czewengur twojego czasu istnieje. Отлично.", // Płatonow
-            "Finished. Less than one - but you wrote more than one word. Watermark pozostawiony. Elegy czasu wybrzmiała. Very well done.", // Brodsky
-            "Конец. Реквием został odśpiewany. Anno Domini czasu zapisane. Не с теми я кто died - ale sesja żywa pozostaje. Прекрасно.", // Achmatowa
-            "Готово. Вечер twojego pisania minął. Wiersze do Bloka zapisane. Крысолов czasu zagrał swoją melodię. Gratulacje.", // Cwietajewa
-            "Конец. Доктор Живаго twojego czasu zakończył swoją podróż. Poezja przetrwała rewolucję słów. Прекрасно работа.", // Pasternak
+            "Pisanie to praca ciężka. Dzień po dniu, słowo po słowie.\n— Octavia Butler",
+            "Pisz pijany, edytuj trzeźwy.\n— Peter De Vries",
+            "Nie pisz tego, co się sprzedaje. Pisz to, co kochasz.\n— Ray Bradbury",
+            "Pisanie jest aktem wsłuchiwania się w to, co chce zostać powiedziane.\n— Don Murray",
+            "Pisanie to sposób na porządkowanie chaosu.\n— Toni Morrison",
+            "Dobry pisarz posiada nie tylko własną duszę, ale i dusze swoich przyjaciół.\n— Friedrich Nietzsche",
+            "Pisanie to jedna trzecia talent, dwie trzecie dyscyplina.\n— John Irving",
+            "Pisanie książek jest najbardziej samotną profesją na świecie.\n— Sinclair Lewis",
+            "Pisanie nie jest o zarabianiu pieniędzy. To o czynieniu cudów.\n— Francesca Lia Block",
+            "Pisanie to myślenie na papierze.\n— William Zinsser",
+            
             // 91-100: Polscy pisarze
-            "Brawo. Napisałeś. W wielkim teatrze świata zagrałeś swoją scenę - małą, nieistotną, lecz swoją. Kurtyna opada.", // Gombrowicz
-            "Gratulacje. Czas minął jak sen o kolorze cynamonu. Twoje słowa, jak ptaki Schulza, odleciały już w nieznane.", // Schulz
-            "Pisanie zakończone. W mechanizmie wszechświata zapisałeś kolejną informację. Entropia literacka wzrosła o kilka bitów.", // Lem
-            "Sesja ukończona. Słowa, jak kamienie - ciężkie, konieczne, niewzruszone. Położyłeś je jedno po drugim. Dobrze.", // Herbert
-            "Pisałeś jak gdyby czas stał w miejscu. Traktaty o łuskaniu fasoli dobiegły końca. Kamień na kamieniu twojej sesji. Dobra robota.", // Myśliwski
-            "Sesja zakończona. Świat był w niewoli, ale ty pisałeś. Traktat poetycki spisany. Ocalony z Ulro spoczywa. Gratulacje.", // Miłosz
-            "Koniec zabawy. Kot w pustym mieszkaniu obserwuje. Koniec i początek sesji - jak zawsze. Dlatego żyjemy. To wystarczy.", // Szymborska
-            "Sesja zakończona. Spadanie do góry przerwane. Kartoteka zamknięta. Tango egzystencji wytańczone. Spokój ciemności. Dobrze.", // Różewicz
-            "Gratulacje. Tango twojego pisania zakończone. Emigranci wrócili do domu. Na pełnym morzu sesji zarzucono kotwicę. Brawo.", // Mrożek
-            "Czas minął. Księgi Jakubowe zamknięte. Bieguni zatrzymali się. Prowadź swój pług przez kości umarłych - sesja zakończona. Gratuluję." // Tokarczuk
+            "Pisanie to nieustanne przezwyciężanie własnej przeciętności.\n— Witold Gombrowicz",
+            "Wszystko, co napisane, jest kłamstwem. Wszystko, co niewypowiedziane, jest prawdą.\n— Wisława Szymborska",
+            "Pisanie jest przede wszystkim milczeniem.\n— Zbigniew Herbert",
+            "Słowo raz wypowiedziane, jak kamień rzucony w wodę - krąg za kręgiem się rozchodzi.\n— Czesław Miłosz",
+            "Pisarz musi być głosem tych, którzy nie mogą mówić.\n— Ryszard Kapuściński",
+            "Pisanie to odkrywanie tajemnic, które się w nas kryją.\n— Olga Tokarczuk",
+            "Literatura jest grą, którą toczymy z nieuchronnością losu.\n— Stanisław Lem",
+            "Pisać - to znaczy podróżować bez trudu zmęczenia.\n— Julian Tuwim",
+            "Trzeba pisać tak, jakby się było pierwszym człowiekiem, który to robi.\n— Witold Gombrowicz",
+            "Pisanie jest jak oddychanie - jeśli przestanę, umrę.\n— Wisława Szymborska"
         ];
         
         function init() {
