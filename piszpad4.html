@@ -610,7 +610,7 @@
         .focus-timer {
             position: fixed;
             bottom: 1.5rem;
-            right: 11rem;
+             left: 1.5rem;
             font-size: 0.75rem;
             font-weight: 400;
             color: #999;
@@ -668,6 +668,34 @@
             color: #6ee7b7;
             width: 100%;
         }
+
+        .focus-timer-hover-zone {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-timer-hover-zone:hover ~ .focus-timer.hidden-timer {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-timer-hide-btn {
+            margin-top: 0.5rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-timer-hide-btn:hover {
+            color: #999;
+        }
+        
     </style>
 </head>
 <body>
@@ -870,11 +898,12 @@
             <div id="focusCounterText">0 słów | 0 znaków</div>
             <div class="focus-counter-hide-btn" id="focusCounterHideBtn">ukryj</div>
         </div>
-        
+        <div class="focus-timer-hover-zone"></div>
         <div class="focus-timer" id="focusTimer">
             <div class="timer-time" id="focusTimerTime">25:00</div>
             <button class="timer-close-btn" id="focusTimerCloseBtn">×</button>
             <div class="timer-message" id="focusTimerMessage"></div>
+            <div class="focus-timer-hide-btn" id="focusTimerHideBtn">ukryj</div>
         </div>
         
         <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
@@ -1080,10 +1109,14 @@
                 };
             }
             
-            document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
+document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
             document.getElementById('timerStartBtn').onclick = startTimer;
             document.getElementById('timerCloseBtn').onclick = resetTimer;
             document.getElementById('focusTimerCloseBtn').onclick = resetTimer;
+            document.getElementById('focusTimerHideBtn').onclick = function() {
+                document.getElementById('focusTimer').classList.add('hidden-timer');
+                focusTimerHidden = true;
+            };
             
             document.onkeydown = keyHandler;
             
