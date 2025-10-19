@@ -590,13 +590,14 @@
         
         .timer-setup-modal.show { display: flex; }
         
-        .timer-setup-box {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            min-width: 20rem;
-        }
+.timer-setup-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    min-width: 20rem;
+    font-family: 'Libre Baskerville', serif;
+}
         
         .timer-setup-title {
             font-size: 1.125rem;
@@ -627,11 +628,11 @@
             border-color: #9ca3af;
         }
         
-        .timer-preset-btn.selected {
-            background: #dbeafe;
-            border-color: #3b82f6;
-            color: #1e40af;
-        }
+ .timer-preset-btn.selected {
+    background: #dbeafe;
+    border-color: #d1d5db;
+    color: #1e40af;
+}
         
         .timer-custom {
             margin-bottom: 1rem;
@@ -1343,68 +1344,91 @@
             document.getElementById('timerCustomInput').value = '';
         }
         
-        function startTimer() {
-            var selectedBtn = document.querySelector('.timer-preset-btn.selected');
-            var customInput = document.getElementById('timerCustomInput');
-            var minutes = 0;
-            
-            if (customInput.value) {
-                minutes = parseInt(customInput.value);
-            } else if (selectedBtn) {
-                minutes = parseInt(selectedBtn.getAttribute('data-minutes'));
-            } else {
-                alert('Wybierz czas lub wpisz własny');
-                return;
+       function startTimer() {
+    var selectedBtn = document.querySelector('.timer-preset-btn.selected');
+    var customInput = document.getElementById('timerCustomInput');
+    var minutes = 0;
+    
+    if (customInput.value) {
+        minutes = parseInt(customInput.value);
+    } else if (selectedBtn) {
+        minutes = parseInt(selectedBtn.getAttribute('data-minutes'));
+    } else {
+        alert('Wybierz czas lub wpisz własny');
+        return;
+    }
+    
+    if (minutes < 1) {
+        alert('Czas musi być większy niż 0');
+        return;
+    }
+    
+    // WAŻNE: Wyczyść poprzedni interval jeśli istnieje
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    timerMinutes = minutes;
+    timerSeconds = 0;
+    timerRunning = true;
+    timerPaused = false;
+    
+    updateTimerDisplay();
+    
+    var normalDisplay = document.getElementById('timerDisplay');
+    var focusDisplay = document.getElementById('focusTimer');
+    
+    normalDisplay.classList.add('active');
+    normalDisplay.classList.remove('finished');
+    document.getElementById('timerMessage').textContent = '';
+    
+    if (isFocusMode) {
+        focusDisplay.classList.add('active');
+        focusDisplay.classList.remove('finished');
+        focusDisplay.classList.remove('hidden-timer');
+        focusTimerHidden = false;
+        document.getElementById('focusTimerMessage').textContent = '';
+    }
+    
+    document.getElementById('timerPauseBtn').textContent = 'Pauza';
+    document.getElementById('focusTimerPauseBtn').textContent = 'Pauza';
+    
+    closeTimerSetup();
+    
+    // Dokładny timer oparty na rzeczywistym czasie
+    var startTime = Date.now();
+    var pausedTime = 0;
+    var lastPauseStart = 0;
+    
+    timerInterval = setInterval(function() {
+        if (timerPaused) {
+            if (lastPauseStart === 0) {
+                lastPauseStart = Date.now();
             }
-            
-            if (minutes < 1) {
-                alert('Czas musi być większy niż 0');
-                return;
-            }
-            
-            timerMinutes = minutes;
-            timerSeconds = 0;
-            timerRunning = true;
-            timerPaused = false;
-            
-            updateTimerDisplay();
-            
-            var normalDisplay = document.getElementById('timerDisplay');
-            var focusDisplay = document.getElementById('focusTimer');
-            
-            normalDisplay.classList.add('active');
-            normalDisplay.classList.remove('finished');
-            document.getElementById('timerMessage').textContent = '';
-            
-            if (isFocusMode) {
-                focusDisplay.classList.add('active');
-                focusDisplay.classList.remove('finished');
-                focusDisplay.classList.remove('hidden-timer');
-                focusTimerHidden = false;
-                document.getElementById('focusTimerMessage').textContent = '';
-            }
-            
-            document.getElementById('timerPauseBtn').textContent = 'Pauza';
-            document.getElementById('focusTimerPauseBtn').textContent = 'Pauza';
-            
-            closeTimerSetup();
-            
-            timerInterval = setInterval(function() {
-                if (!timerPaused) {
-                    if (timerSeconds === 0) {
-                        if (timerMinutes === 0) {
-                            finishTimer();
-                            return;
-                        }
-                        timerMinutes--;
-                        timerSeconds = 59;
-                    } else {
-                        timerSeconds--;
-                    }
-                    updateTimerDisplay();
-                }
-            }, 1000);
+            return;
         }
+        
+        if (lastPauseStart !== 0) {
+            pausedTime += Date.now() - lastPauseStart;
+            lastPauseStart = 0;
+        }
+        
+        var elapsed = Date.now() - startTime - pausedTime;
+        var totalSeconds = (minutes * 60) - Math.floor(elapsed / 1000);
+        
+        if (totalSeconds <= 0) {
+            timerMinutes = 0;
+            timerSeconds = 0;
+            updateTimerDisplay();
+            finishTimer();
+            return;
+        }
+        
+        timerMinutes = Math.floor(totalSeconds / 60);
+        timerSeconds = totalSeconds % 60;
+        updateTimerDisplay();
+    }, 100);
+}
         
         function updateTimerDisplay() {
             var timeStr = timerMinutes + ':' + (timerSeconds < 10 ? '0' : '') + timerSeconds;
