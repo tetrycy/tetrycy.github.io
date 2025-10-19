@@ -1,0 +1,2838 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edytor RTF - Piszpad (Wersja naprawiona)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- DOMPurify dla bezpieczeństwa -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f3f4f6;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        
+        .editor-container {
+            min-height: 600px;
+            width: 100%;
+            max-width: 80rem;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .toolbar {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f9fafb;
+        }
+        
+        .btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn.active {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .separator {
+            width: 1px;
+            height: 1.5rem;
+            background: #d1d5db;
+            margin: 0 0.25rem;
+        }
+        
+        .select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            background: white;
+        }
+        
+        .filename {
+            margin-left: auto;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .search-panel {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            background: #fef3c7;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .search-panel.show {
+            display: flex;
+        }
+        
+        .search-input {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            flex: 1;
+            max-width: 20rem;
+        }
+        
+        .search-btn {
+            padding: 0.25rem 0.75rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .search-btn.primary:hover {
+            background: #2563eb;
+        }
+        
+        .search-btn.secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .search-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .editor-area {
+            flex: 1;
+            padding: 1.5rem;
+        }
+        
+        .editor {
+            min-height: 100%;
+            outline: none;
+            color: black;
+            line-height: 1.8;
+        }
+        
+        .editor p {
+            margin-bottom: 1em;
+        }
+        
+        .editor p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .reading-highlight {
+            background: rgba(255, 235, 59, 0.2);
+            transition: background 0.3s ease;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0;
+        }
+        
+        /* TRYB FOCUS */
+        .focus-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1a1a1a;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+        
+        .focus-mode.light {
+            background: #ffffff;
+        }
+        
+        .focus-mode.active {
+            display: flex;
+        }
+        
+        .focus-mode.active ~ * {
+            display: none !important;
+        }
+        
+        body.focus-active {
+            overflow: hidden;
+        }
+        
+        body.focus-active > *:not(.focus-mode) {
+            display: none !important;
+        }
+        
+        .focus-editor {
+            width: 100%;
+            max-width: 50rem;
+            min-height: 60vh;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e5e5e5;
+            font-size: 18px;
+            line-height: 1.8;
+            padding: 2rem;
+            resize: none;
+            font-family: inherit;
+            overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        
+        .focus-mode.light .focus-editor {
+            color: #1a1a1a;
+        }
+        
+        .focus-editor::placeholder {
+            color: #666;
+        }
+        
+        .focus-mode::-webkit-scrollbar,
+        .focus-editor::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .focus-mode {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .focus-editor {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .focus-controls {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-controls.hidden-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-hover-zone {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        /* Switch trybu (lewy górny róg) */
+        .focus-theme-switch-zone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-theme-switch {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-theme-switch.hidden-switch {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-theme-switch-zone:hover ~ .focus-theme-switch.hidden-switch {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-theme-switch.hidden-switch:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-theme-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .focus-theme-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .focus-theme-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke: #e5e5e5;
+        }
+        
+        .focus-mode.light .focus-theme-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .focus-mode.light .focus-theme-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .focus-mode.light .focus-theme-btn svg {
+            stroke: #1a1a1a;
+        }
+        
+        .focus-theme-hide-btn {
+            width: 2.5rem;
+            height: 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 0.625rem;
+            transition: color 0.2s;
+            text-align: center;
+        }
+        
+        .focus-theme-hide-btn:hover {
+            color: #999;
+        }
+        
+        /* Wskaźnik czytanego akapitu */
+        .focus-paragraph-indicator {
+            position: absolute;
+            left: 1rem;
+            width: 4px;
+            height: 0;
+            background: currentColor;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 1;
+            color: #e5e5e5;
+        }
+        
+        .focus-mode.light .focus-paragraph-indicator {
+            color: #1a1a1a;
+        }
+        
+        .focus-paragraph-indicator.active {
+            opacity: 0.5;
+        }
+        
+        .focus-paragraph-indicator::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to bottom, transparent, currentColor);
+        }
+        
+        .focus-paragraph-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to top, transparent, currentColor);
+        }
+        
+        .focus-mirror {
+            position: absolute;
+            visibility: hidden;
+            top: -9999px;
+            left: -9999px;
+            pointer-events: none;
+        }
+        
+        .focus-hover-zone:hover ~ .focus-controls.hidden-controls {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-controls.hidden-controls:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-read-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .focus-read-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .focus-read-btn.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .focus-read-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke: #e5e5e5;
+        }
+        
+        .focus-mode.light .focus-read-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .focus-mode.light .focus-read-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .focus-mode.light .focus-read-btn svg {
+            stroke: #1a1a1a;
+        }
+        
+        .focus-hide-btn {
+            width: 2.5rem;
+            height: 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 0.625rem;
+            transition: color 0.2s;
+            text-align: center;
+        }
+        
+        .focus-hide-btn:hover {
+            color: #999;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .options-menu-container {
+            position: relative;
+        }
+        
+        .options-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.25rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+            min-width: 12rem;
+            z-index: 1000;
+        }
+        
+        .options-menu.show {
+            display: block;
+        }
+        
+        .options-menu-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        
+        .options-menu-item:first-child {
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+        }
+        
+        .options-menu-item:last-child {
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+        }
+        
+        .options-menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .word-count-display {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .word-count-display.hidden {
+            display: none;
+        }
+        
+        .focus-word-count {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: #999;
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-mode.light .focus-word-count {
+            color: #666;
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .focus-word-count.hidden-counter {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-counter-hover-zone {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-counter-hover-zone:hover ~ .focus-word-count.hidden-counter {
+            opacity: 1;
+        }
+        
+        .focus-word-count.hidden-counter:hover {
+            opacity: 1;
+        }
+        
+        .focus-counter-hide-btn {
+            margin-top: 0.25rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-counter-hide-btn:hover {
+            color: #999;
+        }
+        
+        /* TIMER */
+        .timer-setup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+        }
+        
+        .timer-setup-modal.show {
+            display: flex;
+        }
+        
+        .timer-setup-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            min-width: 20rem;
+        }
+        
+        .timer-setup-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .timer-preset-btn {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .timer-preset-btn:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .timer-preset-btn.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        
+        .timer-custom {
+            margin-bottom: 1rem;
+        }
+        
+        .timer-custom-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timer-custom-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+        
+        .timer-setup-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .timer-setup-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .timer-setup-btn.start {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .timer-setup-btn.start:hover {
+            background: #2563eb;
+        }
+        
+        .timer-setup-btn.cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .timer-setup-btn.cancel:hover {
+            background: #d1d5db;
+        }
+        
+        .timer-display {
+            position: fixed;
+            bottom: 4.5rem;
+            right: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            padding: 0.75rem 1rem;
+            background: white;
+            border-radius: 0.375rem;
+            border: 2px solid #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: none;
+        }
+        
+        .timer-display.active {
+            display: block;
+        }
+        
+        .timer-display.finished {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        
+        .timer-time {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .timer-control-btn {
+            padding: 0.25rem 0.75rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .timer-control-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .timer-message {
+            font-size: 0.75rem;
+            color: #059669;
+            font-style: italic;
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        /* Timer w trybie Focus */
+        .focus-timer {
+            position: fixed;
+            bottom: 4.5rem;
+            right: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e5e5e5;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.375rem;
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-mode.light .focus-timer {
+            color: #1a1a1a;
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+        
+        .focus-mode.light .focus-timer .timer-time {
+            color: #1a1a1a;
+        }
+        
+        .focus-mode.light .focus-timer .timer-control-btn {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #1a1a1a;
+        }
+        
+        .focus-mode.light .focus-timer .timer-control-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .focus-mode.light .focus-timer .timer-message {
+            color: #059669;
+        }
+        
+        .focus-timer.active {
+            display: block;
+        }
+        
+        .focus-timer.hidden-timer {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .focus-timer-hover-zone {
+            position: fixed;
+            bottom: 60px;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            z-index: 9999;
+        }
+        
+        .focus-timer-hover-zone:hover ~ .focus-timer.hidden-timer {
+            opacity: 1;
+        }
+        
+        .focus-timer.hidden-timer:hover {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .focus-timer.finished {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .focus-timer .timer-time {
+            color: #e5e5e5;
+        }
+        
+        .focus-timer .timer-control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #e5e5e5;
+        }
+        
+        .focus-timer .timer-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .focus-timer .timer-message {
+            color: #6ee7b7;
+        }
+        
+        .focus-timer-hide-btn {
+            margin-top: 0.5rem;
+            font-size: 0.625rem;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        
+        .focus-timer-hide-btn:hover {
+            color: #999;
+        }
+
+        /* Notification Banner */
+        .notification-banner {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            max-width: 500px;
+            display: none;
+        }
+
+        .notification-banner.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .notification-banner.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .notification-banner.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .notification-message {
+            font-size: 0.75rem;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        .notification-close:hover {
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Banner -->
+    <div class="notification-banner" id="notificationBanner">
+        <button class="notification-close" id="notificationClose">&times;</button>
+        <div class="notification-title" id="notificationTitle">Uwaga</div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+
+    <div class="editor-container">
+        <div class="toolbar">
+            <div class="options-menu-container">
+                <button class="btn" id="optionsBtn" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="options-menu" id="optionsMenu">
+                    <div class="options-menu-item" id="newBtn">Nowy</div>
+                    <div class="options-menu-item" id="openBtn">Otwórz</div>
+                    <div class="options-menu-item" id="saveBtn">Zapisz jako RTF</div>
+                    <div class="options-menu-item" id="exportTxtBtn">Export do TXT</div>
+                    <div class="options-menu-item" id="openAsTextBtn">Otwórz jako tekst</div>
+                    <div class="options-menu-item" id="exportPdfBtn">Export do PDF</div>
+                </div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="undoBtn" title="Cofnij (Ctrl+Z)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 7v6h6"/>
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="boldBtn" title="Pogrubienie (Ctrl+B)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="italicBtn" title="Kursywa (Ctrl+I)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="4" x2="10" y2="4"/>
+                    <line x1="14" y1="20" x2="5" y2="20"/>
+                    <line x1="15" y1="4" x2="9" y2="20"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="underlineBtn" title="Podkreślenie (Ctrl+U)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+                    <line x1="4" y1="21" x2="20" y2="21"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="focusBtn" title="Tryb Focus (F11)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <select class="select" id="fontSelect" title="Czcionka">
+                <option value="Libre Baskerville" selected>Libre Baskerville</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+            
+            <select class="select" id="fontSizeSelect" title="Rozmiar" style="width: 4rem;">
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12" selected>12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+                <option value="28">28</option>
+                <option value="32">32</option>
+                <option value="36">36</option>
+            </select>
+            
+            <select class="select" id="speechRateSelect" title="Szybkość czytania" style="width: 4rem;">
+                <option value="0.75">0.75x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2.0">2.0x</option>
+            </select>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="readBtn" title="Czytaj od miejsca kursora (Ctrl+R)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="searchBtn" title="Wyszukaj (Ctrl+F)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="timerBtn" title="Timer pisania">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="toggleCounterBtn" title="Pokaż/ukryj licznik">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                </svg>
+            </button>
+            
+            <div class="filename" id="fileName">dokument.rtf</div>
+        </div>
+        
+        <div class="search-panel" id="searchPanel">
+            <input type="text" class="search-input" id="searchInput" placeholder="Wyszukaj...">
+            <button class="search-btn primary" id="findBtn">Znajdź</button>
+            <button class="search-btn secondary" id="closeSearchBtn">Zamknij</button>
+        </div>
+        
+        <div class="editor-area">
+            <div class="editor" id="editor" contenteditable="true">
+                <p>Windows 11 pozbawił mnie Wordpada, postanowiłem więc napisać swojego.</p>
+                <p>Piszpad posiada tryb Focus, umiejętność czytania tekstu, a także dwie moje ulubione czcionki.</p>
+                <p><strong>WERSJA ZWALIDOWANA I NAPRAWIONA:</strong></p>
+                <p>✅ Sanityzacja HTML (DOMPurify) + ulepszone fallbacki</p>
+                <p>✅ Pełna obsługa błędów z try-catch</p>
+                <p>✅ SessionStorage z walidacją rozmiaru (max 5MB)</p>
+                <p>✅ Funkcja escapeHTML() - brak duplikacji kodu</p>
+                <p>✅ Walidacja plików RTF (max 10MB, ostrzeżenia przy dużych plikach)</p>
+                <p>✅ Sprawdzanie dostępności DOMPurify przy starcie</p>
+            </div>
+        </div>
+        
+        <div class="word-count-display" id="wordCountDisplay">0 słów | 0 znaków</div>
+        
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-time" id="timerTime">25:00</div>
+            <div class="timer-controls">
+                <button class="timer-control-btn" id="timerPauseBtn">Pauza</button>
+                <button class="timer-control-btn" id="timerResetBtn">Reset</button>
+            </div>
+            <div class="timer-message" id="timerMessage"></div>
+        </div>
+        
+        <input type="file" class="hidden" id="fileInput" accept=".rtf">
+        <input type="file" class="hidden" id="textFileInput" accept=".txt,.rtf">
+    </div>
+
+    <!-- Modal ustawień timera -->
+    <div class="timer-setup-modal" id="timerSetupModal">
+        <div class="timer-setup-box">
+            <div class="timer-setup-title">Ustaw timer pisania</div>
+            <div class="timer-presets">
+                <button class="timer-preset-btn" data-minutes="5">5 min</button>
+                <button class="timer-preset-btn" data-minutes="10">10 min</button>
+                <button class="timer-preset-btn" data-minutes="15">15 min</button>
+                <button class="timer-preset-btn" data-minutes="25">25 min</button>
+                <button class="timer-preset-btn" data-minutes="30">30 min</button>
+                <button class="timer-preset-btn" data-minutes="45">45 min</button>
+                <button class="timer-preset-btn" data-minutes="60">60 min</button>
+                <button class="timer-preset-btn" data-minutes="90">90 min</button>
+                <button class="timer-preset-btn" data-minutes="120">120 min</button>
+            </div>
+            <div class="timer-custom">
+                <div class="timer-custom-label">Lub własny czas (minuty):</div>
+                <input type="number" class="timer-custom-input" id="timerCustomInput" min="1" max="999" placeholder="np. 45">
+            </div>
+            <div class="timer-setup-buttons">
+                <button class="timer-setup-btn cancel" id="timerCancelBtn">Anuluj</button>
+                <button class="timer-setup-btn start" id="timerStartBtn">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRYB FOCUS -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-theme-switch-zone"></div>
+        <div class="focus-theme-switch" id="focusThemeSwitch">
+            <button class="focus-theme-btn" id="focusThemeBtn" title="Zmień tryb kolorystyczny">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            </button>
+            <button class="focus-theme-hide-btn" id="focusThemeHideBtn">ukryj</button>
+        </div>
+        
+        <div class="focus-hover-zone"></div>
+        <div class="focus-controls" id="focusControls">
+            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Stop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            <button class="focus-hide-btn" id="focusHideBtn">ukryj</button>
+        </div>
+        
+        <div class="focus-counter-hover-zone"></div>
+        <div class="focus-word-count" id="focusWordCount">
+            <div id="focusCounterText">0 słów | 0 znaków</div>
+            <div class="focus-counter-hide-btn" id="focusCounterHideBtn">ukryj</div>
+        </div>
+        
+        <div class="focus-timer-hover-zone"></div>
+        <div class="focus-timer" id="focusTimer">
+            <div class="timer-time" id="focusTimerTime">25:00</div>
+            <div class="timer-controls">
+                <button class="timer-control-btn" id="focusTimerPauseBtn">Pauza</button>
+                <button class="timer-control-btn" id="focusTimerResetBtn">Reset</button>
+            </div>
+            <div class="timer-message" id="focusTimerMessage"></div>
+            <div class="focus-timer-hide-btn" id="focusTimerHideBtn">ukryj</div>
+        </div>
+        
+        <div class="focus-paragraph-indicator" id="focusParagraphIndicator"></div>
+        <div class="focus-mirror" id="focusMirror"></div>
+        
+        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
+    </div>
+
+    <script>
+        // ===== NAPRAWIONE DEKLARACJE - używamy const/let zamiast var =====
+        const editor = document.getElementById('editor');
+        let fileName = 'dokument.rtf';
+        let isReading = false;
+        let fontFamily = 'Libre Baskerville';
+        let fontSize = 12;
+        let speechRate = 1.0;
+        let isFocusMode = false;
+        let undoHistory = [];
+        let historyIndex = -1;
+        let readingParagraphs = [];
+        let currentParagraphIndex = -1;
+        let focusControlsHidden = false;
+        let selectedVoice = null;
+        let lastCursorPosition = 0;
+        let openAsTextMode = false;
+        let wordCountVisible = true;
+        let focusCounterHidden = false;
+        let timerMinutes = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let timerRunning = false;
+        let timerPaused = false;
+        let focusTimerHidden = false;
+        let focusThemeLight = false;
+        let focusThemeSwitchHidden = false;
+        let focusReadingParagraphs = [];
+        let focusCurrentParagraphIndex = -1;
+        let focusMirrorElement = null;
+        
+        // Gratulacje pisarzy (skrócone dla przejrzystości)
+        const writerCongratulations = [
+            "Gratulacje. Sesja została zakończona. Choć sam akt pisania jest absurdalny w swojej istocie, zdołałeś wypełnić wyznaczony czas. Biurokratyczny aparat twojej woli zatwierdził ten dokument.",
+            "Pisanie - ta najgorsza z ludzkich działalności - zostało przez ciebie kontynuowane. Gratuluję, choć sam fakt że musimy sobie gratulować pisania jest dowodem naszego upadku.",
+            "Dobrze. Pisałeś. To było dobre. Czas minął.",
+            "I oto, w tej chwili, gdy ostatnie sekundy twojej sesji pisarskiej rozpłynęły się niczym wspomnienia z Combray, odnalazłem w tobie prawdziwego pisarza...",
+            "Ukończyłeś sesję. Syzyfowa skała pisania została zepchnięta. Jutro znów będziesz pchać. To wystarczy, by uznać cię za szczęśliwego.",
+            "Pisałeś. Skończyłeś. Nie możesz dalej. Będziesz dalej.",
+            "Cóż za cierpienie! Cóż za radość! Ukończyłeś sesję, dręcząc się każdym słowem, każdą literą - i właśnie to czyni cię pisarzem!",
+            "Sesja zakończona. Strumień świadomości zatrzymany. Tak, tak, tak napisałeś.",
+            "Sesja zakończona. Labirynt słów został przejrzany. W tej bibliotece Babel każda minuta pisania tworzy nową księgę nieskończoności.",
+            "Gratulacje. Napisałeś swoje zdania i one są dobre. To wystarczy. Reszta to tylko milczenie między słowami."
+        ];
+
+        // ===== NAPRAWIONE: System powiadomień z obsługą błędów =====
+        function showNotification(title, message, type = 'warning') {
+            const banner = document.getElementById('notificationBanner');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            banner.className = 'notification-banner show ' + type;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            setTimeout(() => {
+                banner.classList.remove('show');
+            }, 8000);
+        }
+
+        document.getElementById('notificationClose').onclick = function() {
+            document.getElementById('notificationBanner').classList.remove('show');
+        };
+
+        // ===== FOCUS MODE: Wskaźnik czytanego akapitu =====
+        function createMirrorElement() {
+            const focusEditor = document.getElementById('focusEditor');
+            const mirror = document.createElement('div');
+            mirror.id = 'focusMirror';
+            mirror.className = 'focus-mirror';
+            
+            const style = getComputedStyle(focusEditor);
+            mirror.style.cssText = `
+                position: absolute;
+                visibility: hidden;
+                top: -9999px;
+                left: -9999px;
+                width: ${focusEditor.clientWidth}px;
+                font-family: ${style.fontFamily};
+                font-size: ${style.fontSize};
+                line-height: ${style.lineHeight};
+                padding: ${style.padding};
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                box-sizing: border-box;
+            `;
+            
+            document.body.appendChild(mirror);
+            return mirror;
+        }
+
+        function getParagraphYPositionPrecise(paragraphIndex) {
+            const focusEditor = document.getElementById('focusEditor');
+            const mirror = focusMirrorElement;
+            if (!mirror) return 0;
+            
+            const paragraphs = focusEditor.value.split(/\n\n+/);
+            
+            let textBefore = '';
+            for (let i = 0; i < paragraphIndex; i++) {
+                textBefore += paragraphs[i] + '\n\n';
+            }
+            
+            mirror.textContent = textBefore;
+            return mirror.offsetHeight;
+        }
+
+        function updateFocusParagraphIndicator(paragraphIndex, allParagraphs) {
+            try {
+                const indicator = document.getElementById('focusParagraphIndicator');
+                const mirror = focusMirrorElement;
+                const focusEditor = document.getElementById('focusEditor');
+                
+                if (!indicator || !mirror) return;
+                
+                const yPosition = getParagraphYPositionPrecise(paragraphIndex);
+                
+                mirror.textContent = allParagraphs.slice(0, paragraphIndex + 1).join('\n\n');
+                const yPositionEnd = mirror.offsetHeight;
+                const paragraphHeight = yPositionEnd - yPosition;
+                
+                indicator.style.top = yPosition + 'px';
+                indicator.style.height = Math.max(paragraphHeight, 40) + 'px';
+                
+                focusEditor.scrollTop = yPosition - 100;
+                
+            } catch (error) {
+                console.error('Błąd aktualizacji wskaźnika:', error);
+            }
+        }
+
+        // ===== FOCUS MODE: Switch trybu jasny/ciemny =====
+        function toggleFocusTheme() {
+            focusThemeLight = !focusThemeLight;
+            const focusMode = document.getElementById('focusMode');
+            
+            if (focusThemeLight) {
+                focusMode.classList.add('light');
+                localStorage.setItem('focusThemeLight', 'true');
+            } else {
+                focusMode.classList.remove('light');
+                localStorage.setItem('focusThemeLight', 'false');
+            }
+        }
+
+        function loadFocusTheme() {
+            const saved = localStorage.getItem('focusThemeLight');
+            if (saved === 'true') {
+                focusThemeLight = true;
+                document.getElementById('focusMode').classList.add('light');
+            }
+        }
+
+        // ===== NAPRAWIONE: Helper - Escape HTML =====
+        function escapeHTML(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // ===== NAPRAWIONE: Sanityzacja HTML przed wstawieniem =====
+        function sanitizeHTML(html) {
+            if (typeof DOMPurify === 'undefined') {
+                console.error('DOMPurify nie załadował się!');
+                showNotification('Błąd krytyczny', 'Biblioteka bezpieczeństwa nie załadowała się. Odśwież stronę (Ctrl+R).', 'error');
+                
+                // Ultimate fallback: usuń wszystkie tagi script i niebezpieczne atrybuty
+                return html
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+                    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+                    .replace(/javascript:/gi, '');
+            }
+            
+            // Konfiguracja DOMPurify - pozwalamy tylko na bezpieczne tagi używane w edytorze
+            // p = paragrafy, br = nowe linie, b/strong = pogrubienie, i/em = kursywa, u = podkreślenie
+            return DOMPurify.sanitize(html, {
+                ALLOWED_TAGS: ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'span'],
+                ALLOWED_ATTR: ['style'],
+                KEEP_CONTENT: true,
+                RETURN_DOM_FRAGMENT: false,
+                RETURN_DOM: false
+            });
+        }
+
+        // ===== NAPRAWIONE: Bezpieczne wstawianie HTML =====
+        function setEditorContent(html) {
+            const sanitized = sanitizeHTML(html);
+            editor.innerHTML = sanitized;
+        }
+
+        function init() {
+            try {
+                // Sprawdzenie czy DOMPurify załadował się poprawnie
+                if (typeof DOMPurify === 'undefined') {
+                    console.error('DOMPurify nie został załadowany!');
+                    showNotification(
+                        'Ostrzeżenie bezpieczeństwa', 
+                        'Biblioteka sanityzacji nie załadowała się. Aplikacja używa podstawowej ochrony. Rozważ odświeżenie strony.', 
+                        'warning'
+                    );
+                }
+                
+                loadVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = loadVoices;
+                }
+                
+                saveState();
+                
+                // Event listeners
+                document.getElementById('newBtn').onclick = newDoc;
+                document.getElementById('openBtn').onclick = openDoc;
+                document.getElementById('saveBtn').onclick = saveDoc;
+                document.getElementById('undoBtn').onclick = undo;
+                document.getElementById('boldBtn').onclick = () => formatText('bold');
+                document.getElementById('italicBtn').onclick = () => formatText('italic');
+                document.getElementById('underlineBtn').onclick = () => formatText('underline');
+                document.getElementById('searchBtn').onclick = toggleSearch;
+                document.getElementById('readBtn').onclick = toggleReading;
+                document.getElementById('focusBtn').onclick = toggleFocusMode;
+                document.getElementById('toggleCounterBtn').onclick = toggleWordCount;
+                document.getElementById('timerBtn').onclick = openTimerSetup;
+                
+                document.getElementById('fontSelect').onchange = function() { 
+                    fontFamily = this.value; 
+                    updateStyle();
+                };
+                document.getElementById('fontSizeSelect').onchange = function() { 
+                    fontSize = parseInt(this.value); 
+                    updateStyle();
+                };
+                document.getElementById('speechRateSelect').onchange = function() { 
+                    speechRate = parseFloat(this.value); 
+                };
+                
+                document.getElementById('findBtn').onclick = doSearch;
+                document.getElementById('closeSearchBtn').onclick = toggleSearch;
+                document.getElementById('searchInput').onkeydown = (e) => {
+                    if (e.key === 'Enter') doSearch();
+                };
+                
+                document.getElementById('fileInput').onchange = loadFile;
+                document.getElementById('textFileInput').onchange = loadFileAsText;
+                document.getElementById('optionsBtn').onclick = toggleOptionsMenu;
+                document.getElementById('exportTxtBtn').onclick = exportToTxt;
+                document.getElementById('openAsTextBtn').onclick = openAsText;
+                document.getElementById('exportPdfBtn').onclick = exportToPdf;
+                
+                // Timer setup
+                const presetBtns = document.querySelectorAll('.timer-preset-btn');
+                presetBtns.forEach(btn => {
+                    btn.onclick = function() {
+                        presetBtns.forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                        document.getElementById('timerCustomInput').value = '';
+                    };
+                });
+                
+                document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
+                document.getElementById('timerStartBtn').onclick = startTimer;
+                document.getElementById('timerPauseBtn').onclick = toggleTimerPause;
+                document.getElementById('timerResetBtn').onclick = resetTimer;
+                document.getElementById('focusTimerPauseBtn').onclick = toggleTimerPause;
+                document.getElementById('focusTimerResetBtn').onclick = resetTimer;
+                document.getElementById('focusTimerHideBtn').onclick = () => {
+                    document.getElementById('focusTimer').classList.add('hidden-timer');
+                    focusTimerHidden = true;
+                };
+                
+                document.onkeydown = keyHandler;
+                
+                editor.addEventListener('input', () => {
+                    saveState();
+                    updateWordCount();
+                });
+                
+                editor.addEventListener('mouseup', updateFormatButtons);
+                editor.addEventListener('keyup', updateFormatButtons);
+                
+                updateStyle();
+                updateWordCount();
+                
+                document.addEventListener('click', (e) => {
+                    const optionsMenu = document.getElementById('optionsMenu');
+                    const optionsBtn = document.getElementById('optionsBtn');
+                    const timerSetupModal = document.getElementById('timerSetupModal');
+                    
+                    if (!optionsMenu.contains(e.target) && !optionsBtn.contains(e.target)) {
+                        optionsMenu.classList.remove('show');
+                    }
+                    
+                    if (e.target === timerSetupModal) {
+                        closeTimerSetup();
+                    }
+                });
+
+                // ===== NAPRAWIONE: sessionStorage zamiast localStorage =====
+                checkAutoRead();
+                
+            } catch (error) {
+                console.error('Błąd inicjalizacji:', error);
+                showNotification('Błąd', 'Nie udało się zainicjalizować edytora: ' + error.message, 'error');
+            }
+        }
+
+        // ===== NAPRAWIONE: sessionStorage z czyszczeniem =====
+        function checkAutoRead() {
+            try {
+                const textToRead = sessionStorage.getItem('textToRead');
+                const shouldAutoRead = sessionStorage.getItem('autoReadText');
+                
+                if (textToRead && shouldAutoRead === 'true') {
+                    const paragraphs = textToRead.split('\n\n');
+                    let htmlContent = '';
+                    
+                    paragraphs.forEach(para => {
+                        const trimmed = para.trim();
+                        if (trimmed) {
+                            // Escape HTML przed sanityzacją
+                            const escaped = trimmed
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;');
+                            htmlContent += '<p>' + escaped + '</p>';
+                        }
+                    });
+                    
+                    setEditorContent(htmlContent);
+                    
+                    // WAŻNE: Czyszczenie sessionStorage
+                    sessionStorage.removeItem('textToRead');
+                    sessionStorage.removeItem('autoReadText');
+                    
+                    undoHistory = [];
+                    historyIndex = -1;
+                    saveState();
+                    updateWordCount();
+                    
+                    setTimeout(() => {
+                        startAutoReading();
+                    }, 800);
+                }
+            } catch (error) {
+                console.error('Błąd odczytu sessionStorage:', error);
+            }
+        }
+
+        function startAutoReading() {
+            try {
+                if (!speechSynthesis) return;
+                
+                const fullText = editor.innerText || editor.textContent || '';
+                if (!fullText.trim()) return;
+                
+                const utterance = new SpeechSynthesisUtterance(fullText);
+                utterance.lang = 'pl-PL';
+                utterance.rate = speechRate;
+                utterance.pitch = 1;
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                const btn = document.getElementById('readBtn');
+                
+                utterance.onstart = () => {
+                    isReading = true;
+                    btn.classList.add('active');
+                };
+                
+                utterance.onend = () => {
+                    stopReading();
+                };
+                
+                utterance.onerror = (e) => {
+                    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                        console.error('Błąd czytania:', e.error);
+                        stopReading();
+                    }
+                };
+                
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Błąd automatycznego czytania:', error);
+            }
+        }
+        
+        function loadVoices() {
+            try {
+                const voices = speechSynthesis.getVoices();
+                if (voices.length === 0) return;
+                
+                // Szukamy polskiego głosu Paulina
+                for (const voice of voices) {
+                    if (voice.lang.includes('pl') && voice.name.includes('Paulina')) {
+                        selectedVoice = voice;
+                        console.log('Używam głosu:', voice.name);
+                        return;
+                    }
+                }
+                
+                // Fallback: jakikolwiek polski głos
+                for (const voice of voices) {
+                    if (voice.lang.includes('pl')) {
+                        selectedVoice = voice;
+                        console.log('Używam głosu:', voice.name);
+                        return;
+                    }
+                }
+                
+                console.log('Brak polskiego głosu, używam domyślnego');
+            } catch (error) {
+                console.error('Błąd ładowania głosów:', error);
+            }
+        }
+        
+        function updateFormatButtons() {
+            const commands = ['bold', 'italic', 'underline'];
+            commands.forEach(cmd => {
+                const btn = document.getElementById(cmd + 'Btn');
+                if (btn) {
+                    if (document.queryCommandState(cmd)) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                }
+            });
+        }
+        
+        function saveState() {
+            try {
+                const currentState = editor.innerHTML;
+                
+                if (undoHistory.length === 0 || undoHistory[historyIndex] !== currentState) {
+                    undoHistory = undoHistory.slice(0, historyIndex + 1);
+                    undoHistory.push(currentState);
+                    historyIndex = undoHistory.length - 1;
+                    
+                    // Limitujemy do 30 stanów zamiast 50 (optymalizacja pamięci)
+                    if (undoHistory.length > 30) {
+                        undoHistory = undoHistory.slice(-30);
+                        historyIndex = undoHistory.length - 1;
+                    }
+                }
+            } catch (error) {
+                console.error('Błąd zapisu stanu:', error);
+            }
+        }
+        
+        function undo() {
+            try {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    setEditorContent(undoHistory[historyIndex]);
+                    editor.focus();
+                    
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.selectNodeContents(editor);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } catch (error) {
+                console.error('Błąd cofania:', error);
+                showNotification('Błąd', 'Nie udało się cofnąć zmiany', 'error');
+            }
+        }
+        
+        function formatText(command) {
+            try {
+                document.execCommand(command, false, null);
+                editor.focus();
+                
+                const btnId = command + 'Btn';
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    const isFormatted = document.queryCommandState(command);
+                    if (isFormatted) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                }
+                
+                saveState();
+            } catch (error) {
+                console.error('Błąd formatowania:', error);
+            }
+        }
+        
+        function keyHandler(e) {
+            try {
+                if (e.ctrlKey) {
+                    if (e.key === 'n') { e.preventDefault(); newDoc(); }
+                    if (e.key === 's') { e.preventDefault(); saveDoc(); }
+                    if (e.key === 'o') { e.preventDefault(); openDoc(); }
+                    if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
+                    if (e.key === 'r') { e.preventDefault(); toggleReading(); }
+                    if (e.key === 'z') { e.preventDefault(); undo(); }
+                    if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
+                    if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
+                    if (e.key === 'u') { e.preventDefault(); formatText('underline'); }
+                }
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    toggleFocusMode();
+                }
+                if (e.key === 'Escape') {
+                    if (isFocusMode) {
+                        exitFocusMode();
+                    } else {
+                        closeSearch();
+                        if (isReading) stopReading();
+                    }
+                }
+            } catch (error) {
+                console.error('Błąd obsługi klawiatury:', error);
+            }
+        }
+        
+        function newDoc() {
+            try {
+                setEditorContent('<p>Zacznij pisać swój dokument...</p>');
+                fileName = 'dokument.rtf';
+                document.getElementById('fileName').textContent = fileName;
+                
+                undoHistory = [];
+                historyIndex = -1;
+                saveState();
+                updateWordCount();
+                document.getElementById('optionsMenu').classList.remove('show');
+            } catch (error) {
+                console.error('Błąd tworzenia nowego dokumentu:', error);
+                showNotification('Błąd', 'Nie udało się utworzyć nowego dokumentu', 'error');
+            }
+        }
+        
+        function openDoc() {
+            document.getElementById('fileInput').click();
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        function saveDoc() {
+            try {
+                const html = editor.innerHTML;
+                const rtf = toRTF(html);
+                const blob = new Blob([rtf], { type: 'application/rtf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                document.getElementById('optionsMenu').classList.remove('show');
+                showNotification('Sukces', 'Dokument został zapisany', 'success');
+            } catch (error) {
+                console.error('Błąd zapisu:', error);
+                showNotification('Błąd', 'Nie udało się zapisać dokumentu: ' + error.message, 'error');
+            }
+        }
+        
+        // ===== NAPRAWIONE: Lepsza obsługa błędów w loadFile =====
+        function loadFile(e) {
+            try {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                // Sprawdzenie rozmiaru (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('Błąd', 'Plik jest zbyt duży (max 5MB)', 'error');
+                    return;
+                }
+                
+                fileName = file.name;
+                document.getElementById('fileName').textContent = fileName;
+                
+                const reader = new FileReader();
+                
+                reader.onerror = () => {
+                    showNotification('Błąd', 'Nie udało się odczytać pliku', 'error');
+                };
+                
+                reader.onload = (e) => {
+                    try {
+                        const rtf = e.target.result;
+                        
+                        // Ostrzeżenie przy dużych plikach
+                        if (rtf.length > 1024 * 1024) {
+                            showNotification('Przetwarzanie', 'Plik jest duży, może to chwilę potrwać...', 'warning');
+                        }
+                        
+                        const html = fromRTF(rtf);
+                        
+                        if (!html || html.trim() === '') {
+                            showNotification('Ostrzeżenie', 'Plik jest pusty lub uszkodzony', 'warning');
+                            return;
+                        }
+                        
+                        setEditorContent(html);
+                        
+                        undoHistory = [];
+                        historyIndex = -1;
+                        saveState();
+                        updateWordCount();
+                        
+                        showNotification('Sukces', 'Dokument został wczytany', 'success');
+                    } catch (error) {
+                        console.error('Błąd parsowania RTF:', error);
+                        showNotification(
+                            'Problem z plikiem RTF', 
+                            'Ten plik może pochodzić z innego edytora (Word, LibreOffice). Spróbuj "Otwórz jako tekst" z menu.', 
+                            'warning'
+                        );
+                    }
+                };
+                
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('Błąd otwierania pliku:', error);
+                showNotification('Błąd', 'Nie udało się otworzyć pliku: ' + error.message, 'error');
+            }
+        }
+        
+        function toggleSearch() {
+            const panel = document.getElementById('searchPanel');
+            const btn = document.getElementById('searchBtn');
+            if (panel.classList.contains('show')) {
+                closeSearch();
+            } else {
+                panel.classList.add('show');
+                btn.classList.add('active');
+                document.getElementById('searchInput').focus();
+            }
+        }
+        
+        function closeSearch() {
+            document.getElementById('searchPanel').classList.remove('show');
+            document.getElementById('searchBtn').classList.remove('active');
+        }
+        
+        function doSearch() {
+            try {
+                const term = document.getElementById('searchInput').value;
+                if (term && window.find) {
+                    window.find(term, false, false, true);
+                }
+            } catch (error) {
+                console.error('Błąd wyszukiwania:', error);
+            }
+        }
+        
+        function updateStyle() {
+            const family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            editor.style.fontFamily = family;
+            editor.style.fontSize = fontSize + 'pt';
+        }
+        
+        function updateWordCount() {
+            try {
+                const text = editor.innerText || editor.textContent || '';
+                const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+                const chars = text.length;
+                const countText = words.length + ' słów | ' + chars + ' znaków';
+                
+                document.getElementById('wordCountDisplay').textContent = countText;
+                
+                if (isFocusMode) {
+                    document.getElementById('focusCounterText').textContent = countText;
+                }
+            } catch (error) {
+                console.error('Błąd liczenia słów:', error);
+            }
+        }
+        
+        function toggleWordCount() {
+            wordCountVisible = !wordCountVisible;
+            const display = document.getElementById('wordCountDisplay');
+            const btn = document.getElementById('toggleCounterBtn');
+            
+            if (wordCountVisible) {
+                display.classList.remove('hidden');
+                btn.classList.add('active');
+            } else {
+                display.classList.add('hidden');
+                btn.classList.remove('active');
+            }
+        }
+        
+        function toggleOptionsMenu() {
+            const menu = document.getElementById('optionsMenu');
+            menu.classList.toggle('show');
+        }
+        
+        function exportToTxt() {
+            try {
+                const text = editor.innerText || editor.textContent || '';
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName.replace(/\.rtf$/, '.txt');
+                a.click();
+                URL.revokeObjectURL(url);
+                document.getElementById('optionsMenu').classList.remove('show');
+                showNotification('Sukces', 'Eksport do TXT zakończony', 'success');
+            } catch (error) {
+                console.error('Błąd eksportu TXT:', error);
+                showNotification('Błąd', 'Nie udało się wyeksportować do TXT', 'error');
+            }
+        }
+        
+        function openAsText() {
+            openAsTextMode = true;
+            document.getElementById('textFileInput').click();
+            document.getElementById('optionsMenu').classList.remove('show');
+        }
+        
+        // ===== NAPRAWIONE: Bezpieczne ładowanie jako tekst =====
+        function loadFileAsText(e) {
+            try {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('Błąd', 'Plik jest zbyt duży (max 5MB)', 'error');
+                    return;
+                }
+                
+                fileName = file.name;
+                document.getElementById('fileName').textContent = fileName;
+                
+                const reader = new FileReader();
+                
+                reader.onerror = () => {
+                    showNotification('Błąd', 'Nie udało się odczytać pliku', 'error');
+                };
+                
+                reader.onload = (e) => {
+                    try {
+                        let text = e.target.result;
+                        const escaped = escapeHTML(text);
+                        const htmlContent = '<p>' + escaped.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                        setEditorContent(htmlContent);
+                        
+                        undoHistory = [];
+                        historyIndex = -1;
+                        saveState();
+                        updateWordCount();
+                        
+                        showNotification('Sukces', 'Plik został wczytany jako tekst', 'success');
+                    } catch (error) {
+                        console.error('Błąd parsowania tekstu:', error);
+                        showNotification('Błąd', 'Nie udało się przetworzyć pliku', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('Błąd otwierania pliku jako tekst:', error);
+                showNotification('Błąd', 'Nie udało się otworzyć pliku: ' + error.message, 'error');
+            } finally {
+                openAsTextMode = false;
+            }
+        }
+        
+        function exportToPdf() {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showNotification('Błąd', 'Biblioteka PDF nie została załadowana', 'error');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const text = editor.innerText || editor.textContent || '';
+                
+                const pageHeight = doc.internal.pageSize.height;
+                const lineHeight = 7;
+                const margin = 20;
+                const maxWidth = 170;
+                let yPosition = margin;
+                
+                const lines = doc.splitTextToSize(text, maxWidth);
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (yPosition + lineHeight > pageHeight - margin) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    doc.text(lines[i], margin, yPosition);
+                    yPosition += lineHeight;
+                }
+                
+                doc.save(fileName.replace(/\.rtf$/, '.pdf'));
+                document.getElementById('optionsMenu').classList.remove('show');
+                showNotification('Sukces', 'Eksport do PDF zakończony', 'success');
+            } catch (error) {
+                console.error('Błąd eksportu PDF:', error);
+                showNotification('Błąd', 'Nie udało się wyeksportować do PDF: ' + error.message, 'error');
+            }
+        }
+        
+        // TIMER FUNCTIONS
+        function openTimerSetup() {
+            document.getElementById('timerSetupModal').classList.add('show');
+        }
+        
+        function closeTimerSetup() {
+            document.getElementById('timerSetupModal').classList.remove('show');
+            const allBtns = document.querySelectorAll('.timer-preset-btn');
+            allBtns.forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('timerCustomInput').value = '';
+        }
+        
+        function startTimer() {
+            try {
+                const selectedBtn = document.querySelector('.timer-preset-btn.selected');
+                const customInput = document.getElementById('timerCustomInput');
+                let minutes = 0;
+                
+                if (customInput.value) {
+                    minutes = parseInt(customInput.value);
+                } else if (selectedBtn) {
+                    minutes = parseInt(selectedBtn.getAttribute('data-minutes'));
+                } else {
+                    showNotification('Uwaga', 'Wybierz czas lub wpisz własny', 'warning');
+                    return;
+                }
+                
+                if (minutes < 1) {
+                    showNotification('Uwaga', 'Czas musi być większy niż 0', 'warning');
+                    return;
+                }
+                
+                timerMinutes = minutes;
+                timerSeconds = 0;
+                timerRunning = true;
+                timerPaused = false;
+                
+                updateTimerDisplay();
+                
+                const normalDisplay = document.getElementById('timerDisplay');
+                const focusDisplay = document.getElementById('focusTimer');
+                
+                normalDisplay.classList.add('active');
+                normalDisplay.classList.remove('finished');
+                document.getElementById('timerMessage').textContent = '';
+                
+                if (isFocusMode) {
+                    focusDisplay.classList.add('active');
+                    focusDisplay.classList.remove('finished');
+                    focusDisplay.classList.remove('hidden-timer');
+                    focusTimerHidden = false;
+                    document.getElementById('focusTimerMessage').textContent = '';
+                }
+                
+                document.getElementById('timerPauseBtn').textContent = 'Pauza';
+                document.getElementById('focusTimerPauseBtn').textContent = 'Pauza';
+                
+                closeTimerSetup();
+                
+                timerInterval = setInterval(() => {
+                    if (!timerPaused) {
+                        if (timerSeconds === 0) {
+                            if (timerMinutes === 0) {
+                                finishTimer();
+                                return;
+                            }
+                            timerMinutes--;
+                            timerSeconds = 59;
+                        } else {
+                            timerSeconds--;
+                        }
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            } catch (error) {
+                console.error('Błąd startu timera:', error);
+                showNotification('Błąd', 'Nie udało się uruchomić timera', 'error');
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const timeStr = timerMinutes + ':' + (timerSeconds < 10 ? '0' : '') + timerSeconds;
+            document.getElementById('timerTime').textContent = timeStr;
+            document.getElementById('focusTimerTime').textContent = timeStr;
+        }
+        
+        function toggleTimerPause() {
+            if (!timerRunning) return;
+            
+            timerPaused = !timerPaused;
+            const btnText = timerPaused ? 'Wznów' : 'Pauza';
+            document.getElementById('timerPauseBtn').textContent = btnText;
+            document.getElementById('focusTimerPauseBtn').textContent = btnText;
+        }
+        
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            timerRunning = false;
+            timerPaused = false;
+            timerMinutes = 0;
+            timerSeconds = 0;
+            
+            document.getElementById('timerDisplay').classList.remove('active');
+            document.getElementById('timerDisplay').classList.remove('finished');
+            document.getElementById('focusTimer').classList.remove('active');
+            document.getElementById('focusTimer').classList.remove('finished');
+            document.getElementById('timerMessage').textContent = '';
+            document.getElementById('focusTimerMessage').textContent = '';
+        }
+        
+        function finishTimer() {
+            try {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                timerRunning = false;
+                
+                const randomIndex = Math.floor(Math.random() * writerCongratulations.length);
+                const congratulation = writerCongratulations[randomIndex];
+                
+                document.getElementById('timerDisplay').classList.add('finished');
+                document.getElementById('timerMessage').textContent = congratulation;
+                
+                if (isFocusMode) {
+                    document.getElementById('focusTimer').classList.add('finished');
+                    document.getElementById('focusTimerMessage').textContent = congratulation;
+                }
+            } catch (error) {
+                console.error('Błąd zakończenia timera:', error);
+            }
+        }
+        
+        function getCursor() {
+            try {
+                const sel = window.getSelection();
+                if (sel.rangeCount === 0) return 0;
+                const range = sel.getRangeAt(0);
+                const pre = range.cloneRange();
+                pre.selectNodeContents(editor);
+                pre.setEnd(range.startContainer, range.startOffset);
+                return pre.toString().length;
+            } catch (error) {
+                console.error('Błąd pobierania pozycji kursora:', error);
+                return 0;
+            }
+        }
+        
+        function toggleReading() {
+            if (isReading) {
+                stopReading();
+            } else {
+                startReading();
+            }
+        }
+        
+        function startReading() {
+            try {
+                if (!speechSynthesis) {
+                    showNotification('Błąd', 'Twoja przeglądarka nie obsługuje czytania tekstu', 'error');
+                    return;
+                }
+                
+                const allParagraphs = editor.querySelectorAll('p');
+                const cursorPos = getCursor();
+                
+                let textSoFar = 0;
+                let startParagraphIndex = 0;
+                
+                for (let i = 0; i < allParagraphs.length; i++) {
+                    const paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
+                    if (textSoFar + paraText.length >= cursorPos) {
+                        startParagraphIndex = i;
+                        break;
+                    }
+                    textSoFar += paraText.length;
+                }
+                
+                readingParagraphs = [];
+                for (let j = startParagraphIndex; j < allParagraphs.length; j++) {
+                    const text = allParagraphs[j].innerText || allParagraphs[j].textContent || '';
+                    if (text.trim()) {
+                        readingParagraphs.push({
+                            element: allParagraphs[j],
+                            text: text.trim()
+                        });
+                    }
+                }
+                
+                if (readingParagraphs.length === 0) {
+                    showNotification('Uwaga', 'Brak tekstu do czytania od pozycji kursora', 'warning');
+                    return;
+                }
+                
+                currentParagraphIndex = 0;
+                isReading = true;
+                
+                const btn = document.getElementById('readBtn');
+                btn.classList.add('active');
+                
+                readNextParagraph();
+            } catch (error) {
+                console.error('Błąd rozpoczęcia czytania:', error);
+                showNotification('Błąd', 'Nie udało się rozpocząć czytania', 'error');
+            }
+        }
+        
+        function readNextParagraph() {
+            try {
+                if (!isReading || currentParagraphIndex >= readingParagraphs.length) {
+                    stopReading();
+                    return;
+                }
+                
+                const currentPara = readingParagraphs[currentParagraphIndex];
+                
+                const highlighted = editor.querySelectorAll('.reading-highlight');
+                highlighted.forEach(el => el.classList.remove('reading-highlight'));
+                
+                currentPara.element.classList.add('reading-highlight');
+                currentPara.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const utterance = new SpeechSynthesisUtterance(currentPara.text);
+                utterance.lang = 'pl-PL';
+                utterance.rate = speechRate;
+                utterance.pitch = 1;
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                utterance.onend = () => {
+                    if (isReading) {
+                        currentParagraphIndex++;
+                        readNextParagraph();
+                    }
+                };
+                
+                utterance.onerror = (e) => {
+                    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                        console.error('Błąd czytania:', e.error);
+                        stopReading();
+                        showNotification('Błąd', 'Problem podczas czytania tekstu', 'error');
+                    }
+                };
+                
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Błąd czytania akapitu:', error);
+                stopReading();
+            }
+        }
+        
+        function stopReading() {
+            try {
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+                isReading = false;
+                
+                const highlighted = editor.querySelectorAll('.reading-highlight');
+                highlighted.forEach(el => el.classList.remove('reading-highlight'));
+                
+                readingParagraphs = [];
+                currentParagraphIndex = -1;
+                
+                const btn = document.getElementById('readBtn');
+                btn.classList.remove('active');
+            } catch (error) {
+                console.error('Błąd zatrzymania czytania:', error);
+            }
+        }
+        
+        // ===== NAPRAWIONE: Lepszy parser RTF z obsługą błędów =====
+        function toRTF(html) {
+            try {
+                const font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
+                let rtf = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
+                
+                let cleanText = html
+                    .replace(/<br\s*\/?>/gi, '\\line ')
+                    .replace(/<\/p>/gi, '\\par ')
+                    .replace(/<p[^>]*>/gi, '')
+                    .replace(/<b[^>]*>(.*?)<\/b>/gi, '{\\b $1}')
+                    .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '{\\b $1}')
+                    .replace(/<i[^>]*>(.*?)<\/i>/gi, '{\\i $1}')
+                    .replace(/<em[^>]*>(.*?)<\/em>/gi, '{\\i $1}')
+                    .replace(/<u[^>]*>(.*?)<\/u>/gi, '{\\ul $1}')
+                    .replace(/<[^>]+>/g, '');
+                
+                cleanText = cleanText
+                    .replace(/ą/g, "\\'b1")
+                    .replace(/Ą/g, "\\'a1")
+                    .replace(/ć/g, "\\'e6")
+                    .replace(/Ć/g, "\\'c6")
+                    .replace(/ę/g, "\\'ea")
+                    .replace(/Ę/g, "\\'ca")
+                    .replace(/ł/g, "\\'b3")
+                    .replace(/Ł/g, "\\'a3")
+                    .replace(/ń/g, "\\'f1")
+                    .replace(/Ń/g, "\\'d1")
+                    .replace(/ó/g, "\\'f3")
+                    .replace(/Ó/g, "\\'d3")
+                    .replace(/ś/g, "\\'9c")
+                    .replace(/Ś/g, "\\'8c")
+                    .replace(/ź/g, "\\'9f")
+                    .replace(/Ź/g, "\\'8f")
+                    .replace(/ż/g, "\\'bf")
+                    .replace(/Ż/g, "\\'af");
+                
+                rtf += cleanText + '}';
+                return rtf;
+            } catch (error) {
+                console.error('Błąd konwersji do RTF:', error);
+                throw new Error('Nie udało się przekonwertować na RTF');
+            }
+        }
+        
+        function parseRTFFormatting(text) {
+            let result = '';
+            let i = 0;
+            
+            while (i < text.length) {
+                if (text[i] === '{' && text[i+1] === '\\') {
+                    let formatType = '';
+                    if (text.substr(i, 3) === '{\\b' && text[i+3] !== '0') {
+                        formatType = 'BOLD';
+                    } else if (text.substr(i, 3) === '{\\i' && text[i+3] !== '0') {
+                        formatType = 'ITALIC';
+                    } else if (text.substr(i, 4) === '{\\ul' && text[i+4] !== '0') {
+                        formatType = 'UNDERLINE';
+                    }
+                    
+                    if (formatType) {
+                        let depth = 1;
+                        let start = i + (formatType === 'UNDERLINE' ? 4 : 3);
+                        while (start < text.length && text[start] === ' ') start++;
+                        
+                        let j = start;
+                        let content = '';
+                        
+                        while (j < text.length && depth > 0) {
+                            if (text[j] === '{') {
+                                depth++;
+                            } else if (text[j] === '}') {
+                                depth--;
+                                if (depth === 0) break;
+                            }
+                            content += text[j];
+                            j++;
+                        }
+                        
+                        const parsedContent = parseRTFFormatting(content);
+                        
+                        if (formatType === 'BOLD') {
+                            result += '|||BOLD_START|||' + parsedContent + '|||BOLD_END|||';
+                        } else if (formatType === 'ITALIC') {
+                            result += '|||ITALIC_START|||' + parsedContent + '|||ITALIC_END|||';
+                        } else if (formatType === 'UNDERLINE') {
+                            result += '|||UNDERLINE_START|||' + parsedContent + '|||UNDERLINE_END|||';
+                        }
+                        
+                        i = j + 1;
+                        continue;
+                    }
+                }
+                
+                result += text[i];
+                i++;
+            }
+            
+            return result;
+        }
+        
+        function fromRTF(rtf) {
+            try {
+                // Prosta walidacja
+                if (!rtf || typeof rtf !== 'string') {
+                    throw new Error('Nieprawidłowy format RTF');
+                }
+                
+                // Sprawdzenie rozmiaru RTF (max 10MB dla parsowania)
+                if (rtf.length > 10 * 1024 * 1024) {
+                    throw new Error('Plik RTF jest zbyt duży do przetworzenia (max 10MB)');
+                }
+                
+                if (rtf.indexOf('\\rtf') === -1) {
+                    // To nie jest RTF, traktujemy jako zwykły tekst
+                    const escaped = escapeHTML(rtf);
+                    return '<p>' + escaped.replace(/\n/g, '</p><p>') + '</p>';
+                }
+                
+                let text = rtf;
+                
+                text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
+                text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
+                
+                // Polskie znaki
+                text = text
+                    .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
+                    .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
+                    .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
+                    .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
+                    .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
+                    .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
+                    .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
+                    .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
+                    .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
+                    .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
+                    .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
+                    .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
+                    .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
+                    .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
+                    .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
+                    .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
+                    .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
+                    .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
+                    .replace(/\\'84/g, '"').replace(/'84/g, '"')
+                    .replace(/\\'94/g, '"').replace(/'94/g, '"')
+                    .replace(/\\'96/g, '–').replace(/'96/g, '–')
+                    .replace(/\\'97/g, '—').replace(/'97/g, '—');
+                
+                text = text.replace(/^\{\\rtf[^{}]*/, '');
+                text = text.replace(/\}$/, '');
+                
+                text = parseRTFFormatting(text);
+                
+                text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
+                text = text.replace(/\{[^}]*\}/g, '');
+                text = text.replace(/\\/g, '');
+                
+                text = text.replace(/\s+/g, ' ').trim();
+                text = text.replace(/^\{+/, '').replace(/\}+$/, '');
+                
+                text = text.replace(/\|\|\|BOLD_START\|\|\|/g, '<strong>');
+                text = text.replace(/\|\|\|BOLD_END\|\|\|/g, '</strong>');
+                text = text.replace(/\|\|\|ITALIC_START\|\|\|/g, '<em>');
+                text = text.replace(/\|\|\|ITALIC_END\|\|\|/g, '</em>');
+                text = text.replace(/\|\|\|UNDERLINE_START\|\|\|/g, '<u>');
+                text = text.replace(/\|\|\|UNDERLINE_END\|\|\|/g, '</u>');
+                
+                const paragraphs = text.split('|||PARAGRAPH|||');
+                let html = '';
+                
+                for (let i = 0; i < paragraphs.length; i++) {
+                    const para = paragraphs[i].trim();
+                    if (para && para.length > 3) {
+                        const cleaned = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
+                        html += '<p>' + cleaned + '</p>';
+                    }
+                }
+                
+                if (!html || paragraphs.length < 2) {
+                    text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
+                    
+                    const sections = text.split(/\n\s*\n/);
+                    if (sections.length > 1) {
+                        for (let j = 0; j < sections.length; j++) {
+                            const section = sections[j].trim();
+                            if (section) {
+                                html += '<p>' + section + '</p>';
+                            }
+                        }
+                    } else {
+                        const sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
+                        let currentPara = '';
+                        
+                        for (let k = 0; k < sentences.length; k++) {
+                            const sentence = sentences[k].trim();
+                            if (sentence) {
+                                currentPara += sentence + (k < sentences.length - 1 ? '. ' : '');
+                                
+                                if (currentPara.length > 300) {
+                                    html += '<p>' + currentPara + '</p>';
+                                    currentPara = '';
+                                }
+                            }
+                        }
+                        
+                        if (currentPara.trim()) {
+                            html += '<p>' + currentPara + '</p>';
+                        }
+                    }
+                }
+                
+                if (!html) {
+                    html = '<p>' + text + '</p>';
+                }
+                
+                return html;
+            } catch (error) {
+                console.error('Błąd parsowania RTF:', error);
+                throw new Error('Nie udało się przetworzyć pliku RTF. Spróbuj "Otwórz jako tekst".');
+            }
+        }
+        
+        function toggleFocusMode() {
+            if (isFocusMode) {
+                exitFocusMode();
+            } else {
+                enterFocusMode();
+            }
+        }
+        
+        function enterFocusMode() {
+            try {
+                isFocusMode = true;
+                
+                loadFocusTheme();
+                
+                const focusEditor = document.getElementById('focusEditor');
+                const mainText = editor.innerText || editor.textContent || '';
+                focusEditor.value = mainText;
+                
+                lastCursorPosition = 0;
+                
+                const family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+                focusEditor.style.fontFamily = family;
+                
+                document.body.classList.add('focus-active');
+                
+                const focusMode = document.getElementById('focusMode');
+                focusMode.classList.add('active');
+                
+                const focusControls = document.getElementById('focusControls');
+                const focusCounter = document.getElementById('focusWordCount');
+                const focusTimer = document.getElementById('focusTimer');
+                
+                focusControls.classList.remove('hidden-controls');
+                focusControlsHidden = false;
+                
+                focusCounter.classList.remove('hidden-counter');
+                focusCounterHidden = false;
+                
+                if (timerRunning) {
+                    focusTimer.classList.remove('hidden-timer');
+                    focusTimerHidden = false;
+                }
+                
+                updateWordCount();
+                
+                // Event listeners dla trybu focus
+                document.getElementById('focusReadBtn').onclick = () => {
+                    if (isReading) {
+                        stopFocusReading();
+                    } else {
+                        focusEditor.focus();
+                        
+                        setTimeout(() => {
+                            lastCursorPosition = focusEditor.selectionStart || 0;
+                            startFocusReading();
+                        }, 10);
+                    }
+                };
+                
+                document.getElementById('focusHideBtn').onclick = () => {
+                    focusControls.classList.add('hidden-controls');
+                    focusControlsHidden = true;
+                };
+                
+                document.getElementById('focusCounterHideBtn').onclick = () => {
+                    focusCounter.classList.add('hidden-counter');
+                    focusCounterHidden = true;
+                };
+                
+                document.getElementById('focusThemeBtn').onclick = toggleFocusTheme;
+                
+                document.getElementById('focusThemeHideBtn').onclick = () => {
+                    document.getElementById('focusThemeSwitch').classList.add('hidden-switch');
+                    focusThemeSwitchHidden = true;
+                };
+                
+                setTimeout(() => {
+                    const elem = document.documentElement;
+                    
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => {
+                            console.log('Fullscreen error:', err);
+                        });
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    }
+                    
+                    setTimeout(() => {
+                        focusEditor.focus();
+                        focusEditor.setSelectionRange(0, 0);
+                        focusEditor.scrollTop = 0;
+                    }, 100);
+                    
+                }, 50);
+                
+                focusEditor.oninput = null;
+                focusEditor.oninput = () => {
+                    const newContent = focusEditor.value;
+                    if (newContent.trim()) {
+                        const escaped = escapeHTML(newContent);
+                        const htmlContent = '<p>' + escaped.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                        setEditorContent(htmlContent);
+                        saveState();
+                        updateWordCount();
+                    } else {
+                        setEditorContent('<p>Zacznij pisać swój dokument...</p>');
+                        updateWordCount();
+                    }
+                };
+                
+                focusEditor.addEventListener('mouseup', () => {
+                    lastCursorPosition = focusEditor.selectionStart;
+                });
+                
+                focusEditor.addEventListener('keyup', () => {
+                    lastCursorPosition = focusEditor.selectionStart;
+                });
+                
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+                document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+                document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+                document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            } catch (error) {
+                console.error('Błąd trybu focus:', error);
+                showNotification('Błąd', 'Nie udało się włączyć trybu focus', 'error');
+            }
+        }
+        
+        function startFocusReading() {
+            try {
+                if (!speechSynthesis) {
+                    return;
+                }
+                
+                const focusEditor = document.getElementById('focusEditor');
+                const text = focusEditor.value;
+                const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+                
+                if (paragraphs.length === 0) {
+                    showNotification('Uwaga', 'Brak tekstu do czytania', 'warning');
+                    return;
+                }
+                
+                if (!focusMirrorElement) {
+                    focusMirrorElement = createMirrorElement();
+                }
+                
+                const indicator = document.getElementById('focusParagraphIndicator');
+                indicator.classList.add('active');
+                
+                speechSynthesis.cancel();
+                focusReadingParagraphs = [];
+                focusCurrentParagraphIndex = 0;
+                
+                paragraphs.forEach((para, index) => {
+                    const utterance = new SpeechSynthesisUtterance(para.trim());
+                    utterance.lang = 'pl-PL';
+                    utterance.rate = speechRate;
+                    utterance.pitch = 1;
+                    
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                    
+                    utterance.onstart = () => {
+                        focusCurrentParagraphIndex = index;
+                        updateFocusParagraphIndicator(index, paragraphs);
+                    };
+                    
+                    utterance.onend = () => {
+                        if (index === paragraphs.length - 1) {
+                            stopFocusReading();
+                        }
+                    };
+                    
+                    utterance.onerror = (e) => {
+                        if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                            console.error('Błąd czytania akapitu:', e.error);
+                            stopFocusReading();
+                        }
+                    };
+                    
+                    focusReadingParagraphs.push(utterance);
+                });
+                
+                focusReadingParagraphs.forEach(utterance => {
+                    speechSynthesis.speak(utterance);
+                });
+                
+                isReading = true;
+                document.getElementById('focusReadBtn').classList.add('active');
+                
+            } catch (error) {
+                console.error('Błąd rozpoczęcia czytania w Focus:', error);
+                showNotification('Błąd', 'Nie udało się rozpocząć czytania', 'error');
+            }
+        }
+        
+        function stopFocusReading() {
+            try {
+                if (speechSynthesis.speaking || speechSynthesis.paused) {
+                    speechSynthesis.cancel();
+                }
+                isReading = false;
+                focusCurrentParagraphIndex = -1;
+                focusReadingParagraphs = [];
+                
+                const indicator = document.getElementById('focusParagraphIndicator');
+                if (indicator) {
+                    indicator.classList.remove('active');
+                    indicator.style.height = '0';
+                }
+                
+                const focusReadBtn = document.getElementById('focusReadBtn');
+                if (focusReadBtn) {
+                    focusReadBtn.classList.remove('active');
+                }
+                
+            } catch (error) {
+                console.error('Błąd zatrzymania czytania w Focus:', error);
+            }
+        }
+        
+        function handleFullscreenChange() {
+            try {
+                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                                    document.mozFullScreenElement || document.msFullscreenElement);
+                
+                if (!isFullscreen && isFocusMode) {
+                    exitFocusMode();
+                }
+            } catch (error) {
+                console.error('Błąd fullscreen change:', error);
+            }
+        }
+        
+        function exitFocusMode() {
+            try {
+                if (!isFocusMode) return;
+                
+                if (isReading) {
+                    stopFocusReading();
+                }
+                
+                isFocusMode = false;
+                
+                const focusControls = document.getElementById('focusControls');
+                if (!focusControlsHidden) {
+                    focusControls.classList.remove('hidden-controls');
+                }
+                focusControlsHidden = false;
+                
+                const focusCounter = document.getElementById('focusWordCount');
+                if (!focusCounterHidden) {
+                    focusCounter.classList.remove('hidden-counter');
+                }
+                focusCounterHidden = false;
+                
+                const focusTimer = document.getElementById('focusTimer');
+                if (!focusTimerHidden) {
+                    focusTimer.classList.remove('hidden-timer');
+                }
+                focusTimerHidden = false;
+                
+                const focusThemeSwitch = document.getElementById('focusThemeSwitch');
+                if (!focusThemeSwitchHidden) {
+                    focusThemeSwitch.classList.remove('hidden-switch');
+                }
+                focusThemeSwitchHidden = false;
+                
+                if (focusMirrorElement && focusMirrorElement.parentNode) {
+                    focusMirrorElement.parentNode.removeChild(focusMirrorElement);
+                    focusMirrorElement = null;
+                }
+                
+                document.body.classList.remove('focus-active');
+                
+                document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+                document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+                document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+                
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {
+                        console.log('Exit fullscreen error:', err);
+                    });
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                }
+                
+                document.getElementById('focusMode').classList.remove('active');
+                
+                const focusEditor = document.getElementById('focusEditor');
+                if (focusEditor.value.trim()) {
+                    const escaped = escapeHTML(focusEditor.value);
+                    const htmlContent = '<p>' + escaped.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                    setEditorContent(htmlContent);
+                    saveState();
+                    updateWordCount();
+                }
+                
+                setTimeout(() => {
+                    editor.focus();
+                }, 200);
+            } catch (error) {
+                console.error('Błąd wyjścia z trybu focus:', error);
+            }
+        }
+        
+        // Inicjalizacja przy załadowaniu DOM
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
