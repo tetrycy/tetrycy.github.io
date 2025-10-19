@@ -1141,6 +1141,36 @@ document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
             updateStyle();
             updateWordCount();
             
+            // Fix kopiowania - pojedyncze entery zamiast podwójnych
+            editor.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var range = selection.getRangeAt(0);
+                var container = document.createElement('div');
+                container.appendChild(range.cloneContents());
+                
+                // Pobierz wszystkie paragrafy z zaznaczenia
+                var paragraphs = container.querySelectorAll('p');
+                var textParts = [];
+                
+                for (var i = 0; i < paragraphs.length; i++) {
+                    var text = paragraphs[i].innerText || paragraphs[i].textContent || '';
+                    if (text.trim()) {
+                        textParts.push(text);
+                    }
+                }
+                
+                // Jeśli nie ma paragrafów, użyj zwykłego tekstu
+                if (textParts.length === 0) {
+                    textParts.push(selection.toString());
+                }
+                
+                // Połącz pojedynczym enterem
+                var plainText = textParts.join('\n');
+                
+                e.clipboardData.setData('text/plain', plainText);
+                e.preventDefault();
+            });
+            
             document.addEventListener('click', function(e) {
                 var optionsMenu = document.getElementById('optionsMenu');
                 var optionsBtn = document.getElementById('optionsBtn');
