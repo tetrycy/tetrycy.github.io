@@ -1951,10 +1951,11 @@ document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
             focusCounter.classList.remove('hidden-counter');
             focusCounterHidden = false;
             
-            if (timerRunning) {
-                focusTimer.classList.remove('hidden-timer');
-                focusTimerHidden = false;
-            }
+         if (timerRunning) {
+    focusTimer.classList.add('active');
+    focusTimer.classList.remove('hidden-timer');
+    focusTimerHidden = false;
+}
             
             updateWordCount();
             
