@@ -1587,14 +1587,14 @@ document.getElementById('timerCancelBtn').onclick = closeTimerSetup;
             var textSoFar = 0;
             var startParagraphIndex = 0;
             
-            for (var i = 0; i < allParagraphs.length; i++) {
-                var paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
-                if (textSoFar + paraText.length >= cursorPos) {
-                    startParagraphIndex = i;
-                    break;
-                }
-                textSoFar += paraText.length;
-            }
+          for (var i = 0; i < allParagraphs.length; i++) {
+    var paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
+    if (textSoFar + paraText.length > cursorPos) {
+        startParagraphIndex = i;
+        break;
+    }
+    textSoFar += paraText.length;
+}
             
             readingParagraphs = [];
             for (var j = startParagraphIndex; j < allParagraphs.length; j++) {
