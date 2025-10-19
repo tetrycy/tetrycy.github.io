@@ -201,25 +201,22 @@
             display: none !important;
         }
         
-        .focus-editor {
-            width: 100%;
-            max-width: 50rem;
-            min-height: 60vh;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #e5e5e5;
-            font-size: 18px;
-            line-height: 1.8;
-            padding: 2rem;
-            resize: none;
-            font-family: inherit;
-            overflow: hidden;
-        }
-        
-        .focus-editor::placeholder {
-            color: #666;
-        }
+        .focus-mode .editor {
+    width: 100%;
+    max-width: 50rem;
+    min-height: 60vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e5e5e5;
+    font-size: 18px;
+    line-height: 1.8;
+    padding: 2rem;
+}
+
+.focus-mode .editor::placeholder {
+    color: #666;
+}
         
         .focus-mode::-webkit-scrollbar,
         .focus-editor::-webkit-scrollbar {
@@ -905,8 +902,7 @@
             <div class="timer-message" id="focusTimerMessage"></div>
             <div class="focus-timer-hide-btn" id="focusTimerHideBtn">ukryj</div>
         </div>
-        
-        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
+    
     </div>
 
     <script>
