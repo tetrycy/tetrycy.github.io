@@ -17,19 +17,32 @@ const Reading = {
         }
         
         const allParagraphs = AppState.editor.querySelectorAll('p');
-        const cursorPos = AppState.getCursorPosition();
         
         // Znajdź paragraf, w którym jest kursor
-        let textSoFar = 0;
+        const sel = window.getSelection();
         let startParagraphIndex = 0;
         
-        for (let i = 0; i < allParagraphs.length; i++) {
-            const paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
-            if (textSoFar + paraText.length > cursorPos) {
-                startParagraphIndex = i;
-                break;
+        if (sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            let node = range.startContainer;
+            
+            // Jeśli kursor jest w text node, znajdź parent paragraph
+            while (node && node.nodeName !== 'P') {
+                node = node.parentNode;
+                if (node === AppState.editor) {
+                    break;
+                }
             }
-            textSoFar += paraText.length;
+            
+            // Znajdź indeks tego paragrafu
+            if (node && node.nodeName === 'P') {
+                for (let i = 0; i < allParagraphs.length; i++) {
+                    if (allParagraphs[i] === node) {
+                        startParagraphIndex = i;
+                        break;
+                    }
+                }
+            }
         }
         
         // Zbierz paragrafy od pozycji kursora
