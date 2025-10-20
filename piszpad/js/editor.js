@@ -40,15 +40,54 @@ const Editor = {
         if (AppState.historyIndex > 0) {
             AppState.historyIndex--;
             AppState.editor.innerHTML = AppState.undoHistory[AppState.historyIndex];
-            AppState.editor.focus();
+            
+            // Jeśli jesteśmy w trybie Focus, zsynchronizuj
+            if (AppState.isFocusMode) {
+                const focusEditor = document.getElementById('focusEditor');
+                focusEditor.innerHTML = AppState.editor.innerHTML;
+                focusEditor.focus();
+            } else {
+                AppState.editor.focus();
+            }
             
             // Ustaw kursor na końcu
             const range = document.createRange();
             const sel = window.getSelection();
-            range.selectNodeContents(AppState.editor);
+            const targetEditor = AppState.isFocusMode ? document.getElementById('focusEditor') : AppState.editor;
+            range.selectNodeContents(targetEditor);
             range.collapse(false);
             sel.removeAllRanges();
             sel.addRange(range);
+            
+            AppState.updateWordCount();
+        }
+    },
+    
+    // Przywróć (redo)
+    redo: function() {
+        if (AppState.historyIndex < AppState.undoHistory.length - 1) {
+            AppState.historyIndex++;
+            AppState.editor.innerHTML = AppState.undoHistory[AppState.historyIndex];
+            
+            // Jeśli jesteśmy w trybie Focus, zsynchronizuj
+            if (AppState.isFocusMode) {
+                const focusEditor = document.getElementById('focusEditor');
+                focusEditor.innerHTML = AppState.editor.innerHTML;
+                focusEditor.focus();
+            } else {
+                AppState.editor.focus();
+            }
+            
+            // Ustaw kursor na końcu
+            const range = document.createRange();
+            const sel = window.getSelection();
+            const targetEditor = AppState.isFocusMode ? document.getElementById('focusEditor') : AppState.editor;
+            range.selectNodeContents(targetEditor);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            
+            AppState.updateWordCount();
         }
     },
     
@@ -154,8 +193,35 @@ const Editor = {
             if (e.key === 's') { e.preventDefault(); FileHandler.saveDocument(); }
             if (e.key === 'o') { e.preventDefault(); FileHandler.openDocument(); }
             if (e.key === 'f') { e.preventDefault(); this.toggleSearch(); }
-            if (e.key === 'r') { e.preventDefault(); Reading.toggle(); }
+            if (e.key === 'r') { 
+                e.preventDefault(); 
+                // W trybie focus użyj focus reading, w zwykłym trybie - zwykłe czytanie
+                if (AppState.isFocusMode) {
+                    if (AppState.isReading) {
+                        FocusMode.stopFocusReading();
+                    } else {
+                        const focusEditor = document.getElementById('focusEditor');
+                        focusEditor.focus();
+                        setTimeout(() => {
+                            const sel = window.getSelection();
+                            if (sel.rangeCount > 0) {
+                                const range = sel.getRangeAt(0);
+                                const pre = range.cloneRange();
+                                pre.selectNodeContents(focusEditor);
+                                pre.setEnd(range.startContainer, range.startOffset);
+                                AppState.lastCursorPosition = pre.toString().length;
+                            } else {
+                                AppState.lastCursorPosition = 0;
+                            }
+                            FocusMode.startFocusReading();
+                        }, 10);
+                    }
+                } else {
+                    Reading.toggle();
+                }
+            }
             if (e.key === 'z') { e.preventDefault(); this.undo(); }
+            if (e.key === 'y') { e.preventDefault(); this.redo(); }
             if (e.key === 'b') { e.preventDefault(); this.formatText('bold'); }
             if (e.key === 'i') { e.preventDefault(); this.formatText('italic'); }
             if (e.key === 'u') { e.preventDefault(); this.formatText('underline'); }
