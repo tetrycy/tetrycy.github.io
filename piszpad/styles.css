@@ -265,10 +265,10 @@ body.focus-active > *:not(.focus-mode) {
     font-size: 18px;
     line-height: 1.8;
     padding: 2rem;
-    resize: none;
 }
 
-.focus-mode .editor::placeholder {
+.focus-mode .editor:empty:before {
+    content: 'Zacznij pisać...';
     color: #666;
 }
 
