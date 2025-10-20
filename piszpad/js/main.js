@@ -15,6 +15,7 @@ function init() {
     
     // Podłącz przyciski edytora
     document.getElementById('undoBtn').onclick = () => Editor.undo();
+    document.getElementById('redoBtn').onclick = () => Editor.redo();
     document.getElementById('boldBtn').onclick = () => Editor.formatText('bold');
     document.getElementById('italicBtn').onclick = () => Editor.formatText('italic');
     document.getElementById('underlineBtn').onclick = () => Editor.formatText('underline');
