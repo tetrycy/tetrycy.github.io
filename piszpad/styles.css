@@ -1,0 +1,674 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f3f4f6;
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.editor-container {
+    min-height: 600px;
+    width: 100%;
+    max-width: 80rem;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.toolbar {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f9fafb;
+}
+
+.btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover {
+    background: #e5e7eb;
+}
+
+.btn.active {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.separator {
+    width: 1px;
+    height: 1.5rem;
+    background: #d1d5db;
+    margin: 0 0.25rem;
+}
+
+.select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    background: white;
+}
+
+.filename {
+    margin-left: auto;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.search-panel {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.5rem 0.75rem;
+    background: #fef3c7;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-panel.show {
+    display: flex;
+}
+
+.search-input {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    flex: 1;
+    max-width: 20rem;
+}
+
+.search-btn {
+    padding: 0.25rem 0.75rem;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-btn.primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.search-btn.primary:hover {
+    background: #2563eb;
+}
+
+.search-btn.secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.search-btn.secondary:hover {
+    background: #4b5563;
+}
+
+.editor-area {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.editor {
+    min-height: 100%;
+    outline: none;
+    color: black;
+    line-height: 1.8;
+}
+
+.editor p {
+    margin-bottom: 1em;
+}
+
+.editor p:last-child {
+    margin-bottom: 0;
+}
+
+.reading-highlight {
+    background: rgba(255, 235, 59, 0.2);
+    transition: background 0.3s ease;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.options-menu-container {
+    position: relative;
+}
+
+.options-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: none;
+    min-width: 12rem;
+    z-index: 1000;
+}
+
+.options-menu.show {
+    display: block;
+}
+
+.options-menu-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.options-menu-item:first-child {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+.options-menu-item:last-child {
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+.options-menu-item:hover {
+    background: #f3f4f6;
+}
+
+.word-count-display {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.word-count-display.hidden {
+    display: none;
+}
+
+/* TRYB FOCUS */
+.focus-mode {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.focus-mode.active {
+    display: flex;
+}
+
+body.focus-active {
+    overflow: hidden;
+}
+
+body.focus-active > *:not(.focus-mode) {
+    display: none !important;
+}
+
+.focus-mode .editor {
+    width: 100%;
+    max-width: 50rem;
+    min-height: 60vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e5e5e5;
+    font-size: 18px;
+    line-height: 1.8;
+    padding: 2rem;
+    resize: none;
+}
+
+.focus-mode .editor::placeholder {
+    color: #666;
+}
+
+.focus-mode::-webkit-scrollbar,
+.focus-mode .editor::-webkit-scrollbar {
+    display: none;
+}
+
+.focus-mode,
+.focus-mode .editor {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.focus-controls {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10000;
+    transition: opacity 0.3s ease;
+}
+
+.focus-controls.hidden-controls {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.focus-hover-zone {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    z-index: 9999;
+}
+
+.focus-hover-zone:hover ~ .focus-controls.hidden-controls {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.focus-controls.hidden-controls:hover {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.focus-read-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+}
+
+.focus-read-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.focus-read-btn.active {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.focus-read-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke: #e5e5e5;
+}
+
+.focus-hide-btn {
+    width: 2.5rem;
+    height: 1.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 0.625rem;
+    transition: color 0.2s;
+    text-align: center;
+}
+
+.focus-hide-btn:hover {
+    color: #999;
+}
+
+.focus-word-count {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 0.75rem;
+    color: #999;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.375rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    transition: opacity 0.3s ease;
+}
+
+.focus-word-count.hidden-counter {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.focus-counter-hover-zone {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    z-index: 9999;
+}
+
+.focus-counter-hover-zone:hover ~ .focus-word-count.hidden-counter {
+    opacity: 1;
+}
+
+.focus-word-count.hidden-counter:hover {
+    opacity: 1;
+}
+
+.focus-counter-hide-btn {
+    margin-top: 0.25rem;
+    font-size: 0.625rem;
+    color: #666;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.focus-counter-hide-btn:hover {
+    color: #999;
+}
+
+/* TIMER */
+.timer-setup-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+.timer-setup-modal.show {
+    display: flex;
+}
+
+.timer-setup-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    min-width: 20rem;
+}
+
+.timer-setup-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.timer-presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.timer-preset-btn {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.timer-preset-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.timer-preset-btn.selected {
+    background: #f3f4f6;
+    border-color: #6b7280;
+    color: #1f2937;
+}
+
+.timer-custom {
+    margin-bottom: 1rem;
+}
+
+.timer-custom-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.timer-custom-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.timer-setup-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.timer-setup-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.timer-setup-btn.start {
+    background: #6b7280;
+    color: white;
+}
+
+.timer-setup-btn.start:hover {
+    background: #4b5563;
+}
+
+.timer-setup-btn.cancel {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.timer-setup-btn.cancel:hover {
+    background: #d1d5db;
+}
+
+.timer-display {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 11rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #6b7280;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: none;
+}
+
+.timer-display.active {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.timer-display.finished {
+    border-color: #10b981;
+    background: #d1fae5;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.timer-time {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.timer-controls {
+    display: none;
+}
+
+.timer-close-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.timer-close-btn:hover {
+    color: #6b7280;
+}
+
+.timer-message {
+    font-size: 0.75rem;
+    color: #059669;
+    font-style: italic;
+    line-height: 1.4;
+    width: 100%;
+}
+
+/* Timer w trybie Focus */
+.focus-timer {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #999;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.375rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.focus-timer.active {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.focus-timer.hidden-timer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.focus-timer.hidden-timer:hover {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.focus-timer.finished {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.2);
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.focus-timer .timer-time {
+    color: #e5e5e5;
+    font-size: 0.875rem;
+}
+
+.focus-timer .timer-close-btn {
+    color: #666;
+}
+
+.focus-timer .timer-close-btn:hover {
+    color: #999;
+}
+
+.focus-timer .timer-message {
+    color: #6ee7b7;
+    width: 100%;
+}
+
+.focus-timer-hover-zone {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 150px;
+    height: 150px;
+    z-index: 9999;
+}
+
+.focus-timer-hover-zone:hover ~ .focus-timer.hidden-timer {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.focus-timer-hide-btn {
+    margin-top: 0.5rem;
+    font-size: 0.625rem;
+    color: #666;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.focus-timer-hide-btn:hover {
+    color: #999;
+}
