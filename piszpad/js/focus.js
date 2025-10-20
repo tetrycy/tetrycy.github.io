@@ -14,8 +14,8 @@ const FocusMode = {
         AppState.isFocusMode = true;
         
         const focusEditor = document.getElementById('focusEditor');
-        const mainText = AppState.editor.innerText || AppState.editor.textContent || '';
-        focusEditor.value = mainText;
+        // Kopiuj HTML z formatowaniem
+        focusEditor.innerHTML = AppState.editor.innerHTML;
         
         AppState.lastCursorPosition = 0;
         
@@ -66,33 +66,43 @@ const FocusMode = {
             
             setTimeout(() => {
                 focusEditor.focus();
-                focusEditor.setSelectionRange(0, 0);
-                focusEditor.scrollTop = 0;
+                // Ustaw kursor na końcu
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(focusEditor);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
             }, 100);
             
         }, 50);
         
         // Synchronizuj zmiany z głównym edytorem
         focusEditor.oninput = () => {
-            const newContent = focusEditor.value;
-            if (newContent.trim()) {
-                const htmlContent = '<p>' + newContent.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
-                AppState.editor.innerHTML = htmlContent;
-                AppState.saveState();
-                AppState.updateWordCount();
-            } else {
-                AppState.editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
-                AppState.updateWordCount();
-            }
+            AppState.editor.innerHTML = focusEditor.innerHTML;
+            AppState.saveState();
+            AppState.updateWordCount();
         };
         
         // Śledź pozycję kursora
         focusEditor.addEventListener('mouseup', () => {
-            AppState.lastCursorPosition = focusEditor.selectionStart;
+            const sel = window.getSelection();
+            if (sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            const pre = range.cloneRange();
+            pre.selectNodeContents(focusEditor);
+            pre.setEnd(range.startContainer, range.startOffset);
+            AppState.lastCursorPosition = pre.toString().length;
         });
         
         focusEditor.addEventListener('keyup', () => {
-            AppState.lastCursorPosition = focusEditor.selectionStart;
+            const sel = window.getSelection();
+            if (sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            const pre = range.cloneRange();
+            pre.selectNodeContents(focusEditor);
+            pre.setEnd(range.startContainer, range.startOffset);
+            AppState.lastCursorPosition = pre.toString().length;
         });
         
         // Obsługa wyjścia z fullscreen
@@ -114,7 +124,17 @@ const FocusMode = {
             } else {
                 focusEditor.focus();
                 setTimeout(() => {
-                    AppState.lastCursorPosition = focusEditor.selectionStart || 0;
+                    // Pobierz pozycję kursora dla contenteditable
+                    const sel = window.getSelection();
+                    if (sel.rangeCount > 0) {
+                        const range = sel.getRangeAt(0);
+                        const pre = range.cloneRange();
+                        pre.selectNodeContents(focusEditor);
+                        pre.setEnd(range.startContainer, range.startOffset);
+                        AppState.lastCursorPosition = pre.toString().length;
+                    } else {
+                        AppState.lastCursorPosition = 0;
+                    }
                     this.startFocusReading();
                 }, 10);
             }
@@ -136,8 +156,9 @@ const FocusMode = {
         if (!speechSynthesis) return;
         
         const focusEditor = document.getElementById('focusEditor');
+        const fullText = focusEditor.innerText || focusEditor.textContent || '';
         const cursorPos = AppState.lastCursorPosition || 0;
-        const text = focusEditor.value.substring(cursorPos);
+        const text = fullText.substring(cursorPos);
         
         if (!text.trim()) return;
         
@@ -245,12 +266,9 @@ const FocusMode = {
         
         // Synchronizuj zawartość z głównym edytorem
         const focusEditor = document.getElementById('focusEditor');
-        if (focusEditor.value.trim()) {
-            const htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
-            AppState.editor.innerHTML = htmlContent;
-            AppState.saveState();
-            AppState.updateWordCount();
-        }
+        AppState.editor.innerHTML = focusEditor.innerHTML;
+        AppState.saveState();
+        AppState.updateWordCount();
         
         setTimeout(() => {
             AppState.editor.focus();
