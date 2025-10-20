@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piszpad - Edytor RTF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <div class="options-menu-container">
+                <button class="btn" id="optionsBtn" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                </button>
+                <div class="options-menu" id="optionsMenu">
+                    <div class="options-menu-item" id="newBtn">Nowy</div>
+                    <div class="options-menu-item" id="openBtn">Otwórz</div>
+                    <div class="options-menu-item" id="saveBtn">Zapisz jako RTF</div>
+                    <div class="options-menu-item" id="exportTxtBtn">Export do TXT</div>
+                    <div class="options-menu-item" id="openAsTextBtn">Otwórz jako tekst</div>
+                    <div class="options-menu-item" id="exportPdfBtn">Export do PDF</div>
+                </div>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="undoBtn" title="Cofnij (Ctrl+Z)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 7v6h6"/>
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="boldBtn" title="Pogrubienie (Ctrl+B)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="italicBtn" title="Kursywa (Ctrl+I)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="4" x2="10" y2="4"/>
+                    <line x1="14" y1="20" x2="5" y2="20"/>
+                    <line x1="15" y1="4" x2="9" y2="20"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="underlineBtn" title="Podkreślenie (Ctrl+U)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+                    <line x1="4" y1="21" x2="20" y2="21"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="focusBtn" title="Tryb Focus (F11)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <select class="select" id="fontSelect" title="Czcionka">
+                <option value="Libre Baskerville" selected>Libre Baskerville</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+            
+            <select class="select" id="fontSizeSelect" title="Rozmiar" style="width: 4rem;">
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12" selected>12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+                <option value="28">28</option>
+                <option value="32">32</option>
+                <option value="36">36</option>
+            </select>
+            
+            <select class="select" id="speechRateSelect" title="Szybkość czytania" style="width: 4rem;">
+                <option value="0.75">0.75x</option>
+                <option value="1.0" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2.0">2.0x</option>
+            </select>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="readBtn" title="Czytaj od miejsca kursora (Ctrl+R)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="searchBtn" title="Wyszukaj (Ctrl+F)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+            
+            <div class="separator"></div>
+            
+            <button class="btn" id="timerBtn" title="Timer pisania">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </button>
+            
+            <button class="btn" id="toggleCounterBtn" title="Pokaż/ukryj licznik">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                </svg>
+            </button>
+            
+            <div class="filename" id="fileName">dokument.rtf</div>
+        </div>
+        
+        <div class="search-panel" id="searchPanel">
+            <input type="text" class="search-input" id="searchInput" placeholder="Wyszukaj...">
+            <button class="search-btn primary" id="findBtn">Znajdź</button>
+            <button class="search-btn secondary" id="closeSearchBtn">Zamknij</button>
+        </div>
+        
+        <div class="editor-area">
+            <div class="editor" id="editor" contenteditable="true">
+                <p>Windows 11 pozbawił mnie Wordpada, postanowiłem więc napisać swojego.</p>
+                <p>Piszpad posiada tryb Focus, umiejętność czytania tekstu, a także dwie moje ulubione czcionki.</p>
+                <p>Z czym Piszpad ma problemy, to z otwieraniem plików nienapisanych w nim. Na razie lepiej skopiować tekst i mu wkleić ręcznie.</p>
+            </div>
+        </div>
+        
+        <div class="word-count-display" id="wordCountDisplay">0 słów | 0 znaków</div>
+        
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-time" id="timerTime">25:00</div>
+            <button class="timer-close-btn" id="timerCloseBtn">×</button>
+            <div class="timer-message" id="timerMessage"></div>
+        </div>
+        
+        <input type="file" class="hidden" id="fileInput" accept=".rtf">
+        <input type="file" class="hidden" id="textFileInput" accept=".txt,.rtf">
+    </div>
+
+    <!-- Modal ustawień timera -->
+    <div class="timer-setup-modal" id="timerSetupModal">
+        <div class="timer-setup-box">
+            <div class="timer-setup-title">Ustaw czas</div>
+            <div class="timer-presets">
+                <button class="timer-preset-btn" data-minutes="5">5 min</button>
+                <button class="timer-preset-btn" data-minutes="10">10 min</button>
+                <button class="timer-preset-btn" data-minutes="15">15 min</button>
+                <button class="timer-preset-btn" data-minutes="25">25 min</button>
+                <button class="timer-preset-btn" data-minutes="30">30 min</button>
+                <button class="timer-preset-btn" data-minutes="45">45 min</button>
+                <button class="timer-preset-btn" data-minutes="60">60 min</button>
+                <button class="timer-preset-btn" data-minutes="90">90 min</button>
+                <button class="timer-preset-btn" data-minutes="120">120 min</button>
+            </div>
+            <div class="timer-custom">
+                <div class="timer-custom-label">Lub własny czas (minuty):</div>
+                <input type="number" class="timer-custom-input" id="timerCustomInput" min="1" max="999" placeholder="np. 45">
+            </div>
+            <div class="timer-setup-buttons">
+                <button class="timer-setup-btn cancel" id="timerCancelBtn">Anuluj</button>
+                <button class="timer-setup-btn start" id="timerStartBtn">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRYB FOCUS -->
+    <div class="focus-mode" id="focusMode">
+        <div class="focus-hover-zone"></div>
+        <div class="focus-controls" id="focusControls">
+            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Stop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+            <button class="focus-hide-btn" id="focusHideBtn">ukryj</button>
+        </div>
+        
+        <div class="focus-counter-hover-zone"></div>
+        <div class="focus-word-count" id="focusWordCount">
+            <div id="focusCounterText">0 słów | 0 znaków</div>
+            <div class="focus-counter-hide-btn" id="focusCounterHideBtn">ukryj</div>
+        </div>
+        <div class="focus-timer-hover-zone"></div>
+        <div class="focus-timer" id="focusTimer">
+            <div class="timer-time" id="focusTimerTime">25:00</div>
+            <button class="timer-close-btn" id="focusTimerCloseBtn">×</button>
+            <div class="timer-message" id="focusTimerMessage"></div>
+            <div class="focus-timer-hide-btn" id="focusTimerHideBtn">ukryj</div>
+        </div>
+        <textarea class="editor" id="focusEditor" placeholder="Zacznij pisać..."></textarea>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/rtf.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/reading.js"></script>
+    <script src="js/focus.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/file.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
