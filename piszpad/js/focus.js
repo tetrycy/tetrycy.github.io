@@ -156,9 +156,47 @@ const FocusMode = {
         if (!speechSynthesis) return;
         
         const focusEditor = document.getElementById('focusEditor');
-        const fullText = focusEditor.innerText || focusEditor.textContent || '';
-        const cursorPos = AppState.lastCursorPosition || 0;
-        const text = fullText.substring(cursorPos);
+        const allParagraphs = focusEditor.querySelectorAll('p');
+        
+        // Znajdź paragraf, w którym jest kursor
+        const sel = window.getSelection();
+        let startParagraphIndex = 0;
+        
+        if (sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            let node = range.startContainer;
+            
+            // Jeśli kursor jest w text node, znajdź parent paragraph
+            while (node && node.nodeName !== 'P') {
+                node = node.parentNode;
+                if (node === focusEditor) {
+                    break;
+                }
+            }
+            
+            // Znajdź indeks tego paragrafu
+            if (node && node.nodeName === 'P') {
+                for (let i = 0; i < allParagraphs.length; i++) {
+                    if (allParagraphs[i] === node) {
+                        startParagraphIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Zbierz paragrafy od pozycji kursora
+        const paragraphsToRead = [];
+        for (let j = startParagraphIndex; j < allParagraphs.length; j++) {
+            const text = allParagraphs[j].innerText || allParagraphs[j].textContent || '';
+            if (text.trim()) {
+                paragraphsToRead.push(text.trim());
+            }
+        }
+        
+        if (paragraphsToRead.length === 0) return;
+        
+        const text = paragraphsToRead.join(' ');
         
         if (!text.trim()) return;
         
