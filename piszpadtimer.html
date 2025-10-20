@@ -1118,12 +1118,19 @@
             
             document.onkeydown = keyHandler;
             
-            editor.addEventListener('input', function() {
-                saveState();
-                updateWordCount();
-            });
-            
-            editor.addEventListener('mouseup', updateFormatButtons);
+          editor.addEventListener('input', function() {
+    saveState();
+    updateWordCount();
+});
+
+editor.addEventListener('paste', function() {    // NOWE
+    setTimeout(function() {                       // NOWE
+        saveState();                              // NOWE
+        updateWordCount();                        // NOWE
+    }, 10);                                       // NOWE
+});                                               // NOWE
+
+editor.addEventListener('mouseup', updateFormatButtons);
             editor.addEventListener('keyup', updateFormatButtons);
             
             updateStyle();
@@ -1435,9 +1442,10 @@
         }
         
         // TIMER FUNCTIONS
-        function openTimerSetup() {
-            document.getElementById('timerSetupModal').classList.add('show');
-        }
+function openTimerSetup() {
+    if (timerInterval) clearInterval(timerInterval);  // NOWA LINIA
+    document.getElementById('timerSetupModal').classList.add('show');
+}
         
         function closeTimerSetup() {
             document.getElementById('timerSetupModal').classList.remove('show');
@@ -1448,8 +1456,13 @@
             document.getElementById('timerCustomInput').value = '';
         }
         
-        function startTimer() {
-            var selectedBtn = document.querySelector('.timer-preset-btn.selected');
+       function startTimer() {
+    // Wyczyść poprzedni timer jeśli istnieje
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    var selectedBtn = document.querySelector('.timer-preset-btn.selected');
             var customInput = document.getElementById('timerCustomInput');
             var minutes = 0;
             
@@ -1926,10 +1939,12 @@
             focusCounter.classList.remove('hidden-counter');
             focusCounterHidden = false;
             
-            if (timerRunning) {
-                focusTimer.classList.remove('hidden-timer');
-                focusTimerHidden = false;
-            }
+       if (timerRunning) {
+    focusTimer.classList.add('active');         // NOWA LINIA
+    focusTimer.classList.remove('hidden-timer');
+    focusTimer.classList.remove('finished');    // NOWA LINIA
+    focusTimerHidden = false;
+}
             
             updateWordCount();
             
