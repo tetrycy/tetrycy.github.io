@@ -63,10 +63,16 @@
       text-align:center; 
       margin: var(--space-2) 0 var(--space-3); 
     }
-    .audio-player audio{
+
+.audio-player audio{
       max-width: 100%;
       width: 500px;
       outline-color: var(--accent);
+    }
+    /* Ukryj timer audio */
+    .audio-player audio::-webkit-media-controls-current-time-display,
+    .audio-player audio::-webkit-media-controls-time-remaining-display {
+      display: none;
     }
 
     /* CTA (opcjonalnie) */
