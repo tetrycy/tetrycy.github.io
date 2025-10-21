@@ -58,26 +58,15 @@
 
     p{ margin: 0 0 1.2em; }
 
-    /* Audio button */
-    .audio-btn{ 
+    /* Audio player */
+    .audio-player{ 
       text-align:center; 
       margin: var(--space-2) 0 var(--space-3); 
     }
-    .audio-btn a{
-      display:inline-block; 
-      padding: .7rem 1rem; 
-      border-radius: .5rem;
-      border:2px solid var(--accent); 
-      color: var(--accent); 
-      font-weight:400; 
-      font-size: .95rem;
-      text-decoration:none; 
-      transition: transform .08s ease, background .2s ease, color .2s ease;
-    }
-    .audio-btn a:hover, .audio-btn a:focus{ 
-      background: var(--accent); 
-      color:#fff; 
-      transform: translateY(-1px); 
+    .audio-player audio{
+      max-width: 100%;
+      width: 500px;
+      outline-color: var(--accent);
     }
 
     /* CTA (opcjonalnie) */
@@ -106,9 +95,12 @@
           <h1 itemprop="headline">JAK CO ŚRODĘ... Jakub Olkiewicz #13</h1>
           <time itemprop="datePublished" datetime="2025-10-22">22.10.2025</time>
           
-          <!-- Audio button -->
-          <div class="audio-btn">
-            <a href="/felietony-kuby/olkiaudio1.mp3" target="_blank" rel="noopener">🎧 Posłuchaj tekstu</a>
+          <!-- Audio player -->
+          <div class="audio-player">
+            <audio controls preload="metadata">
+              <source src="/tetrycy.github.io/felietony-kuby/olkiaudio1.mp3" type="audio/mpeg">
+              Twoja przeglądarka nie obsługuje odtwarzacza audio.
+            </audio>
           </div>
         </header>
 
