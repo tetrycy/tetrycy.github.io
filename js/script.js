@@ -320,13 +320,16 @@ case 'fanatyk-pilkarstwa':
         }
     });
 });
-
-// Obsługa kliknięć na pulpit (odznacz ikony)
+// Obsługa kliknięć na pulpit (odznacz ikony + link do Betclic)
 document.getElementById('desktop').addEventListener('click', function(e) {
     if (e.target === this) {
+        // Odznacz wszystkie ikony
         document.querySelectorAll('.desktop-icon').forEach(icon => {
             icon.classList.remove('selected');
         });
+        
+        // Otwórz link Betclic w nowej karcie
+        window.open('https://partner.betclic.pl/tetrycy/', '_blank');
     }
 });
 
