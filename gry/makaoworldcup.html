@@ -1,0 +1,2024 @@
+import React, { useState, useEffect } from 'react';
+import { Shuffle, Trophy, Users, Award, Target } from 'lucide-react';
+
+const MakaoTournament = () => {
+  // === BOTY - 15 różnych profili z unikalnymi strategiami ===
+  const BOTS = [
+    {
+      id: 'bot1',
+      flag: '🇵🇱',
+      name: 'Jan Kowalski',
+      overall: 45,
+      style: 'Defensywny nowicjusz - często pasuje',
+      strategyLevel: 'easy',
+      desc: 'Pierwszy raz gra w Makao, jeszcze się uczy'
+    },
+    {
+      id: 'bot2',
+      flag: '🇧🇷',
+      name: 'Diego Santos',
+      overall: 88,
+      style: 'Ultra-agresywny atakujący',
+      strategyLevel: 'hard',
+      desc: 'Mistrz Brazylii 2024 - bez litości dla przeciwników'
+    },
+    {
+      id: 'bot3',
+      flag: '🇯🇵',
+      name: 'Yuki Tanaka',
+      overall: 92,
+      style: 'Taktyk - liczy karty i prawdopodobieństwa',
+      strategyLevel: 'hard',
+      desc: 'Matematyk z Tokio, analityczny umysł'
+    },
+    {
+      id: 'bot4',
+      flag: '🇩🇪',
+      name: 'Hans Müller',
+      overall: 78,
+      style: 'Kontroler - skupia się na Waletach i Asach',
+      strategyLevel: 'hard',
+      desc: 'Niemiecki precyzjonista, lubi kontrolować grę'
+    },
+    {
+      id: 'bot5',
+      flag: '🇺🇸',
+      name: 'Mike Johnson',
+      overall: 52,
+      style: 'Chaotyczny hazardzista',
+      strategyLevel: 'medium',
+      desc: 'Gra intuicyjnie, czasem to działa'
+    },
+    {
+      id: 'bot6',
+      flag: '🇫🇷',
+      name: 'Pierre Dubois',
+      overall: 85,
+      style: 'Perfekcjonista - liczy każdy ruch',
+      strategyLevel: 'hard',
+      desc: 'Paryski szachista, taktyka to wszystko'
+    },
+    {
+      id: 'bot7',
+      flag: '🇮🇹',
+      name: 'Marco Rossi',
+      overall: 68,
+      style: 'Balanced - atak i obrona w równowadze',
+      strategyLevel: 'medium',
+      desc: 'Włoch, który woli elegancję od brutalnej siły'
+    },
+    {
+      id: 'bot8',
+      flag: '🇪🇸',
+      name: 'Carlos Garcia',
+      overall: 58,
+      style: 'Bluffer - często próbuje zmylić',
+      strategyLevel: 'medium',
+      desc: 'Madrycki ulicznik, gra na psychologię'
+    },
+    {
+      id: 'bot9',
+      flag: '🇬🇧',
+      name: 'James Smith',
+      overall: 73,
+      style: 'Metodyczny Anglik - spokojny i cierpliwy',
+      strategyLevel: 'medium',
+      desc: 'Londyńczyk, tradycyjny styl gry'
+    },
+    {
+      id: 'bot10',
+      flag: '🇳🇴',
+      name: 'Lars Olsen',
+      overall: 81,
+      style: 'Zimny kalkulant bez emocji',
+      strategyLevel: 'hard',
+      desc: 'Norweski strateg z Oslo, lodowaty spokój'
+    },
+    {
+      id: 'bot11',
+      flag: '🇸🇪',
+      name: 'Erik Andersson',
+      overall: 64,
+      style: 'Zachowawczy minimalistyczny',
+      strategyLevel: 'medium',
+      desc: 'Szwed, preferuje prostotę i bezpieczeństwo'
+    },
+    {
+      id: 'bot12',
+      flag: '🇦🇷',
+      name: 'Diego Fernandez',
+      overall: 76,
+      style: 'Kreatywny kombinator',
+      strategyLevel: 'medium',
+      desc: 'Buenos Aires - każda gra to nowa sztuka'
+    },
+    {
+      id: 'bot13',
+      flag: '🇨🇦',
+      name: 'John Williams',
+      overall: 41,
+      style: 'Początkujący amator',
+      strategyLevel: 'easy',
+      desc: 'Dopiero zaczyna swoją przygodę z Makao'
+    },
+    {
+      id: 'bot14',
+      flag: '🇰🇷',
+      name: 'Kim Min-jun',
+      overall: 90,
+      style: 'Agresywny speedrunner',
+      strategyLevel: 'hard',
+      desc: 'Seulski pro-gamer, błyskawiczne decyzje'
+    },
+    {
+      id: 'bot15',
+      flag: '🇦🇺',
+      name: 'Jack Robinson',
+      overall: 55,
+      style: 'Relaksacyjny surferski vibe',
+      strategyLevel: 'medium',
+      desc: 'Australijczyk, gra dla fanu bez stresu'
+    }
+  ];
+
+  const PLAYER_PROFILE = {
+    id: 'player',
+    flag: '👤',
+    name: 'TY',
+    overall: 75,
+    style: 'Twój styl gry'
+  };
+
+  // === STANY GRY ===
+  const suits = ['♠', '♥', '♦', '♣'];
+  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+  const normalValues = ['5', '6', '7', '8', '9', '10', 'Q'];
+  
+  const [gameMode, setGameMode] = useState('menu'); // menu, tournament, playing, results
+  const [tournament, setTournament] = useState(null);
+  const [currentMatch, setCurrentMatch] = useState(null);
+  
+  // Stany gry Makao (zachowane z oryginalnego kodu)
+  const [deck, setDeck] = useState([]);
+  const [playerHand, setPlayerHand] = useState([]);
+  const [computerHand, setComputerHand] = useState([]);
+  const [discardPile, setDiscardPile] = useState([]);
+  const [currentPlayer, setCurrentPlayer] = useState('player');
+  const [drawCount, setDrawCount] = useState(0);
+  const [skipNext, setSkipNext] = useState(false);
+  const [requestedValue, setRequestedValue] = useState(null);
+  const [requestedSuit, setRequestedSuit] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [message, setMessage] = useState('');
+  const [showValuePicker, setShowValuePicker] = useState(false);
+  const [showSuitPicker, setShowSuitPicker] = useState(false);
+  const [pendingCard, setPendingCard] = useState(null);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [gameLog, setGameLog] = useState([]);
+  const [justDrew, setJustDrew] = useState(false);
+
+  // === FUNKCJE POMOCNICZE ===
+  const createDeck = () => {
+    const newDeck = [];
+    suits.forEach(suit => {
+      values.forEach(value => {
+        newDeck.push({ suit, value });
+      });
+    });
+    return shuffleDeck(newDeck);
+  };
+
+  const shuffleDeck = (cards) => {
+    const shuffled = [...cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // === SYSTEM TURNIEJU ===
+  const startTournament = () => {
+    // 16 uczestników: player + 15 botów
+    const participants = [PLAYER_PROFILE, ...BOTS];
+    const shuffled = shuffleArray(participants);
+    
+    // Podziel na 4 grupy po 4
+    const groups = [
+      { id: 'A', participants: shuffled.slice(0, 4), standings: [] },
+      { id: 'B', participants: shuffled.slice(4, 8), standings: [] },
+      { id: 'C', participants: shuffled.slice(8, 12), standings: [] },
+      { id: 'D', participants: shuffled.slice(12, 16), standings: [] }
+    ];
+
+    const newTournament = {
+      phase: 'groups', // groups, quarters, semis, finals
+      groups: groups,
+      matches: generateGroupMatches(groups),
+      playedMatches: [],
+      currentMatchIndex: 0,
+      quarterFinalists: [],
+      semiFinals: [],
+      finals: [],
+      thirdPlace: null,
+      champion: null
+    };
+
+    setTournament(newTournament);
+    setGameMode('tournament');
+  };
+
+  const generateGroupMatches = (groups) => {
+    const matches = [];
+    groups.forEach(group => {
+      const participants = group.participants;
+      // Każdy z każdym
+      for (let i = 0; i < participants.length; i++) {
+        for (let j = i + 1; j < participants.length; j++) {
+          matches.push({
+            group: group.id,
+            player1: participants[i],
+            player2: participants[j],
+            result: null
+          });
+        }
+      }
+    });
+    return matches;
+  };
+
+  // === SZYBKA SYMULACJA GRY BOT VS BOT ===
+  const simulateMatch = (player1, player2) => {
+    // Prosta symulacja oparta na overall + losowość
+    const p1Strength = player1.overall || 75;
+    const p2Strength = player2.overall || 75;
+    
+    // Dodaj losowość (±20 punktów)
+    const p1Score = p1Strength + (Math.random() * 40 - 20);
+    const p2Score = p2Strength + (Math.random() * 40 - 20);
+    
+    if (Math.abs(p1Score - p2Score) < 5) {
+      // Remis
+      return { winner: null, isDraw: true };
+    }
+    
+    return { 
+      winner: p1Score > p2Score ? player1.id : player2.id,
+      isDraw: false
+    };
+  };
+
+  // === MECHANIKA GRY MAKAO (z oryginalnego kodu) ===
+  const canPlayCard = (card, topCard) => {
+    if (requestedValue) {
+      return card.value === requestedValue;
+    }
+    if (requestedSuit) {
+      return card.suit === requestedSuit;
+    }
+    if (drawCount > 0) {
+      return card.value === '2' || card.value === '3' || 
+             (card.value === 'K' && (card.suit === '♥' || card.suit === '♠'));
+    }
+    return card.suit === topCard.suit || card.value === topCard.value;
+  };
+
+  const getCardEffect = (card) => {
+    if (card.value === '2') return 2;
+    if (card.value === '3') return 3;
+    if (card.value === 'K' && (card.suit === '♥' || card.suit === '♠')) return 5;
+    return 0;
+  };
+
+  const isSpecialCard = (card) => {
+    return ['2', '3', '4', 'J', 'A'].includes(card.value) || 
+           (card.value === 'K' && (card.suit === '♥' || card.suit === '♠'));
+  };
+
+  const getCardColor = (suit) => {
+    return suit === '♥' || suit === '♦' ? 'text-red-600' : 'text-black';
+  };
+
+  const isCardPlayable = (card) => {
+    if (gameOver || currentPlayer !== 'player') return false;
+    const topCard = discardPile[discardPile.length - 1];
+    if (!topCard) return false;
+    return canPlayCard(card, topCard);
+  };
+
+  // === INICJALIZACJA GRY DLA MECZU Z GRACZEM ===
+  const initMatchGame = (opponent) => {
+    const newDeck = createDeck();
+    const player = newDeck.slice(0, 5);
+    const computer = newDeck.slice(5, 10);
+    const discard = [newDeck[10]];
+    const remaining = newDeck.slice(11);
+    
+    setPlayerHand(player);
+    setComputerHand(computer);
+    setDiscardPile(discard);
+    setDeck(remaining);
+    setCurrentPlayer('player');
+    setDrawCount(0);
+    setSkipNext(false);
+    setRequestedValue(null);
+    setRequestedSuit(null);
+    setGameOver(false);
+    setWinner(null);
+    setMessage('Twoja kolej!');
+    setSelectedCards([]);
+    setJustDrew(false);
+    setGameLog([
+      { text: `🎮 Mecz rozpoczęty vs ${opponent.flag} ${opponent.name}`, isPlayer: true, timestamp: Date.now() }
+    ]);
+    
+    setCurrentMatch({
+      opponent: opponent,
+      inProgress: true
+    });
+    
+    setGameMode('playing');
+  };
+
+  // [... reszta funkcji gry Makao z oryginalnego kodu ...]
+  
+  const toggleCardSelection = (card) => {
+    const cardKey = `${card.suit}-${card.value}`;
+    const isSelected = selectedCards.some(c => `${c.suit}-${c.value}` === cardKey);
+    
+    if (isSelected) {
+      setSelectedCards(selectedCards.filter(c => `${c.suit}-${c.value}` !== cardKey));
+    } else {
+      if (selectedCards.length === 0) {
+        setSelectedCards([card]);
+      } else {
+        if (selectedCards[0].value === card.value) {
+          setSelectedCards([...selectedCards, card]);
+        } else {
+          setMessage('Możesz zejść tylko z kart tej samej wartości!');
+          setTimeout(() => {
+            if (justDrew) {
+              setMessage('Dobrano kartę - możesz ją zagrać lub zakończyć turę');
+            } else {
+              setMessage('Twoja kolej!');
+            }
+          }, 2000);
+        }
+      }
+    }
+  };
+
+  const isCardSelected = (card) => {
+    return selectedCards.some(c => c.suit === card.suit && c.value === card.value);
+  };
+
+  const addToLog = (text, isPlayer = true) => {
+    const entry = {
+      text,
+      isPlayer,
+      timestamp: Date.now()
+    };
+    setGameLog(prev => [...prev.slice(-19), entry]);
+  };
+
+  const playCards = (cards, isComputer = false) => {
+    if (cards.length === 0) return;
+    
+    const hand = isComputer ? computerHand : playerHand;
+    const setHand = isComputer ? setComputerHand : setPlayerHand;
+    
+    let newHand = [...hand];
+    cards.forEach(card => {
+      const index = newHand.findIndex(c => c.suit === card.suit && c.value === card.value);
+      if (index !== -1) {
+        newHand.splice(index, 1);
+      }
+    });
+    
+    const topCard = discardPile[discardPile.length - 1];
+    const firstCard = cards[0];
+    
+    // Log
+    const cardText = cards.length > 1 
+      ? `${cards.length}x ${firstCard.value}` 
+      : `${firstCard.suit}${firstCard.value}`;
+    addToLog(
+      `${isComputer ? '💻 Komputer' : '👤 Ty'} zagrał: ${cardText}`,
+      !isComputer
+    );
+    
+    // Dodaj karty do discard pile
+    setDiscardPile([...discardPile, ...cards]);
+    setHand(newHand);
+    
+    // Sprawdź wygraną
+    if (newHand.length === 0) {
+      setGameOver(true);
+      setWinner(isComputer ? 'computer' : 'player');
+      addToLog(
+        `🏆 ${isComputer ? 'Komputer' : 'Ty'} wygrał!`,
+        !isComputer
+      );
+      return;
+    }
+    
+    // Obsługa kart specjalnych
+    let newDrawCount = drawCount;
+    let newSkipNext = skipNext;
+    let newRequestedValue = null;
+    let newRequestedSuit = null;
+    
+    cards.forEach(card => {
+      const effect = getCardEffect(card);
+      if (effect > 0) {
+        newDrawCount += effect;
+      }
+      
+      if (card.value === '4') {
+        newSkipNext = true;
+      }
+      
+      if (card.value === 'J') {
+        if (isComputer) {
+          newRequestedValue = computerRequestValue();
+          addToLog(`💻 Komputer żąda: ${newRequestedValue}`, false);
+        } else {
+          setPendingCard(card);
+          setShowValuePicker(true);
+          return;
+        }
+      }
+      
+      if (card.value === 'A') {
+        if (isComputer) {
+          newRequestedSuit = computerRequestSuit();
+          addToLog(`💻 Komputer żąda koloru: ${newRequestedSuit}`, false);
+        } else {
+          setPendingCard(card);
+          setShowSuitPicker(true);
+          return;
+        }
+      }
+    });
+    
+    setDrawCount(newDrawCount);
+    setSkipNext(newSkipNext);
+    setRequestedValue(newRequestedValue);
+    setRequestedSuit(newRequestedSuit);
+    
+    if (!showValuePicker && !showSuitPicker) {
+      if (newSkipNext) {
+        setMessage('Komputer przeskoczył twoją turę!');
+        setSkipNext(false);
+        setTimeout(() => {
+          setCurrentPlayer(isComputer ? 'computer' : 'player');
+        }, 1500);
+      } else {
+        setCurrentPlayer(isComputer ? 'player' : 'computer');
+        setMessage(isComputer ? 'Twoja kolej!' : 'Tura komputera...');
+      }
+    }
+    
+    setJustDrew(false);
+    setSelectedCards([]);
+  };
+
+  const handlePlayerCard = (card) => {
+    if (currentPlayer !== 'player' || gameOver) return;
+    
+    const topCard = discardPile[discardPile.length - 1];
+    if (!canPlayCard(card, topCard)) {
+      setMessage('Nie możesz zagrać tej karty!');
+      setTimeout(() => setMessage('Twoja kolej!'), 1500);
+      return;
+    }
+    
+    toggleCardSelection(card);
+  };
+
+  const playSelectedCards = () => {
+    if (selectedCards.length === 0) return;
+    playCards(selectedCards, false);
+  };
+
+  const handleDraw = () => {
+    if (currentPlayer !== 'player' || gameOver || justDrew) return;
+    
+    if (drawCount > 0) {
+      const cardsToDraw = drawCount;
+      setDrawCount(0);
+      
+      if (deck.length < cardsToDraw) {
+        const remaining = cardsToDraw - deck.length;
+        const newCards = [...deck];
+        const reshuffled = shuffleDeck(discardPile.slice(0, -1));
+        newCards.push(...reshuffled.slice(0, remaining));
+        setDeck(reshuffled.slice(remaining));
+        setDiscardPile([discardPile[discardPile.length - 1]]);
+        setPlayerHand([...playerHand, ...newCards]);
+        addToLog(`👤 Dobrałeś ${cardsToDraw} kart (kara)`, true);
+      } else {
+        const newCards = deck.slice(0, cardsToDraw);
+        setDeck(deck.slice(cardsToDraw));
+        setPlayerHand([...playerHand, ...newCards]);
+        addToLog(`👤 Dobrałeś ${cardsToDraw} kart (kara)`, true);
+      }
+      
+      setCurrentPlayer('computer');
+      setMessage('Tura komputera...');
+      return;
+    }
+    
+    if (deck.length === 0) {
+      const reshuffled = shuffleDeck(discardPile.slice(0, -1));
+      setDeck(reshuffled);
+      setDiscardPile([discardPile[discardPile.length - 1]]);
+    }
+    
+    const newCard = deck[0];
+    setPlayerHand([...playerHand, newCard]);
+    setDeck(deck.slice(1));
+    addToLog(`👤 Dobrałeś kartę: ${newCard.suit}${newCard.value}`, true);
+    setJustDrew(true);
+    setMessage('Dobrano kartę - możesz ją zagrać lub zakończyć turę');
+  };
+
+  const endTurn = () => {
+    setJustDrew(false);
+    setCurrentPlayer('computer');
+    setMessage('Tura komputera...');
+  };
+
+  const handleValuePick = (value) => {
+    setRequestedValue(value);
+    setShowValuePicker(false);
+    addToLog(`👤 Żądasz: ${value}`, true);
+    setCurrentPlayer('computer');
+    setMessage('Tura komputera...');
+  };
+
+  const handleSuitPick = (suit) => {
+    setRequestedSuit(suit);
+    setShowSuitPicker(false);
+    addToLog(`👤 Żądasz koloru: ${suit}`, true);
+    setCurrentPlayer('computer');
+    setMessage('Tura komputera...');
+  };
+
+  // === AI KOMPUTERA ===
+  const computerRequestValue = () => {
+    const valueCounts = {};
+    computerHand.forEach(card => {
+      if (normalValues.includes(card.value)) {
+        valueCounts[card.value] = (valueCounts[card.value] || 0) + 1;
+      }
+    });
+    
+    let bestValue = normalValues[0];
+    let maxCount = 0;
+    Object.entries(valueCounts).forEach(([value, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        bestValue = value;
+      }
+    });
+    
+    return bestValue;
+  };
+
+  const computerRequestSuit = () => {
+    const suitCounts = {};
+    computerHand.forEach(card => {
+      suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+    });
+    
+    let bestSuit = suits[0];
+    let maxCount = 0;
+    Object.entries(suitCounts).forEach(([suit, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        bestSuit = suit;
+      }
+    });
+    
+    return bestSuit;
+  };
+
+  const computerTurn = () => {
+    if (currentPlayer !== 'computer' || gameOver) return;
+    
+    const topCard = discardPile[discardPile.length - 1];
+    const strategyLevel = currentMatch?.opponent?.strategyLevel || 'hard';
+    
+    if (skipNext) {
+      setSkipNext(false);
+      setMessage('Twoja kolej!');
+      setCurrentPlayer('player');
+      addToLog('💻 Komputer przeskoczył turę', false);
+      return;
+    }
+    
+    if (drawCount > 0) {
+      const defensiveCards = computerHand.filter(card => {
+        return card.value === '2' || card.value === '3' || 
+               (card.value === 'K' && (card.suit === '♥' || card.suit === '♠'));
+      });
+      
+      if (defensiveCards.length > 0) {
+        const cardsToPlay = strategyLevel === 'hard' ? defensiveCards : [defensiveCards[0]];
+        playCards(cardsToPlay, true);
+        return;
+      } else {
+        const cardsToDraw = drawCount;
+        setDrawCount(0);
+        
+        if (deck.length < cardsToDraw) {
+          const remaining = cardsToDraw - deck.length;
+          const newCards = [...deck];
+          const reshuffled = shuffleDeck(discardPile.slice(0, -1));
+          newCards.push(...reshuffled.slice(0, remaining));
+          setDeck(reshuffled.slice(remaining));
+          setDiscardPile([discardPile[discardPile.length - 1]]);
+          setComputerHand([...computerHand, ...newCards]);
+          addToLog(`💻 Komputer dobrał ${cardsToDraw} kart (kara)`, false);
+        } else {
+          const newCards = deck.slice(0, cardsToDraw);
+          setDeck(deck.slice(cardsToDraw));
+          setComputerHand([...computerHand, ...newCards]);
+          addToLog(`💻 Komputer dobrał ${cardsToDraw} kart (kara)`, false);
+        }
+        
+        setCurrentPlayer('player');
+        setMessage('Twoja kolej!');
+        return;
+      }
+    }
+    
+    // Strategia AI
+    const playableCards = computerHand.filter(card => canPlayCard(card, topCard));
+    
+    if (playableCards.length > 0) {
+      let selectedCard;
+      
+      if (strategyLevel === 'easy') {
+        // Nowicjusz - pierwsza możliwa karta
+        selectedCard = playableCards[0];
+      } else if (strategyLevel === 'medium') {
+        // Amator - priorytet specjalne karty
+        const specialCards = playableCards.filter(card => isSpecialCard(card));
+        selectedCard = specialCards.length > 0 ? specialCards[0] : playableCards[0];
+      } else {
+        // Ekspert - agresywna strategia
+        const attackCards = playableCards.filter(card => 
+          card.value === '2' || card.value === '3' || 
+          (card.value === 'K' && (card.suit === '♥' || card.suit === '♠'))
+        );
+        const controlCards = playableCards.filter(card => 
+          card.value === 'J' || card.value === 'A' || card.value === '4'
+        );
+        
+        if (attackCards.length > 0) {
+          selectedCard = attackCards[0];
+        } else if (controlCards.length > 0) {
+          selectedCard = controlCards[0];
+        } else {
+          selectedCard = playableCards[0];
+        }
+      }
+      
+      // Sprawdź czy można zagrać wiele kart tej samej wartości
+      const sameValueCards = computerHand.filter(card => 
+        card.value === selectedCard.value && canPlayCard(card, topCard)
+      );
+      
+      if (sameValueCards.length > 1 && strategyLevel !== 'easy') {
+        playCards(sameValueCards, true);
+      } else {
+        playCards([selectedCard], true);
+      }} else {
+  // KLUCZOWA NAPRAWA: Komputer nie ma karty do zagrania
+  // Musi zresetować żądanie i dobrać kartę
+  
+  if (requestedValue) {
+    addToLog(`💻 Komputer nie ma karty ${requestedValue}, dobiera`, false);
+    setRequestedValue(null);
+  } else if (requestedSuit) {
+    addToLog(`💻 Komputer nie ma koloru ${requestedSuit}, dobiera`, false);
+    setRequestedSuit(null);
+  } else {
+    addToLog('💻 Komputer dobrał kartę', false);
+  }
+  
+  if (deck.length === 0) {
+    const reshuffled = shuffleDeck(discardPile.slice(0, -1));
+    setDeck(reshuffled);
+    setDiscardPile([discardPile[discardPile.length - 1]]);
+  }
+  
+  const newCard = deck[0];
+  setComputerHand([...computerHand, newCard]);
+  setDeck(deck.slice(1));
+  
+  setCurrentPlayer('player');
+  setMessage('Twoja kolej!');
+}
+
+  useEffect(() => {
+    if (currentPlayer === 'computer' && !gameOver && gameMode === 'playing') {
+      setTimeout(computerTurn, 1200);
+    }
+  }, [currentPlayer, gameOver, gameMode]);
+
+  // Obsługa końca meczu w turnieju
+  useEffect(() => {
+    if (gameOver && gameMode === 'playing' && currentMatch) {
+      // Zapisz wynik meczu
+      setTimeout(() => {
+        if (tournament.phase === 'groups') {
+          recordMatchResult();
+        } else {
+          recordKnockoutResult();
+        }
+      }, 2000);
+    }
+  }, [gameOver, gameMode, currentMatch]);
+
+  const recordMatchResult = () => {
+    if (!tournament || !currentMatch) return;
+    
+    const winnerId = winner === 'player' ? 'player' : currentMatch.opponent.id;
+    
+    // Znajdź mecz w turnieju i zapisz wynik
+    const updatedTournament = { ...tournament };
+    const matchIndex = updatedTournament.matches.findIndex(m => 
+      (m.player1.id === 'player' && m.player2.id === currentMatch.opponent.id) ||
+      (m.player2.id === 'player' && m.player1.id === currentMatch.opponent.id)
+    );
+    
+    if (matchIndex !== -1) {
+      updatedTournament.matches[matchIndex].result = { winnerId, isDraw: false };
+      updatedTournament.playedMatches.push(updatedTournament.matches[matchIndex]);
+    }
+    
+    setTournament(updatedTournament);
+    setCurrentMatch(null);
+    setGameMode('tournament');
+  };
+
+  // === AUTOMATYCZNA SYMULACJA MECZÓW BOTÓW ===
+  const simulateBotMatches = () => {
+    if (!tournament) return;
+    
+    const updatedTournament = { ...tournament };
+    const remainingMatches = updatedTournament.matches.filter(m => 
+      !m.result && m.player1.id !== 'player' && m.player2.id !== 'player'
+    );
+    
+    remainingMatches.forEach(match => {
+      const result = simulateMatch(match.player1, match.player2);
+      match.result = result;
+      updatedTournament.playedMatches.push(match);
+    });
+    
+    setTournament(updatedTournament);
+  };
+
+  // === OBLICZANIE TABEL GRUPOWYCH ===
+  const calculateGroupStandings = (groupId) => {
+    if (!tournament) return [];
+    
+    const group = tournament.groups.find(g => g.id === groupId);
+    if (!group) return [];
+    
+    const standings = group.participants.map(participant => ({
+      ...participant,
+      matches: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      points: 0
+    }));
+    
+    const groupMatches = tournament.playedMatches.filter(m => m.group === groupId);
+    
+    groupMatches.forEach(match => {
+      if (!match.result) return;
+      
+      const p1 = standings.find(s => s.id === match.player1.id);
+      const p2 = standings.find(s => s.id === match.player2.id);
+      
+      if (p1) p1.matches++;
+      if (p2) p2.matches++;
+      
+      if (match.result.isDraw) {
+        if (p1) {
+          p1.draws++;
+          p1.points += 1;
+        }
+        if (p2) {
+          p2.draws++;
+          p2.points += 1;
+        }
+      } else {
+        if (match.result.winnerId === match.player1.id) {
+          if (p1) {
+            p1.wins++;
+            p1.points += 3;
+          }
+          if (p2) p2.losses++;
+        } else {
+          if (p2) {
+            p2.wins++;
+            p2.points += 3;
+          }
+          if (p1) p1.losses++;
+        }
+      }
+    });
+    
+    // Sortuj po punktach, potem wygrane
+    return standings.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return b.wins - a.wins;
+    });
+  };
+
+  // === PRZEJŚCIE DO FAZY PUCHAROWEJ ===
+  const advanceToKnockout = () => {
+    if (!tournament) return;
+    
+    const qualifiers = [];
+    ['A', 'B', 'C', 'D'].forEach(groupId => {
+      const standings = calculateGroupStandings(groupId);
+      qualifiers.push(...standings.slice(0, 2)); // 2 najlepsze
+    });
+    
+    // Ćwierćfinały - 1. vs 8., 2. vs 7., 3. vs 6., 4. vs 5.
+    const quarterFinals = [
+      { id: 'qf1', player1: qualifiers[0], player2: qualifiers[7], result: null },
+      { id: 'qf2', player1: qualifiers[1], player2: qualifiers[6], result: null },
+      { id: 'qf3', player1: qualifiers[2], player2: qualifiers[5], result: null },
+      { id: 'qf4', player1: qualifiers[3], player2: qualifiers[4], result: null }
+    ];
+    
+    setTournament({
+      ...tournament,
+      phase: 'quarters',
+      quarterFinals: quarterFinals,
+      semiFinals: [],
+      finals: [],
+      thirdPlace: null,
+      quarterFinalists: qualifiers
+    });
+  };
+
+  // Symulacja pojedynczego meczu pucharowego bot vs bot
+  const simulateKnockoutMatch = (match) => {
+    const result = simulateMatch(match.player1, match.player2);
+    return {
+      ...match,
+      result: result
+    };
+  };
+
+  // Symulacja wszystkich meczów danej fazy
+  const simulatePhaseMatches = () => {
+    if (!tournament) return;
+    
+    const updatedTournament = { ...tournament };
+    
+    if (tournament.phase === 'quarters') {
+      // Symuluj pozostałe ćwierćfinały (te bez gracza)
+      updatedTournament.quarterFinals = updatedTournament.quarterFinals.map(match => {
+        if (!match.result && match.player1.id !== 'player' && match.player2.id !== 'player') {
+          return simulateKnockoutMatch(match);
+        }
+        return match;
+      });
+    } else if (tournament.phase === 'semis') {
+      updatedTournament.semiFinals = updatedTournament.semiFinals.map(match => {
+        if (!match.result && match.player1.id !== 'player' && match.player2.id !== 'player') {
+          return simulateKnockoutMatch(match);
+        }
+        return match;
+      });
+    } else if (tournament.phase === 'finals') {
+      // Symuluj finał i mecz o 3 miejsce
+      if (updatedTournament.finals.length > 0) {
+        const finalMatch = updatedTournament.finals[0];
+        if (!finalMatch.result && finalMatch.player1.id !== 'player' && finalMatch.player2.id !== 'player') {
+          updatedTournament.finals[0] = simulateKnockoutMatch(finalMatch);
+        }
+      }
+      if (updatedTournament.thirdPlace && !updatedTournament.thirdPlace.result) {
+        if (updatedTournament.thirdPlace.player1.id !== 'player' && updatedTournament.thirdPlace.player2.id !== 'player') {
+          updatedTournament.thirdPlace = simulateKnockoutMatch(updatedTournament.thirdPlace);
+        }
+      }
+    }
+    
+    setTournament(updatedTournament);
+  };
+
+  // Przejdź do półfinałów
+  const advanceToSemis = () => {
+    if (!tournament || tournament.phase !== 'quarters') return;
+    
+    const winners = tournament.quarterFinals
+      .filter(m => m.result && !m.result.isDraw)
+      .map(m => {
+        const winnerId = m.result.winnerId;
+        return m.player1.id === winnerId ? m.player1 : m.player2;
+      });
+    
+    if (winners.length !== 4) {
+      alert('Wszystkie ćwierćfinały muszą być rozegrane!');
+      return;
+    }
+    
+    const semiFinals = [
+      { id: 'sf1', player1: winners[0], player2: winners[1], result: null },
+      { id: 'sf2', player1: winners[2], player2: winners[3], result: null }
+    ];
+    
+    setTournament({
+      ...tournament,
+      phase: 'semis',
+      semiFinals: semiFinals
+    });
+  };
+
+  // Przejdź do finału
+  const advanceToFinals = () => {
+    if (!tournament || tournament.phase !== 'semis') return;
+    
+    const winners = [];
+    const losers = [];
+    
+    tournament.semiFinals.forEach(m => {
+      if (m.result && !m.result.isDraw) {
+        const winnerId = m.result.winnerId;
+        const loserId = m.player1.id === winnerId ? m.player2.id : m.player1.id;
+        winners.push(m.player1.id === winnerId ? m.player1 : m.player2);
+        losers.push(m.player1.id === loserId ? m.player1 : m.player2);
+      }
+    });
+    
+    if (winners.length !== 2 || losers.length !== 2) {
+      alert('Wszystkie półfinały muszą być rozegrane!');
+      return;
+    }
+    
+    const finalMatch = { id: 'final', player1: winners[0], player2: winners[1], result: null };
+    const thirdPlaceMatch = { id: 'third', player1: losers[0], player2: losers[1], result: null };
+    
+    setTournament({
+      ...tournament,
+      phase: 'finals',
+      finals: [finalMatch],
+      thirdPlace: thirdPlaceMatch
+    });
+  };
+
+  // Zakończ turniej
+  const finishTournament = () => {
+    if (!tournament || tournament.phase !== 'finals') return;
+    
+    const finalMatch = tournament.finals[0];
+    const thirdPlaceMatch = tournament.thirdPlace;
+    
+    if (!finalMatch.result || !thirdPlaceMatch.result) {
+      alert('Finał i mecz o 3 miejsce muszą być rozegrane!');
+      return;
+    }
+    
+    const championId = finalMatch.result.winnerId;
+    const champion = finalMatch.player1.id === championId ? finalMatch.player1 : finalMatch.player2;
+    const runnerUp = finalMatch.player1.id === championId ? finalMatch.player2 : finalMatch.player1;
+    
+    const thirdId = thirdPlaceMatch.result.winnerId;
+    const third = thirdPlaceMatch.player1.id === thirdId ? thirdPlaceMatch.player1 : thirdPlaceMatch.player2;
+    const fourth = thirdPlaceMatch.player1.id === thirdId ? thirdPlaceMatch.player2 : thirdPlaceMatch.player1;
+    
+    setTournament({
+      ...tournament,
+      phase: 'complete',
+      champion: champion,
+      runnerUp: runnerUp,
+      third: third,
+      fourth: fourth
+    });
+  };
+
+  // Rozpocznij mecz pucharowy
+  const startKnockoutMatch = (match) => {
+    const opponent = match.player1.id === 'player' ? match.player2 : match.player1;
+    initMatchGame(opponent);
+  };
+
+  // Zapisz wynik meczu pucharowego
+  const recordKnockoutResult = () => {
+    if (!tournament || !currentMatch) return;
+    
+    const winnerId = winner === 'player' ? 'player' : currentMatch.opponent.id;
+    const updatedTournament = { ...tournament };
+    
+    // Znajdź i zaktualizuj wynik
+    if (tournament.phase === 'quarters') {
+      const matchIndex = updatedTournament.quarterFinals.findIndex(m => 
+        (m.player1.id === 'player' || m.player2.id === 'player') &&
+        (m.player1.id === currentMatch.opponent.id || m.player2.id === currentMatch.opponent.id)
+      );
+      if (matchIndex !== -1) {
+        updatedTournament.quarterFinals[matchIndex].result = { winnerId, isDraw: false };
+      }
+    } else if (tournament.phase === 'semis') {
+      const matchIndex = updatedTournament.semiFinals.findIndex(m => 
+        (m.player1.id === 'player' || m.player2.id === 'player') &&
+        (m.player1.id === currentMatch.opponent.id || m.player2.id === currentMatch.opponent.id)
+      );
+      if (matchIndex !== -1) {
+        updatedTournament.semiFinals[matchIndex].result = { winnerId, isDraw: false };
+      }
+    } else if (tournament.phase === 'finals') {
+      // Finał
+      if (updatedTournament.finals[0].player1.id === 'player' || updatedTournament.finals[0].player2.id === 'player') {
+        updatedTournament.finals[0].result = { winnerId, isDraw: false };
+      }
+      // Mecz o 3 miejsce
+      if (updatedTournament.thirdPlace && 
+          (updatedTournament.thirdPlace.player1.id === 'player' || updatedTournament.thirdPlace.player2.id === 'player')) {
+        updatedTournament.thirdPlace.result = { winnerId, isDraw: false };
+      }
+    }
+    
+    setTournament(updatedTournament);
+    setCurrentMatch(null);
+    setGameMode('tournament');
+  };
+
+  // === UI COMPONENTS ===
+  
+  // Menu główne
+  if (gameMode === 'menu') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2 max-w-6xl w-full">
+          <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold mb-2 flex items-center gap-2">
+            <Trophy className="w-5 h-5" />
+            Makao - Turniej Mistrzów
+          </div>
+          
+          <div className="bg-gray-300 p-6">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold mb-2">🏆 TURNIEJ MAKAO 🏆</h1>
+              <p className="text-sm text-gray-700">16 uczestników walczy o mistrzostwo!</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Format turnieju */}
+              <div className="bg-white border-2 border-gray-400 p-4">
+                <h3 className="font-bold mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Format turnieju:
+                </h3>
+                <ul className="text-sm space-y-1">
+                  <li>• <strong>Faza grupowa:</strong> 4 grupy po 4 uczestników</li>
+                  <li>• Każdy gra z każdym (3 mecze)</li>
+                  <li>• Wygrana = 3 pkt, Remis = 1 pkt</li>
+                  <li>• 2 najlepsze awansują (8 do ćwierćfinałów)</li>
+                  <li className="mt-2">• <strong>Faza pucharowa:</strong></li>
+                  <li>  - Ćwierćfinały (8→4)</li>
+                  <li>  - Półfinały (4→2)</li>
+                  <li>  - Finał + mecz o 3. miejsce</li>
+                </ul>
+              </div>
+
+              {/* Ty jako uczestnik */}
+              <div className="bg-blue-50 border-2 border-blue-600 p-4">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Twój profil:
+                </h3>
+                <div className="flex items-center gap-3 bg-white border-2 border-blue-400 p-3 rounded">
+                  <span className="text-4xl">{PLAYER_PROFILE.flag}</span>
+                  <div className="flex-1">
+                    <div className="font-bold text-lg">{PLAYER_PROFILE.name}</div>
+                    <div className="text-sm text-gray-600">{PLAYER_PROFILE.style}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded font-bold">
+                        OVR: {PLAYER_PROFILE.overall}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Lista wszystkich botów */}
+            <div className="bg-white border-2 border-gray-400 p-4 mb-4">
+              <h3 className="font-bold mb-3 flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Wszyscy przeciwnicy ({BOTS.length} botów):
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto">
+                {BOTS.map(bot => (
+                  <div key={bot.id} className="bg-gray-50 border border-gray-300 p-2 rounded hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{bot.flag}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm truncate">{bot.name}</div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2 py-0.5 rounded font-bold ${
+                            bot.overall >= 85 ? 'bg-red-600 text-white' :
+                            bot.overall >= 70 ? 'bg-orange-500 text-white' :
+                            bot.overall >= 55 ? 'bg-yellow-600 text-white' :
+                            'bg-gray-400 text-white'
+                          }`}>
+                            OVR: {bot.overall}
+                          </span>
+                          <span className="text-xs bg-gray-300 px-2 py-0.5 rounded">
+                            {bot.strategyLevel === 'hard' ? '🔥' : bot.strategyLevel === 'medium' ? '⚡' : '🌱'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1 truncate" title={bot.style}>
+                          {bot.style}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <button
+              onClick={startTournament}
+              className="w-full px-6 py-4 bg-green-600 text-white font-bold text-xl border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500 transition-all"
+            >
+              🎮 ROZPOCZNIJ TURNIEJ
+            </button>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-gray-600">
+                💡 Tip: Boty o wyższym OVR są trudniejsze! 🔥 = Ekspert, ⚡ = Średnio zaawansowany, 🌱 = Nowicjusz
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Ekran turnieju
+  if (gameMode === 'tournament' && tournament) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2 mb-4">
+            <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5" />
+                Turniej Makao - {tournament.phase === 'groups' ? 'Faza Grupowa' : 'Faza Pucharowa'}
+              </div>
+              <button
+                onClick={() => setGameMode('menu')}
+                className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-500"
+              >
+                Wyjdź
+              </button>
+            </div>
+          </div>
+
+          {tournament.phase === 'groups' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {tournament.groups.map(group => {
+                  const standings = calculateGroupStandings(group.id);
+                  const groupMatches = tournament.matches.filter(m => m.group === group.id);
+                  const playedGroupMatches = groupMatches.filter(m => m.result);
+                  const totalGroupMatches = groupMatches.length;
+                  
+                  return (
+                    <div key={group.id} className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+                      <div className="bg-gradient-to-r from-green-700 to-green-600 text-white px-3 py-2 font-bold mb-2">
+                        Grupa {group.id} ({playedGroupMatches.length}/{totalGroupMatches} meczów)
+                      </div>
+                      
+                      <div className="bg-white border-2 border-gray-400 p-2">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-gray-400">
+                              <th className="text-left p-1">#</th>
+                              <th className="text-left p-1">Gracz</th>
+                              <th className="text-center p-1">M</th>
+                              <th className="text-center p-1">W</th>
+                              <th className="text-center p-1">R</th>
+                              <th className="text-center p-1">P</th>
+                              <th className="text-center p-1 font-bold">PKT</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {standings.map((participant, idx) => (
+                              <tr key={participant.id} className={`border-b border-gray-300 ${idx < 2 ? 'bg-green-100' : ''}`}>
+                                <td className="p-1">{idx + 1}</td>
+                                <td className="p-1">
+                                  <div className="flex items-center gap-1">
+                                    <span>{participant.flag}</span>
+                                    <span className={`text-xs ${participant.id === 'player' ? 'font-bold' : ''}`}>
+                                      {participant.name}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="text-center p-1">{participant.matches}</td>
+                                <td className="text-center p-1">{participant.wins}</td>
+                                <td className="text-center p-1">{participant.draws}</td>
+                                <td className="text-center p-1">{participant.losses}</td>
+                                <td className="text-center p-1 font-bold">{participant.points}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Lista meczów gracza */}
+              <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+                <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold mb-2">
+                  🎮 Twoje mecze
+                </div>
+                
+                <div className="bg-white border-2 border-gray-400 p-4 space-y-2">
+                  {tournament.matches
+                    .filter(m => m.player1.id === 'player' || m.player2.id === 'player')
+                    .map((match, idx) => {
+                      const opponent = match.player1.id === 'player' ? match.player2 : match.player1;
+                      const isPlayed = !!match.result;
+                      const didWin = isPlayed && match.result.winnerId === 'player';
+                      const isDraw = isPlayed && match.result.isDraw;
+                      
+                      return (
+                        <div key={idx} className={`flex items-center justify-between p-3 border-2 ${
+                          isPlayed 
+                            ? didWin 
+                              ? 'border-green-500 bg-green-50' 
+                              : isDraw 
+                                ? 'border-yellow-500 bg-yellow-50'
+                                : 'border-red-500 bg-red-50'
+                            : 'border-gray-400 bg-gray-50'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">👤</span>
+                            <span className="font-bold">TY</span>
+                            <span className="text-gray-600">vs</span>
+                            <span className="text-xl">{opponent.flag}</span>
+                            <div>
+                              <div className="font-bold">{opponent.name}</div>
+                              <div className="text-xs text-gray-600">OVR: {opponent.overall} | {opponent.style}</div>
+                            </div>
+                          </div>
+                          
+                          {isPlayed ? (
+                            <div className={`font-bold px-3 py-1 rounded ${
+                              didWin ? 'bg-green-600 text-white' : isDraw ? 'bg-yellow-600 text-white' : 'bg-red-600 text-white'
+                            }`}>
+                              {didWin ? '✓ WYGRANA' : isDraw ? '− REMIS' : '✗ PRZEGRANA'}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => initMatchGame(opponent)}
+                              className="px-4 py-2 bg-blue-600 text-white font-bold border-2 border-t-blue-400 border-l-blue-400 border-r-blue-800 border-b-blue-800 active:border-t-blue-800 active:border-l-blue-800 active:border-r-blue-400 active:border-b-blue-400 hover:bg-blue-500"
+                            >
+                              ▶ GRAJ
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Przycisk symulacji meczów botów */}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={simulateBotMatches}
+                  className="flex-1 px-6 py-3 bg-purple-600 text-white font-bold border-4 border-t-purple-400 border-l-purple-400 border-r-purple-800 border-b-purple-800 active:border-t-purple-800 active:border-l-purple-800 active:border-r-purple-400 active:border-b-purple-400 hover:bg-purple-500"
+                >
+                  ⚡ SYMULUJ MECZE BOTÓW
+                </button>
+                
+                {tournament.playedMatches.length === tournament.matches.length && (
+                  <button
+                    onClick={advanceToKnockout}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white font-bold border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500"
+                  >
+                    ➡ PRZEJDŹ DO FAZY PUCHAROWEJ
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* === FAZA PUCHAROWA === */}
+          {(tournament.phase === 'quarters' || tournament.phase === 'semis' || tournament.phase === 'finals') && (
+            <>
+              {/* Drabinka turniejowa */}
+              <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2 mb-4">
+                <div className="bg-gradient-to-r from-yellow-700 to-yellow-600 text-white px-3 py-2 font-bold mb-2">
+                  🏆 Drabinka turniejowa
+                </div>
+                
+                <div className="bg-white border-2 border-gray-400 p-4 overflow-x-auto">
+                  <div className="flex gap-8 min-w-max">
+                    {/* Ćwierćfinały */}
+                    <div className="space-y-4">
+                      <div className="text-center font-bold text-sm mb-2">ĆWIERĆFINAŁY</div>
+                      {tournament.quarterFinals.map((match, idx) => (
+                        <div key={idx} className="bg-gray-100 border-2 border-gray-400 p-2 w-48">
+                          <div className={`flex items-center justify-between p-1 ${
+                            match.result && match.result.winnerId === match.player1.id ? 'bg-green-200 font-bold' : ''
+                          }`}>
+                            <div className="flex items-center gap-1">
+                              <span>{match.player1.flag}</span>
+                              <span className="text-xs">{match.player1.name}</span>
+                            </div>
+                            {match.result && match.result.winnerId === match.player1.id && '✓'}
+                          </div>
+                          <div className={`flex items-center justify-between p-1 mt-1 ${
+                            match.result && match.result.winnerId === match.player2.id ? 'bg-green-200 font-bold' : ''
+                          }`}>
+                            <div className="flex items-center gap-1">
+                              <span>{match.player2.flag}</span>
+                              <span className="text-xs">{match.player2.name}</span>
+                            </div>
+                            {match.result && match.result.winnerId === match.player2.id && '✓'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Półfinały */}
+                    <div className="space-y-4 self-center">
+                      <div className="text-center font-bold text-sm mb-2">PÓŁFINAŁY</div>
+                      {tournament.semiFinals.length > 0 ? (
+                        tournament.semiFinals.map((match, idx) => (
+                          <div key={idx} className="bg-gray-100 border-2 border-gray-400 p-2 w-48" style={{ marginBottom: idx === 0 ? '100px' : '0' }}>
+                            <div className={`flex items-center justify-between p-1 ${
+                              match.result && match.result.winnerId === match.player1.id ? 'bg-green-200 font-bold' : ''
+                            }`}>
+                              <div className="flex items-center gap-1">
+                                <span>{match.player1.flag}</span>
+                                <span className="text-xs">{match.player1.name}</span>
+                              </div>
+                              {match.result && match.result.winnerId === match.player1.id && '✓'}
+                            </div>
+                            <div className={`flex items-center justify-between p-1 mt-1 ${
+                              match.result && match.result.winnerId === match.player2.id ? 'bg-green-200 font-bold' : ''
+                            }`}>
+                              <div className="flex items-center gap-1">
+                                <span>{match.player2.flag}</span>
+                                <span className="text-xs">{match.player2.name}</span>
+                              </div>
+                              {match.result && match.result.winnerId === match.player2.id && '✓'}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-gray-500 text-sm text-center">Oczekiwanie...</div>
+                      )}
+                    </div>
+
+                    {/* Finał */}
+                    <div className="space-y-4 self-center">
+                      <div className="text-center font-bold text-sm mb-2">FINAŁ</div>
+                      {tournament.finals.length > 0 ? (
+                        <div className="bg-yellow-100 border-4 border-yellow-600 p-2 w-48">
+                          <div className={`flex items-center justify-between p-1 ${
+                            tournament.finals[0].result && tournament.finals[0].result.winnerId === tournament.finals[0].player1.id ? 'bg-green-300 font-bold' : ''
+                          }`}>
+                            <div className="flex items-center gap-1">
+                              <span>{tournament.finals[0].player1.flag}</span>
+                              <span className="text-xs">{tournament.finals[0].player1.name}</span>
+                            </div>
+                            {tournament.finals[0].result && tournament.finals[0].result.winnerId === tournament.finals[0].player1.id && '👑'}
+                          </div>
+                          <div className={`flex items-center justify-between p-1 mt-1 ${
+                            tournament.finals[0].result && tournament.finals[0].result.winnerId === tournament.finals[0].player2.id ? 'bg-green-300 font-bold' : ''
+                          }`}>
+                            <div className="flex items-center gap-1">
+                              <span>{tournament.finals[0].player2.flag}</span>
+                              <span className="text-xs">{tournament.finals[0].player2.name}</span>
+                            </div>
+                            {tournament.finals[0].result && tournament.finals[0].result.winnerId === tournament.finals[0].player2.id && '👑'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 text-sm text-center">Oczekiwanie...</div>
+                      )}
+
+                      {/* Mecz o 3 miejsce */}
+                      {tournament.thirdPlace && (
+                        <div className="mt-8">
+                          <div className="text-center font-bold text-sm mb-2">O 3. MIEJSCE</div>
+                          <div className="bg-orange-100 border-4 border-orange-600 p-2 w-48">
+                            <div className={`flex items-center justify-between p-1 ${
+                              tournament.thirdPlace.result && tournament.thirdPlace.result.winnerId === tournament.thirdPlace.player1.id ? 'bg-orange-300 font-bold' : ''
+                            }`}>
+                              <div className="flex items-center gap-1">
+                                <span>{tournament.thirdPlace.player1.flag}</span>
+                                <span className="text-xs">{tournament.thirdPlace.player1.name}</span>
+                              </div>
+                              {tournament.thirdPlace.result && tournament.thirdPlace.result.winnerId === tournament.thirdPlace.player1.id && '🥉'}
+                            </div>
+                            <div className={`flex items-center justify-between p-1 mt-1 ${
+                              tournament.thirdPlace.result && tournament.thirdPlace.result.winnerId === tournament.thirdPlace.player2.id ? 'bg-orange-300 font-bold' : ''
+                            }`}>
+                              <div className="flex items-center gap-1">
+                                <span>{tournament.thirdPlace.player2.flag}</span>
+                                <span className="text-xs">{tournament.thirdPlace.player2.name}</span>
+                              </div>
+                              {tournament.thirdPlace.result && tournament.thirdPlace.result.winnerId === tournament.thirdPlace.player2.id && '🥉'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lista meczów gracza w fazie pucharowej */}
+              <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+                <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold mb-2">
+                  🎮 Twoje mecze - {tournament.phase === 'quarters' ? 'ĆWIERĆFINAŁY' : tournament.phase === 'semis' ? 'PÓŁFINAŁY' : 'FINAŁ'}
+                </div>
+                
+                <div className="bg-white border-2 border-gray-400 p-4 space-y-2">
+                  {(() => {
+                    let matches = [];
+                    if (tournament.phase === 'quarters') {
+                      matches = tournament.quarterFinals.filter(m => m.player1.id === 'player' || m.player2.id === 'player');
+                    } else if (tournament.phase === 'semis') {
+                      matches = tournament.semiFinals.filter(m => m.player1.id === 'player' || m.player2.id === 'player');
+                    } else if (tournament.phase === 'finals') {
+                      matches = [
+                        ...(tournament.finals[0] && (tournament.finals[0].player1.id === 'player' || tournament.finals[0].player2.id === 'player') ? [tournament.finals[0]] : []),
+                        ...(tournament.thirdPlace && (tournament.thirdPlace.player1.id === 'player' || tournament.thirdPlace.player2.id === 'player') ? [tournament.thirdPlace] : [])
+                      ];
+                    }
+                    
+                    return matches.length > 0 ? (
+                      matches.map((match, idx) => {
+                        const opponent = match.player1.id === 'player' ? match.player2 : match.player1;
+                        const isPlayed = !!match.result;
+                        const didWin = isPlayed && match.result.winnerId === 'player';
+                        const isThirdPlace = match.id === 'third';
+                        
+                        return (
+                          <div key={idx} className={`flex items-center justify-between p-3 border-2 ${
+                            isPlayed 
+                              ? didWin 
+                                ? 'border-green-500 bg-green-50' 
+                                : 'border-red-500 bg-red-50'
+                              : 'border-gray-400 bg-gray-50'
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">👤</span>
+                              <span className="font-bold">TY</span>
+                              <span className="text-gray-600">vs</span>
+                              <span className="text-xl">{opponent.flag}</span>
+                              <div>
+                                <div className="font-bold">{opponent.name}</div>
+                                <div className="text-xs text-gray-600">
+                                  OVR: {opponent.overall} | {opponent.style}
+                                  {isThirdPlace && <span className="ml-2 text-orange-600 font-bold">(O 3. MIEJSCE)</span>}
+                                  {match.id === 'final' && <span className="ml-2 text-yellow-600 font-bold">(FINAŁ)</span>}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {isPlayed ? (
+                              <div className={`font-bold px-3 py-1 rounded ${
+                                didWin ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                              }`}>
+                                {didWin ? (isThirdPlace ? '🥉 3. MIEJSCE' : match.id === 'final' ? '👑 MISTRZ!' : '✓ WYGRANA') : '✗ PRZEGRANA'}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => startKnockoutMatch(match)}
+                                className="px-4 py-2 bg-blue-600 text-white font-bold border-2 border-t-blue-400 border-l-blue-400 border-r-blue-800 border-b-blue-800 active:border-t-blue-800 active:border-l-blue-800 active:border-r-blue-400 active:border-b-blue-400 hover:bg-blue-500"
+                              >
+                                ▶ GRAJ
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center text-gray-600 p-4">
+                        {tournament.phase === 'quarters' ? '😢 Nie awansowałeś do ćwierćfinałów' : 
+                         tournament.phase === 'semis' ? '😢 Nie awansowałeś do półfinałów' :
+                         '😢 Nie dotarłeś do finału'}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Przyciski akcji */}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={simulatePhaseMatches}
+                  className="flex-1 px-6 py-3 bg-purple-600 text-white font-bold border-4 border-t-purple-400 border-l-purple-400 border-r-purple-800 border-b-purple-800 active:border-t-purple-800 active:border-l-purple-800 active:border-r-purple-400 active:border-b-purple-400 hover:bg-purple-500"
+                >
+                  ⚡ SYMULUJ MECZE BOTÓW
+                </button>
+                
+                {tournament.phase === 'quarters' && 
+                 tournament.quarterFinals.every(m => m.result) && (
+                  <button
+                    onClick={advanceToSemis}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white font-bold border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500"
+                  >
+                    ➡ PRZEJDŹ DO PÓŁFINAŁÓW
+                  </button>
+                )}
+                
+                {tournament.phase === 'semis' && 
+                 tournament.semiFinals.every(m => m.result) && (
+                  <button
+                    onClick={advanceToFinals}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white font-bold border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500"
+                  >
+                    ➡ PRZEJDŹ DO FINAŁU
+                  </button>
+                )}
+                
+                {tournament.phase === 'finals' && 
+                 tournament.finals[0]?.result && 
+                 tournament.thirdPlace?.result && (
+                  <button
+                    onClick={finishTournament}
+                    className="flex-1 px-6 py-3 bg-yellow-600 text-white font-bold border-4 border-t-yellow-400 border-l-yellow-400 border-r-yellow-800 border-b-yellow-800 active:border-t-yellow-800 active:border-l-yellow-800 active:border-r-yellow-400 active:border-b-yellow-400 hover:bg-yellow-500"
+                  >
+                    🏆 ZOBACZ PODIUM
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* === PODIUM === */}
+          {tournament.phase === 'complete' && (
+            <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+              <div className="bg-gradient-to-r from-yellow-700 to-yellow-600 text-white px-3 py-2 font-bold mb-2 text-center">
+                🏆 PODIUM TURNIEJU 🏆
+              </div>
+              
+              <div className="bg-white border-2 border-gray-400 p-6">
+                <div className="flex justify-center items-end gap-4 mb-6">
+                  {/* 2. miejsce */}
+                  <div className="text-center">
+                    <div className="bg-gray-300 border-4 border-gray-600 p-4 rounded-lg w-40 h-32 flex flex-col items-center justify-center">
+                      <span className="text-4xl mb-2">{tournament.runnerUp.flag}</span>
+                      <div className="font-bold">{tournament.runnerUp.name}</div>
+                      <div className="text-sm text-gray-600">OVR: {tournament.runnerUp.overall}</div>
+                    </div>
+                    <div className="text-4xl mt-2">🥈</div>
+                    <div className="font-bold mt-1">2. MIEJSCE</div>
+                  </div>
+
+                  {/* 1. miejsce */}
+                  <div className="text-center">
+                    <div className="bg-yellow-300 border-4 border-yellow-600 p-4 rounded-lg w-48 h-40 flex flex-col items-center justify-center shadow-lg">
+                      <span className="text-5xl mb-2">{tournament.champion.flag}</span>
+                      <div className="font-bold text-xl">{tournament.champion.name}</div>
+                      <div className="text-sm text-gray-700">OVR: {tournament.champion.overall}</div>
+                    </div>
+                    <div className="text-5xl mt-2">👑</div>
+                    <div className="font-bold text-xl mt-1">MISTRZ!</div>
+                  </div>
+
+                  {/* 3. miejsce */}
+                  <div className="text-center">
+                    <div className="bg-orange-200 border-4 border-orange-600 p-4 rounded-lg w-40 h-28 flex flex-col items-center justify-center">
+                      <span className="text-4xl mb-2">{tournament.third.flag}</span>
+                      <div className="font-bold">{tournament.third.name}</div>
+                      <div className="text-sm text-gray-600">OVR: {tournament.third.overall}</div>
+                    </div>
+                    <div className="text-4xl mt-2">🥉</div>
+                    <div className="font-bold mt-1">3. MIEJSCE</div>
+                  </div>
+                </div>
+
+                <div className="text-center mb-4">
+                  <div className="bg-gray-100 border-2 border-gray-400 p-3 inline-block rounded">
+                    <div className="text-sm text-gray-600">4. miejsce:</div>
+                    <div className="flex items-center gap-2 justify-center">
+                      <span className="text-2xl">{tournament.fourth.flag}</span>
+                      <span className="font-bold">{tournament.fourth.name}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={() => setGameMode('menu')}
+                    className="px-6 py-3 bg-blue-600 text-white font-bold border-4 border-t-blue-400 border-l-blue-400 border-r-blue-800 border-b-blue-800 active:border-t-blue-800 active:border-l-blue-800 active:border-r-blue-400 active:border-b-blue-400 hover:bg-blue-500"
+                  >
+                    🏠 POWRÓT DO MENU
+                  </button>
+                  <button
+                    onClick={startTournament}
+                    className="px-6 py-3 bg-green-600 text-white font-bold border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500"
+                  >
+                    🔄 NOWY TURNIEJ
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {tournament.groups.map(group => {
+                  const standings = calculateGroupStandings(group.id);
+                  const groupMatches = tournament.matches.filter(m => m.group === group.id);
+                  const playedGroupMatches = groupMatches.filter(m => m.result);
+                  const totalGroupMatches = groupMatches.length;
+                  
+                  return (
+                    <div key={group.id} className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+                      <div className="bg-gradient-to-r from-green-700 to-green-600 text-white px-3 py-2 font-bold mb-2">
+                        Grupa {group.id} ({playedGroupMatches.length}/{totalGroupMatches} meczów)
+                      </div>
+                      
+                      <div className="bg-white border-2 border-gray-400 p-2">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-gray-400">
+                              <th className="text-left p-1">#</th>
+                              <th className="text-left p-1">Gracz</th>
+                              <th className="text-center p-1">M</th>
+                              <th className="text-center p-1">W</th>
+                              <th className="text-center p-1">R</th>
+                              <th className="text-center p-1">P</th>
+                              <th className="text-center p-1 font-bold">PKT</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {standings.map((participant, idx) => (
+                              <tr key={participant.id} className={`border-b border-gray-300 ${idx < 2 ? 'bg-green-100' : ''}`}>
+                                <td className="p-1">{idx + 1}</td>
+                                <td className="p-1">
+                                  <div className="flex items-center gap-1">
+                                    <span>{participant.flag}</span>
+                                    <span className={`text-xs ${participant.id === 'player' ? 'font-bold' : ''}`}>
+                                      {participant.name}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="text-center p-1">{participant.matches}</td>
+                                <td className="text-center p-1">{participant.wins}</td>
+                                <td className="text-center p-1">{participant.draws}</td>
+                                <td className="text-center p-1">{participant.losses}</td>
+                                <td className="text-center p-1 font-bold">{participant.points}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Lista meczów gracza */}
+              <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2">
+                <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold mb-2">
+                  🎮 Twoje mecze
+                </div>
+                
+                <div className="bg-white border-2 border-gray-400 p-4 space-y-2">
+                  {tournament.matches
+                    .filter(m => m.player1.id === 'player' || m.player2.id === 'player')
+                    .map((match, idx) => {
+                      const opponent = match.player1.id === 'player' ? match.player2 : match.player1;
+                      const isPlayed = !!match.result;
+                      const didWin = isPlayed && match.result.winnerId === 'player';
+                      const isDraw = isPlayed && match.result.isDraw;
+                      
+                      return (
+                        <div key={idx} className={`flex items-center justify-between p-3 border-2 ${
+                          isPlayed 
+                            ? didWin 
+                              ? 'border-green-500 bg-green-50' 
+                              : isDraw 
+                                ? 'border-yellow-500 bg-yellow-50'
+                                : 'border-red-500 bg-red-50'
+                            : 'border-gray-400 bg-gray-50'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">👤</span>
+                            <span className="font-bold">TY</span>
+                            <span className="text-gray-600">vs</span>
+                            <span className="text-xl">{opponent.flag}</span>
+                            <div>
+                              <div className="font-bold">{opponent.name}</div>
+                              <div className="text-xs text-gray-600">OVR: {opponent.overall} | {opponent.style}</div>
+                            </div>
+                          </div>
+                          
+                          {isPlayed ? (
+                            <div className={`font-bold px-3 py-1 rounded ${
+                              didWin ? 'bg-green-600 text-white' : isDraw ? 'bg-yellow-600 text-white' : 'bg-red-600 text-white'
+                            }`}>
+                              {didWin ? '✓ WYGRANA' : isDraw ? '− REMIS' : '✗ PRZEGRANA'}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => initMatchGame(opponent)}
+                              className="px-4 py-2 bg-blue-600 text-white font-bold border-2 border-t-blue-400 border-l-blue-400 border-r-blue-800 border-b-blue-800 active:border-t-blue-800 active:border-l-blue-800 active:border-r-blue-400 active:border-b-blue-400 hover:bg-blue-500"
+                            >
+                              ▶ GRAJ
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Przycisk symulacji meczów botów */}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={simulateBotMatches}
+                  className="flex-1 px-6 py-3 bg-purple-600 text-white font-bold border-4 border-t-purple-400 border-l-purple-400 border-r-purple-800 border-b-purple-800 active:border-t-purple-800 active:border-l-purple-800 active:border-r-purple-400 active:border-b-purple-400 hover:bg-purple-500"
+                >
+                  ⚡ SYMULUJ MECZE BOTÓW
+                </button>
+                
+                {tournament.playedMatches.length === tournament.matches.length && (
+                  <button
+                    onClick={advanceToKnockout}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white font-bold border-4 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 hover:bg-green-500"
+                  >
+                    ➡ PRZEJDŹ DO FAZY PUCHAROWEJ
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Ekran gry (zachowany z oryginalnego kodu, ale z dostosowaniem)
+  if (gameMode === 'playing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="bg-gray-300 border-4 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-2 max-w-5xl w-full">
+          <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-3 py-2 font-bold mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Mecz turniejowy
+            </div>
+            {currentMatch && (
+              <div className="text-sm">
+                👤 TY vs {currentMatch.opponent.flag} {currentMatch.opponent.name}
+              </div>
+            )}
+          </div>
+          
+          <div className="bg-gray-300 flex gap-2">
+            {/* Log gry */}
+            <div className="w-64 bg-white border-2 border-gray-400 p-2">
+              <div className="text-xs font-bold mb-2 border-b border-gray-400 pb-1">Historia gry</div>
+              <div className="space-y-1 h-[500px] overflow-y-auto">
+                {gameLog.map((entry, idx) => (
+                  <div key={idx} className={`text-xs p-1 rounded ${
+                    entry.isPlayer ? 'bg-blue-50' : 'bg-red-50'
+                  }`}>
+                    {entry.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Plansza gry */}
+            <div className="flex-1 p-4">
+              {/* Status */}
+              <div className="bg-white border-2 border-gray-400 p-2 mb-4">
+                <p className="text-sm font-bold">{message}</p>
+                {requestedValue && (
+                  <p className="text-xs text-blue-700 mt-1">Wymagana wartość: {requestedValue}</p>
+                )}
+                {requestedSuit && (
+                  <p className="text-xs text-blue-700 mt-1">
+                    Wymagany kolor: <span className={getCardColor(requestedSuit)}>{requestedSuit}</span>
+                  </p>
+                )}
+                {drawCount > 0 && (
+                  <p className="text-xs text-red-700 mt-1">Kara: {drawCount} kart do dobrania!</p>
+                )}
+              </div>
+
+              {/* Karty komputera */}
+              <div className="mb-4">
+                <p className="text-sm font-bold mb-2">
+                  {currentMatch?.opponent.flag} {currentMatch?.opponent.name} ({computerHand.length} kart)
+                </p>
+                <div className="flex gap-1">
+                  {computerHand.map((_, idx) => (
+                    <div key={idx} className="w-16 h-24 bg-blue-900 rounded-lg border-2 border-white"></div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stos i talia */}
+              <div className="mb-4 flex justify-center items-center gap-4">
+                <div className="text-center">
+                  <p className="text-xs mb-1">Talia</p>
+                  <div className="w-20 h-28 bg-blue-900 rounded-lg border-2 border-white flex items-center justify-center">
+                    <Shuffle className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-xs mt-1">{deck.length} kart</p>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-xs mb-1">Wierzch</p>
+                  {discardPile.length > 0 && (
+                    <div className="w-20 h-28 bg-white border-2 border-black rounded-lg flex flex-col items-center justify-center shadow-lg">
+                      <span className={`text-5xl ${getCardColor(discardPile[discardPile.length - 1].suit)}`}>
+                        {discardPile[discardPile.length - 1].suit}
+                      </span>
+                      <span className={`text-2xl font-bold ${getCardColor(discardPile[discardPile.length - 1].suit)}`}>
+                        {discardPile[discardPile.length - 1].value}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Karty gracza */}
+              <div className="mb-4">
+                <p className="text-sm font-bold mb-2">
+                  Twoje karty ({playerHand.length})
+                  {selectedCards.length > 0 && (
+                    <span className="ml-2 text-blue-700">
+                      - Zaznaczono: {selectedCards.length}
+                    </span>
+                  )}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {playerHand.map((card, idx) => {
+                    const playable = isCardPlayable(card);
+                    const selected = isCardSelected(card);
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handlePlayerCard(card)}
+                        disabled={currentPlayer !== 'player' || gameOver}
+                        className={`w-20 h-28 bg-white rounded-lg flex flex-col items-center justify-center shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                          selected
+                            ? 'border-4 border-blue-600 -translate-y-2 shadow-2xl'
+                            : playable 
+                            ? 'border-4 border-green-500 hover:shadow-xl hover:-translate-y-1 cursor-pointer' 
+                            : 'border-2 border-gray-400 opacity-60'
+                        }`}
+                      >
+                        <span className={`text-5xl ${getCardColor(card.suit)}`}>{card.suit}</span>
+                        <span className={`text-2xl font-bold ${getCardColor(card.suit)}`}>{card.value}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Przyciski akcji */}
+              <div className="flex gap-2 flex-wrap">
+                {!justDrew && (
+                  <button
+                    onClick={handleDraw}
+                    disabled={currentPlayer !== 'player' || gameOver}
+                    className="px-4 py-2 bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 active:border-t-gray-800 active:border-l-gray-800 active:border-r-white active:border-b-white disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                  >
+                    Dobierz kartę
+                  </button>
+                )}
+
+                {justDrew && (
+                  <button
+                    onClick={endTurn}
+                    disabled={currentPlayer !== 'player' || gameOver}
+                    className="px-4 py-2 bg-yellow-600 text-white border-2 border-t-yellow-400 border-l-yellow-400 border-r-yellow-800 border-b-yellow-800 active:border-t-yellow-800 active:border-l-yellow-800 active:border-r-yellow-400 active:border-b-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                  >
+                    Zakończ turę
+                  </button>
+                )}
+
+                {selectedCards.length > 0 && (
+                  <>
+                    <button
+                      onClick={playSelectedCards}
+                      disabled={currentPlayer !== 'player' || gameOver}
+                      className="px-4 py-2 bg-green-600 text-white border-2 border-t-green-400 border-l-green-400 border-r-green-800 border-b-green-800 active:border-t-green-800 active:border-l-green-800 active:border-r-green-400 active:border-b-green-400 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                    >
+                      Zagraj zaznaczone ({selectedCards.length})
+                    </button>
+                    
+                    <button
+                      onClick={() => setSelectedCards([])}
+                      disabled={currentPlayer !== 'player' || gameOver}
+                      className="px-4 py-2 bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 active:border-t-gray-800 active:border-l-gray-800 active:border-r-white active:border-b-white disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                    >
+                      Odznacz
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Okna modalne */}
+        {showValuePicker && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-1">
+              <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-2 py-1 font-bold mb-1">
+                Wybierz wartość karty (Walet)
+              </div>
+              <div className="bg-gray-300 p-4">
+                <p className="text-xs mb-3 text-center">Można żądać tylko zwykłych kart (bez funkcyjnych)</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {normalValues.map(value => (
+                    <button
+                      key={value}
+                      onClick={() => handleValuePick(value)}
+                      className="px-3 py-2 bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 active:border-t-gray-800 active:border-l-gray-800 active:border-r-white active:border-b-white font-bold hover:bg-gray-200"
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSuitPicker && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-1">
+              <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-2 py-1 font-bold mb-1">
+                Wybierz kolor (As)
+              </div>
+              <div className="bg-gray-300 p-4 grid grid-cols-2 gap-4">
+                {suits.map(suit => (
+                  <button
+                    key={suit}
+                    onClick={() => handleSuitPick(suit)}
+                    className="w-24 h-24 bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 active:border-t-gray-800 active:border-l-gray-800 active:border-r-white active:border-b-white flex items-center justify-center hover:bg-gray-200"
+                  >
+                    <span className={`text-6xl ${getCardColor(suit)}`}>{suit}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gameOver && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-gray-300 border-2 border-t-white border-l-white border-r-gray-800 border-b-gray-800 p-1">
+              <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white px-2 py-1 font-bold mb-1">
+                Koniec meczu!
+              </div>
+              <div className="bg-gray-300 p-6 text-center">
+                <p className="text-xl font-bold mb-4">
+                  {winner === 'player' ? '🎉 Wygrałeś mecz! 🎉' : '💻 Przegrałeś mecz! 💻'}
+                </p>
+                <p className="text-sm text-gray-700 mb-4">Powrót do turnieju za chwilę...</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default MakaoTournament;
