@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Zadań</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Libre Baskerville', serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 0;
+            border: 2px solid #000;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .header-top {
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #000;
+        }
+
+        .points {
+            background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .stats-today {
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 16px;
+        }
+
+        .stats-label {
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .stats-number {
+            font-size: 32px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .stats-subtitle {
+            font-size: 12px;
+            color: #4b5563;
+            margin-top: 4px;
+        }
+
+        .history-btn {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 10px 16px;
+            border-radius: 0;
+            margin-top: 12px;
+            width: 100%;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .history-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #000;
+            border-radius: 0;
+            font-family: 'Libre Baskerville', serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: #000;
+            color: #fff;
+        }
+
+        .tab.inactive {
+            background: #fff;
+            color: #000;
+        }
+
+        .progress-card {
+            background: white;
+            border-radius: 0;
+            border: 2px solid #000;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #000;
+            transition: width 0.5s ease;
+        }
+
+        .add-task-card {
+            background: white;
+            border-radius: 0;
+            border: 2px solid #000;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #000;
+            border-radius: 0;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 14px;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .add-btn {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 12px 20px;
+            border-radius: 0;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .add-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 0;
+            border: 2px solid #000;
+            padding: 16px;
+            transition: opacity 0.3s;
+        }
+
+        .task-item.completed {
+            opacity: 0.5;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #000;
+            border-radius: 0;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .checkbox.checked {
+            background: #000;
+            border-color: #000;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            color: #000;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        .delete-btn {
+            color: #000;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #666;
+        }
+
+        .empty-emoji {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .history-view {
+            background: white;
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-history-btn {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 8px 16px;
+            border-radius: 0;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .close-history-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-day {
+            border: 2px solid #000;
+            border-radius: 0;
+            padding: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .history-day:hover {
+            background: #f5f5f5;
+        }
+
+        .history-day.today {
+            border-color: #000;
+            background: #f5f5f5;
+        }
+
+        .history-date {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .history-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #000;
+        }
+
+        .history-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-stat-label {
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .history-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+
+    <script>
+        // Stan aplikacji
+        let state = {
+            dailyTasks: [],
+            oneTimeTasks: [],
+            lastResetDate: new Date().toDateString(),
+            dailyStats: {}, // { '2025-01-15': { completed: 5, total: 10, tasks: [...] } }
+            showHistory: false,
+            editingDay: null // Data dnia, który edytujemy
+        };
+
+        // Inicjalizacja z localStorage
+        function loadState() {
+            const saved = localStorage.getItem('taskAppState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+                checkDayReset();
+            } else {
+                // Domyślne zadania dla nowych użytkowników
+                state.dailyTasks = [
+                    { id: Date.now(), text: 'Ćwiczenia', completed: false },
+                    { id: Date.now() + 1, text: 'Czytanie', completed: false },
+                    { id: Date.now() + 2, text: 'Medytacja', completed: false }
+                ];
+                state.oneTimeTasks = [
+                    { id: Date.now() + 3, text: 'Kupić mleko', completed: false }
+                ];
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('taskAppState', JSON.stringify(state));
+        }
+
+        function checkDayReset() {
+            const today = new Date().toDateString();
+            if (today !== state.lastResetDate) {
+                // Zapisz statystyki poprzedniego dnia z pełną listą zadań
+                const yesterday = state.lastResetDate;
+                const completedYesterday = state.dailyTasks.filter(t => t.completed).length;
+                const totalYesterday = state.dailyTasks.length;
+                
+                if (!state.dailyStats) state.dailyStats = {};
+                state.dailyStats[yesterday] = {
+                    completed: completedYesterday,
+                    total: totalYesterday,
+                    tasks: JSON.parse(JSON.stringify(state.dailyTasks)) // Deep copy
+                };
+
+                // Reset zadań codziennych
+                state.dailyTasks = state.dailyTasks.map(task => ({ ...task, completed: false }));
+                state.lastResetDate = today;
+                saveState();
+            }
+        }
+
+        function getCurrentDayStats() {
+            const today = new Date().toDateString();
+            const completed = state.dailyTasks.filter(t => t.completed).length;
+            const total = state.dailyTasks.length;
+            
+            // Aktualizuj statystyki bieżącego dnia z pełną listą zadań
+            if (!state.dailyStats) state.dailyStats = {};
+            state.dailyStats[today] = {
+                completed: completed,
+                total: total,
+                tasks: JSON.parse(JSON.stringify(state.dailyTasks)) // Deep copy
+            };
+            
+            return { completed, total };
+        }
+
+        function toggleTask(type, id) {
+            const tasks = type === 'daily' ? state.dailyTasks : state.oneTimeTasks;
+            const task = tasks.find(t => t.id === id);
+            
+            task.completed = !task.completed;
+
+            saveState();
+            render();
+        }
+
+        function togglePastDayTask(date, taskId) {
+            if (!state.dailyStats[date] || !state.dailyStats[date].tasks) return;
+            
+            const task = state.dailyStats[date].tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            task.completed = !task.completed;
+            
+            // Jeśli to dzisiejszy dzień, zsynchronizuj z aktualnymi zadaniami
+            const today = new Date().toDateString();
+            if (date === today) {
+                const currentTask = state.dailyTasks.find(t => t.id === taskId);
+                if (currentTask) {
+                    currentTask.completed = task.completed;
+                }
+            }
+            
+            // Przelicz statystyki
+            const completed = state.dailyStats[date].tasks.filter(t => t.completed).length;
+            state.dailyStats[date].completed = completed;
+            
+            saveState();
+            render();
+        }
+
+        function addTask(type, text) {
+            if (!text.trim()) return;
+
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+
+            if (type === 'daily') {
+                state.dailyTasks.push(newTask);
+            } else {
+                state.oneTimeTasks.push(newTask);
+            }
+
+            saveState();
+            render();
+        }
+
+        function deleteTask(type, id) {
+            if (type === 'daily') {
+                state.dailyTasks = state.dailyTasks.filter(t => t.id !== id);
+            } else {
+                state.oneTimeTasks = state.oneTimeTasks.filter(t => t.id !== id);
+            }
+
+            saveState();
+            render();
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (date.toDateString() === today.toDateString()) {
+                return 'Dzisiaj';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Wczoraj';
+            } else {
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            }
+        }
+
+        function renderDayEdit(date) {
+            const stats = state.dailyStats[date];
+            if (!stats || !stats.tasks) return '';
+
+            return `
+                <div class="history-view">
+                    <div class="history-header">
+                        <div class="history-title">${formatDate(date)}</div>
+                        <button class="close-history-btn" onclick="closeDayEdit()">Wróć</button>
+                    </div>
+                    
+                    <div class="stats-today" style="margin-bottom: 20px;">
+                        <div class="stats-label">Wykonane zadania</div>
+                        <div class="stats-number">${stats.completed} / ${stats.total}</div>
+                    </div>
+
+                    <div class="task-list">
+                        ${stats.tasks.map(task => `
+                            <div class="task-item ${task.completed ? 'completed' : ''}">
+                                <div class="task-content">
+                                    <div class="checkbox ${task.completed ? 'checked' : ''}" 
+                                         onclick="togglePastDayTask('${date}', ${task.id})">
+                                    </div>
+                                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${stats.tasks.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-emoji">📝</div>
+                                <div>Brak zadań w tym dniu</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistory() {
+            const sortedDates = Object.keys(state.dailyStats || {}).sort((a, b) => new Date(b) - new Date(a));
+            const today = new Date().toDateString();
+
+            return `
+                <div class="history-view">
+                    <div class="history-header">
+                        <div class="history-title">Historia</div>
+                        <button class="close-history-btn" onclick="closeHistory()">Zamknij</button>
+                    </div>
+                    <div class="history-list">
+                        ${sortedDates.map(date => {
+                            const stats = state.dailyStats[date];
+                            const isToday = date === today;
+                            return `
+                                <div class="history-day ${isToday ? 'today' : ''}" 
+                                     onclick="openDayEdit('${date}')" 
+                                     style="cursor: pointer;">
+                                    <div class="history-date">${formatDate(date)}</div>
+                                    <div class="history-stats">
+                                        <div class="history-stat">
+                                            <span class="history-stat-label">Wykonane zadania</span>
+                                            <span class="history-stat-value">${stats.completed}/${stats.total}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${sortedDates.length === 0 ? '<div class="empty-state"><div class="empty-emoji">📊</div><div>Brak historii</div></div>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const activeTab = window.activeTab || 'daily';
+            const currentTasks = activeTab === 'daily' ? state.dailyTasks : state.oneTimeTasks;
+            const { completed, total } = getCurrentDayStats();
+            const completedCount = currentTasks.filter(t => t.completed).length;
+            const totalCount = currentTasks.length;
+            const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+            const app = document.getElementById('app');
+            
+            // Jeśli edytujemy konkretny dzień
+            if (state.editingDay) {
+                app.innerHTML = renderDayEdit(state.editingDay);
+                return;
+            }
+            
+            app.innerHTML = `
+                ${state.showHistory ? renderHistory() : ''}
+                
+                ${!state.showHistory ? `
+                <div class="header">
+                    <div class="header-top">
+                        <h1>Moje zadania</h1>
+                    </div>
+                    <div class="stats-today">
+                        <div class="stats-label">Dzisiaj</div>
+                        <div class="stats-number">${completed} / ${total}</div>
+                        <div class="stats-subtitle">zadań codziennych wykonanych</div>
+                        <button class="history-btn" onclick="openHistory()">Zobacz historię</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab ${activeTab === 'daily' ? 'active' : 'inactive'}" onclick="switchTab('daily')">
+                        Codzienne
+                    </button>
+                    <button class="tab ${activeTab === 'onetime' ? 'active' : 'inactive'}" onclick="switchTab('onetime')">
+                        Jednorazowe
+                    </button>
+                </div>
+
+                <div class="progress-card">
+                    <div class="progress-info">
+                        <span>Postęp</span>
+                        <span>${completedCount} / ${totalCount}</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input 
+                            type="text" 
+                            class="task-input" 
+                            id="taskInput" 
+                            placeholder="Nowe zadanie..."
+                            onkeypress="if(event.key==='Enter') addTaskHandler()"
+                        />
+                        <button class="add-btn" onclick="addTaskHandler()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${currentTasks.map(task => `
+                        <div class="task-item ${task.completed ? 'completed' : ''}">
+                            <div class="task-content">
+                                <div class="checkbox ${task.completed ? 'checked' : ''}" 
+                                     onclick="toggleTask('${activeTab}', ${task.id})">
+                                </div>
+                                <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                <button class="delete-btn" onclick="deleteTask('${activeTab}', ${task.id})">×</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${currentTasks.length === 0 ? `
+                        <div class="empty-state">
+                            <div class="empty-emoji">📝</div>
+                            <div>Brak zadań. Dodaj pierwsze!</div>
+                        </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+            `;
+        }
+
+        window.switchTab = function(tab) {
+            window.activeTab = tab;
+            render();
+        };
+
+        window.addTaskHandler = function() {
+            const input = document.getElementById('taskInput');
+            const type = window.activeTab || 'daily';
+            addTask(type, input.value);
+            input.value = '';
+        };
+
+        window.openHistory = function() {
+            state.showHistory = true;
+            render();
+        };
+
+        window.closeHistory = function() {
+            state.showHistory = false;
+            render();
+        };
+
+        window.openDayEdit = function(date) {
+            state.editingDay = date;
+            state.showHistory = false;
+            render();
+        };
+
+        window.closeDayEdit = function() {
+            state.editingDay = null;
+            state.showHistory = true;
+            render();
+        };
+
+        // Inicjalizacja
+        loadState();
+        window.activeTab = 'daily';
+        render();
+
+        // Auto-save co 5 sekund
+        setInterval(() => {
+            checkDayReset();
+            saveState();
+        }, 5000);
+    </script>
+</body>
+</html>
