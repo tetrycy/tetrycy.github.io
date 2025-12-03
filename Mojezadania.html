@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista Zadań</title>
+    <title>Zadania i kalendarz</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Zadania">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlphZGFuaWEgaSBrYWxlbmRhcnoiLAogICJzaG9ydF9uYW1lIjogIlphZGFuaWEiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJyUzRSUzQ3JlY3Qgd2lkdGg9JzEwMCcgaGVpZ2h0PScxMDAnIGZpbGw9JyUyMzAwMCcvJTNFJTNDdGV4dCB4PSc1MCcgeT0nNTAnIGZvbnQtc2l6ZT0nNTAnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGR5PScuM2VtJyBmaWxsPSclMjNmZmYnJTNFJUYwJTlGJTkzJTlEJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
@@ -23,41 +29,55 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
+        /* Header */
         .header {
             background: white;
-            border-radius: 0;
             border: 2px solid #000;
             padding: 24px;
             margin-bottom: 16px;
         }
 
-        .header-top {
-            margin-bottom: 20px;
-        }
-
         h1 {
             font-size: 24px;
             color: #000;
+            margin-bottom: 16px;
         }
 
-        .points {
-            background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+        /* Main navigation tabs */
+        .main-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #000;
+            font-family: 'Libre Baskerville', serif;
             font-weight: bold;
-            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            background: #fff;
+            color: #000;
         }
 
+        .main-tab.active {
+            background: #000;
+            color: #fff;
+        }
+
+        /* Tasks section */
         .stats-today {
             background: #fff;
             border: 2px solid #000;
-            border-radius: 0;
             padding: 16px;
+            margin-bottom: 16px;
         }
 
         .stats-label {
@@ -83,7 +103,6 @@
             background: #fff;
             border: 2px solid #000;
             padding: 10px 16px;
-            border-radius: 0;
             margin-top: 12px;
             width: 100%;
             font-family: 'Libre Baskerville', serif;
@@ -106,12 +125,12 @@
             flex: 1;
             padding: 12px;
             border: 2px solid #000;
-            border-radius: 0;
             font-family: 'Libre Baskerville', serif;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
             font-size: 14px;
+            background: #fff;
+            color: #000;
         }
 
         .tab.active {
@@ -119,14 +138,8 @@
             color: #fff;
         }
 
-        .tab.inactive {
-            background: #fff;
-            color: #000;
-        }
-
         .progress-card {
             background: white;
-            border-radius: 0;
             border: 2px solid #000;
             padding: 16px;
             margin-bottom: 16px;
@@ -145,7 +158,6 @@
             height: 12px;
             background: #fff;
             border: 2px solid #000;
-            border-radius: 0;
             overflow: hidden;
         }
 
@@ -157,7 +169,6 @@
 
         .add-task-card {
             background: white;
-            border-radius: 0;
             border: 2px solid #000;
             padding: 16px;
             margin-bottom: 16px;
@@ -172,7 +183,6 @@
             flex: 1;
             padding: 12px;
             border: 2px solid #000;
-            border-radius: 0;
             font-family: 'Libre Baskerville', serif;
             font-size: 14px;
         }
@@ -187,7 +197,6 @@
             color: #fff;
             border: 2px solid #000;
             padding: 12px 20px;
-            border-radius: 0;
             font-family: 'Libre Baskerville', serif;
             cursor: pointer;
             font-weight: bold;
@@ -206,7 +215,6 @@
 
         .task-item {
             background: white;
-            border-radius: 0;
             border: 2px solid #000;
             padding: 16px;
             transition: opacity 0.3s;
@@ -226,7 +234,6 @@
             width: 24px;
             height: 24px;
             border: 2px solid #000;
-            border-radius: 0;
             cursor: pointer;
             flex-shrink: 0;
             display: flex;
@@ -278,10 +285,131 @@
             margin-bottom: 8px;
         }
 
+        /* Calendar section */
+        .month-nav {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .month-nav button {
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 8px 16px;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .month-nav button:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .month-nav span {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .calendar {
+            background: white;
+            border: 2px solid #000;
+            padding: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0;
+        }
+
+        .calendar-header {
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            border: 1px solid #000;
+            background: #000;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .calendar-day {
+            border: 1px solid #000;
+            min-height: 80px;
+            padding: 8px;
+            cursor: pointer;
+            position: relative;
+            background: #fff;
+        }
+
+        .calendar-day:hover {
+            background: #f5f5f5;
+        }
+
+        .calendar-day.other-month {
+            background: #f9f9f9;
+            color: #999;
+        }
+
+        .calendar-day.today {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .day-number {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .day-tasks-count {
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Day view */
+        .day-view {
+            background: white;
+            border: 2px solid #000;
+            padding: 24px;
+        }
+
+        .day-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #000;
+        }
+
+        .day-view-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: #fff;
+            border: 2px solid #000;
+            padding: 8px 16px;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        /* History view */
         .history-view {
             background: white;
             border: 2px solid #000;
-            border-radius: 0;
             padding: 20px;
             margin-bottom: 16px;
         }
@@ -302,7 +430,6 @@
             background: #fff;
             border: 2px solid #000;
             padding: 8px 16px;
-            border-radius: 0;
             font-family: 'Libre Baskerville', serif;
             cursor: pointer;
             font-size: 14px;
@@ -321,9 +448,9 @@
 
         .history-day {
             border: 2px solid #000;
-            border-radius: 0;
             padding: 16px;
             transition: background-color 0.2s;
+            cursor: pointer;
         }
 
         .history-day:hover {
@@ -364,6 +491,10 @@
             font-weight: bold;
             color: #000;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -372,23 +503,40 @@
     <script>
         // Stan aplikacji
         let state = {
+            activeMainTab: 'lista', // 'lista' lub 'kalendarz'
+            
+            // Lista zadań
             dailyTasks: [],
             oneTimeTasks: [],
             lastResetDate: new Date().toDateString(),
-            dailyStats: {}, // { '2025-01-15': { completed: 5, total: 10, tasks: [...] } }
+            dailyStats: {},
+            activeTaskTab: 'daily',
             showHistory: false,
-            editingDay: null // Data dnia, który edytujemy
+            editingDay: null,
+            
+            // Kalendarz
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            selectedDate: null,
+            calendarTasks: {}
         };
+
+        const monthNames = [
+            'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
+        ];
+
+        const dayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
 
         // Inicjalizacja z localStorage
         function loadState() {
-            const saved = localStorage.getItem('taskAppState');
+            const saved = localStorage.getItem('unifiedAppState');
             if (saved) {
                 const parsed = JSON.parse(saved);
                 state = { ...state, ...parsed };
                 checkDayReset();
             } else {
-                // Domyślne zadania dla nowych użytkowników
+                // Domyślne zadania
                 state.dailyTasks = [
                     { id: Date.now(), text: 'Ćwiczenia', completed: false },
                     { id: Date.now() + 1, text: 'Czytanie', completed: false },
@@ -401,13 +549,14 @@
         }
 
         function saveState() {
-            localStorage.setItem('taskAppState', JSON.stringify(state));
+            localStorage.setItem('unifiedAppState', JSON.stringify(state));
         }
+
+        // === FUNKCJE DLA LISTY ZADAŃ ===
 
         function checkDayReset() {
             const today = new Date().toDateString();
             if (today !== state.lastResetDate) {
-                // Zapisz statystyki poprzedniego dnia z pełną listą zadań
                 const yesterday = state.lastResetDate;
                 const completedYesterday = state.dailyTasks.filter(t => t.completed).length;
                 const totalYesterday = state.dailyTasks.length;
@@ -416,10 +565,9 @@
                 state.dailyStats[yesterday] = {
                     completed: completedYesterday,
                     total: totalYesterday,
-                    tasks: JSON.parse(JSON.stringify(state.dailyTasks)) // Deep copy
+                    tasks: JSON.parse(JSON.stringify(state.dailyTasks))
                 };
 
-                // Reset zadań codziennych
                 state.dailyTasks = state.dailyTasks.map(task => ({ ...task, completed: false }));
                 state.lastResetDate = today;
                 saveState();
@@ -431,12 +579,11 @@
             const completed = state.dailyTasks.filter(t => t.completed).length;
             const total = state.dailyTasks.length;
             
-            // Aktualizuj statystyki bieżącego dnia z pełną listą zadań
             if (!state.dailyStats) state.dailyStats = {};
             state.dailyStats[today] = {
                 completed: completed,
                 total: total,
-                tasks: JSON.parse(JSON.stringify(state.dailyTasks)) // Deep copy
+                tasks: JSON.parse(JSON.stringify(state.dailyTasks))
             };
             
             return { completed, total };
@@ -445,9 +592,7 @@
         function toggleTask(type, id) {
             const tasks = type === 'daily' ? state.dailyTasks : state.oneTimeTasks;
             const task = tasks.find(t => t.id === id);
-            
             task.completed = !task.completed;
-
             saveState();
             render();
         }
@@ -460,7 +605,6 @@
             
             task.completed = !task.completed;
             
-            // Jeśli to dzisiejszy dzień, zsynchronizuj z aktualnymi zadaniami
             const today = new Date().toDateString();
             if (date === today) {
                 const currentTask = state.dailyTasks.find(t => t.id === taskId);
@@ -469,7 +613,6 @@
                 }
             }
             
-            // Przelicz statystyki
             const completed = state.dailyStats[date].tasks.filter(t => t.completed).length;
             state.dailyStats[date].completed = completed;
             
@@ -477,7 +620,7 @@
             render();
         }
 
-        function addTask(type, text) {
+        function addTaskToList(type, text) {
             if (!text.trim()) return;
 
             const newTask = {
@@ -496,7 +639,7 @@
             render();
         }
 
-        function deleteTask(type, id) {
+        function deleteTaskFromList(type, id) {
             if (type === 'daily') {
                 state.dailyTasks = state.dailyTasks.filter(t => t.id !== id);
             } else {
@@ -507,133 +650,102 @@
             render();
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
+        // === FUNKCJE DLA KALENDARZA ===
 
-            if (date.toDateString() === today.toDateString()) {
-                return 'Dzisiaj';
-            } else if (date.toDateString() === yesterday.toDateString()) {
-                return 'Wczoraj';
-            } else {
-                const day = date.getDate().toString().padStart(2, '0');
-                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                const year = date.getFullYear();
-                return `${day}.${month}.${year}`;
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(year, month) {
+            const day = new Date(year, month, 1).getDay();
+            return day === 0 ? 6 : day - 1;
+        }
+
+        function formatDate(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        function parseDate(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            return { year, month: month - 1, day };
+        }
+
+        function formatDateDisplay(dateString) {
+            const { year, month, day } = parseDate(dateString);
+            return `${day} ${monthNames[month]} ${year}`;
+        }
+
+        function getCalendarTasksForDate(dateString) {
+            return state.calendarTasks[dateString] || [];
+        }
+
+        function addCalendarTask(dateString, taskText) {
+            if (!state.calendarTasks[dateString]) {
+                state.calendarTasks[dateString] = [];
+            }
+            state.calendarTasks[dateString].push(taskText);
+            saveState();
+        }
+
+        function deleteCalendarTask(dateString, taskIndex) {
+            if (state.calendarTasks[dateString]) {
+                state.calendarTasks[dateString].splice(taskIndex, 1);
+                if (state.calendarTasks[dateString].length === 0) {
+                    delete state.calendarTasks[dateString];
+                }
+                saveState();
             }
         }
 
-        function renderDayEdit(date) {
-            const stats = state.dailyStats[date];
-            if (!stats || !stats.tasks) return '';
-
-            return `
-                <div class="history-view">
-                    <div class="history-header">
-                        <div class="history-title">${formatDate(date)}</div>
-                        <button class="close-history-btn" onclick="closeDayEdit()">Wróć</button>
-                    </div>
-                    
-                    <div class="stats-today" style="margin-bottom: 20px;">
-                        <div class="stats-label">Wykonane zadania</div>
-                        <div class="stats-number">${stats.completed} / ${stats.total}</div>
-                    </div>
-
-                    <div class="task-list">
-                        ${stats.tasks.map(task => `
-                            <div class="task-item ${task.completed ? 'completed' : ''}">
-                                <div class="task-content">
-                                    <div class="checkbox ${task.completed ? 'checked' : ''}" 
-                                         onclick="togglePastDayTask('${date}', ${task.id})">
-                                    </div>
-                                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                        ${stats.tasks.length === 0 ? `
-                            <div class="empty-state">
-                                <div class="empty-emoji">📝</div>
-                                <div>Brak zadań w tym dniu</div>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
+        function prevMonth() {
+            state.currentMonth--;
+            if (state.currentMonth < 0) {
+                state.currentMonth = 11;
+                state.currentYear--;
+            }
+            render();
         }
 
-        function renderHistory() {
-            const sortedDates = Object.keys(state.dailyStats || {}).sort((a, b) => new Date(b) - new Date(a));
-            const today = new Date().toDateString();
-
-            return `
-                <div class="history-view">
-                    <div class="history-header">
-                        <div class="history-title">Historia</div>
-                        <button class="close-history-btn" onclick="closeHistory()">Zamknij</button>
-                    </div>
-                    <div class="history-list">
-                        ${sortedDates.map(date => {
-                            const stats = state.dailyStats[date];
-                            const isToday = date === today;
-                            return `
-                                <div class="history-day ${isToday ? 'today' : ''}" 
-                                     onclick="openDayEdit('${date}')" 
-                                     style="cursor: pointer;">
-                                    <div class="history-date">${formatDate(date)}</div>
-                                    <div class="history-stats">
-                                        <div class="history-stat">
-                                            <span class="history-stat-label">Wykonane zadania</span>
-                                            <span class="history-stat-value">${stats.completed}/${stats.total}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                        ${sortedDates.length === 0 ? '<div class="empty-state"><div class="empty-emoji">📊</div><div>Brak historii</div></div>' : ''}
-                    </div>
-                </div>
-            `;
+        function nextMonth() {
+            state.currentMonth++;
+            if (state.currentMonth > 11) {
+                state.currentMonth = 0;
+                state.currentYear++;
+            }
+            render();
         }
 
-        function render() {
-            const activeTab = window.activeTab || 'daily';
+        // === RENDERING ===
+
+        function renderTasksList() {
+            const activeTab = state.activeTaskTab;
             const currentTasks = activeTab === 'daily' ? state.dailyTasks : state.oneTimeTasks;
             const { completed, total } = getCurrentDayStats();
             const completedCount = currentTasks.filter(t => t.completed).length;
             const totalCount = currentTasks.length;
             const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-            const app = document.getElementById('app');
-            
-            // Jeśli edytujemy konkretny dzień
             if (state.editingDay) {
-                app.innerHTML = renderDayEdit(state.editingDay);
-                return;
+                return renderDayEdit(state.editingDay);
             }
-            
-            app.innerHTML = `
-                ${state.showHistory ? renderHistory() : ''}
-                
-                ${!state.showHistory ? `
-                <div class="header">
-                    <div class="header-top">
-                        <h1>Moje zadania</h1>
-                    </div>
-                    <div class="stats-today">
-                        <div class="stats-label">Dzisiaj</div>
-                        <div class="stats-number">${completed} / ${total}</div>
-                        <div class="stats-subtitle">zadań codziennych wykonanych</div>
-                        <button class="history-btn" onclick="openHistory()">Zobacz historię</button>
-                    </div>
+
+            if (state.showHistory) {
+                return renderHistory();
+            }
+
+            return `
+                <div class="stats-today">
+                    <div class="stats-label">Dzisiaj</div>
+                    <div class="stats-number">${completed} / ${total}</div>
+                    <div class="stats-subtitle">zadań codziennych wykonanych</div>
+                    <button class="history-btn" onclick="openHistory()">Zobacz historię</button>
                 </div>
 
                 <div class="tabs">
-                    <button class="tab ${activeTab === 'daily' ? 'active' : 'inactive'}" onclick="switchTab('daily')">
+                    <button class="tab ${activeTab === 'daily' ? 'active' : ''}" onclick="switchTaskTab('daily')">
                         Codzienne
                     </button>
-                    <button class="tab ${activeTab === 'onetime' ? 'active' : 'inactive'}" onclick="switchTab('onetime')">
+                    <button class="tab ${activeTab === 'onetime' ? 'active' : ''}" onclick="switchTaskTab('onetime')">
                         Jednorazowe
                     </button>
                 </div>
@@ -669,7 +781,7 @@
                                      onclick="toggleTask('${activeTab}', ${task.id})">
                                 </div>
                                 <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-                                <button class="delete-btn" onclick="deleteTask('${activeTab}', ${task.id})">×</button>
+                                <button class="delete-btn" onclick="deleteTaskFromList('${activeTab}', ${task.id})">×</button>
                             </div>
                         </div>
                     `).join('')}
@@ -680,19 +792,240 @@
                         </div>
                     ` : ''}
                 </div>
-                ` : ''}
             `;
         }
 
-        window.switchTab = function(tab) {
-            window.activeTab = tab;
+        function renderHistory() {
+            const sortedDates = Object.keys(state.dailyStats || {}).sort((a, b) => new Date(b) - new Date(a));
+            const today = new Date().toDateString();
+
+            return `
+                <div class="history-view">
+                    <div class="history-header">
+                        <div class="history-title">Historia</div>
+                        <button class="close-history-btn" onclick="closeHistory()">Zamknij</button>
+                    </div>
+                    <div class="history-list">
+                        ${sortedDates.map(date => {
+                            const stats = state.dailyStats[date];
+                            const isToday = date === today;
+                            return `
+                                <div class="history-day ${isToday ? 'today' : ''}" 
+                                     onclick="openDayEdit('${date}')">
+                                    <div class="history-date">${formatDateDisplay(date)}</div>
+                                    <div class="history-stats">
+                                        <div class="history-stat">
+                                            <span class="history-stat-label">Wykonane zadania</span>
+                                            <span class="history-stat-value">${stats.completed}/${stats.total}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${sortedDates.length === 0 ? '<div class="empty-state"><div class="empty-emoji">📊</div><div>Brak historii</div></div>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDayEdit(date) {
+            const stats = state.dailyStats[date];
+            if (!stats || !stats.tasks) return '';
+
+            return `
+                <div class="history-view">
+                    <div class="history-header">
+                        <div class="history-title">${formatDateDisplay(date)}</div>
+                        <button class="close-history-btn" onclick="closeDayEdit()">Wróć</button>
+                    </div>
+                    
+                    <div class="stats-today" style="margin-bottom: 20px;">
+                        <div class="stats-label">Wykonane zadania</div>
+                        <div class="stats-number">${stats.completed} / ${stats.total}</div>
+                    </div>
+
+                    <div class="task-list">
+                        ${stats.tasks.map(task => `
+                            <div class="task-item ${task.completed ? 'completed' : ''}">
+                                <div class="task-content">
+                                    <div class="checkbox ${task.completed ? 'checked' : ''}" 
+                                         onclick="togglePastDayTask('${date}', ${task.id})">
+                                    </div>
+                                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${stats.tasks.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-emoji">📝</div>
+                                <div>Brak zadań w tym dniu</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCalendar() {
+            if (state.selectedDate) {
+                return renderCalendarDayView();
+            }
+
+            const daysInMonth = getDaysInMonth(state.currentYear, state.currentMonth);
+            const firstDay = getFirstDayOfMonth(state.currentYear, state.currentMonth);
+            const today = new Date();
+            const todayString = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+            let calendarHTML = '<div class="calendar-grid">';
+
+            dayNames.forEach(day => {
+                calendarHTML += `<div class="calendar-header">${day}</div>`;
+            });
+
+            const prevMonthDays = getDaysInMonth(
+                state.currentMonth === 0 ? state.currentYear - 1 : state.currentYear,
+                state.currentMonth === 0 ? 11 : state.currentMonth - 1
+            );
+
+            for (let i = 0; i < firstDay; i++) {
+                const day = prevMonthDays - firstDay + i + 1;
+                const prevMonth = state.currentMonth === 0 ? 11 : state.currentMonth - 1;
+                const prevYear = state.currentMonth === 0 ? state.currentYear - 1 : state.currentYear;
+                const dateString = formatDate(prevYear, prevMonth, day);
+                const tasks = getCalendarTasksForDate(dateString);
+                
+                calendarHTML += `
+                    <div class="calendar-day other-month" onclick="selectCalendarDate('${dateString}')">
+                        <div class="day-number">${day}</div>
+                        ${tasks.length > 0 ? `<div class="day-tasks-count">${tasks.length} zadań</div>` : ''}
+                    </div>
+                `;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateString = formatDate(state.currentYear, state.currentMonth, day);
+                const tasks = getCalendarTasksForDate(dateString);
+                const isToday = dateString === todayString;
+
+                calendarHTML += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}" onclick="selectCalendarDate('${dateString}')">
+                        <div class="day-number">${day}</div>
+                        ${tasks.length > 0 ? `<div class="day-tasks-count">${tasks.length} zadań</div>` : ''}
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDay + daysInMonth;
+            const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+            for (let i = 1; i <= remainingCells; i++) {
+                const nextMonth = state.currentMonth === 11 ? 0 : state.currentMonth + 1;
+                const nextYear = state.currentMonth === 11 ? state.currentYear + 1 : state.currentYear;
+                const dateString = formatDate(nextYear, nextMonth, i);
+                const tasks = getCalendarTasksForDate(dateString);
+
+                calendarHTML += `
+                    <div class="calendar-day other-month" onclick="selectCalendarDate('${dateString}')">
+                        <div class="day-number">${i}</div>
+                        ${tasks.length > 0 ? `<div class="day-tasks-count">${tasks.length} zadań</div>` : ''}
+                    </div>
+                `;
+            }
+
+            calendarHTML += '</div>';
+
+            return `
+                <div class="month-nav">
+                    <button onclick="prevMonth()">←</button>
+                    <span>${monthNames[state.currentMonth]} ${state.currentYear}</span>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <div class="calendar">
+                    ${calendarHTML}
+                </div>
+            `;
+        }
+
+        function renderCalendarDayView() {
+            const tasks = getCalendarTasksForDate(state.selectedDate);
+            const dateDisplay = formatDateDisplay(state.selectedDate);
+
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        <div class="day-view-title">${dateDisplay}</div>
+                        <button class="back-btn" onclick="backToCalendar()">Wróć do kalendarza</button>
+                    </div>
+
+                    <div class="add-task-form">
+                        <input 
+                            type="text" 
+                            class="task-input" 
+                            id="calendarTaskInput" 
+                            placeholder="Co masz do zrobienia..."
+                            onkeypress="if(event.key==='Enter') addCalendarTaskHandler()"
+                        />
+                        <button class="add-btn" onclick="addCalendarTaskHandler()">+</button>
+                    </div>
+
+                    <div class="task-list">
+                        ${tasks.length > 0 ? tasks.map((task, index) => `
+                            <div class="task-item">
+                                <div class="task-text">${task}</div>
+                                <button class="delete-btn" onclick="deleteCalendarTaskHandler(${index})">×</button>
+                            </div>
+                        `).join('') : `
+                            <div class="empty-state">
+                                <div class="empty-emoji">📝</div>
+                                <div>Brak zadań na ten dzień</div>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            
+            app.innerHTML = `
+                <div class="header">
+                    <h1>Moje zadania</h1>
+                    <div class="main-tabs">
+                        <button class="main-tab ${state.activeMainTab === 'lista' ? 'active' : ''}" 
+                                onclick="switchMainTab('lista')">
+                            Lista zadań
+                        </button>
+                        <button class="main-tab ${state.activeMainTab === 'kalendarz' ? 'active' : ''}" 
+                                onclick="switchMainTab('kalendarz')">
+                            Kalendarz
+                        </button>
+                    </div>
+                </div>
+
+                ${state.activeMainTab === 'lista' ? renderTasksList() : renderCalendar()}
+            `;
+        }
+
+        // === GLOBAL FUNCTIONS ===
+
+        window.switchMainTab = function(tab) {
+            state.activeMainTab = tab;
+            state.showHistory = false;
+            state.editingDay = null;
+            state.selectedDate = null;
+            render();
+        };
+
+        window.switchTaskTab = function(tab) {
+            state.activeTaskTab = tab;
             render();
         };
 
         window.addTaskHandler = function() {
             const input = document.getElementById('taskInput');
-            const type = window.activeTab || 'daily';
-            addTask(type, input.value);
+            const type = state.activeTaskTab;
+            addTaskToList(type, input.value);
             input.value = '';
         };
 
@@ -718,12 +1051,36 @@
             render();
         };
 
+        window.selectCalendarDate = function(date) {
+            state.selectedDate = date;
+            render();
+        };
+
+        window.backToCalendar = function() {
+            state.selectedDate = null;
+            render();
+        };
+
+        window.addCalendarTaskHandler = function() {
+            const input = document.getElementById('calendarTaskInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                addCalendarTask(state.selectedDate, text);
+                input.value = '';
+                render();
+            }
+        };
+
+        window.deleteCalendarTaskHandler = function(index) {
+            deleteCalendarTask(state.selectedDate, index);
+            render();
+        };
+
         // Inicjalizacja
         loadState();
-        window.activeTab = 'daily';
         render();
 
-        // Auto-save co 5 sekund
         setInterval(() => {
             checkDayReset();
             saveState();
