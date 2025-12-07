@@ -450,7 +450,9 @@
             border: 2px solid #000;
             padding: 16px;
             transition: background-color 0.2s;
-            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .history-day:hover {
@@ -501,6 +503,12 @@
     <div class="container" id="app"></div>
 
     <script>
+        // Funkcje pomocnicze
+        function getTodayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
         // Stan aplikacji
         let state = {
             activeMainTab: 'lista', // 'lista' lub 'kalendarz'
@@ -508,7 +516,7 @@
             // Lista zadań
             dailyTasks: [],
             oneTimeTasks: [],
-            lastResetDate: new Date().toDateString(),
+            lastResetDate: getTodayString(),
             dailyStats: {},
             activeTaskTab: 'daily',
             showHistory: false,
@@ -555,7 +563,7 @@
         // === FUNKCJE DLA LISTY ZADAŃ ===
 
         function checkDayReset() {
-            const today = new Date().toDateString();
+            const today = getTodayString();
             if (today !== state.lastResetDate) {
                 const yesterday = state.lastResetDate;
                 const completedYesterday = state.dailyTasks.filter(t => t.completed).length;
@@ -575,7 +583,7 @@
         }
 
         function getCurrentDayStats() {
-            const today = new Date().toDateString();
+            const today = getTodayString();
             const completed = state.dailyTasks.filter(t => t.completed).length;
             const total = state.dailyTasks.length;
             
@@ -605,7 +613,7 @@
             
             task.completed = !task.completed;
             
-            const today = new Date().toDateString();
+            const today = getTodayString();
             if (date === today) {
                 const currentTask = state.dailyTasks.find(t => t.id === taskId);
                 if (currentTask) {
@@ -650,6 +658,14 @@
             render();
         }
 
+        function deleteHistoryDayInternal(date) {
+            if (confirm(`Czy na pewno chcesz usunąć ${formatDateDisplay(date)} z historii?`)) {
+                delete state.dailyStats[date];
+                saveState();
+                render();
+            }
+        }
+
         // === FUNKCJE DLA KALENDARZA ===
 
         function getDaysInMonth(year, month) {
@@ -666,13 +682,43 @@
         }
 
         function parseDate(dateString) {
-            const [year, month, day] = dateString.split('-').map(Number);
-            return { year, month: month - 1, day };
+            // Obsługa zarówno YYYY-MM-DD jak i innych formatów
+            if (dateString.includes('-')) {
+                const [year, month, day] = dateString.split('-').map(Number);
+                return { year, month: month - 1, day };
+            } else {
+                // Stary format - konwertuj
+                const date = new Date(dateString);
+                return { 
+                    year: date.getFullYear(), 
+                    month: date.getMonth(), 
+                    day: date.getDate() 
+                };
+            }
         }
 
         function formatDateDisplay(dateString) {
-            const { year, month, day } = parseDate(dateString);
-            return `${day} ${monthNames[month]} ${year}`;
+            try {
+                const { year, month, day } = parseDate(dateString);
+                
+                // Sprawdź czy to dzisiaj lub wczoraj
+                const today = new Date();
+                const dateObj = new Date(year, month, day);
+                const todayObj = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const yesterdayObj = new Date(todayObj);
+                yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+                
+                if (dateObj.getTime() === todayObj.getTime()) {
+                    return 'Dzisiaj';
+                } else if (dateObj.getTime() === yesterdayObj.getTime()) {
+                    return 'Wczoraj';
+                }
+                
+                return `${day} ${monthNames[month]} ${year}`;
+            } catch (e) {
+                console.error('Error formatting date:', dateString, e);
+                return dateString; // Zwróć oryginalny string w razie błędu
+            }
         }
 
         function getCalendarTasksForDate(dateString) {
@@ -797,7 +843,7 @@
 
         function renderHistory() {
             const sortedDates = Object.keys(state.dailyStats || {}).sort((a, b) => new Date(b) - new Date(a));
-            const today = new Date().toDateString();
+            const today = getTodayString();
 
             return `
                 <div class="history-view">
@@ -810,15 +856,17 @@
                             const stats = state.dailyStats[date];
                             const isToday = date === today;
                             return `
-                                <div class="history-day ${isToday ? 'today' : ''}" 
-                                     onclick="openDayEdit('${date}')">
-                                    <div class="history-date">${formatDateDisplay(date)}</div>
-                                    <div class="history-stats">
-                                        <div class="history-stat">
-                                            <span class="history-stat-label">Wykonane zadania</span>
-                                            <span class="history-stat-value">${stats.completed}/${stats.total}</span>
+                                <div class="history-day ${isToday ? 'today' : ''}">
+                                    <div onclick="openDayEdit('${date}')" style="flex: 1; cursor: pointer;">
+                                        <div class="history-date">${formatDateDisplay(date)}</div>
+                                        <div class="history-stats">
+                                            <div class="history-stat">
+                                                <span class="history-stat-label">Wykonane zadania</span>
+                                                <span class="history-stat-value">${stats.completed}/${stats.total}</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <button class="delete-btn" onclick="event.stopPropagation(); deleteHistoryDay('${date}')" style="margin-left: 12px;">×</button>
                                 </div>
                             `;
                         }).join('')}
@@ -1075,6 +1123,10 @@
         window.deleteCalendarTaskHandler = function(index) {
             deleteCalendarTask(state.selectedDate, index);
             render();
+        };
+
+        window.deleteHistoryDay = function(date) {
+            deleteHistoryDayInternal(date);
         };
 
         // Inicjalizacja
