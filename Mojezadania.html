@@ -494,6 +494,82 @@
             color: #000;
         }
 
+        /* Streaks/Passes section */
+        .streak-item {
+            background: white;
+            border: 2px solid #000;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .streak-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .streak-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            flex: 1;
+        }
+
+        .streak-days {
+            font-size: 36px;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .streak-days-label {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .streak-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .streak-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #000;
+            font-family: 'Libre Baskerville', serif;
+            cursor: pointer;
+            font-size: 14px;
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .streak-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        .streak-btn.primary {
+            background: #000;
+            color: #fff;
+        }
+
+        .streak-btn.primary:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .streak-date {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 8px;
+        }
+
         .hidden {
             display: none;
         }
@@ -511,7 +587,7 @@
 
         // Stan aplikacji
         let state = {
-            activeMainTab: 'lista', // 'lista' lub 'kalendarz'
+            activeMainTab: 'lista', // 'lista', 'kalendarz', 'passy'
             
             // Lista zadań
             dailyTasks: [],
@@ -526,7 +602,10 @@
             currentYear: new Date().getFullYear(),
             currentMonth: new Date().getMonth(),
             selectedDate: null,
-            calendarTasks: {}
+            calendarTasks: {},
+            
+            // Passy/Streaks
+            streaks: []
         };
 
         const monthNames = [
@@ -542,6 +621,12 @@
             if (saved) {
                 const parsed = JSON.parse(saved);
                 state = { ...state, ...parsed };
+                
+                // Upewnij się, że streaks istnieje
+                if (!state.streaks) {
+                    state.streaks = [];
+                }
+                
                 checkDayReset();
             } else {
                 // Domyślne zadania
@@ -553,6 +638,7 @@
                 state.oneTimeTasks = [
                     { id: Date.now() + 3, text: 'Kupić mleko', completed: false }
                 ];
+                state.streaks = [];
             }
         }
 
@@ -682,12 +768,10 @@
         }
 
         function parseDate(dateString) {
-            // Obsługa zarówno YYYY-MM-DD jak i innych formatów
             if (dateString.includes('-')) {
                 const [year, month, day] = dateString.split('-').map(Number);
                 return { year, month: month - 1, day };
             } else {
-                // Stary format - konwertuj
                 const date = new Date(dateString);
                 return { 
                     year: date.getFullYear(), 
@@ -701,7 +785,6 @@
             try {
                 const { year, month, day } = parseDate(dateString);
                 
-                // Sprawdź czy to dzisiaj lub wczoraj
                 const today = new Date();
                 const dateObj = new Date(year, month, day);
                 const todayObj = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -717,7 +800,7 @@
                 return `${day} ${monthNames[month]} ${year}`;
             } catch (e) {
                 console.error('Error formatting date:', dateString, e);
-                return dateString; // Zwróć oryginalny string w razie błędu
+                return dateString;
             }
         }
 
@@ -759,6 +842,55 @@
                 state.currentYear++;
             }
             render();
+        }
+
+        // === FUNKCJE DLA PASSÓW/STREAKS ===
+
+        function addStreak(name) {
+            if (!name.trim()) return;
+
+            const newStreak = {
+                id: Date.now(),
+                name: name.trim(),
+                days: 0,
+                startDate: getTodayString(),
+                lastUpdated: getTodayString()
+            };
+
+            state.streaks.push(newStreak);
+            saveState();
+            render();
+        }
+
+        function incrementStreak(id) {
+            const streak = state.streaks.find(s => s.id === id);
+            if (streak) {
+                streak.days++;
+                streak.lastUpdated = getTodayString();
+                saveState();
+                render();
+            }
+        }
+
+        function resetStreak(id) {
+            if (confirm('Czy na pewno chcesz zresetować tę passę?')) {
+                const streak = state.streaks.find(s => s.id === id);
+                if (streak) {
+                    streak.days = 0;
+                    streak.startDate = getTodayString();
+                    streak.lastUpdated = getTodayString();
+                    saveState();
+                    render();
+                }
+            }
+        }
+
+        function deleteStreak(id) {
+            if (confirm('Czy na pewno chcesz usunąć tę passę?')) {
+                state.streaks = state.streaks.filter(s => s.id !== id);
+                saveState();
+                render();
+            }
         }
 
         // === RENDERING ===
@@ -1033,8 +1165,63 @@
             `;
         }
 
+        function renderStreaks() {
+            return `
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input 
+                            type="text" 
+                            class="task-input" 
+                            id="streakInput" 
+                            placeholder="Nowa seria..."
+                            onkeypress="if(event.key==='Enter') addStreakHandler()"
+                        />
+                        <button class="add-btn" onclick="addStreakHandler()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${state.streaks.map(streak => `
+                        <div class="streak-item">
+                            <div class="streak-header">
+                                <div class="streak-name">${streak.name}</div>
+                                <button class="delete-btn" onclick="deleteStreak(${streak.id})">×</button>
+                            </div>
+                            
+                            <div class="streak-days">${streak.days}</div>
+                            <div class="streak-days-label">${streak.days === 1 ? 'dzień' : streak.days < 5 || streak.days > 21 && streak.days % 10 >= 2 && streak.days % 10 <= 4 ? 'dni' : 'dni'}</div>
+                            
+                            <div class="streak-actions">
+                                <button class="streak-btn primary" onclick="incrementStreak(${streak.id})">+1 dzień</button>
+                                <button class="streak-btn" onclick="resetStreak(${streak.id})">Reset</button>
+                            </div>
+                            
+                            <div class="streak-date">Start: ${formatDateDisplay(streak.startDate)}</div>
+                        </div>
+                    `).join('')}
+                    
+                    ${state.streaks.length === 0 ? `
+                        <div class="empty-state">
+                            <div class="empty-emoji">🔥</div>
+                            <div>Brak serii. Dodaj pierwszą!</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
         function render() {
             const app = document.getElementById('app');
+            
+            let content = '';
+            
+            if (state.activeMainTab === 'lista') {
+                content = renderTasksList();
+            } else if (state.activeMainTab === 'kalendarz') {
+                content = renderCalendar();
+            } else if (state.activeMainTab === 'passy') {
+                content = renderStreaks();
+            }
             
             app.innerHTML = `
                 <div class="header">
@@ -1048,10 +1235,14 @@
                                 onclick="switchMainTab('kalendarz')">
                             Kalendarz
                         </button>
+                        <button class="main-tab ${state.activeMainTab === 'passy' ? 'active' : ''}" 
+                                onclick="switchMainTab('passy')">
+                            Serie
+                        </button>
                     </div>
                 </div>
 
-                ${state.activeMainTab === 'lista' ? renderTasksList() : renderCalendar()}
+                ${content}
             `;
         }
 
@@ -1127,6 +1318,16 @@
 
         window.deleteHistoryDay = function(date) {
             deleteHistoryDayInternal(date);
+        };
+
+        window.addStreakHandler = function() {
+            const input = document.getElementById('streakInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                addStreak(text);
+                input.value = '';
+            }
         };
 
         // Inicjalizacja
