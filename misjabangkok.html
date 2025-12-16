@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MISJA BANGKOK - VAPORWAVE EDITION</title>
+    <style>
+        /* --- ESTETYKA VAPORWAVE --- */
+        :root {
+            --bg-deep: #050014;       /* Bardzo ciemny fiolet */
+            --bg-panel: #14002e;      /* Jaśniejszy fiolet dla okien */
+            --neon-pink: #ff2a6d;     /* Główny akcent */
+            --neon-blue: #05d9e8;     /* Drugi akcent */
+            --neon-yellow: #f7f700;   /* Ostrzeżenia/Gwiazdy */
+            --neon-green: #00ff9f;    /* Sukces/Terminal */
+            
+            --font-main: 'Courier New', Courier, monospace; /* Retro terminal style */
+            --border-width: 2px;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            /* VAPORWAVE GRID */
+            background-image: 
+                linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center bottom;
+            
+            font-family: var(--font-main);
+            color: var(--neon-blue);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- OKNO GŁÓWNE --- */
+        .window {
+            background-color: var(--bg-panel);
+            border: var(--border-width) solid var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 20px rgba(0,0,0,0.8);
+            width: 90vw;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, var(--neon-pink), #8a00c2);
+            color: #000;
+            padding: 6px 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Scanlines overlay (Efekt starego monitora) */
+        .content::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* --- PRZYCISKI --- */
+        .btn {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 0 5px var(--neon-blue);
+            text-shadow: 0 0 2px var(--neon-blue);
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(2px);
+        }
+
+        .btn:disabled {
+            border-color: #555;
+            color: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+            text-shadow: none;
+        }
+
+        /* --- PANELE WEWNĘTRZNE --- */
+        .inset-box {
+            border: 1px solid var(--neon-pink);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px;
+            box-shadow: inset 0 0 10px rgba(255, 42, 109, 0.2);
+        }
+
+        /* --- EKRANY GRY --- */
+        .screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            z-index: 1; /* Pod scanlines */
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+
+        /* TYPOGRAFIA TYTUŁÓW */
+        h1, h2, h3 {
+            margin: 0 0 10px 0;
+            color: var(--neon-yellow);
+            text-shadow: 2px 2px 0px #ff00ff;
+            text-transform: uppercase;
+        }
+        
+        strong { color: var(--neon-green); }
+
+        /* --- HUB --- */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 700px) {
+            .hub-grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .program-card {
+            border: 1px solid var(--neon-blue);
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        
+        .program-card:hover {
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            margin-top: 5px;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            /* Vaporwave Gradient */
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink), var(--neon-yellow));
+            width: 0%;
+            transition: width 0.5s;
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* --- STUDIO --- */
+        .studio-view {
+            height: 180px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--neon-green);
+            position: relative;
+            overflow: hidden;
+            border-color: var(--neon-green); /* Zielona ramka dla wideo */
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .studio-overlay {
+            z-index: 2;
+            text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .topic-box {
+            font-weight: bold;
+            font-size: 14px;
+            padding: 15px;
+            background: rgba(255, 42, 109, 0.1); /* Lekki róż */
+            margin-bottom: 15px;
+            color: #fff;
+            text-shadow: 0 0 5px var(--neon-pink);
+            border-color: var(--neon-yellow);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            height: 60px;
+            font-size: 12px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-color: var(--neon-pink);
+            color: #fff;
+        }
+        
+        .option-type {
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--neon-yellow);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* KOŚCI */
+        .dice-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.6);
+            margin-top: auto;
+            border: 1px dashed var(--neon-blue);
+        }
+
+        .dice {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: var(--font-main);
+            box-shadow: 0 0 5px var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        /* FEEDBACK ANIMATIONS */
+        @keyframes flashGreen {
+            0% { background-color: var(--neon-green); color: black; }
+            100% { background-color: transparent; color: var(--neon-green); }
+        }
+        @keyframes flashRed {
+            0% { background-color: var(--neon-pink); color: white; }
+            100% { background-color: transparent; color: var(--neon-pink); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .flash-success { animation: flashGreen 0.5s; }
+        .flash-fail { animation: flashRed 0.5s; }
+
+        /* REKWIZYTY */
+        .item-row {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(5, 217, 232, 0.3);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .item-row:hover { background: rgba(5, 217, 232, 0.2); }
+        .item-row.selected { 
+            background: var(--neon-pink); 
+            color: white; 
+            box-shadow: 0 0 10px var(--neon-pink);
+            border-bottom: none;
+        }
+        .item-icon { font-size: 24px; margin-right: 15px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <div class="window">
+            <div class="title-bar">
+                <span id="window-title">Misja Bangkok.exe</span>
+                <button class="btn" style="height:24px; width:24px; padding:0; line-height:10px; background: black; border-color:white;">X</button>
+            </div>
+
+            <div class="content">
+                
+                <div id="video-intro-screen" class="screen active" style="justify-content: center; align-items: center; background: black;">
+                    <div style="text-align: center;">
+                        <div style="color: var(--neon-green); font-size: 14px; margin-bottom: 20px;">[ VIDEO INTRO - PLACEHOLDER ]</div>
+                        <div style="border: 2px dashed var(--neon-blue); padding: 100px 200px; margin: 20px;">
+                            <p style="color: #666;">Tutaj będzie intro video</p>
+                        </div>
+                        <button class="btn" onclick="showScreen('graphic-intro-screen')" style="margin-top: 20px;">[ SKIP / DALEJ ]</button>
+                    </div>
+                </div>
+
+                <div id="graphic-intro-screen" class="screen" style="justify-content: center; align-items: center;">
+                    <div style="text-align: center;">
+                        <h1 style="font-size: 64px; text-shadow: 4px 4px 0 var(--neon-blue), 0 0 30px var(--neon-pink); animation: pulse 2s infinite;">MISJA<br>BANGKOK</h1>
+                        <p style="color: var(--neon-pink); letter-spacing: 4px; margin-top: 20px;">[ INTRO GRAFICZNE - PLACEHOLDER ]</p>
+                        <button class="btn" onclick="showScreen('story-screen')" style="margin-top: 40px;">[ DALEJ ]</button>
+                    </div>
+                </div>
+
+                <div id="story-screen" class="screen" style="justify-content: center; align-items: center;">
+                    <div style="max-width: 700px; text-align: center;">
+                        <div style="border: 2px solid var(--neon-yellow); padding: 30px; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px var(--neon-yellow);">
+                            <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">MISJA</h2>
+                            
+                            <div style="border: 2px dashed var(--neon-blue); padding: 60px 100px; margin: 20px 0; background: rgba(0,0,50,0.3);">
+                                <p style="color: #666; font-size: 12px;">[ Tutaj będzie grafika z Tajlandii ]</p>
+                            </div>
+                            
+                            <p style="color: #fff; line-height: 1.8; font-size: 14px; text-align: left;">
+                                PZPN ogłosił, że reprezentacja Polski wystąpi w styczniu ligowym składem na Pucharze Króla Tajlandii. 
+                                <br><br>
+                                Telewizja wysyła za kadrą, poza komentatorem, tylko jednego eksperta na jedno miejsce.
+                                <br><br>
+                                <span style="color: var(--neon-pink); font-weight: bold;">Masz 10 tygodni, by zyskać taką sympatię widzów, by nie pozostawić złudzeń, że to ty powinieneś jechać!</span>
+                            </p>
+                            
+                            <button class="btn" onclick="showScreen('intro-screen')" style="margin-top: 30px; font-size: 14px; padding: 12px 24px;">
+                                [ ROZPOCZNIJ MISJĘ ]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="intro-screen" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="border-bottom: 2px solid var(--neon-blue); padding-bottom: 5px; margin-bottom: 30px;">WYBIERZ KLASĘ POSTACI</h2>
+                    <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px;">
+                        <button class="btn" onclick="selectClass('pilkarz')" style="padding: 15px; text-align: left;">
+                            <div style="font-weight: bold; font-size: 16px; color: var(--neon-yellow);">BYŁY PIŁKARZ</div>
+                            <div style="font-size: 11px; margin-top: 5px;">Widzowie cię kochają od startu</div>
+                        </button>
+                        <button class="btn" onclick="selectClass('analityk')" style="padding: 15px; text-align: left;">
+                            <div style="font-weight: bold; font-size: 16px; color: var(--neon-green);">ANALITYK TAKTYCZNY</div>
+                            <div style="font-size: 11px; margin-top: 5px;">Musisz udowodnić swoją wartość</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="hub-screen" class="screen">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <strong style="color: var(--neon-pink)">SYMPATIA WIDZÓW:</strong>
+                            <div class="progress-bar-container" style="width: 300px;">
+                                <div id="credibility-bar" class="progress-bar-fill"></div>
+                            </div>
+                            <div id="credibility-text" style="font-size: 12px; margin-top: 5px; text-align: right; color: var(--neon-yellow);">0/100</div>
+                        </div>
+                        <div style="font-size: 12px; border: 1px solid var(--neon-blue); padding: 5px;">Czas do wylotu: <span id="weeks-left" style="color:var(--neon-green); font-size: 14px;">10</span> tyg.</div>
+                    </div>
+                    
+                    <hr style="width: 100%; border: 0; border-top: 1px dashed var(--neon-blue); margin: 15px 0;">
+                    <h3 style="color: var(--neon-blue);">DOSTĘPNE PROGRAMY:</h3>
+                    
+                    <div class="hub-grid" id="programs-list">
+                        </div>
+                </div>
+
+                <div id="customize-screen" class="screen" style="justify-content: center; align-items: center;">
+                    <div style="max-width: 600px; width: 100%;">
+                        <div class="inset-box" style="padding: 30px; background: rgba(0,0,0,0.8);">
+                            <h2 style="text-align: center; color: var(--neon-yellow); margin-bottom: 30px;">PERSONALIZACJA POSTACI</h2>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">IMIĘ:</label>
+                                <input type="text" id="player-name" placeholder="Jan" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 25px;">
+                                <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">NAZWISKO:</label>
+                                <input type="text" id="player-surname" placeholder="Kowalski" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; color: var(--neon-pink); margin-bottom: 10px; font-size: 12px;">SPECJALNOŚĆ:</label>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s')" style="padding: 12px; text-align: left;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow);">Bujne życie w latach 90-tych</div>
+                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ANEGDOT</div>
+                                    </button>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('bezczelnosc')" style="padding: 12px; text-align: left;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow);">Bezczelność</div>
+                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ATAKU</div>
+                                    </button>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer')" style="padding: 12px; text-align: left;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow);">Komputer</div>
+                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ANALIZY TAKTYCZNEJ</div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 14px; padding: 12px 30px;">
+                                    [ POTWIERDŹ ]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inventory-screen" class="screen">
+                    <h3>INWENTARZ</h3>
+                    <p style="color: #aaa;">Wybierz przedmioty na dzisiejszy występ:</p>
+                    
+                    <div class="inset-box" style="height: 300px; overflow-y: scroll;" id="inventory-list">
+                        </div>
+                    
+                    <div style="margin-top: 10px; display: flex; justify-content: space-between;">
+                        <span id="slots-info" style="color: var(--neon-yellow);">Wybrano: 0/1</span>
+                        <button class="btn" id="start-show-btn" disabled onclick="enterStudio()">[ WEJDŹ NA ANTENĘ ]</button>
+                    </div>
+                </div>
+
+                <div id="game-screen" class="screen">
+                    <div class="studio-view" id="studio-visual">
+                        <div class="studio-overlay">
+                            <h2 id="program-title-display" style="color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green);">Gość Tetryków</h2>
+                            <span id="pp-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-green);">PP: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="inset-box topic-box">
+                        TEMAT: <span id="round-topic" style="color: var(--neon-yellow);">Ładowanie...</span>
+                    </div>
+
+                    <div class="options-grid" id="options-container">
+                        <button class="btn option-btn">1</button>
+                        <button class="btn option-btn">2</button>
+                        <button class="btn option-btn">3</button>
+                        <button class="btn option-btn">4</button>
+                    </div>
+
+                    <div class="dice-area" id="dice-container">
+                        <div class="dice" id="d1">?</div>
+                        <div class="dice" id="d2">?</div>
+                        <div class="dice" id="d3">?</div>
+                        <div style="margin-left: 20px;">
+                            <div style="font-size: 10px; color: #aaa;">SUMA:</div>
+                            <div id="dice-sum" style="font-size: 24px; font-weight: bold; color: white;">0</div>
+                        </div>
+                        <div id="result-msg" style="margin-left: 20px; font-weight: bold;"></div>
+                    </div>
+                </div>
+
+                <div id="result-screen" class="screen" style="justify-content: center; align-items: center;">
+                    <div class="inset-box" style="width: 70%; padding: 30px; background: rgba(0,0,0,0.9); border: 2px solid var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink);">
+                        <h3 style="text-align: center; border-bottom: 2px dashed var(--neon-blue); padding-bottom: 10px;">RAPORT EMISJI</h3>
+                        <br>
+                        <p>Program: <span id="report-name" style="color: white;"></span></p>
+                        <p>Zdobyte Punkty (PP): <span id="report-pp" style="color: var(--neon-yellow);"></span></p>
+                        <br>
+                        <p>OCENA: <span id="report-rating" style="font-weight: bold; font-size: 20px;"></span></p>
+                        <br>
+                        <p>Zmiana Sympatii: <span id="report-change" style="font-size: 18px;"></span></p>
+                        <br>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button class="btn" onclick="backToHub()">[ ZAMKNIJ SYSTEM ]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="gameover-screen" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+                    <div style="border: 3px solid var(--neon-pink); padding: 50px; background: rgba(0,0,0,0.95); box-shadow: 0 0 30px var(--neon-pink), inset 0 0 30px rgba(255,42,109,0.3);">
+                        <h1 style="font-size: 48px; color: var(--neon-pink); text-shadow: 3px 3px 0 var(--neon-blue), 0 0 20px var(--neon-pink); animation: pulse 1s infinite;">GAME OVER</h1>
+                        <br>
+                        <p style="font-size: 16px; color: var(--neon-yellow); letter-spacing: 2px; line-height: 1.8;">
+                            ANALITYK TAKTYCZNY?<br>
+                            <br>
+                            W TELEWIZJI?<br>
+                            <br>
+                            CHYBA ŻARTUJESZ.
+                        </p>
+                        <br><br>
+                        <p style="color: var(--neon-blue); font-size: 12px;">
+                            Widzowie chcą emocji, nie wykresów xG.
+                        </p>
+                        <br><br>
+                        <button class="btn" onclick="location.reload()" style="font-size: 14px; padding: 12px 24px;">
+                            [ RESTART SYSTEMU ]
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div style="background: black; padding: 4px; font-size: 11px; border-top: 1px solid var(--neon-pink); color: var(--neon-green); display: flex; justify-content: space-between;">
+                <span>System: ONLINE</span>
+                <span id="status-bar">Gotowy.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DANE GRY ---
+
+        const PROGRAMS = [
+            {
+                id: 'A',
+                name: 'Gość Tetryków',
+                reqCred: 0,
+                desc: 'Niska oglądalność. Dziwna godzina - wtorek 8:30. Co zrobić - nikt inny cię na razie nie chce.',
+                rounds: [
+                    {
+                        topic: 'Mecz B-klasy przerwany przez kury.',
+                        options: [
+                            { type: 'POPULIZM', text: 'To jest sól futbolu!', min: 8, max: 14, reward: 3, fail: 0 },
+                            { type: 'ANEGDOTA', text: 'Pamiętam jak w 82 krowa weszła...', min: 3, max: 10, reward: 4, fail: 0 },
+                            { type: 'ATAK', text: 'Gospodarz obiektu to amator!', min: 14, max: 18, reward: 7, fail: -1 },
+                            { type: 'ANALIZA', text: 'Zła organizacja przestrzeni...', min: 10, max: 18, parity: 'even', reward: 5, fail: 0 }
+                        ]
+                    },
+                    {
+                        topic: 'Trener lokalnej drużyny przyszedł w klapkach.',
+                        options: [
+                            { type: 'POPULIZM', text: 'Liczy się wynik, nie strój.', min: 8, max: 13, reward: 3, fail: 0 },
+                            { type: 'ATAK', text: 'To brak szacunku dla kibica!', min: 13, max: 18, reward: 6, fail: 0 },
+                            { type: 'ANEGDOTA', text: 'Mój trener chodził boso...', min: 3, max: 9, reward: 4, fail: 0 },
+                            { type: 'ANALIZA', text: 'Wpływ wentylacji stóp na taktykę.', min: 2, max: 18, parity: 'even', reward: 5, fail: -2 }
+                        ]
+                    },
+                    {
+                        topic: 'Sędzia nie uznał prawidłowej bramki.',
+                        options: [
+                            { type: 'ATAK', text: 'Drukarz! Złodziej!', min: 12, max: 18, reward: 8, fail: -2 }, // Łatwiejszy atak w programie A
+                            { type: 'POPULIZM', text: 'Sędzia też człowiek.', min: 7, max: 14, reward: 2, fail: 0 },
+                            { type: 'ANALIZA', text: 'Analiza spalonego (rysowanie).', min: 10, max: 18, parity: 'odd', reward: 5, fail: 0 },
+                            { type: 'ANEGDOTA', text: 'Kiedyś sędziował piekarz...', min: 3, max: 11, reward: 3, fail: 0 }
+                        ]
+                    },
+                    {
+                        topic: 'Kibice rzucali słonecznikiem.',
+                        options: [
+                            { type: 'POPULIZM', text: 'Wspaniała atmosfera pikniku.', min: 6, max: 14, reward: 3, fail: 0 },
+                            { type: 'ATAK', text: 'Bydło! Zamknąć stadion!', min: 15, max: 18, reward: 7, fail: -1 },
+                            { type: 'ANEGDOTA', text: 'Jadłem słonecznik z Bońkiem.', min: 3, max: 8, reward: 5, fail: 0 },
+                            { type: 'ANALIZA', text: 'Trajektoria łupin a wiatr.', min: 10, max: 18, parity: 'even', reward: 4, fail: 0 }
+                        ]
+                    },
+                    {
+                        topic: 'Pytanie od widza: Kto wygra ligę?',
+                        options: [
+                            { type: 'POPULIZM', text: 'Wygra najlepszy.', min: 5, max: 15, reward: 2, fail: 0 },
+                            { type: 'ATAK', text: 'Wszyscy grają piach!', min: 14, max: 18, reward: 10, fail: -3 },
+                            { type: 'ANALIZA', text: 'Statystyki xG wskazują na...', min: 12, max: 18, parity: 'even', reward: 6, fail: 0 },
+                            { type: 'ANEGDOTA', text: 'Mam przeczucie w lewym kolanie.', min: 3, max: 10, reward: 4, fail: 0 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'B',
+                name: 'O piłce w powiecie',
+                reqCred: 10,
+                desc: 'Wymagana marynarka. Wójt z partii koalicyjnej stałym widzem.',
+                rounds: [] // Placeholder
+            },
+            { 
+                id: 'D', 
+                name: 'Dośrodkowanie z rożnego', 
+                reqCred: 30, 
+                desc: 'Wyższa półka. Nie dla przypadkowych gości.', 
+                rounds: [] 
+            },
+            { 
+                id: 'E', 
+                name: 'Rzut wolny pośredni', 
+                reqCred: 40, 
+                desc: 'Specjalistyczna taktyka dla wybranych.', 
+                rounds: [] 
+            },
+            { 
+                id: 'C', 
+                name: 'Faul taktyczny', 
+                reqCred: 50, 
+                desc: 'Kontrowersje. Wysokie stawki. Dla twardych graczy.', 
+                rounds: [] 
+            },
+            { id: 'F', name: 'MISJA BANGKOK', reqCred: 80, desc: 'Finał. Tylko dla orłów.', rounds: [] }
+        ];
+
+        const ITEMS = [
+            { id: 'suit', icon: '👔', name: 'Garnitur Bordo', desc: '+1 do wszystkich rzutów', category: 'DO UŻYCIA W PROGRAMIE', effect: 'mod', val: 1 },
+            { id: 'notes', icon: '📄', name: 'Notatki', desc: '+1 jednorazowo przed jednym rzutem', category: 'PASYWNY', effect: 'oneshot', val: 1 }
+        ];
+
+        // --- STAN GRY ---
+        let state = {
+            playerClass: null, // 'pilkarz', 'dziennikarz', 'analityk'
+            playerName: '',
+            playerSurname: '',
+            specialty: null, // '90s', 'bezczelnosc', 'komputer'
+            credibility: 0, // Sympatia widzów
+            weeks: 10,
+            activeProgram: null,
+            currentRoundIdx: 0,
+            pp: 0, // Punkty Programu
+            selectedItems: [],
+            notesUsed: false // Czy notatki zostały już użyte w tym programie
+        };
+
+        // Progi dla każdej klasy
+        const CLASS_THRESHOLDS = {
+            pilkarz: {
+                startCred: 0,
+                programs: { 'A': 0, 'B': 10, 'D': 25, 'E': 35, 'C': 45, 'F': 70 }
+            },
+            analityk: {
+                startCred: 0,
+                programs: { 'A': 0, 'B': 20, 'D': 35, 'E': 45, 'C': 60, 'F': 90 }
+            }
+        };
+
+        // --- SILNIK ---
+
+        function selectClass(classType) {
+            if (classType === 'analityk') {
+                // GAME OVER dla analityka
+                showScreen('gameover-screen');
+                return;
+            }
+            
+            state.playerClass = classType;
+            state.credibility = CLASS_THRESHOLDS[classType].startCred;
+            if(state.credibility < 0) state.credibility = 0; 
+            
+            // Przejdź do personalizacji
+            showScreen('customize-screen');
+        }
+
+        let selectedSpecialtyButton = null;
+
+        function selectSpecialty(type) {
+            state.specialty = type;
+            
+            // Visual feedback
+            document.querySelectorAll('.specialty-btn').forEach(btn => {
+                btn.style.background = 'rgba(0,0,0,0.3)';
+                btn.style.borderColor = 'var(--neon-blue)';
+            });
+            
+            event.target.closest('.specialty-btn').style.background = 'rgba(5, 217, 232, 0.3)';
+            event.target.closest('.specialty-btn').style.borderColor = 'var(--neon-green)';
+            
+            checkCustomizationComplete();
+        }
+
+        function checkCustomizationComplete() {
+            const name = document.getElementById('player-name').value.trim();
+            const surname = document.getElementById('player-surname').value.trim();
+            const hasSpecialty = state.specialty !== null;
+            
+            document.getElementById('confirm-character-btn').disabled = !(name && surname && hasSpecialty);
+        }
+
+        function confirmCharacter() {
+            state.playerName = document.getElementById('player-name').value.trim();
+            state.playerSurname = document.getElementById('player-surname').value.trim();
+            
+            startGame();
+        }
+
+        // Event listeners dla input fields
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('player-name');
+            const surnameInput = document.getElementById('player-surname');
+            
+            if (nameInput) nameInput.addEventListener('input', checkCustomizationComplete);
+            if (surnameInput) surnameInput.addEventListener('input', checkCustomizationComplete);
+        });
+
+        function startGame() {
+            updateCredibilityUI();
+            showScreen('hub-screen');
+            renderHub();
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            let title = "Misja Bangkok.exe";
+            if(id === 'game-screen') title += " [REC]";
+            if(id === 'inventory-screen') title += " - Inwentarz";
+            if(id === 'customize-screen') title += " - Kreator postaci";
+            document.getElementById('window-title').innerText = title;
+        }
+
+        function updateCredibilityUI() {
+            const bar = document.getElementById('credibility-bar');
+            const text = document.getElementById('credibility-text');
+            bar.style.width = state.credibility + '%';
+            text.innerText = state.credibility + '/100';
+        }
+
+        // --- HUB ---
+
+        function renderHub() {
+            const list = document.getElementById('programs-list');
+            list.innerHTML = '';
+
+            const thresholds = CLASS_THRESHOLDS[state.playerClass].programs;
+
+            PROGRAMS.forEach(prog => {
+                const requiredCred = thresholds[prog.id] || prog.reqCred;
+                const locked = state.credibility < requiredCred;
+                const div = document.createElement('div');
+                div.className = 'program-card';
+                div.style.borderColor = locked ? '#555' : 'var(--neon-blue)';
+                
+                div.innerHTML = `
+                    <div style="font-weight:bold; color: ${locked ? '#777' : 'var(--neon-yellow)'}; font-size: 12px; text-transform:uppercase;">${prog.name}</div>
+                    <div style="font-size:10px; margin: 4px 0; color: #aaa;">Wymagane: ${requiredCred}%</div>
+                    <div style="font-size:10px; font-style:italic; color: #fff;">${prog.desc}</div>
+                    <button class="btn" style="margin-top:8px; width:100%; font-size:10px;" 
+                        ${locked ? 'disabled' : ''} 
+                        onclick="prepareProgram('${prog.id}')">
+                        ${locked ? 'ZABLOKOWANE' : 'WYBIERZ'}
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('weeks-left').innerText = state.weeks;
+        }
+
+        // --- EKWIPUNEK ---
+
+        function prepareProgram(progId) {
+            state.activeProgram = PROGRAMS.find(p => p.id === progId);
+            state.selectedItems = [];
+            showScreen('inventory-screen');
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = '';
+            
+            ITEMS.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.onclick = () => toggleItem(item, div);
+                div.innerHTML = `
+                    <span class="item-icon">${item.icon}</span>
+                    <div style="color:white;">
+                        <div style="font-weight:bold; color: var(--neon-blue);">${item.name}</div>
+                        <div style="font-size:9px; color: var(--neon-yellow); margin: 2px 0;">[${item.category}]</div>
+                        <div style="font-size:10px; color: #ccc;">${item.desc}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            updateSlotsUI();
+        }
+
+        function toggleItem(item, divElement) {
+            const idx = state.selectedItems.indexOf(item);
+            if (idx > -1) {
+                state.selectedItems.splice(idx, 1);
+                divElement.classList.remove('selected');
+            } else {
+                if (state.selectedItems.length < 1) {
+                    state.selectedItems.push(item);
+                    divElement.classList.add('selected');
+                }
+            }
+            updateSlotsUI();
+        }
+
+        function updateSlotsUI() {
+            document.getElementById('slots-info').innerText = `Wybrano: ${state.selectedItems.length}/1`;
+            document.getElementById('start-show-btn').disabled = state.selectedItems.length !== 1;
+        }
+
+        // --- GAMEPLAY (STUDIO) ---
+
+        function enterStudio() {
+            state.pp = 0;
+            state.currentRoundIdx = 0;
+            
+            if(!state.activeProgram.rounds || state.activeProgram.rounds.length === 0) {
+                alert("Ten program jest w budowie. Załadowano Gość Tetryków.");
+                state.activeProgram = PROGRAMS[0]; 
+            }
+
+            document.getElementById('program-title-display').innerText = state.activeProgram.name;
+            showScreen('game-screen');
+            loadRound();
+        }
+
+        function loadRound() {
+            if (state.currentRoundIdx >= state.activeProgram.rounds.length) {
+                endProgram();
+                return;
+            }
+
+            const roundData = state.activeProgram.rounds[state.currentRoundIdx];
+            
+            document.getElementById('round-topic').innerText = roundData.topic;
+            document.getElementById('pp-counter').innerText = `PP: ${state.pp}`;
+            document.getElementById('result-msg').innerText = '';
+            document.getElementById('dice-sum').innerText = '-';
+            [1,2,3].forEach(i => document.getElementById('d'+i).innerText = '?');
+            // reset animations
+            document.getElementById('dice-container').className = 'dice-area'; 
+
+            const btnContainer = document.getElementById('options-container');
+            btnContainer.innerHTML = '';
+
+            roundData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn option-btn';
+                
+                let condText = "";
+                if(opt.min && opt.max) condText = `${opt.min}-${opt.max}`;
+                if(opt.parity === 'even') condText = "Parzyste";
+                if(opt.parity === 'odd') condText = "Nieparzyste";
+
+                btn.innerHTML = `
+                    <span class="option-type">${opt.type} [${condText}]</span>
+                    <span>"${opt.text}"</span>
+                `;
+                btn.onclick = () => resolveRound(opt);
+                btnContainer.appendChild(btn);
+            });
+            
+            setStatus(`Runda ${state.currentRoundIdx + 1}/5`);
+        }
+
+        function setStatus(text) {
+            document.getElementById('status-bar').innerText = text;
+        }
+
+        function resolveRound(option) {
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+
+            setStatus("Generowanie losowości...");
+            let rolls = [1,1,1];
+            let animCount = 0;
+            
+            const interval = setInterval(() => {
+                rolls = [rD(), rD(), rD()];
+                updateDiceVisuals(rolls);
+                animCount++;
+                if(animCount > 10) {
+                    clearInterval(interval);
+                    finalizeRoll(rolls, option);
+                }
+            }, 100);
+        }
+
+        function rD() { return Math.floor(Math.random() * 6) + 1; }
+
+        function updateDiceVisuals(rolls) {
+            document.getElementById('d1').innerText = rolls[0];
+            document.getElementById('d2').innerText = rolls[1];
+            document.getElementById('d3').innerText = rolls[2];
+        }
+
+        function finalizeRoll(rolls, option) {
+            let sum = rolls.reduce((a,b)=>a+b, 0);
+            
+            let modifierTotal = 0;
+            state.selectedItems.forEach(item => {
+                if(item.effect === 'mod') modifierTotal += item.val;
+            });
+            
+            let finalSum = sum + modifierTotal;
+            document.getElementById('dice-sum').innerText = `${sum} (${modifierTotal >= 0 ? '+' : ''}${modifierTotal}) = ${finalSum}`;
+
+            let success = false;
+            
+            if (option.min !== undefined && option.max !== undefined) {
+                if (finalSum >= option.min && finalSum <= option.max) success = true;
+            }
+            
+            if (option.parity) {
+                const isEven = (finalSum % 2 === 0);
+                if (option.parity === 'even' && isEven) success = true;
+                if (option.parity === 'odd' && !isEven) success = true;
+            }
+
+            const diceContainer = document.getElementById('dice-container');
+            const msg = document.getElementById('result-msg');
+
+            if (success) {
+                state.pp += option.reward;
+                diceContainer.classList.add('flash-success');
+                msg.style.color = 'var(--neon-green)';
+                msg.innerText = `SUKCES! +${option.reward} PP`;
+                setStatus("Publiczność bije brawo.");
+            } else {
+                state.pp += (option.fail || 0);
+                diceContainer.classList.add('flash-fail');
+                msg.style.color = 'var(--neon-pink)';
+                msg.innerText = `PUDŁO! ${option.fail || 0} PP`;
+                setStatus("Cisza w studiu...");
+            }
+
+            setTimeout(() => {
+                state.currentRoundIdx++;
+                loadRound();
+            }, 2000);
+        }
+
+        // --- END GAME ---
+
+        function endProgram() {
+            showScreen('result-screen');
+            
+            const rName = document.getElementById('report-name');
+            const rPP = document.getElementById('report-pp');
+            const rRating = document.getElementById('report-rating');
+            const rChange = document.getElementById('report-change');
+            
+            rName.innerText = state.activeProgram.name;
+            rPP.innerText = state.pp;
+
+            let credChange = 0;
+            let ratingText = "";
+            let color = "white";
+
+            if (state.pp < 9) {
+                credChange = -5;
+                ratingText = "KOMPROMITACJA";
+                color = "var(--neon-pink)";
+            } else if (state.pp < 15) {
+                credChange = 5;
+                ratingText = "PRZECIĘTNIE";
+                color = "var(--neon-blue)";
+            } else {
+                credChange = 15;
+                ratingText = "GWIAZDA WIECZORU";
+                color = "var(--neon-green)";
+            }
+
+            rRating.innerText = ratingText;
+            rRating.style.color = color;
+            rChange.innerText = (credChange > 0 ? "+" : "") + credChange + "%";
+            rChange.style.color = credChange > 0 ? "var(--neon-green)" : "var(--neon-pink)";
+
+            state.credibility += credChange;
+            if(state.credibility < 0) state.credibility = 0;
+            if(state.credibility > 100) state.credibility = 100;
+            
+            state.weeks--;
+        }
+
+        function backToHub() {
+            if (state.weeks <= 0) {
+                alert("KONIEC SEZONU. Czy zdążyłeś do Bangkoku?");
+                location.reload();
+            } else {
+                updateCredibilityUI();
+                showScreen('hub-screen');
+                renderHub();
+            }
+        }
+
+    </script>
+</body>
+</html>
