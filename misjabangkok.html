@@ -413,12 +413,12 @@
                             
                             <div style="margin-bottom: 20px;">
                                 <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">IMIĘ:</label>
-                                <input type="text" id="player-name" placeholder="Jan" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                                <input type="text" id="player-name" placeholder="Jan" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
                             </div>
                             
                             <div style="margin-bottom: 25px;">
                                 <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">NAZWISKO:</label>
-                                <input type="text" id="player-surname" placeholder="Kowalski" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                                <input type="text" id="player-surname" placeholder="Kowalski" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
                             </div>
                             
                             <div style="margin-bottom: 20px;">
@@ -444,7 +444,7 @@
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Donośny głos</div>
                                         <div style="font-size: 10px; margin-top: 3px;">Bonus do ATAKU</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('garnitur', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 12px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Koszula i garnitur</div>
                                         <div style="font-size: 10px; margin-top: 3px;">Bonus do UMIARKOWANEJ OPINII</div>
                                     </button>
@@ -452,6 +452,7 @@
                             </div>
                             
                             <div style="text-align: center; margin-top: 30px;">
+                                <div id="validation-message" style="color: var(--neon-pink); font-size: 11px; margin-bottom: 10px; min-height: 15px;"></div>
                                 <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 16px; padding: 15px 40px; width: 100%;">
                                     [ POTWIERDŹ ]
                                 </button>
@@ -748,7 +749,7 @@
             playerClass: null, // 'pilkarz', 'analityk'
             playerName: '',
             playerSurname: '',
-            specialty: null, // '90s', 'komputer', 'ogladanie', 'charyzma', 'glos', 'garnitur'
+            specialty: null, // '90s', 'komputer', 'ogladanie', 'charyzma', 'glos', 'koszula'
             credibility: 0, // Sympatia widzów
             weeks: 10,
             activeProgram: null,
@@ -788,6 +789,9 @@
             
             // Przejdź do personalizacji
             showScreen('customize-screen');
+            
+            // Wywołaj walidację żeby pokazać komunikat
+            setTimeout(() => checkCustomizationComplete(), 100);
         }
 
         let selectedSpecialtyButton = null;
@@ -812,7 +816,23 @@
             const surname = document.getElementById('player-surname').value.trim();
             const hasSpecialty = state.specialty !== null;
             
-            document.getElementById('confirm-character-btn').disabled = !(name && surname && hasSpecialty);
+            const isComplete = name && surname && hasSpecialty;
+            document.getElementById('confirm-character-btn').disabled = !isComplete;
+            
+            // Pokaż komunikat o tym czego brakuje
+            const validationMsg = document.getElementById('validation-message');
+            validationMsg.style.color = 'var(--neon-pink)'; // Reset color
+            
+            if (!isComplete) {
+                let missing = [];
+                if (!name) missing.push('imię');
+                if (!surname) missing.push('nazwisko');
+                if (!hasSpecialty) missing.push('specjalność');
+                validationMsg.innerText = `Wypełnij: ${missing.join(', ')}`;
+            } else {
+                validationMsg.innerText = '✓ Gotowe!';
+                validationMsg.style.color = 'var(--neon-green)';
+            }
         }
 
         function confirmCharacter() {
@@ -1135,7 +1155,7 @@
             } else if (state.specialty === 'charyzma' && option.type === 'POPULIZM') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'garnitur' && option.type === 'UMIARKOWANA OPINIA') {
+            } else if (state.specialty === 'koszula' && option.type === 'UMIARKOWANA OPINIA') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             }
