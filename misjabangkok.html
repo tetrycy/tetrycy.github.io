@@ -1108,29 +1108,49 @@
             
             // Bonus od specjalności
             let specialtyBonus = 0;
+            let specialtyText = "";
             if (state.specialty === '90s' && option.type === 'ANEGDOTA') {
-                specialtyBonus = 1; // Bonus do anegdot
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
             } else if (state.specialty === 'bezczelnosc' && option.type === 'ATAK') {
-                specialtyBonus = 1; // Bonus do ataku
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
             } else if (state.specialty === 'komputer' && option.type === 'ANALIZA') {
-                specialtyBonus = 1; // Bonus do analizy
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
             }
             
             modifierTotal += specialtyBonus;
             
             // Bonus od notatek (jednorazowy, w tej rundzie)
             let notesBonus = 0;
+            let notesText = "";
             if (state.notesActiveThisRound) {
                 const notesItem = state.selectedItems.find(item => item.effect === 'oneshot');
                 if (notesItem) {
                     notesBonus = notesItem.val;
                     modifierTotal += notesBonus;
+                    notesText = "+1 notatki";
                 }
                 state.notesActiveThisRound = false; // Zużyj bonus po tym rzucie
             }
             
+            // Buduj tekst modyfikatorów
+            let modifierBreakdown = [];
+            
+            // Przedmioty automatyczne (garnitur)
+            state.selectedItems.forEach(item => {
+                if(item.effect === 'mod' && item.val !== 0) {
+                    modifierBreakdown.push(`${item.val >= 0 ? '+' : ''}${item.val} ${item.name.toLowerCase()}`);
+                }
+            });
+            
+            if (specialtyText) modifierBreakdown.push(specialtyText);
+            if (notesText) modifierBreakdown.push(notesText);
+            
             let finalSum = sum + modifierTotal;
-            document.getElementById('dice-sum').innerText = `${sum} (${modifierTotal >= 0 ? '+' : ''}${modifierTotal}) = ${finalSum}`;
+            let modifierDisplay = modifierBreakdown.length > 0 ? ` (${modifierBreakdown.join(' ')})` : '';
+            document.getElementById('dice-sum').innerText = `${sum}${modifierDisplay} = ${finalSum}`;
 
             let success = false;
             
