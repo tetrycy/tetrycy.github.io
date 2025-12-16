@@ -136,6 +136,8 @@
             height: 100%;
             flex-direction: column;
             z-index: 1; /* Pod scanlines */
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         .screen.active {
@@ -421,18 +423,30 @@
                             
                             <div style="margin-bottom: 20px;">
                                 <label style="display: block; color: var(--neon-pink); margin-bottom: 10px; font-size: 12px;">SPECJALNOŚĆ:</label>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s')" style="padding: 15px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Bujne życie w latach 90-tych</div>
-                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ANEGDOT</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Bujne życie w latach 90-tych</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ANEGDOT</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('bezczelnosc')" style="padding: 15px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Bezczelność</div>
-                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ATAKU</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Komputer</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ANALIZY TAKTYCZNEJ</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer')" style="padding: 15px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Komputer</div>
-                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ANALIZY TAKTYCZNEJ</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('ogladanie', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Oglądanie meczów</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do MERYTORYKI</div>
+                                    </button>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('charyzma', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Charyzma</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do POPULIZMU</div>
+                                    </button>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('glos', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Donośny głos</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ATAKU</div>
+                                    </button>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('garnitur', event)" style="padding: 12px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Koszula i garnitur</div>
+                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do UMIARKOWANEJ OPINII</div>
                                     </button>
                                 </div>
                             </div>
@@ -540,10 +554,6 @@
 
             </div>
             
-            <div style="background: black; padding: 4px; font-size: 11px; border-top: 1px solid var(--neon-pink); color: var(--neon-green); display: flex; justify-content: space-between;">
-                <span>System: ONLINE</span>
-                <span id="status-bar">Gotowy.</span>
-            </div>
         </div>
     </div>
 
@@ -738,7 +748,7 @@
             playerClass: null, // 'pilkarz', 'analityk'
             playerName: '',
             playerSurname: '',
-            specialty: null, // '90s', 'bezczelnosc', 'komputer'
+            specialty: null, // '90s', 'komputer', 'ogladanie', 'charyzma', 'glos', 'garnitur'
             credibility: 0, // Sympatia widzów
             weeks: 10,
             activeProgram: null,
@@ -782,7 +792,7 @@
 
         let selectedSpecialtyButton = null;
 
-        function selectSpecialty(type) {
+        function selectSpecialty(type, event) {
             state.specialty = type;
             
             // Visual feedback
@@ -791,8 +801,8 @@
                 btn.style.borderColor = 'var(--neon-blue)';
             });
             
-            event.target.closest('.specialty-btn').style.background = 'rgba(5, 217, 232, 0.3)';
-            event.target.closest('.specialty-btn').style.borderColor = 'var(--neon-green)';
+            event.currentTarget.style.background = 'rgba(5, 217, 232, 0.3)';
+            event.currentTarget.style.borderColor = 'var(--neon-green)';
             
             checkCustomizationComplete();
         }
@@ -1067,7 +1077,8 @@
         }
 
         function setStatus(text) {
-            document.getElementById('status-bar').innerText = text;
+            // Status bar removed - function kept for compatibility
+            console.log("Status:", text);
         }
 
         function resolveRound(option) {
@@ -1112,10 +1123,19 @@
             if (state.specialty === '90s' && option.type === 'ANEGDOTA') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'bezczelnosc' && option.type === 'ATAK') {
+            } else if (state.specialty === 'glos' && option.type === 'ATAK') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             } else if (state.specialty === 'komputer' && option.type === 'ANALIZA') {
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
+            } else if (state.specialty === 'ogladanie' && option.type === 'MERYTORYKA') {
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
+            } else if (state.specialty === 'charyzma' && option.type === 'POPULIZM') {
+                specialtyBonus = 1;
+                specialtyText = "+1 specjalność";
+            } else if (state.specialty === 'garnitur' && option.type === 'UMIARKOWANA OPINIA') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             }
