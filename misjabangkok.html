@@ -229,8 +229,8 @@
 
         .options-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
         }
 
         .option-btn {
@@ -364,7 +364,7 @@
                                 <span style="color: var(--neon-pink); font-weight: bold;">Masz 10 tygodni, by zyskać taką sympatię widzów, by nie pozostawić złudzeń, że to ty powinieneś jechać!</span>
                             </p>
                             
-                            <button class="btn" onclick="showScreen('intro-screen')" style="margin-top: 30px; font-size: 14px; padding: 12px 24px;">
+                            <button class="btn" onclick="showScreen('intro-screen')" style="margin-top: 30px; font-size: 16px; padding: 15px 40px; width: 100%;">
                                 [ ROZPOCZNIJ MISJĘ ]
                             </button>
                         </div>
@@ -422,23 +422,23 @@
                             <div style="margin-bottom: 20px;">
                                 <label style="display: block; color: var(--neon-pink); margin-bottom: 10px; font-size: 12px;">SPECJALNOŚĆ:</label>
                                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s')" style="padding: 12px; text-align: left;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow);">Bujne życie w latach 90-tych</div>
-                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ANEGDOT</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s')" style="padding: 15px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Bujne życie w latach 90-tych</div>
+                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ANEGDOT</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('bezczelnosc')" style="padding: 12px; text-align: left;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow);">Bezczelność</div>
-                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ATAKU</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('bezczelnosc')" style="padding: 15px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Bezczelność</div>
+                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ATAKU</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer')" style="padding: 12px; text-align: left;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow);">Komputer</div>
-                                        <div style="font-size: 11px; margin-top: 3px;">Bonus do ANALIZY TAKTYCZNEJ</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer')" style="padding: 15px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 14px;">Komputer</div>
+                                        <div style="font-size: 11px; margin-top: 5px;">Bonus do ANALIZY TAKTYCZNEJ</div>
                                     </button>
                                 </div>
                             </div>
                             
                             <div style="text-align: center; margin-top: 30px;">
-                                <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 14px; padding: 12px 30px;">
+                                <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 16px; padding: 15px 40px; width: 100%;">
                                     [ POTWIERDŹ ]
                                 </button>
                             </div>
@@ -463,7 +463,7 @@
                     <div class="studio-view" id="studio-visual">
                         <div class="studio-overlay">
                             <h2 id="program-title-display" style="color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green);">Gość Tetryków</h2>
-                            <span id="pp-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-green);">PP: 0</span>
+                            <span id="pp-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-green);">Punkty show: 0/20</span>
                         </div>
                     </div>
 
@@ -476,6 +476,8 @@
                         <button class="btn option-btn">2</button>
                         <button class="btn option-btn">3</button>
                         <button class="btn option-btn">4</button>
+                        <button class="btn option-btn">5</button>
+                        <button class="btn option-btn">6</button>
                     </div>
 
                     <div class="dice-area" id="dice-container">
@@ -495,7 +497,7 @@
                         <h3 style="text-align: center; border-bottom: 2px dashed var(--neon-blue); padding-bottom: 10px;">RAPORT EMISJI</h3>
                         <br>
                         <p>Program: <span id="report-name" style="color: white;"></span></p>
-                        <p>Zdobyte Punkty (PP): <span id="report-pp" style="color: var(--neon-yellow);"></span></p>
+                        <p>Punkty show: <span id="report-pp" style="color: var(--neon-yellow);"></span></p>
                         <br>
                         <p>OCENA: <span id="report-rating" style="font-weight: bold; font-size: 20px;"></span></p>
                         <br>
@@ -546,51 +548,128 @@
                 id: 'A',
                 name: 'Gość Tetryków',
                 reqCred: 0,
-                desc: 'Niska oglądalność. Dziwna godzina - wtorek 8:30. Co zrobić - nikt inny cię na razie nie chce.',
-                rounds: [
+                sympathyStake: 10,
+                targetPoints: 20,
+                desc: 'Niska oglądalność. Wtorek 8:30. Jacyś dwaj goście z Łodzi. Stawka sympatii: 10.',
+                questionSets: [
                     {
-                        topic: 'Mecz B-klasy przerwany przez kury.',
-                        options: [
-                            { type: 'POPULIZM', text: 'To jest sól futbolu!', min: 8, max: 14, reward: 3, fail: 0 },
-                            { type: 'ANEGDOTA', text: 'Pamiętam jak w 82 krowa weszła...', min: 3, max: 10, reward: 4, fail: 0 },
-                            { type: 'ATAK', text: 'Gospodarz obiektu to amator!', min: 14, max: 18, reward: 7, fail: -1 },
-                            { type: 'ANALIZA', text: 'Zła organizacja przestrzeni...', min: 10, max: 18, parity: 'even', reward: 5, fail: 0 }
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'Mecz B-klasy przerwany przez kury.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'To jest sól futbolu!', min: 8, max: 14, onSuccess: 3, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Pamiętam jak w 82 krowa weszła...', min: 3, max: 10, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Gospodarz obiektu to amator!', min: 14, max: 18, onSuccess: 7, onFail: -2 },
+                                    { type: 'ANALIZA', text: 'Zła organizacja przestrzeni...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Przepisy jasno określają...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'To może się zdarzyć...', min: 7, max: 15, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Trener lokalnej drużyny przyszedł w klapkach.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Liczy się wynik, nie strój.', min: 8, max: 13, onSuccess: 3, onFail: 0 },
+                                    { type: 'ATAK', text: 'To brak szacunku dla kibica!', min: 13, max: 18, onSuccess: 6, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Mój trener chodził boso...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Wpływ wentylacji stóp na taktykę.', min: 2, max: 18, parity: 'even', onSuccess: 5, onFail: -2 },
+                                    { type: 'MERYTORYKA', text: 'Regulamin nie zabrania...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Każdy ma swój styl.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Sędzia nie uznał prawidłowej bramki.',
+                                options: [
+                                    { type: 'ATAK', text: 'Drukarz! Złodziej!', min: 12, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'POPULIZM', text: 'Sędzia też człowiek.', min: 7, max: 14, onSuccess: 2, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Analiza spalonego (rysowanie).', min: 10, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Kiedyś sędziował piekarz...', min: 3, max: 11, onSuccess: 3, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Przepis 11.3 mówi wyraźnie...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Trudna sytuacja do oceny.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Kibice rzucali słonecznikiem.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Wspaniała atmosfera pikniku.', min: 6, max: 14, onSuccess: 3, onFail: 0 },
+                                    { type: 'ATAK', text: 'Bydło! Zamknąć stadion!', min: 15, max: 18, onSuccess: 7, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Jadłem słonecznik z Bońkiem.', min: 3, max: 8, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Trajektoria łupin a wiatr.', min: 10, max: 18, parity: 'even', onSuccess: 4, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Przepisy bezpieczeństwa...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Emocje, ale w granicach.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Pytanie od widza: Kto wygra ligę?',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Wygra najlepszy.', min: 5, max: 15, onSuccess: 2, onFail: 0 },
+                                    { type: 'ATAK', text: 'Wszyscy grają piach!', min: 14, max: 18, onSuccess: 10, onFail: -3 },
+                                    { type: 'ANALIZA', text: 'Statystyki xG wskazują na...', min: 12, max: 18, parity: 'even', onSuccess: 6, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Mam przeczucie w lewym kolanie.', min: 3, max: 10, onSuccess: 4, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Tabela pokazuje jasno...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Kilka zespołów ma szanse.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                ]
+                            }
                         ]
                     },
                     {
-                        topic: 'Trener lokalnej drużyny przyszedł w klapkach.',
-                        options: [
-                            { type: 'POPULIZM', text: 'Liczy się wynik, nie strój.', min: 8, max: 13, reward: 3, fail: 0 },
-                            { type: 'ATAK', text: 'To brak szacunku dla kibica!', min: 13, max: 18, reward: 6, fail: 0 },
-                            { type: 'ANEGDOTA', text: 'Mój trener chodził boso...', min: 3, max: 9, reward: 4, fail: 0 },
-                            { type: 'ANALIZA', text: 'Wpływ wentylacji stóp na taktykę.', min: 2, max: 18, parity: 'even', reward: 5, fail: -2 }
-                        ]
-                    },
-                    {
-                        topic: 'Sędzia nie uznał prawidłowej bramki.',
-                        options: [
-                            { type: 'ATAK', text: 'Drukarz! Złodziej!', min: 12, max: 18, reward: 8, fail: -2 }, // Łatwiejszy atak w programie A
-                            { type: 'POPULIZM', text: 'Sędzia też człowiek.', min: 7, max: 14, reward: 2, fail: 0 },
-                            { type: 'ANALIZA', text: 'Analiza spalonego (rysowanie).', min: 10, max: 18, parity: 'odd', reward: 5, fail: 0 },
-                            { type: 'ANEGDOTA', text: 'Kiedyś sędziował piekarz...', min: 3, max: 11, reward: 3, fail: 0 }
-                        ]
-                    },
-                    {
-                        topic: 'Kibice rzucali słonecznikiem.',
-                        options: [
-                            { type: 'POPULIZM', text: 'Wspaniała atmosfera pikniku.', min: 6, max: 14, reward: 3, fail: 0 },
-                            { type: 'ATAK', text: 'Bydło! Zamknąć stadion!', min: 15, max: 18, reward: 7, fail: -1 },
-                            { type: 'ANEGDOTA', text: 'Jadłem słonecznik z Bońkiem.', min: 3, max: 8, reward: 5, fail: 0 },
-                            { type: 'ANALIZA', text: 'Trajektoria łupin a wiatr.', min: 10, max: 18, parity: 'even', reward: 4, fail: 0 }
-                        ]
-                    },
-                    {
-                        topic: 'Pytanie od widza: Kto wygra ligę?',
-                        options: [
-                            { type: 'POPULIZM', text: 'Wygra najlepszy.', min: 5, max: 15, reward: 2, fail: 0 },
-                            { type: 'ATAK', text: 'Wszyscy grają piach!', min: 14, max: 18, reward: 10, fail: -3 },
-                            { type: 'ANALIZA', text: 'Statystyki xG wskazują na...', min: 12, max: 18, parity: 'even', reward: 6, fail: 0 },
-                            { type: 'ANEGDOTA', text: 'Mam przeczucie w lewym kolanie.', min: 3, max: 10, reward: 4, fail: 0 }
+                        id: 'set2',
+                        rounds: [
+                            {
+                                topic: 'Drużyna zagrała w różowych strojach na cześć sponsora.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Marketing to przyszłość!', min: 7, max: 14, onSuccess: 3, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'W 94 mieliśmy neonowe...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Cyrk, nie futbol!', min: 13, max: 18, onSuccess: 7, onFail: -2 },
+                                    { type: 'ANALIZA', text: 'Psychologia kolorów...', min: 9, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Sponsor ma prawo...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Nietypowe, ale czemu nie.', min: 7, max: 15, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Bramkarz złapał gołębia w locie.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Refleks roku!', min: 8, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Liczy się piłka, nie ptaki!', min: 14, max: 18, onSuccess: 6, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Raz widziałem kota na bramce...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Koordynacja ręka-oko...', min: 11, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Ciekawostka biologiczna...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Zabawna sytuacja.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Napastnik pomylił strony i strzelił do własnej bramki.',
+                                options: [
+                                    { type: 'ATAK', text: 'Idiota! Precz z boiska!', min: 13, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'POPULIZM', text: 'Każdemu może się zdarzyć.', min: 7, max: 14, onSuccess: 2, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Dezorientacja przestrzenna...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Ja raz też pomyliłem...', min: 3, max: 11, onSuccess: 4, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Samobójcza bramka według...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Przykra pomyłka.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Prezes klubu siedzi w pierwszym rzędzie i krzyczy na wszystkich.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Pasja! To piękne!', min: 6, max: 13, onSuccess: 3, onFail: 0 },
+                                    { type: 'ATAK', text: 'Patologia! Wstyd!', min: 14, max: 18, onSuccess: 7, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Znałem jednego prezesa...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Wpływ zarządu na drużynę...', min: 9, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Kodeks etyki klubowej...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Trochę przesada.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Mecz przerwano z powodu ulewy, grają w błocie po kostki.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Prawdziwy futbol!', min: 8, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Organizatorzy nieudacznicy!', min: 13, max: 18, onSuccess: 6, onFail: -2 },
+                                    { type: 'ANALIZA', text: 'Nawierzchnia wpływa na...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Kiedyś graliśmy w metr śniegu...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
+                                    { type: 'MERYTORYKA', text: 'Przepisy o warunkach pogodowych...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'UMIARKOWANA OPINIA', text: 'Trudne warunki dla obu.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -599,31 +678,47 @@
                 id: 'B',
                 name: 'O piłce w powiecie',
                 reqCred: 10,
-                desc: 'Wymagana marynarka. Wójt z partii koalicyjnej stałym widzem.',
-                rounds: [] // Placeholder
+                sympathyStake: 15,
+                targetPoints: 25,
+                desc: 'Wymagana marynarka. Wójt z partii koalicyjnej stałym widzem. Stawka sympatii: 15.',
+                questionSets: []
             },
             { 
                 id: 'D', 
                 name: 'Dośrodkowanie z rożnego', 
-                reqCred: 30, 
-                desc: 'Wyższa półka. Nie dla przypadkowych gości.', 
-                rounds: [] 
+                reqCred: 30,
+                sympathyStake: 20,
+                targetPoints: 30,
+                desc: 'Wyższa półka. Nie dla przypadkowych gości. Stawka sympatii: 20.', 
+                questionSets: []
             },
             { 
                 id: 'E', 
                 name: 'Rzut wolny pośredni', 
-                reqCred: 40, 
-                desc: 'Specjalistyczna taktyka dla wybranych.', 
-                rounds: [] 
+                reqCred: 40,
+                sympathyStake: 25,
+                targetPoints: 35,
+                desc: 'Specjalistyczna taktyka dla wybranych. Stawka sympatii: 25.', 
+                questionSets: []
             },
             { 
                 id: 'C', 
                 name: 'Faul taktyczny', 
-                reqCred: 50, 
-                desc: 'Kontrowersje. Wysokie stawki. Dla twardych graczy.', 
-                rounds: [] 
+                reqCred: 50,
+                sympathyStake: 30,
+                targetPoints: 40,
+                desc: 'Kontrowersje. Wysokie stawki. Dla twardych graczy. Stawka sympatii: 30.', 
+                questionSets: []
             },
-            { id: 'F', name: 'MISJA BANGKOK', reqCred: 80, desc: 'Finał. Tylko dla orłów.', rounds: [] }
+            { 
+                id: 'F', 
+                name: 'MISJA BANGKOK', 
+                reqCred: 80, 
+                sympathyStake: 50, 
+                targetPoints: 50,
+                desc: 'Finał. Tylko dla orłów. Stawka sympatii: 50.', 
+                questionSets: []
+            }
         ];
 
         const ITEMS = [
@@ -633,17 +728,19 @@
 
         // --- STAN GRY ---
         let state = {
-            playerClass: null, // 'pilkarz', 'dziennikarz', 'analityk'
+            playerClass: null, // 'pilkarz', 'analityk'
             playerName: '',
             playerSurname: '',
             specialty: null, // '90s', 'bezczelnosc', 'komputer'
             credibility: 0, // Sympatia widzów
             weeks: 10,
             activeProgram: null,
+            activeQuestionSet: null,
             currentRoundIdx: 0,
-            pp: 0, // Punkty Programu
+            showPoints: 0, // Punkty show (zamiast pp)
             selectedItems: [],
-            notesUsed: false // Czy notatki zostały już użyte w tym programie
+            notesUsed: false,
+            usedQuestionSets: {} // Tracking które zestawy pytań zostały użyte dla każdego programu
         };
 
         // Progi dla każdej klasy
@@ -823,13 +920,45 @@
         // --- GAMEPLAY (STUDIO) ---
 
         function enterStudio() {
-            state.pp = 0;
+            state.showPoints = 0;
             state.currentRoundIdx = 0;
             
-            if(!state.activeProgram.rounds || state.activeProgram.rounds.length === 0) {
-                alert("Ten program jest w budowie. Załadowano Gość Tetryków.");
-                state.activeProgram = PROGRAMS[0]; 
+            // Znajdź pierwszy nieużyty zestaw pytań
+            const progId = state.activeProgram.id;
+            
+            // Inicjalizuj tablicę użytych zestawów dla tego programu jeśli nie istnieje
+            if (!state.usedQuestionSets[progId]) {
+                state.usedQuestionSets[progId] = [];
             }
+            
+            // Znajdź nieużyty zestaw
+            let selectedSet = null;
+            for (let qSet of state.activeProgram.questionSets) {
+                if (!state.usedQuestionSets[progId].includes(qSet.id)) {
+                    selectedSet = qSet;
+                    break;
+                }
+            }
+            
+            // Jeśli wszystkie zestawy użyte, wróć do pierwszego (restart)
+            if (!selectedSet && state.activeProgram.questionSets.length > 0) {
+                state.usedQuestionSets[progId] = []; // Reset
+                selectedSet = state.activeProgram.questionSets[0];
+            }
+            
+            // Jeśli program nie ma pytań (jest w budowie)
+            if (!selectedSet) {
+                alert("Ten program jest w budowie. Załadowano Gość Tetryków.");
+                state.activeProgram = PROGRAMS[0];
+                selectedSet = state.activeProgram.questionSets[0];
+                if (!state.usedQuestionSets[state.activeProgram.id]) {
+                    state.usedQuestionSets[state.activeProgram.id] = [];
+                }
+            }
+            
+            // Zapisz aktywny zestaw i oznacz jako użyty
+            state.activeQuestionSet = selectedSet;
+            state.usedQuestionSets[progId].push(selectedSet.id);
 
             document.getElementById('program-title-display').innerText = state.activeProgram.name;
             showScreen('game-screen');
@@ -837,15 +966,15 @@
         }
 
         function loadRound() {
-            if (state.currentRoundIdx >= state.activeProgram.rounds.length) {
+            if (state.currentRoundIdx >= state.activeQuestionSet.rounds.length) {
                 endProgram();
                 return;
             }
 
-            const roundData = state.activeProgram.rounds[state.currentRoundIdx];
+            const roundData = state.activeQuestionSet.rounds[state.currentRoundIdx];
             
             document.getElementById('round-topic').innerText = roundData.topic;
-            document.getElementById('pp-counter').innerText = `PP: ${state.pp}`;
+            document.getElementById('pp-counter').innerText = `Punkty show: ${state.showPoints}/${state.activeProgram.targetPoints}`;
             document.getElementById('result-msg').innerText = '';
             document.getElementById('dice-sum').innerText = '-';
             [1,2,3].forEach(i => document.getElementById('d'+i).innerText = '?');
@@ -872,7 +1001,8 @@
                 btnContainer.appendChild(btn);
             });
             
-            setStatus(`Runda ${state.currentRoundIdx + 1}/5`);
+            const totalRounds = state.activeQuestionSet.rounds.length;
+            setStatus(`Runda ${state.currentRoundIdx + 1}/${totalRounds}`);
         }
 
         function setStatus(text) {
@@ -909,10 +1039,23 @@
         function finalizeRoll(rolls, option) {
             let sum = rolls.reduce((a,b)=>a+b, 0);
             
+            // Modyfikatory z przedmiotów
             let modifierTotal = 0;
             state.selectedItems.forEach(item => {
                 if(item.effect === 'mod') modifierTotal += item.val;
             });
+            
+            // Bonus od specjalności
+            let specialtyBonus = 0;
+            if (state.specialty === '90s' && option.type === 'ANEGDOTA') {
+                specialtyBonus = 1; // Bonus do anegdot
+            } else if (state.specialty === 'bezczelnosc' && option.type === 'ATAK') {
+                specialtyBonus = 1; // Bonus do ataku
+            } else if (state.specialty === 'komputer' && option.type === 'ANALIZA') {
+                specialtyBonus = 1; // Bonus do analizy
+            }
+            
+            modifierTotal += specialtyBonus;
             
             let finalSum = sum + modifierTotal;
             document.getElementById('dice-sum').innerText = `${sum} (${modifierTotal >= 0 ? '+' : ''}${modifierTotal}) = ${finalSum}`;
@@ -933,16 +1076,22 @@
             const msg = document.getElementById('result-msg');
 
             if (success) {
-                state.pp += option.reward;
+                const points = option.onSuccess || 0;
+                state.showPoints += points;
+                if (state.showPoints < 0) state.showPoints = 0; // Nie może być ujemne
+                
                 diceContainer.classList.add('flash-success');
                 msg.style.color = 'var(--neon-green)';
-                msg.innerText = `SUKCES! +${option.reward} PP`;
+                msg.innerText = `SUKCES! ${points >= 0 ? '+' : ''}${points} pkt`;
                 setStatus("Publiczność bije brawo.");
             } else {
-                state.pp += (option.fail || 0);
+                const points = option.onFail || 0;
+                state.showPoints += points;
+                if (state.showPoints < 0) state.showPoints = 0; // Nie może być ujemne
+                
                 diceContainer.classList.add('flash-fail');
                 msg.style.color = 'var(--neon-pink)';
-                msg.innerText = `PUDŁO! ${option.fail || 0} PP`;
+                msg.innerText = `PUDŁO! ${points >= 0 ? '+' : ''}${points} pkt`;
                 setStatus("Cisza w studiu...");
             }
 
@@ -963,24 +1112,37 @@
             const rChange = document.getElementById('report-change');
             
             rName.innerText = state.activeProgram.name;
-            rPP.innerText = state.pp;
+            rPP.innerText = `${state.showPoints}/${state.activeProgram.targetPoints}`;
 
             let credChange = 0;
             let ratingText = "";
             let color = "white";
 
-            if (state.pp < 9) {
-                credChange = -5;
-                ratingText = "KOMPROMITACJA";
-                color = "var(--neon-pink)";
-            } else if (state.pp < 15) {
-                credChange = 5;
-                ratingText = "PRZECIĘTNIE";
-                color = "var(--neon-blue)";
-            } else {
-                credChange = 15;
-                ratingText = "GWIAZDA WIECZORU";
+            // Sprawdź czy osiągnięto cel
+            const target = state.activeProgram.targetPoints;
+            const achieved = state.showPoints;
+            const percentage = (achieved / target) * 100;
+
+            if (percentage >= 100) {
+                // Osiągnięto lub przekroczono cel - pełna stawka
+                credChange = state.activeProgram.sympathyStake;
+                ratingText = "CEL OSIĄGNIĘTY!";
                 color = "var(--neon-green)";
+            } else if (percentage >= 75) {
+                // 75-99% celu - częściowa stawka
+                credChange = Math.floor(state.activeProgram.sympathyStake * 0.5);
+                ratingText = "BLISKO CELU";
+                color = "var(--neon-blue)";
+            } else if (percentage >= 50) {
+                // 50-74% celu - minimalna zmiana
+                credChange = 0;
+                ratingText = "W POŁOWIE DROGI";
+                color = "var(--neon-yellow)";
+            } else {
+                // Poniżej 50% - strata sympatii
+                credChange = -Math.floor(state.activeProgram.sympathyStake * 0.3);
+                ratingText = "PORAŻKA";
+                color = "var(--neon-pink)";
             }
 
             rRating.innerText = ratingText;
