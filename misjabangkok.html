@@ -471,6 +471,13 @@
                         TEMAT: <span id="round-topic" style="color: var(--neon-yellow);">Ładowanie...</span>
                     </div>
 
+                    <div id="active-items-section" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-blue); display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--neon-blue); font-size: 11px;">AKTYWNE PRZEDMIOTY:</span>
+                            <div id="active-items-list" style="display: flex; gap: 10px;"></div>
+                        </div>
+                    </div>
+
                     <div class="options-grid" id="options-container">
                         <button class="btn option-btn">1</button>
                         <button class="btn option-btn">2</button>
@@ -739,7 +746,8 @@
             currentRoundIdx: 0,
             showPoints: 0, // Punkty show (zamiast pp)
             selectedItems: [],
-            notesUsed: false,
+            notesUsed: false, // Czy notatki zostały już użyte w tym programie (globalnie)
+            notesActiveThisRound: false, // Czy notatki są aktywne w tej rundzie
             usedQuestionSets: {} // Tracking które zestawy pytań zostały użyte dla każdego programu
         };
 
@@ -922,6 +930,8 @@
         function enterStudio() {
             state.showPoints = 0;
             state.currentRoundIdx = 0;
+            state.notesUsed = false; // Reset na start programu
+            state.notesActiveThisRound = false;
             
             // Znajdź pierwszy nieużyty zestaw pytań
             const progId = state.activeProgram.id;
@@ -965,12 +975,22 @@
             loadRound();
         }
 
+        function useNotes() {
+            state.notesUsed = true; // Oznacz że zostały użyte w całym programie
+            state.notesActiveThisRound = true; // Aktywuj na tę rundę
+            loadRound(); // Odśwież UI
+            setStatus("Notatki aktywne! +1 do następnego rzutu.");
+        }
+
         function loadRound() {
             if (state.currentRoundIdx >= state.activeQuestionSet.rounds.length) {
                 endProgram();
                 return;
             }
 
+            // Reset notatek na początku każdej nowej rundy (ale pozostaw notesUsed jeśli były użyte)
+            // notesActiveThisRound jest aktywne tylko w rundzie gdzie użyto przycisku
+            
             const roundData = state.activeQuestionSet.rounds[state.currentRoundIdx];
             
             document.getElementById('round-topic').innerText = roundData.topic;
@@ -980,6 +1000,44 @@
             [1,2,3].forEach(i => document.getElementById('d'+i).innerText = '?');
             // reset animations
             document.getElementById('dice-container').className = 'dice-area'; 
+
+            // Pokaż aktywne przedmioty
+            const itemsSection = document.getElementById('active-items-section');
+            const itemsList = document.getElementById('active-items-list');
+            itemsList.innerHTML = '';
+            
+            if (state.selectedItems.length > 0) {
+                itemsSection.style.display = 'block';
+                
+                state.selectedItems.forEach(item => {
+                    if (item.effect === 'mod') {
+                        // Przedmiot aktywny automatycznie
+                        const span = document.createElement('span');
+                        span.style.color = 'var(--neon-green)';
+                        span.style.fontSize = '11px';
+                        span.innerText = `${item.icon} ${item.name} (${item.val >= 0 ? '+' : ''}${item.val})`;
+                        itemsList.appendChild(span);
+                    } else if (item.effect === 'oneshot' && !state.notesUsed) {
+                        // Notatki - jednorazowe, z przyciskiem
+                        const btn = document.createElement('button');
+                        btn.className = 'btn';
+                        btn.style.fontSize = '10px';
+                        btn.style.padding = '5px 10px';
+                        btn.innerText = `${item.icon} Użyj ${item.name} (+${item.val})`;
+                        btn.onclick = () => useNotes();
+                        itemsList.appendChild(btn);
+                    } else if (item.effect === 'oneshot' && state.notesUsed) {
+                        // Notatki już użyte
+                        const span = document.createElement('span');
+                        span.style.color = 'var(--neon-pink)';
+                        span.style.fontSize = '11px';
+                        span.innerText = `${item.icon} ${item.name} (użyte)`;
+                        itemsList.appendChild(span);
+                    }
+                });
+            } else {
+                itemsSection.style.display = 'none';
+            }
 
             const btnContainer = document.getElementById('options-container');
             btnContainer.innerHTML = '';
@@ -993,8 +1051,11 @@
                 if(opt.parity === 'even') condText = "Parzyste";
                 if(opt.parity === 'odd') condText = "Nieparzyste";
 
+                // Dodaj informację o bonusie/karze
+                const bonusText = `${opt.onSuccess >= 0 ? '+' : ''}${opt.onSuccess} / ${opt.onFail >= 0 ? '+' : ''}${opt.onFail}`;
+
                 btn.innerHTML = `
-                    <span class="option-type">${opt.type} [${condText}]</span>
+                    <span class="option-type">${opt.type} [${condText}] | ${bonusText}</span>
                     <span>"${opt.text}"</span>
                 `;
                 btn.onclick = () => resolveRound(opt);
@@ -1056,6 +1117,17 @@
             }
             
             modifierTotal += specialtyBonus;
+            
+            // Bonus od notatek (jednorazowy, w tej rundzie)
+            let notesBonus = 0;
+            if (state.notesActiveThisRound) {
+                const notesItem = state.selectedItems.find(item => item.effect === 'oneshot');
+                if (notesItem) {
+                    notesBonus = notesItem.val;
+                    modifierTotal += notesBonus;
+                }
+                state.notesActiveThisRound = false; // Zużyj bonus po tym rzucie
+            }
             
             let finalSum = sum + modifierTotal;
             document.getElementById('dice-sum').innerText = `${sum} (${modifierTotal >= 0 ? '+' : ''}${modifierTotal}) = ${finalSum}`;
