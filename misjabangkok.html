@@ -349,16 +349,16 @@
                     </div>
                 </div>
 
-                <div id="story-screen" class="screen" style="justify-content: center; align-items: center;">
-                    <div style="max-width: 700px; text-align: center;">
-                        <div style="border: 2px solid var(--neon-yellow); padding: 30px; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px var(--neon-yellow);">
-                            <h2 style="color: var(--neon-yellow); margin-bottom: 20px;">MISJA</h2>
+                <div id="story-screen" class="screen" style="justify-content: flex-start; align-items: center; padding: 20px 0;">
+                    <div style="max-width: 700px; width: 100%; padding: 0 20px; text-align: center;">
+                        <div style="border: 2px solid var(--neon-yellow); padding: 20px; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px var(--neon-yellow);">
+                            <h2 style="color: var(--neon-yellow); margin-bottom: 15px; font-size: 20px;">MISJA</h2>
                             
-                            <div style="border: 2px dashed var(--neon-blue); padding: 60px 100px; margin: 20px 0; background: rgba(0,0,50,0.3);">
+                            <div style="border: 2px dashed var(--neon-blue); padding: 40px 60px; margin: 15px 0; background: rgba(0,0,50,0.3);">
                                 <p style="color: #666; font-size: 12px;">[ Tutaj będzie grafika z Tajlandii ]</p>
                             </div>
                             
-                            <p style="color: #fff; line-height: 1.8; font-size: 14px; text-align: left;">
+                            <p style="color: #fff; line-height: 1.6; font-size: 13px; text-align: left;">
                                 PZPN ogłosił, że reprezentacja Polski wystąpi w styczniu ligowym składem na Pucharze Króla Tajlandii. 
                                 <br><br>
                                 Telewizja wysyła za kadrą, poza komentatorem, tylko jednego eksperta na jedno miejsce.
@@ -366,7 +366,7 @@
                                 <span style="color: var(--neon-pink); font-weight: bold;">Masz 10 tygodni, by zyskać taką sympatię widzów, by nie pozostawić złudzeń, że to ty powinieneś jechać!</span>
                             </p>
                             
-                            <button class="btn" onclick="showScreen('intro-screen')" style="margin-top: 30px; font-size: 16px; padding: 15px 40px; width: 100%;">
+                            <button class="btn" onclick="showScreen('intro-screen')" style="margin-top: 20px; font-size: 14px; padding: 12px 30px; width: 100%;">
                                 [ ROZPOCZNIJ MISJĘ ]
                             </button>
                         </div>
@@ -406,54 +406,54 @@
                         </div>
                 </div>
 
-                <div id="customize-screen" class="screen" style="justify-content: center; align-items: center;">
-                    <div style="max-width: 600px; width: 100%;">
-                        <div class="inset-box" style="padding: 30px; background: rgba(0,0,0,0.8);">
-                            <h2 style="text-align: center; color: var(--neon-yellow); margin-bottom: 30px;">PERSONALIZACJA POSTACI</h2>
+                <div id="customize-screen" class="screen" style="justify-content: flex-start; align-items: center; padding: 20px 0;">
+                    <div style="max-width: 600px; width: 100%; padding: 0 20px;">
+                        <div class="inset-box" style="padding: 20px; background: rgba(0,0,0,0.8);">
+                            <h2 style="text-align: center; color: var(--neon-yellow); margin-bottom: 20px; font-size: 18px;">PERSONALIZACJA POSTACI</h2>
                             
-                            <div style="margin-bottom: 20px;">
+                            <div style="margin-bottom: 15px;">
                                 <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">IMIĘ:</label>
-                                <input type="text" id="player-name" placeholder="Jan" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                                <input type="text" id="player-name" placeholder="Jan" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 2px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px; border-radius: 0;">
                             </div>
                             
-                            <div style="margin-bottom: 25px;">
+                            <div style="margin-bottom: 15px;">
                                 <label style="display: block; color: var(--neon-blue); margin-bottom: 5px; font-size: 12px;">NAZWISKO:</label>
-                                <input type="text" id="player-surname" placeholder="Kowalski" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px;">
+                                <input type="text" id="player-surname" placeholder="Kowalski" oninput="checkCustomizationComplete()" style="width: 100%; padding: 10px; background: #000; border: 2px solid var(--neon-blue); color: var(--neon-green); font-family: var(--font-main); font-size: 14px; border-radius: 0;">
                             </div>
                             
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; color: var(--neon-pink); margin-bottom: 10px; font-size: 12px;">SPECJALNOŚĆ:</label>
-                                <div style="display: flex; flex-direction: column; gap: 8px;">
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Bujne życie w latach 90-tych</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ANEGDOT</div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; color: var(--neon-pink); margin-bottom: 8px; font-size: 12px;">SPECJALNOŚĆ:</label>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('90s', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Bujne życie w latach 90-tych</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ANEGDOT</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Komputer</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ANALIZY TAKTYCZNEJ</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('komputer', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Komputer</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ANALIZY TAKTYCZNEJ</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('ogladanie', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Oglądanie meczów</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do MERYTORYKI</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('ogladanie', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Oglądanie meczów</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do MERYTORYKI</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('charyzma', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Charyzma</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do POPULIZMU</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('charyzma', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Charyzma</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do POPULIZMU</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('glos', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Donośny głos</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do ATAKU</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('glos', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Donośny głos</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ATAKU</div>
                                     </button>
-                                    <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 12px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 13px;">Koszula i garnitur</div>
-                                        <div style="font-size: 10px; margin-top: 3px;">Bonus do UMIARKOWANEJ OPINII</div>
+                                    <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 10px; text-align: left; width: 100%;">
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Koszula i garnitur</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do UMIARKOWANEJ OPINII</div>
                                     </button>
                                 </div>
                             </div>
                             
-                            <div style="text-align: center; margin-top: 30px;">
-                                <div id="validation-message" style="color: var(--neon-pink); font-size: 11px; margin-bottom: 10px; min-height: 15px;"></div>
-                                <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 16px; padding: 15px 40px; width: 100%;">
+                            <div style="text-align: center; margin-top: 20px;">
+                                <div id="validation-message" style="color: var(--neon-pink); font-size: 11px; margin-bottom: 8px; min-height: 15px;"></div>
+                                <button class="btn" id="confirm-character-btn" disabled onclick="confirmCharacter()" style="font-size: 14px; padding: 12px 30px; width: 100%;">
                                     [ POTWIERDŹ ]
                                 </button>
                             </div>
