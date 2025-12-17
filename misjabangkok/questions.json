@@ -61,7 +61,7 @@
                 { "type": "POPULIZM", "min": 14, "max": 18, "text": "Wszyscy to wiemy, nie trzeba powtarzać!", "onSuccess": 5, "onFail": -2 },
                 { "type": "ANEGDOTA", "min": 12, "max": 18, "text": "Nie wiem, ale kiedyś pod Legnicą z Bońkiem...", "onSuccess": 8, "onFail": -5 },
                 { "type": "ATAK", "min": 8, "max": 18, "text": "Kim wy w ogóle jesteście", "onSuccess": 9, "onFail": -4 },
-                { "type": "ANALIZA", "min": 17, "max": 18, : "even", "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 17, "max": 18, "parity": "even", "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 3, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
                 { "type": "UMIARKOWANA OPINIA", "min": 3, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął...", "onSuccess": 3, "onFail": 0 }
               ]
