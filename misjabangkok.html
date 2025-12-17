@@ -463,7 +463,7 @@
 
                 <div id="inventory-screen" class="screen">
                     <h3>INWENTARZ</h3>
-                    <p style="color: #aaa;">Wybierz przedmioty na dzisiejszy występ:</p>
+                    <p style="color: #aaa;">Wybierz artefakt na dzisiejszy występ:</p>
                     
                     <div class="inset-box" style="height: 300px; overflow-y: scroll;" id="inventory-list">
                         </div>
@@ -478,7 +478,10 @@
                     <div class="studio-view" id="studio-visual">
                         <div class="studio-overlay">
                             <h2 id="program-title-display" style="color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green);">Gość Tetryków</h2>
-                            <span id="pp-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-green);">Punkty show: 0/20</span>
+                            <div style="display: flex; gap: 10px;">
+                                <span id="pp-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-green);">Punkty show: 0/20</span>
+                                <span id="round-counter" style="background:black; padding: 2px 5px; border: 1px solid var(--neon-yellow); color: var(--neon-yellow);">Tura: 1/5</span>
+                            </div>
                         </div>
                     </div>
 
@@ -488,7 +491,7 @@
 
                     <div id="active-items-section" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-blue); display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--neon-blue); font-size: 11px;">AKTYWNE PRZEDMIOTY:</span>
+                            <span style="color: var(--neon-blue); font-size: 11px;">AKTYWNE ARTEFAKTY:</span>
                             <div id="active-items-list" style="display: flex; gap: 10px;"></div>
                         </div>
                     </div>
@@ -740,8 +743,12 @@
         ];
 
         const ITEMS = [
-            { id: 'suit', icon: '👔', name: 'Garnitur Bordo', desc: '+1 do wszystkich rzutów', category: 'DO UŻYCIA W PROGRAMIE', effect: 'mod', val: 1 },
-            { id: 'notes', icon: '📄', name: 'Notatki', desc: '+1 jednorazowo przed jednym rzutem', category: 'PASYWNY', effect: 'oneshot', val: 1 }
+            { id: 'notes', icon: '📄', name: 'Notatki', desc: '+1 do wszystkich rzutów w programie', effect: 'mod', val: 1 },
+            { id: 'coffee', icon: '☕', name: 'Kawa', desc: '+1 do rzutu w kolejnej turze (jednorazowo)', effect: 'oneshot', val: 1 },
+            { id: 'energy', icon: '⚡', name: 'Energetyk', desc: '+3 do rzutu w kolejnej turze (jednorazowo)', effect: 'oneshot', val: 3 },
+            { id: 'sponsor', icon: '💰', name: 'Sponsor TV', desc: '+5 punktów show przy trafieniu', effect: 'onSuccess', val: 5 },
+            { id: 'smile', icon: '😊', name: 'Uśmiech', desc: '+1 do wszystkich rzutów POPULIZMU', effect: 'conditionalMod', val: 1, condition: 'POPULIZM' },
+            { id: 'megaphone', icon: '📢', name: 'Megafon', desc: '+1 do wszystkich rzutów ATAKU', effect: 'conditionalMod', val: 1, condition: 'ATAK' }
         ];
 
         // --- STAN GRY ---
@@ -757,8 +764,8 @@
             currentRoundIdx: 0,
             showPoints: 0, // Punkty show (zamiast pp)
             selectedItems: [],
-            notesUsed: false, // Czy notatki zostały już użyte w tym programie (globalnie)
-            notesActiveThisRound: false, // Czy notatki są aktywne w tej rundzie
+            oneshotUsed: false, // Czy artefakt jednorazowy został już użyty
+            oneshotActiveNextTurn: false, // Czy artefakt jednorazowy będzie aktywny w następnej turze
             usedQuestionSets: {} // Tracking które zestawy pytań zostały użyte dla każdego programu
         };
 
@@ -927,7 +934,6 @@
                     <span class="item-icon">${item.icon}</span>
                     <div style="color:white;">
                         <div style="font-weight:bold; color: var(--neon-blue);">${item.name}</div>
-                        <div style="font-size:9px; color: var(--neon-yellow); margin: 2px 0;">[${item.category}]</div>
                         <div style="font-size:10px; color: #ccc;">${item.desc}</div>
                     </div>
                 `;
@@ -960,8 +966,8 @@
         function enterStudio() {
             state.showPoints = 0;
             state.currentRoundIdx = 0;
-            state.notesUsed = false; // Reset na start programu
-            state.notesActiveThisRound = false;
+            state.oneshotUsed = false;
+            state.oneshotActiveNextTurn = false;
             
             // Znajdź pierwszy nieużyty zestaw pytań
             const progId = state.activeProgram.id;
@@ -1005,11 +1011,10 @@
             loadRound();
         }
 
-        function useNotes() {
-            state.notesUsed = true; // Oznacz że zostały użyte w całym programie
-            state.notesActiveThisRound = true; // Aktywuj na tę rundę
-            loadRound(); // Odśwież UI
-            setStatus("Notatki aktywne! +1 do następnego rzutu.");
+        function activateOneshot(item) {
+            state.oneshotUsed = true;
+            state.oneshotActiveNextTurn = true;
+            loadRound(); // Odśwież wyświetlanie
         }
 
         function loadRound() {
@@ -1025,6 +1030,10 @@
             
             document.getElementById('round-topic').innerText = roundData.topic;
             document.getElementById('pp-counter').innerText = `Punkty show: ${state.showPoints}/${state.activeProgram.targetPoints}`;
+            
+            const totalRounds = state.activeQuestionSet.rounds.length;
+            document.getElementById('round-counter').innerText = `Tura: ${state.currentRoundIdx + 1}/${totalRounds}`;
+            
             document.getElementById('result-msg').innerText = '';
             document.getElementById('dice-sum').innerText = '-';
             [1,2,3].forEach(i => document.getElementById('d'+i).innerText = '?');
@@ -1040,28 +1049,43 @@
                 itemsSection.style.display = 'block';
                 
                 state.selectedItems.forEach(item => {
-                    if (item.effect === 'mod') {
-                        // Przedmiot aktywny automatycznie
+                    if (item.effect === 'oneshot') {
+                        // Artefakt jednorazowy - pokaż przycisk lub status
+                        if (!state.oneshotUsed) {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn';
+                            btn.style.fontSize = '10px';
+                            btn.style.padding = '5px 10px';
+                            btn.innerText = `${item.icon} Użyj: ${item.name} (+${item.val})`;
+                            btn.onclick = () => activateOneshot(item);
+                            itemsList.appendChild(btn);
+                        } else if (state.oneshotActiveNextTurn) {
+                            const span = document.createElement('span');
+                            span.style.color = 'var(--neon-yellow)';
+                            span.style.fontSize = '11px';
+                            span.innerText = `${item.icon} ${item.name} (aktywny w tej turze!)`;
+                            itemsList.appendChild(span);
+                        } else {
+                            const span = document.createElement('span');
+                            span.style.color = '#666';
+                            span.style.fontSize = '11px';
+                            span.innerText = `${item.icon} ${item.name} (użyty)`;
+                            itemsList.appendChild(span);
+                        }
+                    } else {
+                        // Stałe artefakty
                         const span = document.createElement('span');
                         span.style.color = 'var(--neon-green)';
                         span.style.fontSize = '11px';
-                        span.innerText = `${item.icon} ${item.name} (${item.val >= 0 ? '+' : ''}${item.val})`;
-                        itemsList.appendChild(span);
-                    } else if (item.effect === 'oneshot' && !state.notesUsed) {
-                        // Notatki - jednorazowe, z przyciskiem
-                        const btn = document.createElement('button');
-                        btn.className = 'btn';
-                        btn.style.fontSize = '10px';
-                        btn.style.padding = '5px 10px';
-                        btn.innerText = `${item.icon} Użyj ${item.name} (+${item.val})`;
-                        btn.onclick = () => useNotes();
-                        itemsList.appendChild(btn);
-                    } else if (item.effect === 'oneshot' && state.notesUsed) {
-                        // Notatki już użyte
-                        const span = document.createElement('span');
-                        span.style.color = 'var(--neon-pink)';
-                        span.style.fontSize = '11px';
-                        span.innerText = `${item.icon} ${item.name} (użyte)`;
+                        
+                        let desc = `(${item.val >= 0 ? '+' : ''}${item.val})`;
+                        if (item.effect === 'conditionalMod') {
+                            desc = `(${item.val >= 0 ? '+' : ''}${item.val} do ${item.condition})`;
+                        } else if (item.effect === 'onSuccess') {
+                            desc = `(${item.val >= 0 ? '+' : ''}${item.val} pkt przy sukcesie)`;
+                        }
+                        
+                        span.innerText = `${item.icon} ${item.name} ${desc}`;
                         itemsList.appendChild(span);
                     }
                 });
@@ -1133,9 +1157,38 @@
             
             // Modyfikatory z przedmiotów
             let modifierTotal = 0;
+            let modifierBreakdown = [];
+            
             state.selectedItems.forEach(item => {
-                if(item.effect === 'mod') modifierTotal += item.val;
+                // Stałe modyfikatory - działają zawsze
+                if(item.effect === 'mod') {
+                    modifierTotal += item.val;
+                    if (item.val !== 0) {
+                        modifierBreakdown.push(`${item.val >= 0 ? '+' : ''}${item.val} ${item.name.toLowerCase()}`);
+                    }
+                }
+                
+                // Warunkowe modyfikatory - tylko dla określonego typu
+                if(item.effect === 'conditionalMod' && option.type === item.condition) {
+                    modifierTotal += item.val;
+                    if (item.val !== 0) {
+                        modifierBreakdown.push(`${item.val >= 0 ? '+' : ''}${item.val} ${item.name.toLowerCase()}`);
+                    }
+                }
+                
+                // Jednorazowe modyfikatory - aktywne w tej turze
+                if(item.effect === 'oneshot' && state.oneshotActiveNextTurn) {
+                    modifierTotal += item.val;
+                    if (item.val !== 0) {
+                        modifierBreakdown.push(`${item.val >= 0 ? '+' : ''}${item.val} ${item.name.toLowerCase()}`);
+                    }
+                }
             });
+            
+            // Wyłącz oneshot po użyciu
+            if (state.oneshotActiveNextTurn) {
+                state.oneshotActiveNextTurn = false;
+            }
             
             // Bonus od specjalności
             let specialtyBonus = 0;
@@ -1161,32 +1214,7 @@
             }
             
             modifierTotal += specialtyBonus;
-            
-            // Bonus od notatek (jednorazowy, w tej rundzie)
-            let notesBonus = 0;
-            let notesText = "";
-            if (state.notesActiveThisRound) {
-                const notesItem = state.selectedItems.find(item => item.effect === 'oneshot');
-                if (notesItem) {
-                    notesBonus = notesItem.val;
-                    modifierTotal += notesBonus;
-                    notesText = "+1 notatki";
-                }
-                state.notesActiveThisRound = false; // Zużyj bonus po tym rzucie
-            }
-            
-            // Buduj tekst modyfikatorów
-            let modifierBreakdown = [];
-            
-            // Przedmioty automatyczne (garnitur)
-            state.selectedItems.forEach(item => {
-                if(item.effect === 'mod' && item.val !== 0) {
-                    modifierBreakdown.push(`${item.val >= 0 ? '+' : ''}${item.val} ${item.name.toLowerCase()}`);
-                }
-            });
-            
             if (specialtyText) modifierBreakdown.push(specialtyText);
-            if (notesText) modifierBreakdown.push(notesText);
             
             let finalSum = sum + modifierTotal;
             let modifierDisplay = modifierBreakdown.length > 0 ? ` (${modifierBreakdown.join(' ')})` : '';
@@ -1208,7 +1236,15 @@
             const msg = document.getElementById('result-msg');
 
             if (success) {
-                const points = option.onSuccess || 0;
+                let points = option.onSuccess || 0;
+                
+                // Bonus od artefaktów typu onSuccess (np. Sponsor TV)
+                state.selectedItems.forEach(item => {
+                    if (item.effect === 'onSuccess') {
+                        points += item.val;
+                    }
+                });
+                
                 state.showPoints += points;
                 if (state.showPoints < 0) state.showPoints = 0; // Nie może być ujemne
                 
