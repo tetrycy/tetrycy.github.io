@@ -2,21 +2,21 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: UNLIMITED FIRE</title>
+    <title>OUTPOST '95: COMMANDER EDITION</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --f-green: #20ff20; --f-bg: #0a0d0a; --panel: #222; --f-red: #ff2020; }
+        :root { --f-green: #20ff20; --f-bg: #050a05; --panel: #222; --f-red: #ff2020; --f-blue: #00ffff; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: 'VT323', monospace; display: flex; height: 100vh; overflow: hidden; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
-        canvas { border: 4px solid #333; image-rendering: pixelated; background: #080a08; cursor: crosshair; }
-        #sidebar { width: 320px; background: var(--panel); border-left: 4px solid #444; display: flex; flex-direction: column; padding: 15px; }
-        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 10px #000; }
+        canvas { border: 4px solid #333; image-rendering: pixelated; background: #0a110a; cursor: crosshair; }
+        #sidebar { width: 320px; background: var(--panel); border-left: 4px solid #444; display: flex; flex-direction: column; padding: 15px; box-shadow: -10px 0 20px #000; }
+        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; }
         .btn { background: #333; color: var(--f-green); border: 3px outset #555; padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-transform: uppercase; width: 100%; }
         .btn:hover:not(:disabled) { background: #444; color: #fff; }
-        .btn:disabled { opacity: 0.2; }
+        .btn:disabled { opacity: 0.2; cursor: not-allowed; }
         .btn.active { background: #1a4d1a; border-color: var(--f-green); }
         .stat { display: flex; justify-content: space-between; font-size: 1.4em; }
-        #terminal { font-size: 0.9em; height: 100px; overflow-y: auto; background: #000; padding: 5px; border: 1px solid #1a331a; color: #8f8; }
+        #terminal { font-size: 0.9em; height: 120px; overflow-y: auto; background: #000; padding: 5px; border: 1px solid #1a331a; color: #8f8; line-height: 1.2; }
     </style>
 </head>
 <body>
@@ -26,15 +26,15 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">OUTPOST '95</h2>
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">CMD INTERFACE</h2>
     
     <div class="screen">
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
         <div class="stat"><span>POWER:</span> <span id="ui-power">0</span></div>
-        <div class="stat"><span>HULL:</span> <span id="ui-hp">100%</span></div>
+        <div class="stat"><span>INTEGRITY:</span> <span id="ui-hp">100%</span></div>
     </div>
 
-    <div class="screen" id="terminal">> WEAPON SYSTEMS: UNLIMITED<br>> TARGETS IDENTIFIED...</div>
+    <div class="screen" id="terminal">> SELECT SECTOR...<br>> PREPARE DEFENSES.</div>
 
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;"></div>
 
@@ -50,22 +50,25 @@ const CONFIG = {
         MUNITION: { name: "MUNITION FAB", cost: 300, pwr: -30, color: "#A00" }
     },
     DEFENSE: {
-        SENTRY: { name: "SENTRY GUN", cost: 150, range: 180, dmg: 18, rof: 700 },
-        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 120, rad: 60 },
-        PLASMA: { name: "PLASMA CHARGE", cost: 140, dmg: 280, rad: 100, req: "MUNITION FAB" }
+        CORE: { name: "OUTPOST CORE", cost: 0, hp: 1000, type: 'core', color: '#0ff' },
+        WALL: { name: "METAL WALL", cost: 40, hp: 300, type: 'wall', color: '#555' },
+        SENTRY: { name: "SENTRY GUN", cost: 150, range: 200, dmg: 15, rof: 700, hp: 150, type: 'tower', color: '#ff0' },
+        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 100, rad: 70, type: 'mine', color: '#f22' }
     },
-    PLAYER_ROF: 120, //ms między strzałami
-    TERRAIN_LINES: [140, 280, 420]
+    PLAYER_ROF: 110
 };
 
 let game = {
-    money: 800, hp: 1000, pwr: 0, wave: 0, 
+    money: 800, hp: 1000, pwr: 0, wave: 0,
     mode: 'BASE', // BASE, PREP, COMBAT
-    buildings: [], defUnits: [], enemies: [], projectiles: [], particles: [],
-    selected: null, 
-    mouse: { x:0, y:0, gx:0, gy:0, down: false }, 
-    player: { x:400, y:560, speed:5, lastShot: 0 }, 
-    keys: {}
+    buildings: [], // Base permanent
+    entities: [],  // Combat temporary (Core, Walls, Towers)
+    enemies: [], projectiles: [], particles: [],
+    hills: [],
+    selected: null,
+    mouse: { x: 0, y: 0, gx: 0, gy: 0, down: false },
+    player: { x: 0, y: 0, active: false, lastShot: 0 },
+    corePlaced: false
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -97,9 +100,17 @@ function handleAction() {
     if (game.mode === 'BASE') {
         game.mode = 'PREP';
         game.wave++;
-        document.getElementById('actionBtn').innerText = "RELEASE ANOMALIES";
-        logTerminal(`PREP PHASE: WAVE ${game.wave}`);
+        game.corePlaced = false;
+        game.entities = [];
+        generateTerrain();
+        updateBuildMenu();
+        document.getElementById('actionBtn').innerText = "LOCK IN & ATTACK";
+        logTerminal(`PREP: SECTOR ${game.wave}. PLACE CORE FIRST.`);
     } else if (game.mode === 'PREP') {
+        if (!game.corePlaced) {
+            logTerminal("ERROR: CORE PLACEMENT REQUIRED.");
+            return;
+        }
         game.mode = 'COMBAT';
         spawnEnemies();
         document.getElementById('actionBtn').innerText = "COMBAT ACTIVE";
@@ -119,66 +130,75 @@ function handlePlacement() {
         }
     } else if (game.mode === 'PREP' && game.selected) {
         const cfg = CONFIG.DEFENSE[game.selected];
+        
+        if (cfg.type === 'core' && game.corePlaced) return;
+        
         if (game.money >= cfg.cost) {
-            game.defUnits.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, lastFire: 0 });
-            game.money -= cfg.cost;
+            const newEntity = { ...cfg, x: game.mouse.x, y: game.mouse.y, currentHP: cfg.hp, lastFire: 0 };
+            game.entities.push(newEntity);
+            
+            if (cfg.type === 'core') {
+                game.corePlaced = true;
+                game.player.x = game.mouse.x;
+                game.player.y = game.mouse.y;
+                game.player.active = true;
+            } else {
+                game.money -= cfg.cost;
+            }
             updateStats();
         }
     }
 }
 
-function playerShoot() {
-    const now = Date.now();
-    if (now - game.player.lastShot > CONFIG.PLAYER_ROF) {
-        const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({
-            x: game.player.x, y: game.player.y - 12,
-            vx: Math.cos(angle) * 11, vy: Math.sin(angle) * 11,
-            dmg: 25
+function generateTerrain() {
+    game.hills = [];
+    const count = 5 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+        game.hills.push({
+            x: Math.random() * 800, y: Math.random() * 400 + 50,
+            r: 70 + Math.random() * 120,
+            layers: 4 + Math.floor(Math.random() * 3),
+            seed: Math.random() * 10
         });
-        game.player.lastShot = now;
     }
 }
 
 function spawnEnemies() {
-    let pool = 250 + (game.wave * 400); // Pula HP fali
+    let pool = 300 + (game.wave * 500);
     while (pool > 0) {
         let hp = Math.min(pool, 40 + Math.random() * (pool * 0.4));
-        if (hp < 30) hp = pool;
+        if (hp < 20) hp = pool;
         game.enemies.push(createEnemy(hp));
         pool -= hp;
     }
-    logTerminal(`DETECTION: ${game.enemies.length} OBJECTS INBOUND`);
 }
 
 function createEnemy(hp) {
-    const size = 15 + (hp * 0.3);
+    const size = 12 + (hp * 0.25);
     const vertices = [];
-    // WYSOKA GĘSTOŚĆ: 40-100 kątów
-    const pts = 40 + Math.floor(Math.random() * 60);
+    const pts = 50 + Math.floor(Math.random() * 30);
     for(let i=0; i<pts; i++) {
         const a = (i/pts) * Math.PI * 2;
         const d = size * (0.6 + Math.random() * 0.8);
         vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, baseDist: d});
     }
-    return { x: Math.random()*700+50, y: -100, hp, maxHp: hp, size, vertices, speed: 0.7 + (15/size), hitFlash: 0 };
+    // Wrogowie dążą do CORE
+    const core = game.entities.find(e => e.type === 'core');
+    return { x: Math.random()*800, y: -80, hp, maxHp: hp, size, vertices, speed: 0.5 + (15/size), hitFlash: 0 };
 }
 
 function gameLoop() {
     ctx.clearRect(0, 0, 800, 600);
     
     if (game.mode === 'BASE') {
-        renderGrid();
-        game.buildings.forEach(b => {
-            ctx.fillStyle = b.cfg.color;
-            ctx.fillRect(CONFIG.BASE_OFF.x + b.gx*50+4, CONFIG.BASE_OFF.y + b.gy*50+4, 42, 42);
-        });
+        renderBaseGrid();
     } else {
-        renderTerrain();
+        renderTopography();
+        renderEntities();
         if (game.mode === 'COMBAT') updateCombat();
-        renderDefenseUnits();
-        renderPlayer();
+        if (game.player.active) renderPlayer();
         renderEnemies();
+        if (game.mode === 'PREP') renderGhost();
     }
 
     renderProjectiles();
@@ -187,164 +207,175 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-function renderTerrain() {
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
-    CONFIG.TERRAIN_LINES.forEach((y, i) => {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        for(let x=0; x<=800; x+=25) ctx.lineTo(x, y + Math.cos(x/40 + i)*10);
-        ctx.stroke();
+function renderTopography() {
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.12)";
+    game.hills.forEach(h => {
+        for (let l = 1; l <= h.layers; l++) {
+            const radius = h.r * (l / h.layers);
+            ctx.beginPath();
+            for (let a = 0; a < Math.PI * 2; a += 0.25) {
+                const px = h.x + Math.cos(a) * (radius + Math.sin(a * 4 + h.seed) * 5);
+                const py = h.y + Math.sin(a) * (radius + Math.sin(a * 4 + h.seed) * 5);
+                if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath(); ctx.stroke();
+        }
     });
-    ctx.strokeStyle = "#f00"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, 580); ctx.lineTo(800, 580); ctx.stroke();
-    ctx.lineWidth = 1;
 }
 
 function updateCombat() {
-    if (game.keys['a'] || game.keys['arrowleft']) game.player.x -= game.player.speed;
-    if (game.keys['d'] || game.keys['arrowright']) game.player.x += game.player.speed;
-    game.player.x = Math.max(20, Math.min(780, game.player.x));
-
     if (game.mouse.down) playerShoot();
-
+    
+    const core = game.entities.find(e => e.type === 'core');
     const now = Date.now();
+
     game.enemies.forEach((e, i) => {
+        // Ruch w stronę Core
+        const ang = Math.atan2(core.y - e.y, core.x - e.x);
         let speedMult = 1;
-        CONFIG.TERRAIN_LINES.forEach(ly => {
-            if (e.y < ly && e.y + e.speed > ly) speedMult = 0.45;
-        });
-        e.y += e.speed * speedMult;
-
-        // "Drganie" anomalii
-        e.vertices.forEach(v => {
-            const jitter = (Math.random() - 0.5) * 2;
-            const ang = Math.atan2(v.y, v.x);
-            v.x = Math.cos(ang) * (v.baseDist + jitter);
-            v.y = Math.sin(ang) * (v.baseDist + jitter);
+        game.hills.forEach(h => {
+            if (Math.hypot(e.x - h.x, e.y - h.y) < h.r) speedMult = 0.45;
         });
 
-        if (e.hitFlash > 0) e.hitFlash--;
+        e.x += Math.cos(ang) * e.speed * speedMult;
+        e.y += Math.sin(ang) * e.speed * speedMult;
 
-        if (e.y >= 580) {
-            game.hp -= Math.floor(e.hp); 
-            createParticles(e.x, 580, "#f00", 20);
-            game.enemies.splice(i, 1);
-        }
+        // Kolizje z obiektami bazy (Mury, Wieże, Core)
+        game.entities.forEach(entity => {
+            if (entity.type === 'mine') return;
+            const dist = Math.hypot(e.x - entity.x, e.y - entity.y);
+            if (dist < e.size + 15) {
+                entity.currentHP -= e.hp;
+                createParticles(e.x, e.y, "#f00", 20);
+                game.enemies.splice(i, 1);
+                
+                if (entity.type === 'core') game.hp = Math.max(0, entity.currentHP);
+            }
+        });
     });
 
-    game.defUnits.forEach(u => {
-        if (u.name === "SENTRY GUN" && now - u.lastFire > (game.pwr < 0 ? u.rof*2 : u.rof)) {
-            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
-            if (target) {
-                target.hp -= u.dmg;
-                target.hitFlash = 3;
-                u.lastFire = now;
-                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+    // Wieże strzelają
+    game.entities.forEach(u => {
+        if (u.type === 'tower' && u.currentHP > 0) {
+            const penalty = game.pwr < 0 ? 2 : 1;
+            if (now - u.lastFire > u.rof * penalty) {
+                const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+                if (target) {
+                    target.hp -= u.dmg;
+                    u.lastFire = now;
+                    renderLaser(u.x, u.y, target.x, target.y);
+                }
+            }
+        }
+        // Miny
+        if (u.type === 'mine') {
+            const trigger = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < 30);
+            if (trigger) {
+                game.enemies.forEach(e => { if(Math.hypot(e.x-u.x, e.y-u.y) < u.rad) e.hp -= u.dmg; });
+                createParticles(u.x, u.y, "#f40", 40);
+                u.currentHP = 0;
             }
         }
     });
 
-    game.enemies = game.enemies.filter(e => {
-        if (e.hp <= 0) { game.money += 15; return false; }
-        return true;
-    });
+    // Czyszczenie zniszczonych jednostek
+    game.entities = game.entities.filter(ent => ent.currentHP > 0 || ent.type === 'mine' && ent.currentHP !== 0);
+    game.enemies = game.enemies.filter(e => { if(e.hp <= 0) { game.money += 15; return false; } return true; });
 
-    if (game.enemies.length === 0 && game.mode === 'COMBAT') {
+    if (game.enemies.length === 0) {
         game.mode = 'BASE';
         document.getElementById('actionBtn').innerText = "START DEFENSE";
         document.getElementById('actionBtn').disabled = false;
-        logTerminal("SECTOR CLEAR. REGROUPING.");
     }
-    if (game.hp <= 0) { alert("OUTPOST LOST"); location.reload(); }
+    if (game.hp <= 0) { alert("OUTPOST CORE DESTROYED"); location.reload(); }
+}
+
+function playerShoot() {
+    const now = Date.now();
+    if (now - game.player.lastShot > CONFIG.PLAYER_ROF) {
+        const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12, dmg: 25 });
+        game.player.lastShot = now;
+    }
+}
+
+function renderEntities() {
+    game.entities.forEach(ent => {
+        ctx.fillStyle = ent.color;
+        if (ent.type === 'wall') ctx.fillRect(ent.x - 15, ent.y - 15, 30, 30);
+        else if (ent.type === 'core') {
+            ctx.beginPath(); ctx.arc(ent.x, ent.y, 25, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "#fff"; ctx.stroke();
+        } else {
+            ctx.fillRect(ent.x - 12, ent.y - 12, 24, 24);
+        }
+        // Pasek HP nad jednostką
+        if (ent.type !== 'mine') {
+            ctx.fillStyle = "#300"; ctx.fillRect(ent.x-15, ent.y-25, 30, 4);
+            ctx.fillStyle = "#0f0"; ctx.fillRect(ent.x-15, ent.y-25, (ent.currentHP/ent.hp)*30, 4);
+        }
+    });
 }
 
 function renderPlayer() {
     ctx.fillStyle = "#0ff";
-    ctx.fillRect(game.player.x - 18, 560, 36, 18);
-    const angle = Math.atan2(game.mouse.y - 560, game.mouse.x - game.player.x);
-    ctx.save();
-    ctx.translate(game.player.x, 565);
-    ctx.rotate(angle);
-    ctx.fillStyle = "#0aa";
-    ctx.fillRect(0, -4, 25, 8);
-    ctx.restore();
+    ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 10, 0, Math.PI*2); ctx.fill();
+    const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    ctx.save(); ctx.translate(game.player.x, game.player.y); ctx.rotate(angle);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, -3, 20, 6); ctx.restore();
 }
 
 function renderEnemies() {
     game.enemies.forEach(e => {
-        ctx.fillStyle = e.hitFlash > 0 ? "#fff" : "rgba(255, 30, 30, 0.4)";
-        ctx.beginPath();
-        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        ctx.fillStyle = "rgba(255, 30, 30, 0.4)";
+        ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = e.hitFlash > 0 ? "#fff" : "#ff3333";
-        ctx.stroke();
+        ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#f33"; ctx.stroke();
     });
 }
 
-function renderDefenseUnits() {
-    game.defUnits.forEach((u, i) => {
-        ctx.fillStyle = u.rad ? "#ff4400" : "#ffff00";
-        ctx.fillRect(u.x - 12, u.y - 12, 24, 24);
-        if (u.rad && game.enemies.some(e => Math.hypot(e.x - u.x, e.y - u.y) < 30)) {
-            game.enemies.forEach(e => {
-                if(Math.hypot(e.x - u.x, e.y - u.y) < u.rad) e.hp -= u.dmg;
-            });
-            createParticles(u.x, u.y, "#f40", 35);
-            game.defUnits.splice(i, 1);
-        }
+function renderGhost() {
+    if (!game.selected) return;
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range || 20, 0, Math.PI*2); ctx.fill();
+}
+
+function renderBaseGrid() {
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
+    for(let i=0; i<=CONFIG.GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y + 600); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i*50); ctx.lineTo(CONFIG.BASE_OFF.x + 600, CONFIG.BASE_OFF.y + i*50); ctx.stroke();
+    }
+    game.buildings.forEach(b => {
+        ctx.fillStyle = b.cfg.color;
+        ctx.fillRect(CONFIG.BASE_OFF.x + b.gx*50+5, CONFIG.BASE_OFF.y + b.gy*50+5, 40, 40);
     });
 }
 
 function renderProjectiles() {
     game.projectiles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy;
-        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-3, p.y-3, 6, 6);
+        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
         const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) {
-            hit.hp -= p.dmg;
-            hit.hitFlash = 3;
-            game.projectiles.splice(i, 1);
-        }
-        if (p.x < 0 || p.x > 800 || p.y < 0) game.projectiles.splice(i, 1);
+        if (hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
+        if (p.x < 0 || p.x > 800 || p.y < 0 || p.y > 600) game.projectiles.splice(i, 1);
     });
 }
 
 function updateStats() {
-    let p = 0;
-    game.buildings.forEach(b => p += b.cfg.pwr * b.lv);
-    game.pwr = p;
+    let p = 0; game.buildings.forEach(b => p += b.cfg.pwr * b.lv); game.pwr = p;
     document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
     document.getElementById('ui-power').innerText = `${game.pwr} PWR`;
     document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/1000)*100))}%`;
 }
 
-function createParticles(x, y, c, count) {
-    for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*8-4, vy:Math.random()*8-4, life:1, c});
-}
-
-function renderParticles() {
-    game.particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.04;
-        ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
-        ctx.fillRect(p.x, p.y, 3, 3);
-        if(p.life <= 0) game.particles.splice(i, 1);
-    });
-    ctx.globalAlpha = 1;
-}
-
-function renderGrid() {
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
-    for(let i=0; i<=CONFIG.GRID; i++) {
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y + 600); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i*50); ctx.lineTo(CONFIG.BASE_OFF.x + 600, CONFIG.BASE_OFF.y + i*50); ctx.stroke();
-    }
-}
+function renderLaser(x1, y1, x2, y2) { ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function createParticles(x, y, c, count) { for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*8-4, vy:Math.random()*8-4, life:1, c}); }
+function renderParticles() { game.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= 0.04; ctx.fillStyle = p.c; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, 3, 3); if(p.life <= 0) game.particles.splice(i, 1); }); ctx.globalAlpha = 1; }
 
 function updateBuildMenu() {
-    const menu = document.getElementById('buildMenu');
-    menu.innerHTML = "";
+    const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
     const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
     for(let k in list) {
         const item = list[k];
