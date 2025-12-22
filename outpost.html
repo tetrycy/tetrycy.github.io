@@ -3,249 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTPOST: RED ALERT PROTOCOL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap" rel="stylesheet">
+    <title>OUTPOST: WASTELAND PROTOCOL</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ra2-metal: #5a6e7d;
-            --ra2-metal-dark: #3a4e5d;
-            --ra2-green: #00ff00;
-            --ra2-red: #ff0000;
-            --ra2-bg: #1a1a1a;
-            --sidebar-width: 260px;
+            --fallout-green: #20ff20;
+            --fallout-bg: #050a05;
+            --crt-glow: rgba(32, 255, 32, 0.1);
         }
 
         body {
             margin: 0; padding: 0; background: #000;
-            height: 100vh; font-family: 'Chakra Petch', sans-serif;
-            color: var(--ra2-green); display: flex; overflow: hidden;
+            color: var(--fallout-green); font-family: 'VT323', monospace;
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        #gameViewport {
-            flex-grow: 1; display: flex; justify-content: center; align-items: center;
-            background-color: #242b1e; background-image: radial-gradient(#343b2e 1px, transparent 1px);
-            background-size: 20px 20px; position: relative;
+        /* Widok terminala z zakrzywieniem */
+        #viewport {
+            flex-grow: 1; position: relative;
+            background: #000; display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
         }
 
-        canvas { background: rgba(0,0,0,0.2); cursor: crosshair; }
+        #viewport::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%; pointer-events: none; z-index: 10;
+        }
 
-        /* Sidebar RA2 Style */
+        canvas {
+            border: 4px solid #222;
+            image-rendering: pixelated;
+            box-shadow: 0 0 40px var(--crt-glow);
+            background: #101510;
+        }
+
+        /* Sidebar Styl Pip-Boy */
         #sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(to right, var(--ra2-metal-dark), var(--ra2-metal));
-            border-left: 4px ridge var(--ra2-metal);
-            display: flex; flex-direction: column; padding: 10px; box-sizing: border-box;
+            width: 320px; background: #1a1f1a;
+            border-left: 5px solid #333;
+            display: flex; flex-direction: column; padding: 20px;
+            box-shadow: -10px 0 30px #000; z-index: 20;
         }
 
-        #powerSection {
-            height: 180px; background: #000; border: 3px inset #333;
-            margin-bottom: 15px; position: relative; overflow: hidden;
+        .screen {
+            background: #020802; border: 2px solid var(--fallout-green);
+            padding: 15px; margin-bottom: 20px; position: relative;
+            box-shadow: inset 0 0 15px #000;
         }
 
-        #powerIndicator {
-            position: absolute; bottom: 0; width: 100%;
-            background: linear-gradient(to top, #f00, #ff0, #0f0);
-            transition: height 0.4s ease-in-out;
+        .btn {
+            background: transparent; color: var(--fallout-green);
+            border: 1px solid var(--fallout-green); padding: 12px;
+            margin: 6px 0; cursor: pointer; font-family: 'VT323';
+            font-size: 1.4em; text-align: left; text-transform: uppercase;
         }
 
-        .ra2-panel { background: rgba(0,0,0,0.5); border: 2px solid var(--ra2-metal); padding: 8px; margin-bottom: 10px; }
+        .btn:hover { background: var(--fallout-green); color: #000; }
+        .btn.active { background: #082a08; border-left: 8px solid var(--fallout-green); }
 
-        .build-btn {
-            background: linear-gradient(to bottom, #4a5e6d, #2a3e4d);
-            border: 2px outset var(--ra2-metal); padding: 10px; margin: 4px 0;
-            cursor: pointer; color: #fff; font-weight: bold; font-size: 0.9em;
-            display: flex; justify-content: space-between;
+        .stat { display: flex; justify-content: space-between; font-size: 1.5em; margin-bottom: 5px; }
+
+        #msg { 
+            position: absolute; top: 30px; width: 100%; text-align: center;
+            font-size: 1.8em; text-shadow: 0 0 10px var(--fallout-green);
+            pointer-events: none; z-index: 5;
         }
-
-        .build-btn:hover { filter: brightness(1.2); }
-        .build-btn.selected { border-color: var(--ra2-green); box-shadow: 0 0 10px var(--ra2-green); }
-
-        #msgLog { position: absolute; top: 20px; left: 20px; color: var(--ra2-red); font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="gameViewport">
-    <div id="msgLog"></div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="viewport">
+    <div id="msg">INITIALIZING VAULT-TEC BOOTLOADER...</div>
+    <canvas id="gameCanvas" width="900" height="750"></canvas>
 </div>
 
 <div id="sidebar">
-    <div style="text-align:center; font-size:0.8em; margin-bottom:4px;">POWER OUTPUT</div>
-    <div id="powerSection">
-        <div id="powerIndicator" style="height: 50%;"></div>
-    </div>
+    <h2 style="text-align: center; border-bottom: 2px solid var(--fallout-green); padding-bottom: 10px;">V13 INTERFACE</h2>
     
-    <div class="ra2-panel">
-        <div style="display:flex; justify-content:space-between;">
-            <span>CREDITS:</span><span id="statMoney">$0</span>
-        </div>
+    <div class="screen">
+        <div class="stat"><span>CAPS:</span> <span id="caps">1000</span></div>
+        <div class="stat"><span>PWR:</span> <span id="pwr">STABLE</span></div>
+        <div class="stat"><span>HULL:</span> <span id="hp">100%</span></div>
     </div>
 
-    <div class="ra2-panel" id="buildMenu">
-        <div style="border-bottom: 1px solid var(--ra2-green); margin-bottom:5px; font-size:0.8em;">STRUCTURES</div>
-    </div>
-    
-    <button id="waveBtn" onclick="startWave()" style="background:#800; color:#fff; border:none; padding:10px; cursor:pointer; font-family:'Chakra Petch'; font-weight:bold;">ESTABLISH DEFENSE</button>
+    <div id="buildMenu"></div>
+
+    <button class="btn" id="waveBtn" onclick="initiateDefense()" style="margin-top:auto; background:#103010; font-weight:bold;">ENTER COMBAT MODE</button>
 </div>
 
 <script>
-const CONFIG = {
-    CELL: 50, GRID: 10,
-    BUILDINGS: {
-        REACTOR: { name: 'TESLA REACTOR', cost: 300, power: 100, color: '#4a5e6d', roof: '#6a7e8d', h: 30 },
-        REFINERY: { name: 'ORE REFINERY', cost: 500, power: -40, color: '#554433', roof: '#776655', h: 40 },
-        FACTORY: { name: 'WAR FACTORY', cost: 1000, power: -60, color: '#552222', roof: '#774444', h: 35 },
-        TESLA: { name: 'TESLA COIL', cost: 600, power: -75, color: '#222255', roof: '#444477', h: 50 }
-    }
+// --- KONFIGURACJA ISO ---
+const ISO = {
+    TILE_W: 72, TILE_H: 36,
+    GRID: 12, OFF_X: 450, OFF_Y: 100
+};
+
+const SCHEMATICS = {
+    POWER: { name: "GENERATOR", cost: 250, color: "#3a3a3a", h: 30, power: 100 },
+    WELL: { name: "WATER PUMP", cost: 300, color: "#506080", h: 25, power: -20 },
+    TURRET: { name: "SENTRY GUN", cost: 500, color: "#2d3a2d", h: 50, power: -50 }
 };
 
 let game = {
-    money: 1200, powerProd: 0, powerCons: 0,
-    buildings: [], enemies: [], particles: [],
-    selected: null, wave: 0, mode: 'base',
-    mouse: {x:0, y:0}
+    money: 800, buildings: [], enemies: [], corpses: [], 
+    debris: [], // Pęknięcia ziemi, trawa
+    mode: 'BUILD', selected: null, hp: 100, 
+    mouseGrid: {x:0, y:0}, shake: 0
 };
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+function toIso(x, y) {
+    return {
+        x: (x - y) * (ISO.TILE_W / 2) + ISO.OFF_X,
+        y: (x + y) * (ISO.TILE_H / 2) + ISO.OFF_Y
+    };
+}
+
+function fromIso(sx, sy) {
+    let dx = sx - ISO.OFF_X;
+    let dy = sy - ISO.OFF_Y;
+    return {
+        x: Math.floor((dy / (ISO.TILE_H / 2) + dx / (ISO.TILE_W / 2)) / 2),
+        y: Math.floor((dy / (ISO.TILE_H / 2) - dx / (ISO.TILE_W / 2)) / 2)
+    };
+}
+
+// --- GRAFIKA ---
+function drawIsoTile(gx, gy, type) {
+    let p = toIso(gx, gy);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + ISO.TILE_W/2, p.y + ISO.TILE_H/2);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H);
+    ctx.lineTo(p.x - ISO.TILE_W/2, p.y + ISO.TILE_H/2);
+    ctx.closePath();
+    
+    // Brudny kolor ziemi
+    ctx.fillStyle = (gx + gy) % 2 === 0 ? "#1a1d15" : "#1d2018";
+    if(gx === game.mouseGrid.x && gy === game.mouseGrid.y) ctx.fillStyle = "#2a3a2a";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.2)";
+    ctx.stroke();
+}
+
+function drawBuilding(b) {
+    let p = toIso(b.gx, b.gy);
+    let w = ISO.TILE_W / 2;
+    
+    // 1. DŁUGI CIEŃ (Cast Shadow)
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y + ISO.TILE_H/2);
+    ctx.lineTo(p.x + w + b.h*0.8, p.y + ISO.TILE_H - b.h*0.4);
+    ctx.lineTo(p.x + b.h*0.8, p.y + ISO.TILE_H*1.5 - b.h*0.4);
+    ctx.lineTo(p.x - w, p.y + ISO.TILE_H);
+    ctx.fill();
+
+    // 2. STRUKTURA (Pseudo-3D)
+    // Lewa ściana (Ciemna)
+    ctx.fillStyle = shadeColor(b.color, -30);
+    ctx.beginPath();
+    ctx.moveTo(p.x - w, p.y + ISO.TILE_H/2);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H - b.h);
+    ctx.lineTo(p.x - w, p.y + ISO.TILE_H/2 - b.h);
+    ctx.fill();
+
+    // Prawa ściana (Bardzo ciemna)
+    ctx.fillStyle = shadeColor(b.color, -50);
+    ctx.beginPath();
+    ctx.moveTo(p.x + w, p.y + ISO.TILE_H/2);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H - b.h);
+    ctx.lineTo(p.x + w, p.y + ISO.TILE_H/2 - b.h);
+    ctx.fill();
+
+    // Dach (Teksturowany szumem)
+    ctx.fillStyle = b.color;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - b.h);
+    ctx.lineTo(p.x + w, p.y + ISO.TILE_H/2 - b.h);
+    ctx.lineTo(p.x, p.y + ISO.TILE_H - b.h);
+    ctx.lineTo(p.x - w, p.y + ISO.TILE_H/2 - b.h);
+    ctx.fill();
+
+    // Szum/Rdza na dachu
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    for(let i=0; i<10; i++) ctx.fillRect(p.x - 10 + Math.random()*20, p.y - b.h + Math.random()*15, 2, 2);
+}
+
+// --- LOGIKA ---
 function init() {
+    // Generuj detale otoczenia (trawa, pęknięcia)
+    for(let i=0; i<30; i++) {
+        game.debris.push({ gx: Math.random()*ISO.GRID, gy: Math.random()*ISO.GRID, type: Math.random() > 0.5 ? 'grass' : 'crack' });
+    }
+
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
-        game.mouse.x = e.clientX - r.left; game.mouse.y = e.clientY - r.top;
+        game.mouseGrid = fromIso((e.clientX - r.left)*(900/r.width), (e.clientY - r.top)*(750/r.height));
     });
+
     canvas.addEventListener('mousedown', () => {
-        if(game.mode === 'base' && game.selected) placeBuilding();
-    });
-    
-    // Generuj przyciski menu
-    const menu = document.getElementById('buildMenu');
-    for(let key in CONFIG.BUILDINGS) {
-        const b = CONFIG.BUILDINGS[key];
-        const btn = document.createElement('div');
-        btn.className = 'build-btn';
-        btn.innerHTML = `<span>${b.name}</span><span>$${b.cost}</span>`;
-        btn.onclick = () => game.selected = key;
-        menu.appendChild(btn);
-    }
-    
-    requestAnimationFrame(update);
-}
-
-function placeBuilding() {
-    const bCfg = CONFIG.BUILDINGS[game.selected];
-    const gx = Math.floor(game.mouse.x / CONFIG.CELL);
-    const gy = Math.floor(game.mouse.y / CONFIG.CELL);
-    
-    if(game.money >= bCfg.cost) {
-        game.buildings.push({ ...bCfg, gx, gy, lastFire: 0 });
-        game.money -= bCfg.cost;
-        updatePower();
-    } else {
-        showMsg("INSUFFICIENT FUNDS");
-    }
-}
-
-function updatePower() {
-    game.powerProd = game.buildings.reduce((s, b) => s + (b.power > 0 ? b.power : 0), 0);
-    game.powerCons = Math.abs(game.buildings.reduce((s, b) => s + (b.power < 0 ? b.power : 0), 0));
-    
-    const ratio = game.powerProd === 0 ? 0 : (game.powerCons / game.powerProd);
-    document.getElementById('powerIndicator').style.height = Math.min(100, (game.powerCons/Math.max(game.powerProd, 100)) * 100) + "%";
-    document.getElementById('powerIndicator').style.background = ratio > 1 ? "#f00" : "#0f0";
-}
-
-function drawPseudo3D(x, y, w, d, h, baseCol, roofCol) {
-    // Cień
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillRect(x+10, y+10, w, d);
-    // Ściana frontowa
-    ctx.fillStyle = baseCol;
-    ctx.fillRect(x, y + d - h, w, h);
-    // Dach
-    ctx.fillStyle = roofCol;
-    ctx.fillRect(x, y - h, w, d);
-    // Krawędzie
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.strokeRect(x, y - h, w, d);
-}
-
-function update() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Siatka terenu
-    ctx.strokeStyle = 'rgba(0,255,0,0.05)';
-    for(let i=0; i<CONFIG.GRID; i++) {
-        for(let j=0; j<CONFIG.GRID; j++) ctx.strokeRect(i*50, j*50, 50, 50);
-    }
-
-    // Budynki
-    game.buildings.forEach(b => {
-        drawPseudo3D(b.gx*50 + 5, b.gy*50 + 5, 40, 40, b.h, b.color, b.roof);
-        
-        // Atak Tesla Coil
-        if(b.name === 'TESLA COIL' && game.mode === 'defense' && game.powerProd >= game.powerCons) {
-            const now = Date.now();
-            if(now - b.lastFire > 1000) {
-                const target = game.enemies.find(e => Math.hypot(e.x - (b.gx*50+25), e.y - (b.gy*50+25)) < 200);
-                if(target) {
-                    drawLightning(b.gx*50+25, b.gy*50-b.h+20, target.x, target.y);
-                    target.hp -= 100;
-                    b.lastFire = now;
-                }
+        if(game.mode === 'BUILD' && game.selected) {
+            const cfg = SCHEMATICS[game.selected];
+            if(game.money >= cfg.cost && game.mouseGrid.x >= 0 && game.mouseGrid.x < ISO.GRID && game.mouseGrid.y >= 0 && game.mouseGrid.y < ISO.GRID) {
+                game.buildings.push({ ...cfg, gx: game.mouseGrid.x, gy: game.mouseGrid.y, lastShot: 0 });
+                game.money -= cfg.cost;
             }
         }
     });
 
-    // Duch budowania
-    if(game.selected && game.mode === 'base') {
-        const gx = Math.floor(game.mouse.x / CONFIG.CELL);
-        const gy = Math.floor(game.mouse.y / CONFIG.CELL);
-        ctx.fillStyle = 'rgba(0,255,0,0.2)';
-        ctx.fillRect(gx*50, gy*50, 50, 50);
+    const menu = document.getElementById('buildMenu');
+    for(let key in SCHEMATICS) {
+        let btn = document.createElement('button');
+        btn.className = 'btn'; btn.innerHTML = `${SCHEMATICS[key].name} <span style="float:right">${SCHEMATICS[key].cost}</span>`;
+        btn.onclick = () => { game.selected = key; document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+        menu.appendChild(btn);
     }
 
-    // Wrogowie
-    game.enemies.forEach((e, i) => {
-        e.y += 1.5;
-        ctx.fillStyle = '#f00';
-        ctx.fillRect(e.x-10, e.y-10, 20, 20);
-        if(e.hp <= 0) {
-            game.money += 50;
-            game.enemies.splice(i, 1);
-        }
+    gameLoop();
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(game.shake > 0) { ctx.translate(Math.random()*game.shake, Math.random()*game.shake); game.shake *= 0.9; }
+
+    // 1. Podłoże
+    for(let gy=0; gy<ISO.GRID; gy++) {
+        for(let gx=0; gx<ISO.GRID; gx++) drawIsoTile(gx, gy);
+    }
+
+    // 2. Dekale (Trawa/Krew)
+    game.debris.forEach(d => {
+        let p = toIso(d.gx, d.gy);
+        ctx.fillStyle = d.type === 'grass' ? "#2a3a1a" : "#111";
+        ctx.fillRect(p.x, p.y + 15, 3, 3);
+    });
+    game.corpses.forEach(c => {
+        let p = toIso(c.gx, c.gy);
+        ctx.fillStyle = "#400"; ctx.beginPath(); ctx.arc(p.x, p.y+15, 6, 0, Math.PI*2); ctx.fill();
     });
 
-    document.getElementById('statMoney').innerText = `$${game.money}`;
-    if(game.enemies.length === 0 && game.mode === 'defense') game.mode = 'base';
+    // 3. Sortowanie obiektów
+    let objects = [...game.buildings, ...game.enemies];
+    objects.sort((a,b) => (a.gx + a.gy) - (b.gx + b.gy));
 
-    requestAnimationFrame(update);
-}
+    objects.forEach(obj => {
+        if(obj.name) drawBuilding(obj);
+        else drawEnemy(obj);
+    });
 
-function drawLightning(x1, y1, x2, y2) {
-    ctx.strokeStyle = '#0ff'; ctx.lineWidth = 3;
-    ctx.shadowBlur = 10; ctx.shadowColor = '#0ff';
-    ctx.beginPath(); ctx.moveTo(x1, y1);
-    for(let i=0; i<5; i++) {
-        ctx.lineTo(x1 + (x2-x1)*i/5 + (Math.random()-0.5)*20, y1 + (y2-y1)*i/5 + (Math.random()-0.5)*20);
+    // Walka
+    if(game.mode === 'DEFENSE') {
+        game.buildings.forEach(b => {
+            if(b.name === "SENTRY GUN") {
+                let target = game.enemies.find(e => Math.hypot(e.gx - b.gx, e.gy - b.gy) < 4);
+                if(target && Date.now() - b.lastShot > 400) {
+                    shoot(b, target);
+                    b.lastShot = Date.now();
+                }
+            }
+        });
+        updateEnemies();
     }
-    ctx.lineTo(x2, y2); ctx.stroke();
-    ctx.shadowBlur = 0;
+
+    document.getElementById('caps').innerText = game.money;
+    document.getElementById('hp').innerText = game.hp + "%";
+
+    ctx.setTransform(1,0,0,1,0,0);
+    requestAnimationFrame(gameLoop);
 }
 
-function startWave() {
-    game.mode = 'defense';
-    game.wave++;
-    for(let i=0; i<game.wave*3; i++) {
-        game.enemies.push({ x: Math.random()*500, y: -Math.random()*200, hp: 100 });
+function drawEnemy(e) {
+    let p = toIso(e.gx, e.gy);
+    ctx.fillStyle = "#800"; // Mutant Red
+    ctx.beginPath(); ctx.arc(p.x, p.y + 15, 10, 0, Math.PI*2); ctx.fill();
+    // Pasek życia
+    ctx.fillStyle = "#f00"; ctx.fillRect(p.x - 10, p.y - 10, 20, 3);
+    ctx.fillStyle = "#0f0"; ctx.fillRect(p.x - 10, p.y - 10, (e.hp/100)*20, 3);
+}
+
+function shoot(t, e) {
+    let p1 = toIso(t.gx, t.gy); let p2 = toIso(e.gx, e.gy);
+    ctx.strokeStyle = "#ff0"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y - t.h); ctx.lineTo(p2.x, p2.y + 10); ctx.stroke();
+    e.hp -= 25;
+    if(e.hp <= 0) {
+        game.corpses.push({gx: e.gx, gy: e.gy});
+        game.enemies = game.enemies.filter(item => item !== e);
+        game.money += 20;
     }
+    game.shake = 2;
 }
 
-function showMsg(m) {
-    const el = document.getElementById('msgLog');
-    el.innerText = m; el.style.display = 'block';
-    setTimeout(() => el.style.display = 'none', 2000);
+function updateEnemies() {
+    game.enemies.forEach((e, i) => {
+        e.gx += 0.015; e.gy += 0.015;
+        if(e.gx > ISO.GRID) { game.hp -= 5; game.enemies.splice(i, 1); }
+    });
+    if(game.enemies.length === 0) { game.mode = 'BUILD'; document.getElementById('msg').innerText = "SECTOR SECURED."; }
+}
+
+function initiateDefense() {
+    game.mode = 'DEFENSE';
+    document.getElementById('msg').innerText = "HOSTILE RAD-MUTANTS DETECTED!";
+    for(let i=0; i<8; i++) game.enemies.push({ gx: -Math.random()*4, gy: -Math.random()*4, hp: 100 });
+}
+
+function shadeColor(color, percent) {
+    let num = parseInt(color.replace("#",""),16), amt = Math.round(2.55 * percent), R = (num >> 16) + amt, G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
 }
 
 init();
