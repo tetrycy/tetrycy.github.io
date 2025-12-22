@@ -293,14 +293,39 @@ function renderTacticalMap() {
         ctx.stroke();
     }
     
-    // LINIE KONTUROWE - od najmniejszej (najwyższej) do największej (najniższej)
+    // LINIE KONTUROWE - gradient wysokościowy
     game.hills.forEach(h => {
         for(let i = 0; i < h.layers.length; i++) {
             const l = h.layers[i];
-            // Grubość i jasność zależna od poziomu
+            
+            // Procent wysokości (0 = dół, 1 = szczyt)
+            const elevation = i / (h.layers.length - 1);
+            
+            // Gradient: ciemny brąz → brąz → beż → jasny
+            let r, g, b;
+            if(elevation < 0.3) {
+                // Niskie - ciemny brąz/zielony
+                r = 20 + elevation * 100;
+                g = 30 + elevation * 120;
+                b = 10 + elevation * 80;
+            } else if(elevation < 0.6) {
+                // Średnie - brązowy/beżowy
+                const t = (elevation - 0.3) / 0.3;
+                r = 50 + t * 80;
+                g = 60 + t * 80;
+                b = 30 + t * 60;
+            } else {
+                // Wysokie - jasny beż/szary
+                const t = (elevation - 0.6) / 0.4;
+                r = 130 + t * 90;
+                g = 140 + t * 90;
+                b = 90 + t * 120;
+            }
+            
+            // Co 5. linia grubsza
             const isEveryFifth = i % 5 === 0;
-            ctx.strokeStyle = isEveryFifth ? "#0a0" : "rgba(0, 150, 0, 0.7)";
-            ctx.lineWidth = isEveryFifth ? 2 : 1;
+            ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+            ctx.lineWidth = isEveryFifth ? 2.5 : 1.2;
             
             ctx.beginPath();
             l.verts.forEach((v, vi) => {
