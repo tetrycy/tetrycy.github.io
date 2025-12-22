@@ -7,8 +7,8 @@
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; }
-        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 10px; }
-        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: crisp-edges; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 0; min-height: 0; }
+        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: crisp-edges; max-width: 100%; max-height: 100%; width: auto; height: auto; }
         #sidebar { width: 340px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
         .screen { background: #000; border: 1px solid var(--f-green); padding: 10px; margin-bottom: 8px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
         .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 6px; margin: 3px 0; cursor: pointer; font-family: VT323; font-size: 1.1em; text-transform: uppercase; width: 100%; text-align: left; }
@@ -22,7 +22,7 @@
 <body>
 
 <div id="viewport">
-    <canvas id="gameCanvas" width="1200" height="900"></canvas>
+    <canvas id="gameCanvas" width="2000" height="1500"></canvas>
 </div>
 
 <div id="sidebar">
@@ -45,8 +45,8 @@
 
 <script>
 const CONFIG = {
-    WIDTH: 1200, HEIGHT: 900,
-    SCALE: 0.5, // Wszystko 2x mniejsze = 2x więcej zmieści się
+    WIDTH: 2000, HEIGHT: 1500,
+    SCALE: 0.5,
     BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
@@ -68,7 +68,7 @@ let game = {
     selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false },
     keys: {},
-    player: { x: 600, y: 450, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { x: 1000, y: 750, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
     spawnDir: 'NORTH',
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
     mapView: 'DETAILED'
@@ -119,34 +119,126 @@ function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     
     game.terrain = { hills: [], lakes: [], forests: [] };
-    const S = CONFIG.SCALE; // Wszystko 2x mniejsze
+    const S = CONFIG.SCALE;
     
-    // === GÓRY I WYŻYNY ===
-    const mountainCount = 3 + Math.floor(Math.random() * 4);
+    // === GÓRY: MIX PASM I SZCZYTÓW ===
+    const featureCount = 3 + Math.floor(Math.random() * 3);
     
-    for(let m = 0; m < mountainCount; m++) {
+    for(let f = 0; f < featureCount; f++) {
         const type = Math.random();
-        let centerX = (400 + Math.random() * 1600) * S;
-        let centerY = (400 + Math.random() * 1200) * S;
         
-        if(type < 0.3) {
-            // MASYWNY SZCZYT
-            createMountain(centerX, centerY, (200 + Math.random() * 150) * S, 12 + Math.floor(Math.random() * 10));
-        } else if(type < 0.6) {
-            // WYŻYNA
-            const plateauSize = (250 + Math.random() * 200) * S;
-            const layers = 6 + Math.floor(Math.random() * 4);
-            for(let l = 0; l < layers; l++) {
-                const radius = plateauSize * (1 - l / layers * 0.3);
-                createContourCircle(centerX, centerY, radius, l, layers, 0.2);
+        if(type < 0.5) {
+            // PASMO GÓRSKIE - długi grzbiet
+            const isHorizontal = Math.random() > 0.5;
+            const ridgePoints = [];
+            const segments = 15;
+            
+            // Linia grzbietu
+            const startPos = (300 + Math.random() * (isHorizontal ? 2400 : 1800)) * S;
+            const amplitude = (60 + Math.random() * 100) * S;
+            const frequency = 0.4 + Math.random() * 0.4;
+            
+            for(let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const offset = Math.sin(t * Math.PI * frequency * 2) * amplitude + (Math.random() - 0.5) * 30 * S;
+                
+                if(isHorizontal) {
+                    ridgePoints.push({
+                        x: (200 + t * 3600) * S,
+                        y: startPos + offset
+                    });
+                } else {
+                    ridgePoints.push({
+                        x: startPos + offset,
+                        y: (200 + t * 2600) * S
+                    });
+                }
             }
+            
+            // Wysokość pasma (szczyt w środku)
+            const peakPos = 0.3 + Math.random() * 0.4;
+            const maxHeight = (150 + Math.random() * 120) * S;
+            const layers = 8 + Math.floor(Math.random() * 6);
+            
+            // Generuj warstwy konturu
+            for(let level = 0; level < layers; level++) {
+                const elevation = level / layers;
+                const currentHeight = maxHeight * (1 - elevation);
+                
+                // Obie strony grzbietu
+                for(let side of [-1, 1]) {
+                    const points = [];
+                    
+                    for(let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        
+                        // Wysokość w tym miejscu
+                        const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                        const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                        
+                        if(heightHere < currentHeight) continue;
+                        
+                        // Odległość od grzbietu
+                        const width = (heightHere - currentHeight) * 0.7;
+                        
+                        const ridge = ridgePoints[i];
+                        
+                        // Kierunek prostopadły
+                        let perpX, perpY;
+                        if(i < segments) {
+                            const next = ridgePoints[i + 1];
+                            const dx = next.x - ridge.x;
+                            const dy = next.y - ridge.y;
+                            const len = Math.sqrt(dx*dx + dy*dy);
+                            perpX = -dy / len;
+                            perpY = dx / len;
+                        } else {
+                            const prev = ridgePoints[i - 1];
+                            const dx = ridge.x - prev.x;
+                            const dy = ridge.y - prev.y;
+                            const len = Math.sqrt(dx*dx + dy*dy);
+                            perpX = -dy / len;
+                            perpY = dx / len;
+                        }
+                        
+                        points.push({
+                            x: ridge.x + perpX * width * side,
+                            y: ridge.y + perpY * width * side
+                        });
+                    }
+                    
+                    if(points.length > 3) {
+                        game.terrain.hills.push({
+                            isRidge: true,
+                            points: points,
+                            level: level,
+                            totalLayers: layers
+                        });
+                    }
+                }
+            }
+            
         } else {
-            // GRUPA PAGÓRKÓW
-            const count = 2 + Math.floor(Math.random() * 3);
-            for(let i = 0; i < count; i++) {
-                const offsetX = (Math.random() - 0.5) * 300 * S;
-                const offsetY = (Math.random() - 0.5) * 300 * S;
-                createMountain(centerX + offsetX, centerY + offsetY, (80 + Math.random() * 80) * S, 4 + Math.floor(Math.random() * 5));
+            // PUNKTOWY SZCZYT (jak dotychczas)
+            const centerX = (400 + Math.random() * 3200) * S;
+            const centerY = (400 + Math.random() * 2200) * S;
+            
+            if(type < 0.65) {
+                createMountain(centerX, centerY, (200 + Math.random() * 150) * S, 12 + Math.floor(Math.random() * 10));
+            } else if(type < 0.8) {
+                const plateauSize = (250 + Math.random() * 200) * S;
+                const layers = 6 + Math.floor(Math.random() * 4);
+                for(let l = 0; l < layers; l++) {
+                    const radius = plateauSize * (1 - l / layers * 0.3);
+                    createContourCircle(centerX, centerY, radius, l, layers, 0.2);
+                }
+            } else {
+                const count = 2 + Math.floor(Math.random() * 3);
+                for(let i = 0; i < count; i++) {
+                    const offsetX = (Math.random() - 0.5) * 300 * S;
+                    const offsetY = (Math.random() - 0.5) * 300 * S;
+                    createMountain(centerX + offsetX, centerY + offsetY, (80 + Math.random() * 80) * S, 4 + Math.floor(Math.random() * 5));
+                }
             }
         }
     }
@@ -155,13 +247,12 @@ function generateStrategicMap() {
     const lakeCount = 2 + Math.floor(Math.random() * 3);
     
     for(let l = 0; l < lakeCount; l++) {
-        const centerX = (500 + Math.random() * 1400) * S;
-        const centerY = (500 + Math.random() * 800) * S;
+        const centerX = (500 + Math.random() * 3000) * S;
+        const centerY = (500 + Math.random() * 2000) * S;
         
         const isLarge = Math.random() > 0.6;
         
         if(isLarge) {
-            // DUŻE JEZIORO
             const radius = (120 + Math.random() * 100) * S;
             const points = [];
             const segments = 20;
@@ -175,7 +266,6 @@ function generateStrategicMap() {
             }
             game.terrain.lakes.push({ points, type: 'sulfur' });
         } else {
-            // GRUPA MAŁYCH JEZIOREK
             const count = 2 + Math.floor(Math.random() * 3);
             for(let i = 0; i < count; i++) {
                 const offsetX = (Math.random() - 0.5) * 200 * S;
@@ -200,8 +290,8 @@ function generateStrategicMap() {
     const forestCount = 3 + Math.floor(Math.random() * 4);
     
     for(let f = 0; f < forestCount; f++) {
-        const centerX = (500 + Math.random() * 1400) * S;
-        const centerY = (500 + Math.random() * 800) * S;
+        const centerX = (500 + Math.random() * 3000) * S;
+        const centerY = (500 + Math.random() * 2000) * S;
         const size = (100 + Math.random() * 150) * S;
         const density = 15 + Math.floor(Math.random() * 20);
         
@@ -222,13 +312,37 @@ function generateStrategicMap() {
 
 // Helper: tworzy górę
 function createMountain(cx, cy, baseRadius, layers) {
+    const mountain = {
+        x: cx,
+        y: cy,
+        layers: [],
+        totalLayers: layers
+    };
+    
     for(let l = 0; l < layers; l++) {
         const radius = baseRadius * (1 - l / layers);
-        createContourCircle(cx, cy, radius, l, layers, 0.4);
+        const verts = [];
+        const segments = 25;
+        const seed = Math.random() * 100;
+        const noiseAmount = 0.4;
+        
+        for(let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+            const r = radius + noise;
+            verts.push({
+                x: Math.cos(angle) * r,
+                y: Math.sin(angle) * r
+            });
+        }
+        
+        mountain.layers.push({ verts, radius, level: l });
     }
+    
+    game.terrain.hills.push(mountain);
 }
 
-// Helper: tworzy pojedynczą linię konturową
+// Helper: tworzy pojedynczą warstwę konturu dla plateau
 function createContourCircle(cx, cy, radius, level, maxLevels, noiseAmount) {
     const verts = [];
     const segments = 25;
@@ -276,22 +390,58 @@ function spawnWaveLogic() {
 }
 
 function createEnemy(hp, moveType) {
-    let x, y, off = 150;
-    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*800; }
-    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*800; }
-    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
-    else { x = -off - Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
+    let x, y, off = 250;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1200; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1200; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
 
     const size = 5 + (hp * 0.05);
     const vertices = [];
-    const pts = 60;
-    for(let i=0; i<pts; i++) {
-        const a = (i/pts)*Math.PI*2;
-        const d = size*(0.6 + Math.random()*0.8);
-        vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
+    let color;
+    
+    if(moveType === 'LAND') {
+        // LAND: Kwadratowe/czołgowate - ostre kąty
+        color = 'var(--f-red)';
+        const sides = 4 + Math.floor(Math.random() * 3); // 4-6 boków
+        for(let i = 0; i < sides; i++) {
+            const a = (i / sides) * Math.PI * 2;
+            const d = size * (1.2 + Math.random() * 0.3);
+            vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
+        }
+    } else if(moveType === 'SWIM') {
+        // SWIM: Długie/węgorzowate - eliptyczne
+        color = 'var(--f-blue)';
+        const pts = 20;
+        for(let i = 0; i < pts; i++) {
+            const a = (i / pts) * Math.PI * 2;
+            const stretchX = 1.8; // Wydłużone
+            const stretchY = 0.6;
+            const d = size * (0.8 + Math.random() * 0.3);
+            vertices.push({
+                x: Math.cos(a) * d * stretchX,
+                y: Math.sin(a) * d * stretchY,
+                bD: d
+            });
+        }
+    } else {
+        // FLY: Trójkątne/lotnicze - ostre, mało punktów
+        color = 'var(--f-purple)';
+        const pts = 3 + Math.floor(Math.random() * 2); // 3-4 punkty
+        for(let i = 0; i < pts; i++) {
+            const a = (i / pts) * Math.PI * 2;
+            const d = size * (1.0 + Math.random() * 0.5);
+            // Skierowane do przodu (jeden punkt większy)
+            const scale = i === 0 ? 1.5 : 1.0;
+            vertices.push({x: Math.cos(a)*d*scale, y: Math.sin(a)*d, bD: d});
+        }
     }
-    let color = moveType==='LAND' ? 'var(--f-red)' : (moveType==='SWIM' ? 'var(--f-blue)' : 'var(--f-purple)');
-    return { x, y, hp, maxHp: hp, moveType, size, vertices, color, speed: moveType==='FLY'?(1.5+Math.random()):(0.6 + (5/size)), hitF: 0 };
+    
+    return { 
+        x, y, hp, maxHp: hp, moveType, size, vertices, color, 
+        speed: moveType==='FLY'?(1.5+Math.random()):(0.6 + (5/size)), 
+        hitF: 0 
+    };
 }
 
 function gameLoop() {
@@ -336,11 +486,28 @@ function updateCombat() {
         if(e.moveType !== 'FLY') {
             // Góry spowalniają
             game.terrain.hills.forEach(h => {
-                const dist = Math.hypot(e.x - h.x, e.y - h.y);
-                const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
-                if(dist < outerRadius) {
-                    const depth = 1 - (dist / outerRadius);
-                    terrainMult *= 1 - (depth * 0.4); // Max 40% slowdown
+                if(h.isRidge) {
+                    // PASMO - sprawdź odległość do linii
+                    let minDist = Infinity;
+                    h.points.forEach(p => {
+                        const dist = Math.hypot(e.x - p.x, e.y - p.y);
+                        minDist = Math.min(minDist, dist);
+                    });
+                    
+                    // Grubość pasma zależy od poziomu
+                    const width = 80 * (1 - h.level / h.totalLayers);
+                    if(minDist < width) {
+                        const depth = 1 - (minDist / width);
+                        terrainMult *= 1 - (depth * 0.4);
+                    }
+                } else {
+                    // PUNKTOWY SZCZYT - okrągły
+                    const dist = Math.hypot(e.x - h.x, e.y - h.y);
+                    const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
+                    if(dist < outerRadius) {
+                        const depth = 1 - (dist / outerRadius);
+                        terrainMult *= 1 - (depth * 0.4);
+                    }
                 }
             });
             
@@ -348,16 +515,16 @@ function updateCombat() {
             game.terrain.lakes.forEach(lake => {
                 const inLake = isPointInPolygon(e.x, e.y, lake.points);
                 if(inLake) {
-                    if(e.moveType === 'LAND') terrainMult *= 0.2; // Bardzo wolno
-                    else if(e.moveType === 'SWIM') terrainMult *= 1.3; // Szybko!
+                    if(e.moveType === 'LAND') terrainMult *= 0.2;
+                    else if(e.moveType === 'SWIM') terrainMult *= 1.3;
                 }
             });
             
-            // Lasy spowalniają trochę (ale nie za bardzo)
+            // Lasy spowalniają trochę
             game.terrain.forests.forEach(forest => {
                 const dist = Math.hypot(e.x - forest.centerX, e.y - forest.centerY);
                 if(dist < forest.radius) {
-                    terrainMult *= 0.85; // 15% slowdown
+                    terrainMult *= 0.85;
                 }
             });
         }
@@ -429,13 +596,13 @@ function renderTacticalMap() {
     if(game.mapView === 'DETAILED') {
         ctx.strokeStyle = "rgba(0, 100, 0, 0.05)";
         ctx.lineWidth = 1;
-        for(let i=0; i<=CONFIG.WIDTH; i+=150) {
+        for(let i=0; i<=CONFIG.WIDTH; i+=250) {
             ctx.beginPath();
             ctx.moveTo(i, 0);
             ctx.lineTo(i, CONFIG.HEIGHT);
             ctx.stroke();
         }
-        for(let i=0; i<=CONFIG.HEIGHT; i+=150) {
+        for(let i=0; i<=CONFIG.HEIGHT; i+=250) {
             ctx.beginPath();
             ctx.moveTo(0, i);
             ctx.lineTo(CONFIG.WIDTH, i);
@@ -481,14 +648,12 @@ function renderTacticalMap() {
     
     // === LINIE KONTUROWE - GÓRY ===
     game.terrain.hills.forEach(h => {
-        h.layers.forEach(layer => {
-            // SIMPLIFIED VIEW - tylko co 3. linia
-            if(game.mapView === 'SIMPLIFIED' && layer.level % 3 !== 0) return;
+        if(h.isRidge) {
+            // PASMO GÓRSKIE - prosta linia
+            if(game.mapView === 'SIMPLIFIED' && h.level % 3 !== 0) return;
             
-            // Procent wysokości
-            const elevation = layer.level / h.totalLayers;
+            const elevation = h.level / h.totalLayers;
             
-            // Gradient: ciemny brąz → beż → jasny
             let r, g, b;
             if(elevation < 0.3) {
                 r = 20 + elevation * 100;
@@ -506,37 +671,74 @@ function renderTacticalMap() {
                 b = 90 + t * 120;
             }
             
-            // Co 5. linia grubsza
-            const isEveryFifth = layer.level % 5 === 0;
+            const isEveryFifth = h.level % 5 === 0;
             const lineWidth = game.mapView === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
             
             ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
             ctx.lineWidth = lineWidth;
             
             ctx.beginPath();
-            layer.verts.forEach((v, vi) => {
-                if(vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
-                else ctx.lineTo(h.x + v.x, h.y + v.y);
+            h.points.forEach((p, i) => {
+                if(i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
             });
-            ctx.closePath();
             ctx.stroke();
-        });
+            
+        } else {
+            // PUNKTOWY SZCZYT - okrągły
+            h.layers.forEach(layer => {
+                if(game.mapView === 'SIMPLIFIED' && layer.level % 3 !== 0) return;
+                
+                const elevation = layer.level / h.totalLayers;
+                
+                let r, g, b;
+                if(elevation < 0.3) {
+                    r = 20 + elevation * 100;
+                    g = 30 + elevation * 120;
+                    b = 10 + elevation * 80;
+                } else if(elevation < 0.6) {
+                    const t = (elevation - 0.3) / 0.3;
+                    r = 50 + t * 80;
+                    g = 60 + t * 80;
+                    b = 30 + t * 60;
+                } else {
+                    const t = (elevation - 0.6) / 0.4;
+                    r = 130 + t * 90;
+                    g = 140 + t * 90;
+                    b = 90 + t * 120;
+                }
+                
+                const isEveryFifth = layer.level % 5 === 0;
+                const lineWidth = game.mapView === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+                
+                ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                ctx.lineWidth = lineWidth;
+                
+                ctx.beginPath();
+                layer.verts.forEach((v, vi) => {
+                    if(vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
+                    else ctx.lineTo(h.x + v.x, h.y + v.y);
+                });
+                ctx.closePath();
+                ctx.stroke();
+            });
+        }
     });
     
-    // SPAWN ZONE - minimalistyczny
+    // SPAWN ZONE
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 2;
     ctx.setLineDash([15, 8]);
     
     let spawnZone = {x: 0, y: 0, w: 0, h: 0};
     if(game.spawnDir === 'NORTH') {
-        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 100};
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 150};
     } else if(game.spawnDir === 'SOUTH') {
-        spawnZone = {x: 0, y: CONFIG.HEIGHT - 100, w: CONFIG.WIDTH, h: 100};
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 150, w: CONFIG.WIDTH, h: 150};
     } else if(game.spawnDir === 'EAST') {
-        spawnZone = {x: CONFIG.WIDTH - 100, y: 0, w: 100, h: CONFIG.HEIGHT};
+        spawnZone = {x: CONFIG.WIDTH - 150, y: 0, w: 150, h: CONFIG.HEIGHT};
     } else {
-        spawnZone = {x: 0, y: 0, w: 100, h: CONFIG.HEIGHT};
+        spawnZone = {x: 0, y: 0, w: 150, h: CONFIG.HEIGHT};
     }
     
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
@@ -547,44 +749,44 @@ function renderTacticalMap() {
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 1.5;
     
-    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 8 : 6;
+    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 12 : 10;
     for(let i = 0; i < arrowCount; i++) {
         let ax, ay;
         if(game.spawnDir === 'NORTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = 50;
+            ay = 75;
             drawArrow(ax, ay, Math.PI/2, 15);
         } else if(game.spawnDir === 'SOUTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = CONFIG.HEIGHT - 50;
+            ay = CONFIG.HEIGHT - 75;
             drawArrow(ax, ay, -Math.PI/2, 15);
         } else if(game.spawnDir === 'EAST') {
-            ax = CONFIG.WIDTH - 50;
+            ax = CONFIG.WIDTH - 75;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, Math.PI, 15);
         } else {
-            ax = 50;
+            ax = 75;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, 0, 15);
         }
     }
     
-    // Label spawnu - minimalistyczny
+    // Label spawnu
     ctx.fillStyle = "#f44";
-    ctx.font = "18px VT323";
+    ctx.font = "22px VT323";
     ctx.textAlign = "center";
     const labelText = `${game.spawnDir} FRONT`;
-    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 25);
-    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 10);
+    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 35);
+    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 20);
     else if(game.spawnDir === 'EAST') {
         ctx.save();
-        ctx.translate(CONFIG.WIDTH - 20, CONFIG.HEIGHT/2);
+        ctx.translate(CONFIG.WIDTH - 30, CONFIG.HEIGHT/2);
         ctx.rotate(-Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
     } else {
         ctx.save();
-        ctx.translate(20, CONFIG.HEIGHT/2);
+        ctx.translate(30, CONFIG.HEIGHT/2);
         ctx.rotate(Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
