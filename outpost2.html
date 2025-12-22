@@ -22,7 +22,7 @@
 <body>
 
 <div id="viewport">
-    <canvas id="gameCanvas" width="900" height="750"></canvas>
+    <canvas id="gameCanvas" width="1200" height="900"></canvas>
 </div>
 
 <div id="sidebar">
@@ -45,7 +45,7 @@
 
 <script>
 const CONFIG = {
-    WIDTH: 900, HEIGHT: 750,
+    WIDTH: 1200, HEIGHT: 900,
     BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
@@ -66,9 +66,10 @@ let game = {
     hills: [], selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false },
     keys: {},
-    player: { x: 450, y: 375, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { x: 600, y: 450, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
     spawnDir: 'NORTH',
-    intel: { land: 0, swim: 0, air: 0, totalHP: 0 }
+    intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
+    mapView: 'DETAILED' // 'DETAILED' lub 'SIMPLIFIED'
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -115,24 +116,109 @@ function showIntelReport() {
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     
-    // TYLKO WZGÓRZA - więcej, większe, dramatyczniejsze
+    // GENERATOR PASM GÓRSKICH
     game.hills = [];
-    const chains = 5; // Więcej łańcuchów
-    for(let c=0; c<chains; c++) {
-        let rx = Math.random() * CONFIG.WIDTH, ry = Math.random() * CONFIG.HEIGHT;
-        let dx = (Math.random()-0.5)*600, dy = (Math.random()-0.5)*600;
-        for(let i=0; i<7; i++) { // Więcej wzgórz w łańcuchu
-            const h = { x: rx+(dx*i/7), y: ry+(dy*i/7), r: 120+Math.random()*180, layers: [] };
-            const lCount = 8+Math.floor(Math.random()*8), seed = Math.random()*100; // Więcej warstw
-            for(let l=0; l<lCount; l++) {
-                const v = [], radius = h.r*(1-l/lCount);
-                for(let a=0; a<Math.PI*2; a+=0.2) { // Gęstsze punkty
-                    const n = (Math.sin(a*3+seed)*15)+(Math.sin(a*7)*8);
-                    v.push({x: Math.cos(a)*(radius+n), y: Math.sin(a)*(radius+n)});
-                }
-                h.layers.push({verts: v, radius, level: l});
+    
+    const rangeCount = 2 + Math.floor(Math.random() * 2); // 2-3 pasma
+    
+    for(let r = 0; r < rangeCount; r++) {
+        // RIDGE LINE - linia grzbietu
+        const ridgePoints = [];
+        const segments = 12;
+        
+        // Losowa orientacja pasma
+        const isHorizontal = Math.random() > 0.5;
+        
+        // Punkt startowy z marginesem
+        const startPos = 150 + Math.random() * (isHorizontal ? CONFIG.HEIGHT - 300 : CONFIG.WIDTH - 300);
+        
+        // Parametry zakrzywienia
+        const amplitude = 80 + Math.random() * 120; // Jak mocno się wije
+        const frequency = 0.3 + Math.random() * 0.5;
+        const noise = [];
+        for(let i = 0; i <= segments; i++) {
+            noise.push((Math.random() - 0.5) * 40); // Lokalny szum
+        }
+        
+        // Generuj punkty ridge line
+        for(let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const baseOffset = Math.sin(t * Math.PI * frequency) * amplitude;
+            const localNoise = noise[i];
+            
+            if(isHorizontal) {
+                const x = 100 + t * (CONFIG.WIDTH - 200);
+                const y = startPos + baseOffset + localNoise;
+                ridgePoints.push({x, y});
+            } else {
+                const x = startPos + baseOffset + localNoise;
+                const y = 100 + t * (CONFIG.HEIGHT - 200);
+                ridgePoints.push({x, y});
             }
-            game.hills.push(h);
+        }
+        
+        // WYSOKOŚĆ WZDŁUŻ PASMA (szczyt w środku, opada na końcach)
+        const peakPosition = 0.3 + Math.random() * 0.4; // Gdzieś w środku
+        const maxHeight = 180 + Math.random() * 140; // Jak wysokie pasmo
+        const contourLevels = 8 + Math.floor(Math.random() * 8); // Ile poziomów
+        
+        // GENERUJ CONTOUR LINES
+        for(let level = contourLevels; level > 0; level--) {
+            const heightRatio = level / contourLevels;
+            const currentHeight = maxHeight * heightRatio;
+            
+            // Dwie strony pasma (lewa i prawa od ridge)
+            for(let side = -1; side <= 1; side += 2) {
+                const contourPoints = [];
+                
+                for(let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    
+                    // Wysokość w tym miejscu ridge
+                    const peakness = 1 - Math.abs(t - peakPosition) / Math.max(peakPosition, 1 - peakPosition);
+                    const heightHere = maxHeight * peakness * (0.5 + Math.random() * 0.5);
+                    
+                    if(heightHere < currentHeight) continue; // Za nisko, nie rysuj contour
+                    
+                    // Odległość od ridge dla tego poziomu
+                    const falloff = (heightHere - currentHeight) / heightHere;
+                    const distance = (1 - falloff) * currentHeight * 0.6;
+                    
+                    const ridge = ridgePoints[i];
+                    
+                    // Perpendicular offset
+                    let perpX, perpY;
+                    if(i < segments) {
+                        const next = ridgePoints[i + 1];
+                        const dx = next.x - ridge.x;
+                        const dy = next.y - ridge.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    } else {
+                        const prev = ridgePoints[i - 1];
+                        const dx = ridge.x - prev.x;
+                        const dy = ridge.y - prev.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    }
+                    
+                    contourPoints.push({
+                        x: ridge.x + perpX * distance * side,
+                        y: ridge.y + perpY * distance * side
+                    });
+                }
+                
+                if(contourPoints.length > 2) {
+                    game.hills.push({
+                        points: contourPoints,
+                        level: level,
+                        maxLevels: contourLevels,
+                        isContour: true
+                    });
+                }
+            }
         }
     }
 }
@@ -161,11 +247,11 @@ function spawnWaveLogic() {
 }
 
 function createEnemy(hp, moveType) {
-    let x, y, off = 150;
-    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1000; }
-    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1000; }
-    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
-    else { x = -off - Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
+    let x, y, off = 200;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1200; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1200; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
 
     const size = 5 + (hp * 0.05);
     const vertices = [];
@@ -218,12 +304,29 @@ function updateCombat() {
         // TERRAIN MODIFIER - tylko wzgórza
         let terrainMult = 1.0;
         if(e.moveType !== 'FLY') {
-            // Sprawdź czy jest na wzgórzu
-            game.hills.forEach(h => { 
-                if(Math.hypot(e.x-h.x, e.y-h.y) < h.layers[0].radius) {
-                    terrainMult *= 0.6; // Wolniej w górach
+            // Sprawdź czy jest w górach (blisko wysokich contour lines)
+            let maxElevation = 0;
+            game.hills.forEach(h => {
+                if(!h.isContour) return;
+                
+                // Sprawdź odległość do tej contour line
+                let minDist = Infinity;
+                h.points.forEach(p => {
+                    const dist = Math.hypot(e.x - p.x, e.y - p.y);
+                    minDist = Math.min(minDist, dist);
+                });
+                
+                // Jeśli blisko (w obrębie 80px) i wysoka contour
+                if(minDist < 80) {
+                    const elevation = h.level / h.maxLevels;
+                    maxElevation = Math.max(maxElevation, elevation);
                 }
             });
+            
+            // Im wyższa wysokość, tym wolniej
+            if(maxElevation > 0.3) {
+                terrainMult *= 1 - (maxElevation * 0.5); // Max 50% slowdown
+            }
         }
         e.x += mX * terrainMult; e.y += mY * terrainMult;
 
@@ -277,64 +380,66 @@ function renderTacticalMap() {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
     
-    // Subtelny grid pomocniczy
-    ctx.strokeStyle = "rgba(0, 100, 0, 0.08)";
-    ctx.lineWidth = 1;
-    for(let i=0; i<=CONFIG.WIDTH; i+=100) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, CONFIG.HEIGHT);
-        ctx.stroke();
-    }
-    for(let i=0; i<=CONFIG.HEIGHT; i+=100) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(CONFIG.WIDTH, i);
-        ctx.stroke();
-    }
-    
-    // LINIE KONTUROWE - gradient wysokościowy
-    game.hills.forEach(h => {
-        for(let i = 0; i < h.layers.length; i++) {
-            const l = h.layers[i];
-            
-            // Procent wysokości (0 = dół, 1 = szczyt)
-            const elevation = i / (h.layers.length - 1);
-            
-            // Gradient: ciemny brąz → brąz → beż → jasny
-            let r, g, b;
-            if(elevation < 0.3) {
-                // Niskie - ciemny brąz/zielony
-                r = 20 + elevation * 100;
-                g = 30 + elevation * 120;
-                b = 10 + elevation * 80;
-            } else if(elevation < 0.6) {
-                // Średnie - brązowy/beżowy
-                const t = (elevation - 0.3) / 0.3;
-                r = 50 + t * 80;
-                g = 60 + t * 80;
-                b = 30 + t * 60;
-            } else {
-                // Wysokie - jasny beż/szary
-                const t = (elevation - 0.6) / 0.4;
-                r = 130 + t * 90;
-                g = 140 + t * 90;
-                b = 90 + t * 120;
-            }
-            
-            // Co 5. linia grubsza
-            const isEveryFifth = i % 5 === 0;
-            ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-            ctx.lineWidth = isEveryFifth ? 2.5 : 1.2;
-            
+    // Subtelny grid pomocniczy (tylko w DETAILED)
+    if(game.mapView === 'DETAILED') {
+        ctx.strokeStyle = "rgba(0, 100, 0, 0.06)";
+        ctx.lineWidth = 1;
+        for(let i=0; i<=CONFIG.WIDTH; i+=150) {
             ctx.beginPath();
-            l.verts.forEach((v, vi) => {
-                if(vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
-                else ctx.lineTo(h.x + v.x, h.y + v.y);
-            });
-            ctx.closePath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, CONFIG.HEIGHT);
             ctx.stroke();
         }
+        for(let i=0; i<=CONFIG.HEIGHT; i+=150) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(CONFIG.WIDTH, i);
+            ctx.stroke();
+        }
+    }
+    
+    // LINIE KONTUROWE - pasma górskie
+    game.hills.forEach(h => {
+        if(!h.isContour) return;
+        
+        // SIMPLIFIED VIEW - tylko co 3. linia
+        if(game.mapView === 'SIMPLIFIED' && h.level % 3 !== 0) return;
+        
+        // Procent wysokości (0 = dół, 1 = szczyt)
+        const elevation = h.level / h.maxLevels;
+        
+        // Gradient: ciemny brąz → brąz → beż → jasny
+        let r, g, b;
+        if(elevation < 0.3) {
+            r = 20 + elevation * 100;
+            g = 30 + elevation * 120;
+            b = 10 + elevation * 80;
+        } else if(elevation < 0.6) {
+            const t = (elevation - 0.3) / 0.3;
+            r = 50 + t * 80;
+            g = 60 + t * 80;
+            b = 30 + t * 60;
+        } else {
+            const t = (elevation - 0.6) / 0.4;
+            r = 130 + t * 90;
+            g = 140 + t * 90;
+            b = 90 + t * 120;
+        }
+        
+        // Co 5. linia grubsza
+        const isEveryFifth = h.level % 5 === 0;
+        const lineWidth = game.mapView === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+        
+        ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+        ctx.lineWidth = lineWidth;
+        
+        // Rysuj contour line
+        ctx.beginPath();
+        h.points.forEach((p, i) => {
+            if(i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
     });
     
     // SPAWN ZONE - minimalistyczny
@@ -344,13 +449,13 @@ function renderTacticalMap() {
     
     let spawnZone = {x: 0, y: 0, w: 0, h: 0};
     if(game.spawnDir === 'NORTH') {
-        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 100};
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 120};
     } else if(game.spawnDir === 'SOUTH') {
-        spawnZone = {x: 0, y: CONFIG.HEIGHT - 100, w: CONFIG.WIDTH, h: 100};
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 120, w: CONFIG.WIDTH, h: 120};
     } else if(game.spawnDir === 'EAST') {
-        spawnZone = {x: CONFIG.WIDTH - 100, y: 0, w: 100, h: CONFIG.HEIGHT};
+        spawnZone = {x: CONFIG.WIDTH - 120, y: 0, w: 120, h: CONFIG.HEIGHT};
     } else {
-        spawnZone = {x: 0, y: 0, w: 100, h: CONFIG.HEIGHT};
+        spawnZone = {x: 0, y: 0, w: 120, h: CONFIG.HEIGHT};
     }
     
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
@@ -361,23 +466,23 @@ function renderTacticalMap() {
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 1.5;
     
-    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 7 : 5;
+    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 9 : 6;
     for(let i = 0; i < arrowCount; i++) {
         let ax, ay;
         if(game.spawnDir === 'NORTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = 50;
+            ay = 60;
             drawArrow(ax, ay, Math.PI/2, 15);
         } else if(game.spawnDir === 'SOUTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = CONFIG.HEIGHT - 50;
+            ay = CONFIG.HEIGHT - 60;
             drawArrow(ax, ay, -Math.PI/2, 15);
         } else if(game.spawnDir === 'EAST') {
-            ax = CONFIG.WIDTH - 50;
+            ax = CONFIG.WIDTH - 60;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, Math.PI, 15);
         } else {
-            ax = 50;
+            ax = 60;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, 0, 15);
         }
@@ -385,20 +490,20 @@ function renderTacticalMap() {
     
     // Label spawnu - minimalistyczny
     ctx.fillStyle = "#f44";
-    ctx.font = "16px VT323";
+    ctx.font = "18px VT323";
     ctx.textAlign = "center";
     const labelText = `${game.spawnDir} FRONT`;
-    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 25);
-    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 10);
+    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 30);
+    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 15);
     else if(game.spawnDir === 'EAST') {
         ctx.save();
-        ctx.translate(CONFIG.WIDTH - 20, CONFIG.HEIGHT/2);
+        ctx.translate(CONFIG.WIDTH - 25, CONFIG.HEIGHT/2);
         ctx.rotate(-Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
     } else {
         ctx.save();
-        ctx.translate(20, CONFIG.HEIGHT/2);
+        ctx.translate(25, CONFIG.HEIGHT/2);
         ctx.rotate(Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
@@ -513,6 +618,22 @@ function updateBuildMenu() {
         btn.onclick = () => { game.selected = k; updateBuildMenu(); };
         menu.appendChild(btn);
     }
+    
+    // VIEW TOGGLE w trybie PREP
+    if(game.mode === 'PREP') {
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn';
+        viewBtn.style.marginTop = '15px';
+        viewBtn.style.background = '#333';
+        viewBtn.style.borderColor = '#888';
+        viewBtn.innerHTML = `MAP VIEW: ${game.mapView}`;
+        viewBtn.onclick = () => {
+            game.mapView = game.mapView === 'DETAILED' ? 'SIMPLIFIED' : 'DETAILED';
+            updateBuildMenu();
+        };
+        menu.appendChild(viewBtn);
+    }
+    
     if(game.mode === 'BASE') {
         const row = document.createElement('div'); row.className = 'upgrade-row';
         ['SPD', 'ROF', 'DMG'].forEach(s => {
