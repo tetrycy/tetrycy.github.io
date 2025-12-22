@@ -2,22 +2,21 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTPOST '95: AMNESIA - GEOMETRY SIEGE</title>
+    <title>OUTPOST '95: UNLIMITED FIRE</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #0a0d0a; --panel: #222; --f-red: #ff2020; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: 'VT323', monospace; display: flex; height: 100vh; overflow: hidden; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
-        canvas { border: 4px solid #333; image-rendering: pixelated; background: #080a08; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        canvas { border: 4px solid #333; image-rendering: pixelated; background: #080a08; cursor: crosshair; }
         #sidebar { width: 320px; background: var(--panel); border-left: 4px solid #444; display: flex; flex-direction: column; padding: 15px; }
-        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; }
-        .btn { background: #333; color: var(--f-green); border: 3px outset #555; padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-align: left; text-transform: uppercase; }
+        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 10px #000; }
+        .btn { background: #333; color: var(--f-green); border: 3px outset #555; padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-transform: uppercase; width: 100%; }
         .btn:hover:not(:disabled) { background: #444; color: #fff; }
-        .btn:disabled { opacity: 0.2; filter: grayscale(1); }
+        .btn:disabled { opacity: 0.2; }
         .btn.active { background: #1a4d1a; border-color: var(--f-green); }
         .stat { display: flex; justify-content: space-between; font-size: 1.4em; }
-        #terminal { font-size: 0.9em; color: #88ff88; height: 100px; overflow-y: auto; background: #000; padding: 5px; }
+        #terminal { font-size: 0.9em; height: 100px; overflow-y: auto; background: #000; padding: 5px; border: 1px solid #1a331a; color: #8f8; }
     </style>
 </head>
 <body>
@@ -35,32 +34,38 @@
         <div class="stat"><span>HULL:</span> <span id="ui-hp">100%</span></div>
     </div>
 
-    <div class="screen" id="terminal">> SYSTEM STANDBY...</div>
+    <div class="screen" id="terminal">> WEAPON SYSTEMS: UNLIMITED<br>> TARGETS IDENTIFIED...</div>
 
-    <div id="buildMenu" style="display:flex; flex-direction:column; flex-grow:1; overflow-y:auto;"></div>
+    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;"></div>
 
-    <button class="btn" id="actionBtn" style="background:#4a1a1a; color:#fff; font-weight:bold;" onclick="switchScreen()">START DEFENSE</button>
+    <button class="btn" id="actionBtn" style="background:#4a1a1a; color:#fff;" onclick="handleAction()">START DEFENSE</button>
 </div>
 
 <script>
 const CONFIG = {
     GRID: 12, CELL: 50, BASE_OFF: { x: 100, y: 50 },
     BUILDINGS: {
-        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0", upCost: 100 },
-        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0", upCost: 150 },
-        MUNITION: { name: "MUNITION FAB", cost: 300, pwr: -30, color: "#A00", upCost: 200 }
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
+        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "MUNITION FAB", cost: 300, pwr: -30, color: "#A00" }
     },
     DEFENSE: {
-        SENTRY: { name: "SENTRY GUN", cost: 150, range: 150, dmg: 25, rof: 800 },
-        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 80, rad: 50 },
-        PLASMA: { name: "PLASMA CHARGE", cost: 130, dmg: 200, rad: 90, req: "MUNITION FAB" }
-    }
+        SENTRY: { name: "SENTRY GUN", cost: 150, range: 180, dmg: 18, rof: 700 },
+        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 120, rad: 60 },
+        PLASMA: { name: "PLASMA CHARGE", cost: 140, dmg: 280, rad: 100, req: "MUNITION FAB" }
+    },
+    PLAYER_ROF: 120, //ms między strzałami
+    TERRAIN_LINES: [140, 280, 420]
 };
 
 let game = {
-    money: 800, hp: 1000, pwr: 0, wave: 0, screen: 'BASE',
+    money: 800, hp: 1000, pwr: 0, wave: 0, 
+    mode: 'BASE', // BASE, PREP, COMBAT
     buildings: [], defUnits: [], enemies: [], projectiles: [], particles: [],
-    selected: null, mouse: {x:0, y:0, gx:0, gy:0}, player: {x:400, speed:4}, keys: {}
+    selected: null, 
+    mouse: { x:0, y:0, gx:0, gy:0, down: false }, 
+    player: { x:400, y:560, speed:5, lastShot: 0 }, 
+    keys: {}
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -74,15 +79,36 @@ function init() {
         game.mouse.gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
         game.mouse.gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
     });
-    canvas.addEventListener('mousedown', handleClick);
+    
+    canvas.addEventListener('mousedown', () => { 
+        game.mouse.down = true; 
+        if (game.mode === 'BASE' || game.mode === 'PREP') handlePlacement();
+    });
+    canvas.addEventListener('mouseup', () => { game.mouse.down = false; });
+    
     window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
     window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
+    
     updateBuildMenu();
     gameLoop();
 }
 
-function handleClick() {
-    if (game.screen === 'BASE' && game.selected) {
+function handleAction() {
+    if (game.mode === 'BASE') {
+        game.mode = 'PREP';
+        game.wave++;
+        document.getElementById('actionBtn').innerText = "RELEASE ANOMALIES";
+        logTerminal(`PREP PHASE: WAVE ${game.wave}`);
+    } else if (game.mode === 'PREP') {
+        game.mode = 'COMBAT';
+        spawnEnemies();
+        document.getElementById('actionBtn').innerText = "COMBAT ACTIVE";
+        document.getElementById('actionBtn').disabled = true;
+    }
+}
+
+function handlePlacement() {
+    if (game.mode === 'BASE' && game.selected) {
         const cfg = CONFIG.BUILDINGS[game.selected];
         if (game.money >= cfg.cost && isInsideGrid()) {
             if (!game.buildings.some(b => b.gx === game.mouse.gx && b.gy === game.mouse.gy)) {
@@ -91,180 +117,131 @@ function handleClick() {
                 updateStats();
             }
         }
-    } else if (game.screen === 'DEFENSE') {
-        if (game.selected) placeDefense();
-        else shoot();
+    } else if (game.mode === 'PREP' && game.selected) {
+        const cfg = CONFIG.DEFENSE[game.selected];
+        if (game.money >= cfg.cost) {
+            game.defUnits.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, lastFire: 0 });
+            game.money -= cfg.cost;
+            updateStats();
+        }
     }
 }
 
-function placeDefense() {
-    const cfg = CONFIG.DEFENSE[game.selected];
-    if (game.money >= cfg.cost) {
-        game.defUnits.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, lastFire: 0 });
-        game.money -= cfg.cost;
-        updateStats();
+function playerShoot() {
+    const now = Date.now();
+    if (now - game.player.lastShot > CONFIG.PLAYER_ROF) {
+        const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+        game.projectiles.push({
+            x: game.player.x, y: game.player.y - 12,
+            vx: Math.cos(angle) * 11, vy: Math.sin(angle) * 11,
+            dmg: 25
+        });
+        game.player.lastShot = now;
     }
 }
 
-function shoot() {
-    game.projectiles.push({ x: game.player.x, y: 550, vy: -8, dmg: 30 });
-}
-
-function switchScreen() {
-    if (game.screen === 'BASE') {
-        game.screen = 'DEFENSE';
-        game.wave++;
-        game.defUnits = [];
-        game.enemies = [];
-        spawnProceduralWave();
-        document.getElementById('actionBtn').innerText = "UNITS ENGAGED...";
-        document.getElementById('actionBtn').disabled = true;
-    } else {
-        game.screen = 'BASE';
-        game.hp = 1000;
-        document.getElementById('actionBtn').innerText = "START DEFENSE";
-        document.getElementById('actionBtn').disabled = false;
+function spawnEnemies() {
+    let pool = 250 + (game.wave * 400); // Pula HP fali
+    while (pool > 0) {
+        let hp = Math.min(pool, 40 + Math.random() * (pool * 0.4));
+        if (hp < 30) hp = pool;
+        game.enemies.push(createEnemy(hp));
+        pool -= hp;
     }
-    game.selected = null;
-    updateBuildMenu();
-}
-
-// --- GENEROWANIE PRZECIWNIKÓW (POOLED HP) ---
-
-function spawnProceduralWave() {
-    let waveHP = 100 + (game.wave * 200); // Pula HP na tę falę
-    logTerminal(`DETECTION: ${waveHP} HP MASS INBOUND`);
-
-    while (waveHP > 0) {
-        // Losuj HP dla tego przeciwnika (od 20 do max 50% pozostałej puli)
-        let enemyHP = Math.min(waveHP, 20 + Math.random() * (waveHP * 0.5));
-        if (enemyHP < 20) enemyHP = waveHP;
-        
-        game.enemies.push(createEnemy(enemyHP));
-        waveHP -= enemyHP;
-    }
+    logTerminal(`DETECTION: ${game.enemies.length} OBJECTS INBOUND`);
 }
 
 function createEnemy(hp) {
-    const size = 15 + (hp * 0.4); // Rozmiar zależy od HP
-    const speed = Math.max(0.5, 2.5 - (size * 0.03)); // Im większy, tym wolniejszy
-    
-    // Generowanie nieforemnych wierzchołków
+    const size = 15 + (hp * 0.3);
     const vertices = [];
-    const points = 5 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < points; i++) {
-        const angle = (i / points) * Math.PI * 2;
-        const dist = size * (0.6 + Math.random() * 0.8);
-        vertices.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist });
+    // WYSOKA GĘSTOŚĆ: 40-100 kątów
+    const pts = 40 + Math.floor(Math.random() * 60);
+    for(let i=0; i<pts; i++) {
+        const a = (i/pts) * Math.PI * 2;
+        const d = size * (0.6 + Math.random() * 0.8);
+        vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, baseDist: d});
     }
-
-    return {
-        x: Math.random() * 700 + 50,
-        y: -Math.random() * 500 - 50,
-        hp: hp,
-        maxHp: hp,
-        speed: speed,
-        size: size,
-        vertices: vertices,
-        color: `rgb(${150 + Math.random() * 105}, 0, 0)`
-    };
+    return { x: Math.random()*700+50, y: -100, hp, maxHp: hp, size, vertices, speed: 0.7 + (15/size), hitFlash: 0 };
 }
-
-// --- RENDEROWANIE ---
 
 function gameLoop() {
     ctx.clearRect(0, 0, 800, 600);
     
-    if (game.screen === 'BASE') {
-        renderBase();
+    if (game.mode === 'BASE') {
+        renderGrid();
+        game.buildings.forEach(b => {
+            ctx.fillStyle = b.cfg.color;
+            ctx.fillRect(CONFIG.BASE_OFF.x + b.gx*50+4, CONFIG.BASE_OFF.y + b.gy*50+4, 42, 42);
+        });
     } else {
-        renderDefense();
+        renderTerrain();
+        if (game.mode === 'COMBAT') updateCombat();
+        renderDefenseUnits();
+        renderPlayer();
+        renderEnemies();
     }
 
+    renderProjectiles();
     renderParticles();
+    updateStats();
     requestAnimationFrame(gameLoop);
 }
 
-function renderBase() {
-    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
-    for (let i = 0; i <= CONFIG.GRID; i++) {
+function renderTerrain() {
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
+    CONFIG.TERRAIN_LINES.forEach((y, i) => {
         ctx.beginPath();
-        ctx.moveTo(CONFIG.BASE_OFF.x + i * CONFIG.CELL, CONFIG.BASE_OFF.y);
-        ctx.lineTo(CONFIG.BASE_OFF.x + i * CONFIG.CELL, CONFIG.BASE_OFF.y + CONFIG.GRID * CONFIG.CELL);
+        ctx.moveTo(0, y);
+        for(let x=0; x<=800; x+=25) ctx.lineTo(x, y + Math.cos(x/40 + i)*10);
         ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i * CONFIG.CELL);
-        ctx.lineTo(CONFIG.BASE_OFF.x + CONFIG.GRID * CONFIG.CELL, CONFIG.BASE_OFF.y + i * CONFIG.CELL);
-        ctx.stroke();
-    }
-
-    game.buildings.forEach(b => {
-        const px = CONFIG.BASE_OFF.x + b.gx * CONFIG.CELL;
-        const py = CONFIG.BASE_OFF.y + b.gy * CONFIG.CELL;
-        ctx.fillStyle = b.cfg.color;
-        ctx.fillRect(px + 4, py + 4, CONFIG.CELL - 8, CONFIG.CELL - 8);
-        ctx.fillStyle = "#fff";
-        ctx.fillText("LV" + b.lv, px + 8, py + 18);
     });
+    ctx.strokeStyle = "#f00"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, 580); ctx.lineTo(800, 580); ctx.stroke();
+    ctx.lineWidth = 1;
 }
 
-function renderDefense() {
-    ctx.strokeStyle = "#333";
-    ctx.beginPath(); ctx.moveTo(0, 580); ctx.lineTo(800, 580); ctx.stroke();
-
-    // Player
+function updateCombat() {
     if (game.keys['a'] || game.keys['arrowleft']) game.player.x -= game.player.speed;
     if (game.keys['d'] || game.keys['arrowright']) game.player.x += game.player.speed;
-    ctx.fillStyle = "#0ff";
-    ctx.fillRect(game.player.x - 15, 560, 30, 20);
+    game.player.x = Math.max(20, Math.min(780, game.player.x));
 
-    // Enemies (Irregular Shapes)
+    if (game.mouse.down) playerShoot();
+
+    const now = Date.now();
     game.enemies.forEach((e, i) => {
-        e.y += e.speed;
-        
-        ctx.fillStyle = e.color;
-        ctx.beginPath();
-        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
-        for(let v=1; v<e.vertices.length; v++) {
-            ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
+        let speedMult = 1;
+        CONFIG.TERRAIN_LINES.forEach(ly => {
+            if (e.y < ly && e.y + e.speed > ly) speedMult = 0.45;
+        });
+        e.y += e.speed * speedMult;
 
-        if (e.y > 580) {
-            game.hp -= 10;
+        // "Drganie" anomalii
+        e.vertices.forEach(v => {
+            const jitter = (Math.random() - 0.5) * 2;
+            const ang = Math.atan2(v.y, v.x);
+            v.x = Math.cos(ang) * (v.baseDist + jitter);
+            v.y = Math.sin(ang) * (v.baseDist + jitter);
+        });
+
+        if (e.hitFlash > 0) e.hitFlash--;
+
+        if (e.y >= 580) {
+            game.hp -= Math.floor(e.hp); 
+            createParticles(e.x, 580, "#f00", 20);
             game.enemies.splice(i, 1);
-            updateStats();
         }
     });
 
-    // Defense Units & Projectiles
-    const now = Date.now();
-    game.defUnits.forEach((u, i) => {
-        ctx.fillStyle = "#ff0";
-        ctx.fillRect(u.x-10, u.y-10, 20, 20);
-        const penalty = game.pwr < 0 ? 2 : 1;
-        if (u.name === "SENTRY GUN" && now - u.lastFire > u.rof * penalty) {
+    game.defUnits.forEach(u => {
+        if (u.name === "SENTRY GUN" && now - u.lastFire > (game.pwr < 0 ? u.rof*2 : u.rof)) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
             if (target) {
                 target.hp -= u.dmg;
+                target.hitFlash = 3;
                 u.lastFire = now;
                 ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
             }
         }
-        // Mines
-        if (u.rad && game.enemies.some(e => Math.hypot(e.x - u.x, e.y - u.y) < 30)) {
-            explode(u);
-            game.defUnits.splice(i, 1);
-        }
-    });
-
-    game.projectiles.forEach((p, i) => {
-        p.y += p.vy;
-        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
-        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
     });
 
     game.enemies = game.enemies.filter(e => {
@@ -272,60 +249,117 @@ function renderDefense() {
         return true;
     });
 
-    if (game.enemies.length === 0) switchScreen();
-    if (game.hp <= 0) { alert("OUTPOST DESTROYED"); location.reload(); }
+    if (game.enemies.length === 0 && game.mode === 'COMBAT') {
+        game.mode = 'BASE';
+        document.getElementById('actionBtn').innerText = "START DEFENSE";
+        document.getElementById('actionBtn').disabled = false;
+        logTerminal("SECTOR CLEAR. REGROUPING.");
+    }
+    if (game.hp <= 0) { alert("OUTPOST LOST"); location.reload(); }
 }
 
-function explode(m) {
+function renderPlayer() {
+    ctx.fillStyle = "#0ff";
+    ctx.fillRect(game.player.x - 18, 560, 36, 18);
+    const angle = Math.atan2(game.mouse.y - 560, game.mouse.x - game.player.x);
+    ctx.save();
+    ctx.translate(game.player.x, 565);
+    ctx.rotate(angle);
+    ctx.fillStyle = "#0aa";
+    ctx.fillRect(0, -4, 25, 8);
+    ctx.restore();
+}
+
+function renderEnemies() {
     game.enemies.forEach(e => {
-        if (Math.hypot(e.x - m.x, e.y - m.y) < m.rad) e.hp -= m.dmg;
+        ctx.fillStyle = e.hitFlash > 0 ? "#fff" : "rgba(255, 30, 30, 0.4)";
+        ctx.beginPath();
+        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = e.hitFlash > 0 ? "#fff" : "#ff3333";
+        ctx.stroke();
     });
-    for(let i=0; i<20; i++) game.particles.push({x:m.x, y:m.y, vx:Math.random()*6-3, vy:Math.random()*6-3, life:1, c:"#f00"});
 }
 
-function renderParticles() {
-    game.particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-        ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
-        ctx.fillRect(p.x, p.y, 2, 2);
-        if (p.life <= 0) game.particles.splice(i, 1);
+function renderDefenseUnits() {
+    game.defUnits.forEach((u, i) => {
+        ctx.fillStyle = u.rad ? "#ff4400" : "#ffff00";
+        ctx.fillRect(u.x - 12, u.y - 12, 24, 24);
+        if (u.rad && game.enemies.some(e => Math.hypot(e.x - u.x, e.y - u.y) < 30)) {
+            game.enemies.forEach(e => {
+                if(Math.hypot(e.x - u.x, e.y - u.y) < u.rad) e.hp -= u.dmg;
+            });
+            createParticles(u.x, u.y, "#f40", 35);
+            game.defUnits.splice(i, 1);
+        }
     });
-    ctx.globalAlpha = 1;
+}
+
+function renderProjectiles() {
+    game.projectiles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy;
+        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-3, p.y-3, 6, 6);
+        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+        if (hit) {
+            hit.hp -= p.dmg;
+            hit.hitFlash = 3;
+            game.projectiles.splice(i, 1);
+        }
+        if (p.x < 0 || p.x > 800 || p.y < 0) game.projectiles.splice(i, 1);
+    });
 }
 
 function updateStats() {
     let p = 0;
     game.buildings.forEach(b => p += b.cfg.pwr * b.lv);
     game.pwr = p;
-    document.getElementById('ui-money').innerText = `$${game.money}`;
+    document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
     document.getElementById('ui-power').innerText = `${game.pwr} PWR`;
-    document.getElementById('ui-power').style.color = game.pwr < 0 ? "#f00" : "#20ff20";
-    document.getElementById('ui-hp').innerText = `${Math.ceil((game.hp/1000)*100)}%`;
+    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/1000)*100))}%`;
+}
+
+function createParticles(x, y, c, count) {
+    for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*8-4, vy:Math.random()*8-4, life:1, c});
+}
+
+function renderParticles() {
+    game.particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, 3, 3);
+        if(p.life <= 0) game.particles.splice(i, 1);
+    });
+    ctx.globalAlpha = 1;
+}
+
+function renderGrid() {
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
+    for(let i=0; i<=CONFIG.GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y + 600); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i*50); ctx.lineTo(CONFIG.BASE_OFF.x + 600, CONFIG.BASE_OFF.y + i*50); ctx.stroke();
+    }
 }
 
 function updateBuildMenu() {
     const menu = document.getElementById('buildMenu');
     menu.innerHTML = "";
-    const list = game.screen === 'BASE' ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
-    for (let key in list) {
-        const item = list[key];
+    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
+    for(let k in list) {
+        const item = list[k];
         const locked = item.req && !game.buildings.some(b => b.cfg.name === item.req);
         const btn = document.createElement('button');
-        btn.className = 'btn' + (game.selected === key ? ' active' : '');
+        btn.className = 'btn' + (game.selected === k ? ' active' : '');
         btn.disabled = locked;
-        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
-        btn.onclick = () => { game.selected = key; updateBuildMenu(); };
+        btn.innerHTML = `${item.name} <br> <span style="font-size:0.7em">$${item.cost}</span>`;
+        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
         menu.appendChild(btn);
     }
 }
 
-function isInsideGrid() {
-    return game.mouse.gx >= 0 && game.mouse.gx < CONFIG.GRID && game.mouse.gy >= 0 && game.mouse.gy < CONFIG.GRID;
-}
-
-function logTerminal(txt) {
-    document.getElementById('terminal').innerHTML += `> ${txt}<br>`;
-}
+function isInsideGrid() { return game.mouse.gx>=0 && game.mouse.gx<CONFIG.GRID && game.mouse.gy>=0 && game.mouse.gy<CONFIG.GRID; }
+function logTerminal(t) { document.getElementById('terminal').innerHTML += `> ${t}<br>`; }
 
 init();
 </script>
