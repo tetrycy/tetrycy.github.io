@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: GEOLOGICAL COMMAND</title>
+    <title>OUTPOST '95: SUPREME COMMANDER</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
@@ -10,13 +10,13 @@
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 10px; }
         canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: crisp-edges; }
         #sidebar { width: 340px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
-        .screen { background: #000; border: 1px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 10px; margin-bottom: 8px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
         .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 6px; margin: 3px 0; cursor: pointer; font-family: VT323; font-size: 1.1em; text-transform: uppercase; width: 100%; text-align: left; }
         .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
-        .btn.active { background: #083308; }
+        .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
         .stat { display: flex; justify-content: space-between; font-size: 1.3em; }
-        #terminal { font-size: 0.85em; height: 110px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 5px; background: #020502; }
-        .upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px; }
+        #terminal { font-size: 0.82em; height: 140px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 5px; background: #020502; line-height: 1.2; }
+        .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -26,21 +26,21 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">VANGUARD OS v.5</h2>
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">STRAT-COM INTERFACE</h2>
     
     <div class="screen">
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
         <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
-        <div style="font-size:0.8em; color:#888; margin-top:5px; border-top:1px solid #333;">
-            UNIT-01: SPD x<span id="p-spd">1.0</span> | ROF x<span id="p-rof">1.0</span> | DMG x<span id="p-dmg">1.0</span>
+        <div id="unit-info" style="font-size:0.75em; color:#888; border-top:1px solid #333; margin-top:5px; padding-top:5px;">
+            UNIT-01: SPD <span id="p-spd">1.0</span> | ROF <span id="p-rof">1.0</span> | DMG <span id="p-dmg">1.0</span>
         </div>
     </div>
 
-    <div class="screen" id="terminal">> GEOLOGICAL SCAN COMPLETE.</div>
+    <div class="screen" id="terminal">> AWAITING MISSION...</div>
 
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
 
-    <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold; text-align:center;" onclick="handleAction()">EXECUTE OPERATION</button>
+    <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold; text-align:center;" onclick="handleAction()">EXECUTE COMBAT</button>
 </div>
 
 <script>
@@ -48,38 +48,35 @@ const CONFIG = {
     WIDTH: 900, HEIGHT: 750,
     BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
     DEFENSE: {
-        CORE: { name: "HQ BUNKER", cost: 0, hp: 5000, type: 'core', color: '#0ff' },
-        WALL: { name: "HEAVY WALL", cost: 25, hp: 1500, type: 'wall', color: '#666' },
-        SENTRY: { name: "LR TURRET", cost: 180, range: 280, dmg: 10, rof: 500, hp: 350, type: 'tower', color: '#ff0' },
-        BATTERY: { name: "HEAVY BTY", cost: 450, range: 450, dmg: 200, rof: 2500, hp: 500, type: 'tower', color: '#f80' }
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
+        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666' },
+        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 12, rof: 500, hp: 400, type: 'tower', color: '#ff0' },
+        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 200, rof: 2800, hp: 600, type: 'tower', color: '#f80' }
     },
     BUILDINGS: {
         SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
         FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
-        MUNITION: { name: "MUNITION FAB", cost: 400, pwr: -40, color: "#A00" }
+        MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
     }
 };
 
 let game = {
-    money: 800, hp: 5000, wave: 0, mode: 'BASE',
+    money: 800, hp: 6000, wave: 0, mode: 'BASE',
     buildings: [], entities: [], enemies: [], projectiles: [],
     hills: [], rivers: [], selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false },
     keys: {},
-    player: {
-        x: 450, y: 375, 
-        baseSpeed: 3.2, speedLv: 1,
-        baseRof: 150, rofLv: 1,
-        baseDmg: 30, dmgLv: 1,
-        lastShot: 0
-    },
-    spawnDir: 'NORTH'
+    player: { x: 450, y: 375, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    spawnDir: 'NORTH',
+    intel: { land: 0, swim: 0, air: 0, totalHP: 0 }
 };
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function init() {
+    window.addEventListener('keydown', e => game.keys[e.code] = true);
+    window.addEventListener('keyup', e => game.keys[e.code] = false);
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
         game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
@@ -87,8 +84,6 @@ function init() {
     });
     canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
     canvas.addEventListener('mouseup', () => game.mouse.down = false);
-    window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
-    window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
     updateBuildMenu();
     gameLoop();
 }
@@ -96,107 +91,117 @@ function init() {
 function handleAction() {
     if (game.mode === 'BASE') {
         game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
-        generateGeology(); updateBuildMenu();
-        document.getElementById('actionBtn').innerText = "LOCK POSITIONS";
-        logTerminal(`WAVE ${game.wave}: RIDGE LINES IDENTIFIED.`);
+        generateStrategicMap(); 
+        spawnWaveLogic(); // Generuj dane do raportu
+        updateBuildMenu();
+        document.getElementById('actionBtn').innerText = "LOCK ALL UNITS";
+        showIntelReport();
     } else if (game.mode === 'PREP') {
-        if (!game.corePlaced) { logTerminal("HQ DEPLOYMENT REQUIRED."); return; }
-        game.mode = 'COMBAT'; spawnVariedWave();
+        if (!game.corePlaced) { logTerminal("CRITICAL: HQ MUST BE DEPLOYED."); return; }
+        game.mode = 'COMBAT';
         document.getElementById('actionBtn').innerText = "IN COMBAT";
         document.getElementById('actionBtn').disabled = true;
     }
 }
 
-// --- ZAAWANSOWANA GEOLOGIA ---
+function showIntelReport() {
+    logTerminal(`--- INTEL REPORT WAVE ${game.wave} ---`);
+    logTerminal(`FRONT: ${game.spawnDir} BORDER`);
+    logTerminal(`HOSTILES: ${game.enemies.length} SIGNATURES`);
+    logTerminal(`L:${game.intel.land} S:${game.intel.swim} A:${game.intel.air}`);
+    logTerminal(`TOTAL MASS: ${Math.floor(game.intel.totalHP)} HP`);
+}
 
-function generateGeology() {
+function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     
-    // Rzeki (meandrujące)
+    // Rzeki (Meandrujące)
     game.rivers = [];
     const rCount = Math.floor(Math.random() * 3);
     for(let i=0; i<rCount; i++) {
         const isH = Math.random() > 0.5;
         let pts = [];
-        let startPos = 200 + Math.random() * (isH ? 300 : 500);
+        let sPos = 200 + Math.random() * (isH ? 350 : 500);
         for(let j=0; j<=10; j++) {
             pts.push({
-                x: isH ? j * 90 : startPos + Math.sin(j)*40,
-                y: isH ? startPos + Math.sin(j)*40 : j * 75
+                x: isH ? j * 90 : sPos + Math.sin(j)*50,
+                y: isH ? sPos + Math.sin(j)*50 : j * 75
             });
         }
         game.rivers.push({ pts, isH, bridges: [pts[3], pts[7]] });
     }
 
-    // Pasma Górskie (Ridge Lines)
+    // Pasma Górskie
     game.hills = [];
-    const chainCount = 2 + Math.floor(Math.random() * 2);
-    for(let c=0; c<chainCount; c++) {
-        let rx = Math.random() * CONFIG.WIDTH;
-        let ry = Math.random() * CONFIG.HEIGHT;
-        let dx = (Math.random() - 0.5) * 400;
-        let dy = (Math.random() - 0.5) * 400;
-
+    const chains = 3;
+    for(let c=0; c<chains; c++) {
+        let rx = Math.random() * CONFIG.WIDTH, ry = Math.random() * CONFIG.HEIGHT;
+        let dx = (Math.random()-0.5)*500, dy = (Math.random()-0.5)*500;
         for(let i=0; i<5; i++) {
-            const hx = rx + (dx * (i/5)) + (Math.random()-0.5)*100;
-            const hy = ry + (dy * (i/5)) + (Math.random()-0.5)*100;
-            const h = { x: hx, y: hy, r: 100+Math.random()*150, layers: [] };
-            const lCount = 6+Math.floor(Math.random()*6);
-            const seed = Math.random()*100;
+            const h = { x: rx+(dx*i/5), y: ry+(dy*i/5), r: 100+Math.random()*150, layers: [] };
+            const lCount = 6+Math.floor(Math.random()*6), seed = Math.random()*100;
             for(let l=0; l<lCount; l++) {
-                const verts = [];
-                const radius = h.r * (1 - l/lCount);
-                for(let a=0; a<Math.PI*2; a+=0.25) {
-                    const n = (Math.sin(a*3 + seed)*12) + (Math.sin(a*8)*5);
-                    verts.push({x: Math.cos(a)*(radius+n), y: Math.sin(a)*(radius+n)});
+                const v = [], radius = h.r*(1-l/lCount);
+                for(let a=0; a<Math.PI*2; a+=0.3) {
+                    const n = (Math.sin(a*3+seed)*12)+(Math.sin(a*8)*5);
+                    v.push({x: Math.cos(a)*(radius+n), y: Math.sin(a)*(radius+n)});
                 }
-                h.layers.push({verts, radius});
+                h.layers.push({verts: v, radius});
             }
             game.hills.push(h);
         }
     }
 }
 
-function spawnVariedWave() {
+function spawnWaveLogic() {
     game.enemies = [];
-    let pool = 2500 + (game.wave * 3000);
+    game.intel = { land: 0, swim: 0, air: 0, totalHP: 0 };
+    let pool = 3000 + (game.wave * 4000);
     const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
     const total = r1+r2+r3;
+
     while (pool > 0) {
         const r = Math.random();
-        let moveType = (r < r1/total) ? 'LAND' : (r < (r1+r2)/total ? 'SWIM' : 'FLY');
-        let hp = 100 + Math.random() * 200 + (game.wave * 50);
-        game.enemies.push(createAnomalousEnemy(hp, moveType));
+        let moveType = 'FLY';
+        if (r < r1/total) { moveType = 'LAND'; game.intel.land++; }
+        else if (r < (r1+r2)/total) { moveType = 'SWIM'; game.intel.swim++; }
+        else { game.intel.air++; }
+
+        // LOSOWY ROZMIAR I HP (Od małych po giganty)
+        let hp = 50 + Math.random() * 300;
+        if (Math.random() > 0.9) hp = 800 + Math.random() * 800; // 10% szans na Behemota
+        
+        game.enemies.push(createEnemy(hp, moveType));
+        game.intel.totalHP += hp;
         pool -= hp;
     }
 }
 
-function createAnomalousEnemy(hp, moveType) {
-    let x, y, off = 200;
-    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*800; }
-    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*800; }
-    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
-    else { x = -off - Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
+function createEnemy(hp, moveType) {
+    let x, y, off = 150;
+    // SPAWN SZEROKIM FRONTEM
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1000; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1000; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
 
-    const size = 6 + (hp * 0.08);
+    const size = 5 + (hp * 0.05); // Rozmiar zależy od HP
     const vertices = [];
-    const pts = 60 + Math.floor(Math.random() * 40);
+    const pts = 60;
     for(let i=0; i<pts; i++) {
-        const a = (i/pts) * Math.PI * 2;
-        const d = size * (0.6 + Math.random() * 0.8);
+        const a = (i/pts)*Math.PI*2;
+        const d = size*(0.6 + Math.random()*0.8);
         vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
     }
-    let color = moveType === 'LAND' ? 'var(--f-red)' : (moveType === 'SWIM' ? 'var(--f-blue)' : 'var(--f-purple)');
-    return { x, y, hp, maxHp: hp, moveType, size, vertices, color, speed: moveType === 'FLY' ? 1.4 : 0.7, hitF: 0 };
+    let color = moveType==='LAND' ? 'var(--f-red)' : (moveType==='SWIM' ? 'var(--f-blue)' : 'var(--f-purple)');
+    return { x, y, hp, maxHp: hp, moveType, size, vertices, color, speed: moveType==='FLY'?(1.5+Math.random()):(0.6 + (5/size)), hitF: 0 };
 }
-
-// --- RENDERING & PETLA ---
 
 function gameLoop() {
     ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
     if (game.mode === 'BASE') renderBaseGrid();
     else {
-        renderMapTactical();
+        renderTacticalMap();
         if (game.mode === 'COMBAT') updateCombat();
         renderEntities();
         renderAnomalies();
@@ -209,12 +214,15 @@ function gameLoop() {
 }
 
 function updateCombat() {
-    let pSpd = game.player.baseSpeed * (1 + (game.player.speedLv - 1) * 0.15);
-    if (game.keys['w']) game.player.y -= pSpd;
-    if (game.keys['s']) game.player.y += pSpd;
-    if (game.keys['a']) game.player.x -= pSpd;
-    if (game.keys['d']) game.player.x += pSpd;
-    
+    // RUCH GRACZA
+    let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
+    if (game.keys['KeyW']) game.player.y -= pSpd;
+    if (game.keys['KeyS']) game.player.y += pSpd;
+    if (game.keys['KeyA']) game.player.x -= pSpd;
+    if (game.keys['KeyD']) game.player.x += pSpd;
+    game.player.x = Math.max(5, Math.min(CONFIG.WIDTH-5, game.player.x));
+    game.player.y = Math.max(5, Math.min(CONFIG.HEIGHT-5, game.player.y));
+
     if (game.mouse.down) playerShoot();
 
     const core = game.entities.find(e => e.type === 'core');
@@ -224,32 +232,32 @@ function updateCombat() {
         const ang = Math.atan2(core.y - e.y, core.x - e.x);
         let mX = Math.cos(ang) * e.speed, mY = Math.sin(ang) * e.speed;
 
-        // Pathfinding LAND
         if (e.moveType === 'LAND') {
             game.rivers.forEach(r => {
-                const distToRiver = r.pts.reduce((min, p) => Math.min(min, Math.hypot(e.x-p.x, e.y-p.y)), 1000);
-                if(distToRiver < 25) {
-                    const onB = r.bridges.some(bp => Math.hypot(e.x-bp.x, e.y-bp.y) < 55);
+                const dist = r.pts.reduce((min, p) => Math.min(min, Math.hypot(e.x-p.x, e.y-p.y)), 1000);
+                if(dist < 30) {
+                    const onB = r.bridges.some(bp => Math.hypot(e.x-bp.x, e.y-bp.y) < 60);
                     if(!onB) { mX *= 0.1; mY *= 0.1; }
                 }
             });
         }
 
-        let tMult = 1.0;
+        let terrainMult = 1.0;
         if(e.moveType !== 'FLY') {
-            game.hills.forEach(h => { if(Math.hypot(e.x-h.x, e.y-h.y) < h.layers[0].radius) tMult *= 0.75; });
-            game.rivers.forEach(r => { if(e.moveType === 'SWIM' && r.pts.some(p => Math.hypot(e.x-p.x, e.y-p.y)<25)) tMult *= 0.45; });
+            game.hills.forEach(h => { if(Math.hypot(e.x-h.x, e.y-h.y) < h.layers[0].radius) terrainMult *= 0.75; });
+            game.rivers.forEach(r => { if(e.moveType === 'SWIM' && r.pts.some(p => Math.hypot(e.x-p.x, e.y-p.y)<30)) terrainMult *= 0.4; });
         }
-        e.x += mX * tMult; e.y += mY * tMult;
+        e.x += mX * terrainMult; e.y += mY * terrainMult;
 
-        // Anomaly Jitter (Tylko wrogowie!)
+        // JITTER WROGÓW
         e.vertices.forEach(v => {
+            const jitter = (Math.random()-0.5)*2.5;
             const a = Math.atan2(v.y, v.x);
-            v.x = Math.cos(a) * (v.bD + (Math.random()-0.5)*2.5);
-            v.y = Math.sin(a) * (v.bD + (Math.random()-0.5)*2.5);
+            v.x = Math.cos(a) * (v.bD + jitter); v.y = Math.sin(a) * (v.bD + jitter);
         });
 
         game.entities.forEach(ent => {
+            if (ent.type === 'mine') return;
             if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + 15) {
                 ent.curHP -= e.hp; game.enemies.splice(i, 1);
                 if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
@@ -257,6 +265,7 @@ function updateCombat() {
         });
     });
 
+    // TURRETS
     game.entities.forEach(u => {
         if (u.type === 'tower' && now - u.lastFire > u.rof) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
@@ -268,69 +277,58 @@ function updateCombat() {
     });
 
     game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 15; return false; } return true; });
-    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "START DEFENSE"; document.getElementById('actionBtn').disabled = false; }
+    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "START DEFENSE"; document.getElementById('actionBtn').disabled = false; logTerminal("THREATS NEUTRALIZED."); }
     if (game.hp <= 0) { alert("HQ OVERRUN"); location.reload(); }
 }
 
-function renderMapTactical() {
-    // Rzeki (Stabilne)
-    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+function renderAnomalies() {
+    game.enemies.forEach(e => {
+        // Ciało Anomalii (Pełny kolor)
+        ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color;
+        ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.stroke();
+
+        // HP BAR (Neon Yellow, Wide)
+        const barW = Math.max(25, e.size * 2);
+        ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
+        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
+        if(e.hitF > 0) e.hitF--;
+    });
+}
+
+function renderTacticalMap() {
     game.rivers.forEach(r => {
-        ctx.strokeStyle = "rgba(40, 80, 200, 0.2)"; ctx.lineWidth = 30;
-        ctx.beginPath();
+        ctx.strokeStyle = "rgba(40, 80, 200, 0.25)"; ctx.lineWidth = 35; ctx.beginPath();
         r.pts.forEach((p, i) => { if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
         ctx.stroke();
-        ctx.fillStyle = "#222";
-        r.bridges.forEach(bp => { ctx.fillRect(bp.x-30, bp.y-30, 60, 60); });
+        ctx.fillStyle = "#222"; r.bridges.forEach(bp => { ctx.fillRect(bp.x-35, bp.y-35, 70, 70); });
     });
-
-    // Topografia Pasma (Stabilna)
     ctx.strokeStyle = "rgba(32, 255, 32, 0.15)"; ctx.lineWidth = 1;
     game.hills.forEach(h => {
         h.layers.forEach(l => {
-            ctx.beginPath();
-            l.verts.forEach((v, i) => { if(i===0) ctx.moveTo(h.x+v.x, h.y+v.y); else ctx.lineTo(h.x+v.x, h.y+v.y); });
+            ctx.beginPath(); l.verts.forEach((v, i) => { if(i===0) ctx.moveTo(h.x+v.x, h.y+v.y); else ctx.lineTo(h.x+v.x, h.y+v.y); });
             ctx.closePath(); ctx.stroke();
         });
     });
 }
 
-function renderAnomalies() {
-    game.enemies.forEach(e => {
-        const hpPct = Math.max(0, e.hp / e.maxHp);
-        ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color.replace(')', ', 0.3)');
-        ctx.beginPath();
-        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
-        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
-        ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = e.hitF > 0 ? "#fff" : e.color; ctx.stroke();
-        
-        // WYRAŹNE HP BAR
-        ctx.fillStyle = "#400"; ctx.fillRect(e.x - 20, e.y - e.size - 15, 40, 6);
-        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - 20, e.y - e.size - 15, 40 * hpPct, 6);
-        if(e.hitF > 0) e.hitF--;
-    });
-}
-
 function renderPlayerUnit() {
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(game.player.x, game.player.y-12);
-    ctx.lineTo(game.player.x+12, game.player.y);
-    ctx.lineTo(game.player.x, game.player.y+12);
-    ctx.lineTo(game.player.x-12, game.player.y);
-    ctx.closePath(); ctx.stroke();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y-12); ctx.lineTo(game.player.x+12, game.player.y); ctx.lineTo(game.player.x, game.player.y+12); ctx.lineTo(game.player.x-12, game.player.y); ctx.closePath(); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 2, 0, Math.PI*2); ctx.fill();
+    const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.player.x+Math.cos(a)*40, game.player.y+Math.sin(a)*40); ctx.stroke(); ctx.setLineDash([]);
 }
 
 function playerShoot() {
     const now = Date.now();
-    const curRof = game.player.baseRof / (1 + (game.player.rofLv-1)*0.3);
-    const curDmg = game.player.baseDmg * (1 + (game.player.dmgLv-1)*0.5);
-    
-    if (now - game.player.lastShot > curRof) {
+    const rof = 140 / (1 + (game.player.rofLv-1)*0.3);
+    const dmg = 35 * (1 + (game.player.dmgLv-1)*0.5);
+    if (now - game.player.lastShot > rof) {
         const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, dmg: curDmg });
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, dmg });
         game.player.lastShot = now;
     }
 }
@@ -339,75 +337,15 @@ function renderEntities() {
     game.entities.forEach(ent => {
         ctx.strokeStyle = ent.color; ctx.lineWidth = 2;
         if (ent.type === 'core') ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
-        else if (ent.type === 'wall') ctx.strokeRect(ent.x-8, ent.y-8, 16, 16);
-        else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 8, 0, Math.PI*2); ctx.stroke(); }
+        else if (ent.type === 'wall') ctx.strokeRect(ent.x-10, ent.y-10, 20, 20);
+        else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 10, 0, Math.PI*2); ctx.stroke(); }
         ctx.fillStyle = "var(--f-green)"; ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
     });
 }
 
-function renderProjectiles() {
-    ctx.fillStyle = "#fff";
-    game.projectiles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 2, 2);
-        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) { hit.hp -= p.dmg; hit.hitF = 3; game.projectiles.splice(i, 1); }
-        if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
-    });
-}
-
-function updateStatsUI() {
-    document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
-    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/5000)*100))}%`;
-    document.getElementById('p-spd').innerText = (1 + (game.player.speedLv-1)*0.15).toFixed(1);
-    document.getElementById('p-rof').innerText = (1 + (game.player.rofLv-1)*0.3).toFixed(1);
-    document.getElementById('p-dmg').innerText = (1 + (game.player.dmgLv-1)*0.5).toFixed(1);
-}
-
-function updateBuildMenu() {
-    const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
-    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
-    for(let k in list) {
-        const item = list[k];
-        const btn = document.createElement('button');
-        btn.className = 'btn' + (game.selected === k ? ' active' : '');
-        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
-        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
-        menu.appendChild(btn);
-    }
-    if(game.mode === 'BASE') {
-        const upGrid = document.createElement('div'); upGrid.className = 'upgrade-grid';
-        [['SPD', 'speed'], ['ROF', 'rof'], ['PWR', 'dmg']].forEach(s => {
-            const b = document.createElement('button'); b.className = 'btn';
-            const cost = game.player[s[1]+'Lv'] * 250;
-            b.innerHTML = `UP ${s[0]} $${cost}`;
-            b.onclick = () => {
-                if(game.money >= cost) { game.money -= cost; game.player[s[1]+'Lv']++; updateStatsUI(); updateBuildMenu(); }
-            };
-            upGrid.appendChild(b);
-        });
-        menu.appendChild(upGrid);
-    }
-}
-
-function renderBaseGrid() {
-    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
-    for(let i=0; i<=CONFIG.GRID; i++) {
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y+600); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y+i*50); ctx.lineTo(CONFIG.BASE_OFF.x+600, CONFIG.BASE_OFF.y+i*50); ctx.stroke();
-    }
-    game.buildings.forEach(b => { ctx.fillStyle = b.cfg.color; ctx.fillRect(CONFIG.BASE_OFF.x+b.gx*50+5, CONFIG.BASE_OFF.y+b.gy*50+5, 40, 40); });
-}
-
-function renderGhost() {
-    const cfg = CONFIG.DEFENSE[game.selected];
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
-    ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
-}
-
 function handleInput() {
     if (game.mode === 'BASE' && game.selected) {
-        const gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / 50), gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / 50);
+        const gx = Math.floor((game.mouse.x - 150) / 50), gy = Math.floor((game.mouse.y - 150) / 50);
         if(gx>=0 && gx<12 && gy>=0 && gy<12) {
             game.buildings.push({ gx, gy, cfg: CONFIG.BUILDINGS[game.selected] });
             game.money -= CONFIG.BUILDINGS[game.selected].cost; updateStatsUI();
@@ -424,7 +362,70 @@ function handleInput() {
     }
 }
 
-function logTerminal(t) { document.getElementById('terminal').innerHTML += `> ${t}<br>`; }
+function renderProjectiles() {
+    ctx.fillStyle = "#fff";
+    game.projectiles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 3, 3);
+        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+        if (hit) { hit.hp -= p.dmg; hit.hitF = 3; game.projectiles.splice(i, 1); }
+        if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
+    });
+}
+
+function renderBaseGrid() {
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
+    for(let i=0; i<=12; i++) {
+        ctx.beginPath(); ctx.moveTo(150+i*50, 150); ctx.lineTo(150+i*50, 750); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(150, 150+i*50); ctx.lineTo(750, 150+i*50); ctx.stroke();
+    }
+    game.buildings.forEach(b => { ctx.fillStyle = b.cfg.color; ctx.fillRect(150+b.gx*50+5, 150+b.gy*50+5, 40, 40); });
+}
+
+function renderGhost() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
+    ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
+}
+
+function updateStatsUI() {
+    document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
+    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/6000)*100))}%`;
+    document.getElementById('p-spd').innerText = (1 + (game.player.spdLv-1)*0.2).toFixed(1);
+    document.getElementById('p-rof').innerText = (1 + (game.player.rofLv-1)*0.3).toFixed(1);
+    document.getElementById('p-dmg').innerText = (1 + (game.player.dmgLv-1)*0.5).toFixed(1);
+}
+
+function updateBuildMenu() {
+    const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
+    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
+    for(let k in list) {
+        const item = list[k];
+        const btn = document.createElement('button');
+        btn.className = 'btn' + (game.selected === k ? ' active' : '');
+        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+        menu.appendChild(btn);
+    }
+    if(game.mode === 'BASE') {
+        const row = document.createElement('div'); row.className = 'upgrade-row';
+        ['SPD', 'ROF', 'DMG'].forEach(s => {
+            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
+            b.innerText = `UP ${s}`;
+            b.onclick = () => { 
+                let cost = game.player[s.toLowerCase()+'Lv']*300;
+                if(game.money >= cost) { game.money -= cost; game.player[s.toLowerCase()+'Lv']++; updateStatsUI(); updateBuildMenu(); }
+            };
+            row.appendChild(b);
+        });
+        menu.appendChild(row);
+    }
+}
+
+function logTerminal(t) { 
+    const term = document.getElementById('terminal');
+    term.innerHTML += `> ${t}<br>`; term.scrollTop = term.scrollHeight;
+}
 
 init();
 </script>
