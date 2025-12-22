@@ -6,23 +6,24 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
-        body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 0; min-height: 0; }
         canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: crisp-edges; max-width: 100%; max-height: 100%; width: auto; height: auto; }
-        #sidebar { width: 340px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
-        .screen { background: #000; border: 1px solid var(--f-green); padding: 10px; margin-bottom: 8px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
-        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 6px; margin: 3px 0; cursor: pointer; font-family: VT323; font-size: 1.1em; text-transform: uppercase; width: 100%; text-align: left; }
+        #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.3em; text-transform: uppercase; width: 100%; text-align: left; }
         .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
         .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
-        .stat { display: flex; justify-content: space-between; font-size: 1.3em; }
-        #terminal { font-size: 0.82em; height: 140px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 5px; background: #020502; line-height: 1.2; }
-        .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 5px; }
+        .stat { display: flex; justify-content: space-between; font-size: 1.5em; margin: 5px 0; }
+        #terminal { font-size: 1em; height: 160px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; line-height: 1.3; }
+        .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+        h2 { font-size: 1.8em; margin: 0 0 15px 0; }
     </style>
 </head>
 <body>
 
 <div id="viewport">
-    <canvas id="gameCanvas" width="2000" height="1500"></canvas>
+    <canvas id="gameCanvas" width="2400" height="1800"></canvas>
 </div>
 
 <div id="sidebar">
@@ -45,7 +46,7 @@
 
 <script>
 const CONFIG = {
-    WIDTH: 2000, HEIGHT: 1500,
+    WIDTH: 2400, HEIGHT: 1800,
     SCALE: 0.5,
     BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
     DEFENSE: {
@@ -68,7 +69,7 @@ let game = {
     selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false },
     keys: {},
-    player: { x: 1000, y: 750, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
     spawnDir: 'NORTH',
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
     mapView: 'DETAILED'
@@ -134,7 +135,7 @@ function generateStrategicMap() {
             const segments = 15;
             
             // Linia grzbietu
-            const startPos = (300 + Math.random() * (isHorizontal ? 2400 : 1800)) * S;
+            const startPos = (300 + Math.random() * (isHorizontal ? 3000 : 2200)) * S;
             const amplitude = (60 + Math.random() * 100) * S;
             const frequency = 0.4 + Math.random() * 0.4;
             
@@ -144,13 +145,13 @@ function generateStrategicMap() {
                 
                 if(isHorizontal) {
                     ridgePoints.push({
-                        x: (200 + t * 3600) * S,
+                        x: (200 + t * 4400) * S,
                         y: startPos + offset
                     });
                 } else {
                     ridgePoints.push({
                         x: startPos + offset,
-                        y: (200 + t * 2600) * S
+                        y: (200 + t * 3400) * S
                     });
                 }
             }
@@ -220,8 +221,8 @@ function generateStrategicMap() {
             
         } else {
             // PUNKTOWY SZCZYT (jak dotychczas)
-            const centerX = (400 + Math.random() * 3200) * S;
-            const centerY = (400 + Math.random() * 2200) * S;
+            const centerX = (400 + Math.random() * 4000) * S;
+            const centerY = (400 + Math.random() * 2800) * S;
             
             if(type < 0.65) {
                 createMountain(centerX, centerY, (200 + Math.random() * 150) * S, 12 + Math.floor(Math.random() * 10));
@@ -247,8 +248,8 @@ function generateStrategicMap() {
     const lakeCount = 2 + Math.floor(Math.random() * 3);
     
     for(let l = 0; l < lakeCount; l++) {
-        const centerX = (500 + Math.random() * 3000) * S;
-        const centerY = (500 + Math.random() * 2000) * S;
+        const centerX = (500 + Math.random() * 3800) * S;
+        const centerY = (500 + Math.random() * 2600) * S;
         
         const isLarge = Math.random() > 0.6;
         
@@ -290,8 +291,8 @@ function generateStrategicMap() {
     const forestCount = 3 + Math.floor(Math.random() * 4);
     
     for(let f = 0; f < forestCount; f++) {
-        const centerX = (500 + Math.random() * 3000) * S;
-        const centerY = (500 + Math.random() * 2000) * S;
+        const centerX = (500 + Math.random() * 3800) * S;
+        const centerY = (500 + Math.random() * 2600) * S;
         const size = (100 + Math.random() * 150) * S;
         const density = 15 + Math.floor(Math.random() * 20);
         
@@ -390,11 +391,11 @@ function spawnWaveLogic() {
 }
 
 function createEnemy(hp, moveType) {
-    let x, y, off = 250;
-    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1200; }
-    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1200; }
-    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
-    else { x = -off - Math.random()*1200; y = Math.random()*CONFIG.HEIGHT; }
+    let x, y, off = 300;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1500; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1500; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
 
     const size = 5 + (hp * 0.05);
     const vertices = [];
@@ -596,13 +597,13 @@ function renderTacticalMap() {
     if(game.mapView === 'DETAILED') {
         ctx.strokeStyle = "rgba(0, 100, 0, 0.05)";
         ctx.lineWidth = 1;
-        for(let i=0; i<=CONFIG.WIDTH; i+=250) {
+        for(let i=0; i<=CONFIG.WIDTH; i+=300) {
             ctx.beginPath();
             ctx.moveTo(i, 0);
             ctx.lineTo(i, CONFIG.HEIGHT);
             ctx.stroke();
         }
-        for(let i=0; i<=CONFIG.HEIGHT; i+=250) {
+        for(let i=0; i<=CONFIG.HEIGHT; i+=300) {
             ctx.beginPath();
             ctx.moveTo(0, i);
             ctx.lineTo(CONFIG.WIDTH, i);
@@ -732,13 +733,13 @@ function renderTacticalMap() {
     
     let spawnZone = {x: 0, y: 0, w: 0, h: 0};
     if(game.spawnDir === 'NORTH') {
-        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 150};
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 180};
     } else if(game.spawnDir === 'SOUTH') {
-        spawnZone = {x: 0, y: CONFIG.HEIGHT - 150, w: CONFIG.WIDTH, h: 150};
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 180, w: CONFIG.WIDTH, h: 180};
     } else if(game.spawnDir === 'EAST') {
-        spawnZone = {x: CONFIG.WIDTH - 150, y: 0, w: 150, h: CONFIG.HEIGHT};
+        spawnZone = {x: CONFIG.WIDTH - 180, y: 0, w: 180, h: CONFIG.HEIGHT};
     } else {
-        spawnZone = {x: 0, y: 0, w: 150, h: CONFIG.HEIGHT};
+        spawnZone = {x: 0, y: 0, w: 180, h: CONFIG.HEIGHT};
     }
     
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
@@ -749,23 +750,23 @@ function renderTacticalMap() {
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 1.5;
     
-    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 12 : 10;
+    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 14 : 11;
     for(let i = 0; i < arrowCount; i++) {
         let ax, ay;
         if(game.spawnDir === 'NORTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = 75;
+            ay = 90;
             drawArrow(ax, ay, Math.PI/2, 15);
         } else if(game.spawnDir === 'SOUTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = CONFIG.HEIGHT - 75;
+            ay = CONFIG.HEIGHT - 90;
             drawArrow(ax, ay, -Math.PI/2, 15);
         } else if(game.spawnDir === 'EAST') {
-            ax = CONFIG.WIDTH - 75;
+            ax = CONFIG.WIDTH - 90;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, Math.PI, 15);
         } else {
-            ax = 75;
+            ax = 90;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, 0, 15);
         }
@@ -773,20 +774,20 @@ function renderTacticalMap() {
     
     // Label spawnu
     ctx.fillStyle = "#f44";
-    ctx.font = "22px VT323";
+    ctx.font = "24px VT323";
     ctx.textAlign = "center";
     const labelText = `${game.spawnDir} FRONT`;
-    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 35);
-    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 20);
+    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 40);
+    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 25);
     else if(game.spawnDir === 'EAST') {
         ctx.save();
-        ctx.translate(CONFIG.WIDTH - 30, CONFIG.HEIGHT/2);
+        ctx.translate(CONFIG.WIDTH - 35, CONFIG.HEIGHT/2);
         ctx.rotate(-Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
     } else {
         ctx.save();
-        ctx.translate(30, CONFIG.HEIGHT/2);
+        ctx.translate(35, CONFIG.HEIGHT/2);
         ctx.rotate(Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
