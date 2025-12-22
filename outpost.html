@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTPOST | COMMAND TERMINAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #050805;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Share Tech Mono', monospace;
+            color: #0f0;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2);
+            border: 2px solid #0f0;
+        }
+
+        /* Efekt CRT Scanlines */
+        #gameContainer::after {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        canvas {
+            display: block;
+            background: #000;
+        }
+
+        #ui, #buildMenu {
+            position: absolute;
+            background: rgba(0, 20, 0, 0.85);
+            border: 1px solid #0f0;
+            padding: 15px;
+            backdrop-filter: blur(5px);
+            text-transform: uppercase;
+            box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.1);
+        }
+
+        #ui {
+            top: 20px;
+            left: 20px;
+            width: 220px;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+        }
+
+        #buildMenu {
+            top: 20px;
+            right: 20px;
+            width: 260px;
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%, 0 15%);
+        }
+
+        .option-card {
+            padding: 10px;
+            margin: 8px 0;
+            border-left: 4px solid #0f0;
+            background: rgba(0, 255, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-card:hover {
+            background: rgba(0, 255, 0, 0.2);
+            padding-left: 15px;
+        }
+
+        .option-card.selected {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #0ff;
+            color: #0ff;
+        }
+
+        button {
+            width: 100%;
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-family: 'Share Tech Mono', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
+
+        button:hover {
+            background: #0ff;
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .label { color: rgba(0, 255, 0, 0.6); font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1400" height="900"></canvas>
+        <div id="ui"></div>
+        <div id="buildMenu"></div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIG & CONSTANTS
+        // ============================================
+        const CONFIG = {
+            WIDTH: 1400,
+            HEIGHT: 900,
+            GRID_SIZE: 15,
+            CELL_SIZE: 50,
+            GRID_OFFSET_X: 325,
+            GRID_OFFSET_Y: 100,
+            START_MONEY: 800,
+            
+            BUILDINGS: {
+                SOLAR_PANEL: { name: 'Solar Array', cost: 150, upgradeCost: 100, maxLevel: 3, color: '#ff0', energy: 50 },
+                MUSHROOM_FARM: { name: 'Bio-Farm', cost: 200, upgradeCost: 150, maxLevel: 3, color: '#0f0', energy: -10 },
+                MINE_FACTORY: { name: 'Munition Fab', cost: 300, upgradeCost: 200, maxLevel: 5, color: '#f00', energy: -30 }
+            },
+            
+            TOWER_COST: 150,
+            TOWER_RANGE: 250,
+            TOWER_FIRE_RATE: 800,
+            PLAYER_SPEED: 6,
+            OUTPOST_HP: 1000,
+            MINE_TYPES: {
+                BASIC: { name: 'Alpha Mine', cost: 50, damage: 60, radius: 70, color: '#f00' },
+                PLASMA: { name: 'Plasma Charge', cost: 120, damage: 150, radius: 110, color: '#0ff' }
+            }
+        };
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let game = {
+            screen: 'base',
+            money: CONFIG.START_MONEY,
+            energy: 0,
+            wave: 0,
+            baseGrid: Array(CONFIG.GRID_SIZE).fill().map(() => Array(CONFIG.GRID_SIZE).fill(null)),
+            buildings: [],
+            selectedType: null,
+            selectedBuilding: null,
+            
+            player: { x: 700, y: 840, size: 30, color: '#0ff' },
+            enemies: [],
+            towers: [],
+            mines: [],
+            particles: [],
+            outpostHP: CONFIG.OUTPOST_HP,
+            shake: 0,
+            
+            keys: {},
+            mouse: { x: 0, y: 0 }
+        };
+
+        // ============================================
+        // UTILS & VISUALS
+        // ============================================
+        function createExplosion(x, y, color, count = 20) {
+            game.shake = 10;
+            for (let i = 0; i < count; i++) {
+                game.particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.03,
+                    color
+                });
+            }
+        }
+
+        function drawNeonRect(x, y, w, h, color, fill = false) {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = color;
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            if (fill) {
+                ctx.globalAlpha = 0.3;
+                ctx.fillRect(x, y, w, h);
+                ctx.globalAlpha = 1.0;
+            }
+            ctx.strokeRect(x, y, w, h);
+            ctx.restore();
+        }
+
+        // ============================================
+        // CORE LOGIC
+        // ============================================
+        function init() {
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                game.mouse.x = e.clientX - rect.left;
+                game.mouse.y = e.clientY - rect.top;
+            });
+            canvas.addEventListener('mousedown', handleInput);
+            window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
+            window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
+            
+            // Startowe budynki
+            placeBuilding('SOLAR_PANEL', 7, 7, true);
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function handleInput() {
+            if (game.screen === 'base') {
+                const gx = Math.floor((game.mouse.x - CONFIG.GRID_OFFSET_X) / CONFIG.CELL_SIZE);
+                const gy = Math.floor((game.mouse.y - CONFIG.GRID_OFFSET_Y) / CONFIG.CELL_SIZE);
+                
+                if (gx >= 0 && gx < CONFIG.GRID_SIZE && gy >= 0 && gy < CONFIG.GRID_SIZE) {
+                    const existing = game.baseGrid[gy][gx];
+                    if (existing) {
+                        game.selectedBuilding = existing;
+                        game.selectedType = null;
+                    } else if (game.selectedType) {
+                        placeBuilding(game.selectedType, gx, gy);
+                    }
+                }
+            } else {
+                if (game.placing === 'tower' && game.money >= CONFIG.TOWER_COST) {
+                    game.towers.push({ x: game.mouse.x, y: game.mouse.y, lastFire: 0 });
+                    game.money -= CONFIG.TOWER_COST;
+                } else if (game.placing === 'mine') {
+                    const m = CONFIG.MINE_TYPES[game.selectedMine];
+                    if (game.money >= m.cost) {
+                        game.mines.push({ x: game.mouse.x, y: game.mouse.y, type: game.selectedMine, config: m });
+                        game.money -= m.cost;
+                    }
+                }
+            }
+        }
+
+        function placeBuilding(type, x, y, free = false) {
+            const cost = CONFIG.BUILDINGS[type].cost;
+            if (free || game.money >= cost) {
+                const b = { type, x, y, level: 1, config: CONFIG.BUILDINGS[type] };
+                game.buildings.push(b);
+                game.baseGrid[y][x] = b;
+                if (!free) game.money -= cost;
+                recalculateStats();
+            }
+        }
+
+        function recalculateStats() {
+            game.energy = game.buildings.reduce((sum, b) => sum + (b.config.energy * b.level), 0);
+        }
+
+        // ============================================
+        // UPDATE
+        // ============================================
+        function update() {
+            if (game.shake > 0) game.shake *= 0.9;
+
+            if (game.screen === 'defense') {
+                // Gracz
+                if (game.keys['a'] && game.player.x > 50) game.player.x -= CONFIG.PLAYER_SPEED;
+                if (game.keys['d'] && game.player.x < CONFIG.WIDTH - 50) game.player.x += CONFIG.PLAYER_SPEED;
+
+                // Wrogowie
+                game.enemies.forEach((en, i) => {
+                    en.y += en.speed;
+                    if (en.y > CONFIG.HEIGHT - 80) {
+                        game.outpostHP -= 1;
+                        game.shake = 5;
+                    }
+                    
+                    // Kolizja z minami
+                    game.mines.forEach((m, mi) => {
+                        if (Math.hypot(en.x - m.x, en.y - m.y) < 30) {
+                            createExplosion(m.x, m.y, m.config.color, 40);
+                            damageInArea(m.x, m.y, m.config.radius, m.config.damage);
+                            game.mines.splice(mi, 1);
+                        }
+                    });
+
+                    if (en.hp <= 0) {
+                        game.money += 10;
+                        createExplosion(en.x, en.y, en.color, 15);
+                        game.enemies.splice(i, 1);
+                    }
+                });
+
+                // Wieżyczki
+                const now = Date.now();
+                game.towers.forEach(t => {
+                    if (now - t.lastFire > CONFIG.TOWER_FIRE_RATE) {
+                        const target = game.enemies.find(e => Math.hypot(e.x - t.x, e.y - t.y) < CONFIG.TOWER_RANGE);
+                        if (target) {
+                            target.hp -= 20;
+                            t.lastFire = now;
+                            // Strzał wizualny
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#0ff';
+                            ctx.moveTo(t.x, t.y);
+                            ctx.lineTo(target.x, target.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+
+                if (game.enemies.length === 0) game.screen = 'base';
+                if (game.outpostHP <= 0) location.reload();
+            }
+
+            // Partykuły
+            game.particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+                if (p.life <= 0) game.particles.splice(i, 1);
+            });
+        }
+
+        function damageInArea(x, y, r, dmg) {
+            game.enemies.forEach(e => {
+                if (Math.hypot(e.x - x, e.y - y) < r) e.hp -= dmg;
+            });
+        }
+
+        // ============================================
+        // RENDER
+        // ============================================
+        function render() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+            
+            ctx.save();
+            if (game.shake > 0.1) {
+                ctx.translate(Math.random() * game.shake, Math.random() * game.shake);
+            }
+
+            if (game.screen === 'base') renderBase();
+            else renderDefense();
+
+            renderParticles();
+            ctx.restore();
+            
+            updateUI();
+        }
+
+        function renderBase() {
+            // Siatka
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.1)';
+            for(let i=0; i<=CONFIG.GRID_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(CONFIG.GRID_OFFSET_X + i * CONFIG.CELL_SIZE, CONFIG.GRID_OFFSET_Y);
+                ctx.lineTo(CONFIG.GRID_OFFSET_X + i * CONFIG.CELL_SIZE, CONFIG.GRID_OFFSET_Y + CONFIG.GRID_SIZE * CONFIG.CELL_SIZE);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(CONFIG.GRID_OFFSET_X, CONFIG.GRID_OFFSET_Y + i * CONFIG.CELL_SIZE);
+                ctx.lineTo(CONFIG.GRID_OFFSET_X + CONFIG.GRID_SIZE * CONFIG.CELL_SIZE, CONFIG.GRID_OFFSET_Y + i * CONFIG.CELL_SIZE);
+                ctx.stroke();
+            }
+
+            game.buildings.forEach(b => {
+                const px = CONFIG.GRID_OFFSET_X + b.x * CONFIG.CELL_SIZE;
+                const py = CONFIG.GRID_OFFSET_Y + b.y * CONFIG.CELL_SIZE;
+                drawNeonRect(px + 5, py + 5, CONFIG.CELL_SIZE - 10, CONFIG.CELL_SIZE - 10, b.config.color, true);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`L${b.level}`, px + 20, py + 30);
+            });
+        }
+
+        function renderDefense() {
+            // Mur outpost
+            drawNeonRect(0, CONFIG.HEIGHT - 60, CONFIG.WIDTH, 10, '#0ff', true);
+
+            game.enemies.forEach(en => {
+                ctx.fillStyle = en.color;
+                ctx.beginPath();
+                ctx.arc(en.x, en.y, 15, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            game.towers.forEach(t => {
+                drawNeonRect(t.x - 15, t.y - 15, 30, 30, '#0f0', true);
+            });
+
+            game.mines.forEach(m => {
+                ctx.fillStyle = m.config.color;
+                ctx.fillRect(m.x - 5, m.y - 5, 10, 10);
+            });
+
+            // Player
+            drawNeonRect(game.player.x - 15, game.player.y - 15, 30, 30, '#0ff', true);
+        }
+
+        function renderParticles() {
+            game.particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 4, 4);
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function updateUI() {
+            const ui = document.getElementById('ui');
+            ui.innerHTML = `
+                <div class="stat-row"><span class="label">CREDITS:</span> <span>$${game.money}</span></div>
+                <div class="stat-row"><span class="label">ENERGY:</span> <span style="color:${game.energy<0?'#f00':'#0f0'}">${game.energy} GW</span></div>
+                <div class="stat-row"><span class="label">OUTPOST:</span> <span>${Math.ceil(game.outpostHP/10)}%</span></div>
+                ${game.screen === 'base' ? `<button onclick="startWave()">INITIATE DEFENSE</button>` : ''}
+            `;
+
+            const menu = document.getElementById('buildMenu');
+            if (game.screen === 'base') {
+                let h = '<h3>CONSTRUCTION</h3>';
+                for(let [id, b] of Object.entries(CONFIG.BUILDINGS)) {
+                    h += `<div class="option-card ${game.selectedType === id ? 'selected' : ''}" onclick="game.selectedType='${id}'">
+                        ${b.name} <br> <small>$${b.cost} | E: ${b.energy}</small>
+                    </div>`;
+                }
+                menu.innerHTML = h;
+            } else {
+                menu.innerHTML = `
+                    <h3>ARMAMENT</h3>
+                    <div class="option-card ${game.placing==='tower'?'selected':''}" onclick="game.placing='tower'">SENTRY TOWER ($${CONFIG.TOWER_COST})</div>
+                    <div class="option-card ${game.selectedMine==='BASIC'?'selected':''}" onclick="game.placing='mine';game.selectedMine='BASIC'">ALPHA MINE ($50)</div>
+                    <div class="option-card ${game.selectedMine==='PLASMA'?'selected':''}" onclick="game.placing='mine';game.selectedMine='PLASMA'">PLASMA CHARGE ($120)</div>
+                `;
+            }
+        }
+
+        function startWave() {
+            game.wave++;
+            game.screen = 'defense';
+            game.enemies = [];
+            for(let i=0; i<5 + game.wave*3; i++) {
+                game.enemies.push({
+                    x: Math.random() * (CONFIG.WIDTH - 100) + 50,
+                    y: -Math.random() * 500,
+                    hp: 50 + game.wave * 20,
+                    speed: 1 + Math.random() * 2,
+                    color: '#f44'
+                });
+            }
+        }
+
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        init();
+    </script>
+</body>
+</html>
