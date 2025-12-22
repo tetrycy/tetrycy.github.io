@@ -22,7 +22,7 @@
 <body>
 
 <div id="viewport">
-    <canvas id="gameCanvas" width="2400" height="1800"></canvas>
+    <canvas id="gameCanvas" width="1200" height="900"></canvas>
 </div>
 
 <div id="sidebar">
@@ -45,7 +45,8 @@
 
 <script>
 const CONFIG = {
-    WIDTH: 2400, HEIGHT: 1800,
+    WIDTH: 1200, HEIGHT: 900,
+    SCALE: 0.5, // Wszystko 2x mniejsze = 2x więcej zmieści się
     BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
@@ -67,10 +68,10 @@ let game = {
     selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false },
     keys: {},
-    player: { x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { x: 600, y: 450, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
     spawnDir: 'NORTH',
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
-    mapView: 'DETAILED' // 'DETAILED' lub 'SIMPLIFIED'
+    mapView: 'DETAILED'
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -118,49 +119,50 @@ function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     
     game.terrain = { hills: [], lakes: [], forests: [] };
+    const S = CONFIG.SCALE; // Wszystko 2x mniejsze
     
     // === GÓRY I WYŻYNY ===
-    const mountainCount = 3 + Math.floor(Math.random() * 4); // 3-6 formacji górskich
+    const mountainCount = 3 + Math.floor(Math.random() * 4);
     
     for(let m = 0; m < mountainCount; m++) {
         const type = Math.random();
-        let centerX = 400 + Math.random() * (CONFIG.WIDTH - 800);
-        let centerY = 400 + Math.random() * (CONFIG.HEIGHT - 800);
+        let centerX = (400 + Math.random() * 1600) * S;
+        let centerY = (400 + Math.random() * 1200) * S;
         
         if(type < 0.3) {
             // MASYWNY SZCZYT
-            createMountain(centerX, centerY, 200 + Math.random() * 150, 12 + Math.floor(Math.random() * 10));
+            createMountain(centerX, centerY, (200 + Math.random() * 150) * S, 12 + Math.floor(Math.random() * 10));
         } else if(type < 0.6) {
-            // WYŻYNA (plateau) - szeroka, płaska góra
-            const plateauSize = 250 + Math.random() * 200;
+            // WYŻYNA
+            const plateauSize = (250 + Math.random() * 200) * S;
             const layers = 6 + Math.floor(Math.random() * 4);
             for(let l = 0; l < layers; l++) {
-                const radius = plateauSize * (1 - l / layers * 0.3); // Mniej stromość
-                createContourCircle(centerX, centerY, radius, l, layers, 0.2); // Mniej noise
+                const radius = plateauSize * (1 - l / layers * 0.3);
+                createContourCircle(centerX, centerY, radius, l, layers, 0.2);
             }
         } else {
             // GRUPA PAGÓRKÓW
             const count = 2 + Math.floor(Math.random() * 3);
             for(let i = 0; i < count; i++) {
-                const offsetX = (Math.random() - 0.5) * 300;
-                const offsetY = (Math.random() - 0.5) * 300;
-                createMountain(centerX + offsetX, centerY + offsetY, 80 + Math.random() * 80, 4 + Math.floor(Math.random() * 5));
+                const offsetX = (Math.random() - 0.5) * 300 * S;
+                const offsetY = (Math.random() - 0.5) * 300 * S;
+                createMountain(centerX + offsetX, centerY + offsetY, (80 + Math.random() * 80) * S, 4 + Math.floor(Math.random() * 5));
             }
         }
     }
     
     // === JEZIORA SIARKI ===
-    const lakeCount = 2 + Math.floor(Math.random() * 3); // 2-4 jeziora
+    const lakeCount = 2 + Math.floor(Math.random() * 3);
     
     for(let l = 0; l < lakeCount; l++) {
-        const centerX = 500 + Math.random() * (CONFIG.WIDTH - 1000);
-        const centerY = 500 + Math.random() * (CONFIG.HEIGHT - 1000);
+        const centerX = (500 + Math.random() * 1400) * S;
+        const centerY = (500 + Math.random() * 800) * S;
         
         const isLarge = Math.random() > 0.6;
         
         if(isLarge) {
             // DUŻE JEZIORO
-            const radius = 120 + Math.random() * 100;
+            const radius = (120 + Math.random() * 100) * S;
             const points = [];
             const segments = 20;
             for(let i = 0; i < segments; i++) {
@@ -176,9 +178,9 @@ function generateStrategicMap() {
             // GRUPA MAŁYCH JEZIOREK
             const count = 2 + Math.floor(Math.random() * 3);
             for(let i = 0; i < count; i++) {
-                const offsetX = (Math.random() - 0.5) * 200;
-                const offsetY = (Math.random() - 0.5) * 200;
-                const radius = 40 + Math.random() * 40;
+                const offsetX = (Math.random() - 0.5) * 200 * S;
+                const offsetY = (Math.random() - 0.5) * 200 * S;
+                const radius = (40 + Math.random() * 40) * S;
                 const points = [];
                 const segments = 12;
                 for(let s = 0; s < segments; s++) {
@@ -195,13 +197,13 @@ function generateStrategicMap() {
     }
     
     // === KOSMICZNE LASY ===
-    const forestCount = 3 + Math.floor(Math.random() * 4); // 3-6 lasów
+    const forestCount = 3 + Math.floor(Math.random() * 4);
     
     for(let f = 0; f < forestCount; f++) {
-        const centerX = 500 + Math.random() * (CONFIG.WIDTH - 1000);
-        const centerY = 500 + Math.random() * (CONFIG.HEIGHT - 1000);
-        const size = 100 + Math.random() * 150;
-        const density = 15 + Math.floor(Math.random() * 20); // Ile "drzew"
+        const centerX = (500 + Math.random() * 1400) * S;
+        const centerY = (500 + Math.random() * 800) * S;
+        const size = (100 + Math.random() * 150) * S;
+        const density = 15 + Math.floor(Math.random() * 20);
         
         const trees = [];
         for(let t = 0; t < density; t++) {
@@ -210,7 +212,7 @@ function generateStrategicMap() {
             trees.push({
                 x: centerX + Math.cos(angle) * dist,
                 y: centerY + Math.sin(angle) * dist,
-                size: 8 + Math.random() * 12
+                size: (8 + Math.random() * 12) * S
             });
         }
         
@@ -274,11 +276,11 @@ function spawnWaveLogic() {
 }
 
 function createEnemy(hp, moveType) {
-    let x, y, off = 300;
-    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1500; }
-    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1500; }
-    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
-    else { x = -off - Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
+    let x, y, off = 150;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*800; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*800; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*800; y = Math.random()*CONFIG.HEIGHT; }
 
     const size = 5 + (hp * 0.05);
     const vertices = [];
@@ -427,13 +429,13 @@ function renderTacticalMap() {
     if(game.mapView === 'DETAILED') {
         ctx.strokeStyle = "rgba(0, 100, 0, 0.05)";
         ctx.lineWidth = 1;
-        for(let i=0; i<=CONFIG.WIDTH; i+=300) {
+        for(let i=0; i<=CONFIG.WIDTH; i+=150) {
             ctx.beginPath();
             ctx.moveTo(i, 0);
             ctx.lineTo(i, CONFIG.HEIGHT);
             ctx.stroke();
         }
-        for(let i=0; i<=CONFIG.HEIGHT; i+=300) {
+        for(let i=0; i<=CONFIG.HEIGHT; i+=150) {
             ctx.beginPath();
             ctx.moveTo(0, i);
             ctx.lineTo(CONFIG.WIDTH, i);
@@ -528,13 +530,13 @@ function renderTacticalMap() {
     
     let spawnZone = {x: 0, y: 0, w: 0, h: 0};
     if(game.spawnDir === 'NORTH') {
-        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 200};
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 100};
     } else if(game.spawnDir === 'SOUTH') {
-        spawnZone = {x: 0, y: CONFIG.HEIGHT - 200, w: CONFIG.WIDTH, h: 200};
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 100, w: CONFIG.WIDTH, h: 100};
     } else if(game.spawnDir === 'EAST') {
-        spawnZone = {x: CONFIG.WIDTH - 200, y: 0, w: 200, h: CONFIG.HEIGHT};
+        spawnZone = {x: CONFIG.WIDTH - 100, y: 0, w: 100, h: CONFIG.HEIGHT};
     } else {
-        spawnZone = {x: 0, y: 0, w: 200, h: CONFIG.HEIGHT};
+        spawnZone = {x: 0, y: 0, w: 100, h: CONFIG.HEIGHT};
     }
     
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
@@ -545,23 +547,23 @@ function renderTacticalMap() {
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 1.5;
     
-    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 12 : 8;
+    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 8 : 6;
     for(let i = 0; i < arrowCount; i++) {
         let ax, ay;
         if(game.spawnDir === 'NORTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = 100;
+            ay = 50;
             drawArrow(ax, ay, Math.PI/2, 15);
         } else if(game.spawnDir === 'SOUTH') {
             ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = CONFIG.HEIGHT - 100;
+            ay = CONFIG.HEIGHT - 50;
             drawArrow(ax, ay, -Math.PI/2, 15);
         } else if(game.spawnDir === 'EAST') {
-            ax = CONFIG.WIDTH - 100;
+            ax = CONFIG.WIDTH - 50;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, Math.PI, 15);
         } else {
-            ax = 100;
+            ax = 50;
             ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
             drawArrow(ax, ay, 0, 15);
         }
@@ -569,20 +571,20 @@ function renderTacticalMap() {
     
     // Label spawnu - minimalistyczny
     ctx.fillStyle = "#f44";
-    ctx.font = "20px VT323";
+    ctx.font = "18px VT323";
     ctx.textAlign = "center";
     const labelText = `${game.spawnDir} FRONT`;
-    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 40);
-    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 20);
+    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 25);
+    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 10);
     else if(game.spawnDir === 'EAST') {
         ctx.save();
-        ctx.translate(CONFIG.WIDTH - 35, CONFIG.HEIGHT/2);
+        ctx.translate(CONFIG.WIDTH - 20, CONFIG.HEIGHT/2);
         ctx.rotate(-Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
     } else {
         ctx.save();
-        ctx.translate(35, CONFIG.HEIGHT/2);
+        ctx.translate(20, CONFIG.HEIGHT/2);
         ctx.rotate(Math.PI/2);
         ctx.fillText(labelText, 0, 0);
         ctx.restore();
