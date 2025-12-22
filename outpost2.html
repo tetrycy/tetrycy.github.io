@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTPOST '95: AMNESIA - GEOMETRY SIEGE</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root { --f-green: #20ff20; --f-bg: #0a0d0a; --panel: #222; --f-red: #ff2020; }
+        body { margin: 0; background: #000; color: var(--f-green); font-family: 'VT323', monospace; display: flex; height: 100vh; overflow: hidden; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
+        canvas { border: 4px solid #333; image-rendering: pixelated; background: #080a08; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        #sidebar { width: 320px; background: var(--panel); border-left: 4px solid #444; display: flex; flex-direction: column; padding: 15px; }
+        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; }
+        .btn { background: #333; color: var(--f-green); border: 3px outset #555; padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-align: left; text-transform: uppercase; }
+        .btn:hover:not(:disabled) { background: #444; color: #fff; }
+        .btn:disabled { opacity: 0.2; filter: grayscale(1); }
+        .btn.active { background: #1a4d1a; border-color: var(--f-green); }
+        .stat { display: flex; justify-content: space-between; font-size: 1.4em; }
+        #terminal { font-size: 0.9em; color: #88ff88; height: 100px; overflow-y: auto; background: #000; padding: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+</div>
+
+<div id="sidebar">
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">OUTPOST '95</h2>
+    
+    <div class="screen">
+        <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
+        <div class="stat"><span>POWER:</span> <span id="ui-power">0</span></div>
+        <div class="stat"><span>HULL:</span> <span id="ui-hp">100%</span></div>
+    </div>
+
+    <div class="screen" id="terminal">> SYSTEM STANDBY...</div>
+
+    <div id="buildMenu" style="display:flex; flex-direction:column; flex-grow:1; overflow-y:auto;"></div>
+
+    <button class="btn" id="actionBtn" style="background:#4a1a1a; color:#fff; font-weight:bold;" onclick="switchScreen()">START DEFENSE</button>
+</div>
+
+<script>
+const CONFIG = {
+    GRID: 12, CELL: 50, BASE_OFF: { x: 100, y: 50 },
+    BUILDINGS: {
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0", upCost: 100 },
+        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0", upCost: 150 },
+        MUNITION: { name: "MUNITION FAB", cost: 300, pwr: -30, color: "#A00", upCost: 200 }
+    },
+    DEFENSE: {
+        SENTRY: { name: "SENTRY GUN", cost: 150, range: 150, dmg: 25, rof: 800 },
+        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 80, rad: 50 },
+        PLASMA: { name: "PLASMA CHARGE", cost: 130, dmg: 200, rad: 90, req: "MUNITION FAB" }
+    }
+};
+
+let game = {
+    money: 800, hp: 1000, pwr: 0, wave: 0, screen: 'BASE',
+    buildings: [], defUnits: [], enemies: [], projectiles: [], particles: [],
+    selected: null, mouse: {x:0, y:0, gx:0, gy:0}, player: {x:400, speed:4}, keys: {}
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function init() {
+    canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        game.mouse.x = (e.clientX - r.left) * (800 / r.width);
+        game.mouse.y = (e.clientY - r.top) * (600 / r.height);
+        game.mouse.gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
+        game.mouse.gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
+    });
+    canvas.addEventListener('mousedown', handleClick);
+    window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
+    window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
+    updateBuildMenu();
+    gameLoop();
+}
+
+function handleClick() {
+    if (game.screen === 'BASE' && game.selected) {
+        const cfg = CONFIG.BUILDINGS[game.selected];
+        if (game.money >= cfg.cost && isInsideGrid()) {
+            if (!game.buildings.some(b => b.gx === game.mouse.gx && b.gy === game.mouse.gy)) {
+                game.buildings.push({ type: game.selected, gx: game.mouse.gx, gy: game.mouse.gy, lv: 1, cfg });
+                game.money -= cfg.cost;
+                updateStats();
+            }
+        }
+    } else if (game.screen === 'DEFENSE') {
+        if (game.selected) placeDefense();
+        else shoot();
+    }
+}
+
+function placeDefense() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    if (game.money >= cfg.cost) {
+        game.defUnits.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, lastFire: 0 });
+        game.money -= cfg.cost;
+        updateStats();
+    }
+}
+
+function shoot() {
+    game.projectiles.push({ x: game.player.x, y: 550, vy: -8, dmg: 30 });
+}
+
+function switchScreen() {
+    if (game.screen === 'BASE') {
+        game.screen = 'DEFENSE';
+        game.wave++;
+        game.defUnits = [];
+        game.enemies = [];
+        spawnProceduralWave();
+        document.getElementById('actionBtn').innerText = "UNITS ENGAGED...";
+        document.getElementById('actionBtn').disabled = true;
+    } else {
+        game.screen = 'BASE';
+        game.hp = 1000;
+        document.getElementById('actionBtn').innerText = "START DEFENSE";
+        document.getElementById('actionBtn').disabled = false;
+    }
+    game.selected = null;
+    updateBuildMenu();
+}
+
+// --- GENEROWANIE PRZECIWNIKÓW (POOLED HP) ---
+
+function spawnProceduralWave() {
+    let waveHP = 100 + (game.wave * 200); // Pula HP na tę falę
+    logTerminal(`DETECTION: ${waveHP} HP MASS INBOUND`);
+
+    while (waveHP > 0) {
+        // Losuj HP dla tego przeciwnika (od 20 do max 50% pozostałej puli)
+        let enemyHP = Math.min(waveHP, 20 + Math.random() * (waveHP * 0.5));
+        if (enemyHP < 20) enemyHP = waveHP;
+        
+        game.enemies.push(createEnemy(enemyHP));
+        waveHP -= enemyHP;
+    }
+}
+
+function createEnemy(hp) {
+    const size = 15 + (hp * 0.4); // Rozmiar zależy od HP
+    const speed = Math.max(0.5, 2.5 - (size * 0.03)); // Im większy, tym wolniejszy
+    
+    // Generowanie nieforemnych wierzchołków
+    const vertices = [];
+    const points = 5 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < points; i++) {
+        const angle = (i / points) * Math.PI * 2;
+        const dist = size * (0.6 + Math.random() * 0.8);
+        vertices.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist });
+    }
+
+    return {
+        x: Math.random() * 700 + 50,
+        y: -Math.random() * 500 - 50,
+        hp: hp,
+        maxHp: hp,
+        speed: speed,
+        size: size,
+        vertices: vertices,
+        color: `rgb(${150 + Math.random() * 105}, 0, 0)`
+    };
+}
+
+// --- RENDEROWANIE ---
+
+function gameLoop() {
+    ctx.clearRect(0, 0, 800, 600);
+    
+    if (game.screen === 'BASE') {
+        renderBase();
+    } else {
+        renderDefense();
+    }
+
+    renderParticles();
+    requestAnimationFrame(gameLoop);
+}
+
+function renderBase() {
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
+    for (let i = 0; i <= CONFIG.GRID; i++) {
+        ctx.beginPath();
+        ctx.moveTo(CONFIG.BASE_OFF.x + i * CONFIG.CELL, CONFIG.BASE_OFF.y);
+        ctx.lineTo(CONFIG.BASE_OFF.x + i * CONFIG.CELL, CONFIG.BASE_OFF.y + CONFIG.GRID * CONFIG.CELL);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i * CONFIG.CELL);
+        ctx.lineTo(CONFIG.BASE_OFF.x + CONFIG.GRID * CONFIG.CELL, CONFIG.BASE_OFF.y + i * CONFIG.CELL);
+        ctx.stroke();
+    }
+
+    game.buildings.forEach(b => {
+        const px = CONFIG.BASE_OFF.x + b.gx * CONFIG.CELL;
+        const py = CONFIG.BASE_OFF.y + b.gy * CONFIG.CELL;
+        ctx.fillStyle = b.cfg.color;
+        ctx.fillRect(px + 4, py + 4, CONFIG.CELL - 8, CONFIG.CELL - 8);
+        ctx.fillStyle = "#fff";
+        ctx.fillText("LV" + b.lv, px + 8, py + 18);
+    });
+}
+
+function renderDefense() {
+    ctx.strokeStyle = "#333";
+    ctx.beginPath(); ctx.moveTo(0, 580); ctx.lineTo(800, 580); ctx.stroke();
+
+    // Player
+    if (game.keys['a'] || game.keys['arrowleft']) game.player.x -= game.player.speed;
+    if (game.keys['d'] || game.keys['arrowright']) game.player.x += game.player.speed;
+    ctx.fillStyle = "#0ff";
+    ctx.fillRect(game.player.x - 15, 560, 30, 20);
+
+    // Enemies (Irregular Shapes)
+    game.enemies.forEach((e, i) => {
+        e.y += e.speed;
+        
+        ctx.fillStyle = e.color;
+        ctx.beginPath();
+        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for(let v=1; v<e.vertices.length; v++) {
+            ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
+
+        if (e.y > 580) {
+            game.hp -= 10;
+            game.enemies.splice(i, 1);
+            updateStats();
+        }
+    });
+
+    // Defense Units & Projectiles
+    const now = Date.now();
+    game.defUnits.forEach((u, i) => {
+        ctx.fillStyle = "#ff0";
+        ctx.fillRect(u.x-10, u.y-10, 20, 20);
+        const penalty = game.pwr < 0 ? 2 : 1;
+        if (u.name === "SENTRY GUN" && now - u.lastFire > u.rof * penalty) {
+            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (target) {
+                target.hp -= u.dmg;
+                u.lastFire = now;
+                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+            }
+        }
+        // Mines
+        if (u.rad && game.enemies.some(e => Math.hypot(e.x - u.x, e.y - u.y) < 30)) {
+            explode(u);
+            game.defUnits.splice(i, 1);
+        }
+    });
+
+    game.projectiles.forEach((p, i) => {
+        p.y += p.vy;
+        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
+        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+        if (hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
+    });
+
+    game.enemies = game.enemies.filter(e => {
+        if (e.hp <= 0) { game.money += 15; return false; }
+        return true;
+    });
+
+    if (game.enemies.length === 0) switchScreen();
+    if (game.hp <= 0) { alert("OUTPOST DESTROYED"); location.reload(); }
+}
+
+function explode(m) {
+    game.enemies.forEach(e => {
+        if (Math.hypot(e.x - m.x, e.y - m.y) < m.rad) e.hp -= m.dmg;
+    });
+    for(let i=0; i<20; i++) game.particles.push({x:m.x, y:m.y, vx:Math.random()*6-3, vy:Math.random()*6-3, life:1, c:"#f00"});
+}
+
+function renderParticles() {
+    game.particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, 2, 2);
+        if (p.life <= 0) game.particles.splice(i, 1);
+    });
+    ctx.globalAlpha = 1;
+}
+
+function updateStats() {
+    let p = 0;
+    game.buildings.forEach(b => p += b.cfg.pwr * b.lv);
+    game.pwr = p;
+    document.getElementById('ui-money').innerText = `$${game.money}`;
+    document.getElementById('ui-power').innerText = `${game.pwr} PWR`;
+    document.getElementById('ui-power').style.color = game.pwr < 0 ? "#f00" : "#20ff20";
+    document.getElementById('ui-hp').innerText = `${Math.ceil((game.hp/1000)*100)}%`;
+}
+
+function updateBuildMenu() {
+    const menu = document.getElementById('buildMenu');
+    menu.innerHTML = "";
+    const list = game.screen === 'BASE' ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
+    for (let key in list) {
+        const item = list[key];
+        const locked = item.req && !game.buildings.some(b => b.cfg.name === item.req);
+        const btn = document.createElement('button');
+        btn.className = 'btn' + (game.selected === key ? ' active' : '');
+        btn.disabled = locked;
+        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+        btn.onclick = () => { game.selected = key; updateBuildMenu(); };
+        menu.appendChild(btn);
+    }
+}
+
+function isInsideGrid() {
+    return game.mouse.gx >= 0 && game.mouse.gx < CONFIG.GRID && game.mouse.gy >= 0 && game.mouse.gy < CONFIG.GRID;
+}
+
+function logTerminal(txt) {
+    document.getElementById('terminal').innerHTML += `> ${txt}<br>`;
+}
+
+init();
+</script>
+</body>
+</html>
