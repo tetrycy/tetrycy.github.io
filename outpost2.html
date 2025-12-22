@@ -2,69 +2,86 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: CARTOGRAPHER PROTOCOL</title>
+    <title>OUTPOST '95: OPERATIONAL COMMANDER</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --f-green: #20ff20; --f-bg: #080d08; --panel: #1a1a1a; --f-red: #ff3333; }
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: 'VT323', monospace; display: flex; height: 100vh; overflow: hidden; }
-        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
-        canvas { border: 2px solid #333; image-rendering: pixelated; background: var(--f-bg); cursor: crosshair; }
-        #sidebar { width: 320px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
-        .screen { background: #000; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 10px rgba(0,255,0,0.2); }
-        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-transform: uppercase; width: 100%; text-align: left; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        canvas { border: 2px solid var(--f-green); image-rendering: pixelated; background: var(--f-bg); cursor: crosshair; }
+        #sidebar { width: 340px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 6px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.1em; text-transform: uppercase; width: 100%; text-align: left; }
         .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
         .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
-        .stat { display: flex; justify-content: space-between; font-size: 1.4em; }
-        #terminal { font-size: 0.9em; height: 100px; overflow-y: auto; color: #8f8; line-height: 1.1; }
+        .stat { display: flex; justify-content: space-between; font-size: 1.3em; }
+        #terminal { font-size: 0.85em; height: 140px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 5px; line-height: 1.1; }
+        .weapon-btn { background: #111; border: 1px dashed var(--f-green); color: #8f8; margin: 2px 0; font-size: 0.9em; cursor: pointer; }
+        .weapon-btn.active { background: var(--f-green); color: #000; border-style: solid; }
     </style>
 </head>
 <body>
 
 <div id="viewport">
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="900" height="750"></canvas>
 </div>
 
 <div id="sidebar">
-    <h2 style="text-align:center; border-bottom:1px solid var(--f-green); margin:0 0 10px 0;">STRAT-MAP v9.5</h2>
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">STRAT-COM INTERFACE</h2>
     
     <div class="screen">
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
-        <div class="stat"><span>POWER:</span> <span id="ui-power">0</span></div>
-        <div class="stat"><span>HULL:</span> <span id="ui-hp">100%</span></div>
+        <div class="stat"><span>NET PWR:</span> <span id="ui-power">0</span></div>
+        <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
     </div>
 
-    <div class="screen" id="terminal">> BOOTING CARTOGRAPHY MODULE...<br>> GENERATING ISOHYPSES...</div>
+    <div class="screen" id="terminal">> SYSTEM IDLE...</div>
+
+    <div id="weaponSelect" style="display:none;" class="screen">
+        <div style="font-size:0.8em; margin-bottom:5px; color:#aaa;">LOADOUT SELECTION:</div>
+        <button class="weapon-btn" id="wpn-std" onclick="setWeapon('standard')">RAPID REPEATER</button>
+        <button class="weapon-btn" id="wpn-hvy" onclick="setWeapon('heavy')">HEAVY SLUGGER</button>
+        <button class="weapon-btn" id="wpn-spr" onclick="setWeapon('spread')">PLASMA DIFFUSER</button>
+    </div>
 
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
 
-    <button class="btn" id="actionBtn" style="background:#330000; border-color:#f00; color:#f00; font-weight:bold;" onclick="handleAction()">EXECUTE DEFENSE</button>
+    <button class="btn" id="actionBtn" style="background:#300; border-color:#f44; color:#f44; font-weight:bold; text-align:center; margin-top:10px;" onclick="handleAction()">START DEFENSE</button>
 </div>
 
 <script>
 const CONFIG = {
-    GRID: 12, CELL: 50, BASE_OFF: { x: 100, y: 50 },
+    WIDTH: 900, HEIGHT: 750,
+    BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
+    DEFENSE: {
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 5000, type: 'core', color: '#0ff' },
+        WALL: { name: "BARRIER", cost: 20, hp: 1200, type: 'wall', color: '#666' },
+        SENTRY: { name: "LR TURRET", cost: 150, range: 280, dmg: 10, rof: 500, hp: 300, type: 'tower', color: '#ff0' },
+        PULSE: { name: "PULSE TOWER", cost: 120, range: 140, dmg: 6, rof: 150, hp: 200, type: 'tower', color: '#0f0' },
+        BATTERY: { name: "HEAVY BTY", cost: 300, range: 450, dmg: 150, rof: 2500, hp: 400, type: 'tower', color: '#f80' },
+        MINE: { name: "MINEFIELD", cost: 50, dmg: 350, rad: 100, type: 'mine', color: '#f44' }
+    },
+    WEAPONS: {
+        standard: { name: "REPEATER", rof: 120, dmg: 20, spread: 0, count: 1 },
+        heavy: { name: "SLUGGER", rof: 500, dmg: 150, spread: 0, count: 1 },
+        spread: { name: "DIFFUSER", rof: 300, dmg: 30, spread: 0.4, count: 3 }
+    },
     BUILDINGS: {
         SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
         FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
-        MUNITION: { name: "MUNITION FAB", cost: 300, pwr: -30, color: "#A00" }
-    },
-    DEFENSE: {
-        CORE: { name: "OUTPOST CORE", cost: 0, hp: 1000, type: 'core', color: '#0ff' },
-        WALL: { name: "METAL WALL", cost: 30, hp: 400, type: 'wall', color: '#666' },
-        SENTRY: { name: "SENTRY GUN", cost: 160, range: 180, dmg: 12, rof: 600, hp: 150, type: 'tower', color: '#ff0' },
-        MINE: { name: "ALPHA MINE", cost: 50, dmg: 120, rad: 60, type: 'mine', color: '#f33' }
-    },
-    PLAYER_ROF: 110
+        MUNITION: { name: "MUNITION FAB", cost: 400, pwr: -40, color: "#A00" }
+    }
 };
 
 let game = {
-    money: 800, hp: 1000, pwr: 0, wave: 0,
-    mode: 'BASE',
-    buildings: [], entities: [], enemies: [], projectiles: [], particles: [],
-    hills: [], selected: null, corePlaced: false,
-    mouse: { x:0, y:0, gx:0, gy:0, down: false },
-    player: { x:0, y:0, lastShot: 0 },
-    keys: {}
+    money: 800, hp: 5000, pwr: 0, wave: 0, mode: 'BASE',
+    buildings: [], entities: [], enemies: [], projectiles: [],
+    hills: [], rivers: [],
+    selected: null, corePlaced: false,
+    mouse: { x:0, y:0, down: false },
+    player: { x:0, y:0, lastShot: 0, weapon: 'standard' },
+    spawnDir: 'NORTH',
+    intel: { land: 0, swim: 0, air: 0 }
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -73,132 +90,140 @@ const ctx = canvas.getContext('2d');
 function init() {
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
-        game.mouse.x = (e.clientX - r.left) * (800 / r.width);
-        game.mouse.y = (e.clientY - r.top) * (600 / r.height);
-        game.mouse.gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
-        game.mouse.gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
+        game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
+        game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
     });
     canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
     canvas.addEventListener('mouseup', () => game.mouse.down = false);
-    window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
-    window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
+    setWeapon('standard');
     updateBuildMenu();
     gameLoop();
+}
+
+function setWeapon(type) {
+    game.player.weapon = type;
+    document.querySelectorAll('.weapon-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('wpn-' + (type==='standard'?'std':type==='heavy'?'hvy':'spr')).classList.add('active');
 }
 
 function handleAction() {
     if (game.mode === 'BASE') {
         game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
-        generateTopography(); updateBuildMenu();
+        generateTheater();
+        spawnProceduralWave(); // Generujemy wrogów od razu, by stworzyć raport
+        updateBuildMenu();
         document.getElementById('actionBtn').innerText = "LOCK POSITIONS";
-        logTerminal(`PREP: WAVE ${game.wave}. TOPOGRAPHY RENDERED.`);
+        document.getElementById('weaponSelect').style.display = 'block';
+        showReport();
     } else if (game.mode === 'PREP') {
-        if (!game.corePlaced) { logTerminal("CORE PLACEMENT MANDATORY."); return; }
-        game.mode = 'COMBAT'; spawnEnemies();
-        document.getElementById('actionBtn').innerText = "ENGAGED";
+        if (!game.corePlaced) { logTerminal("CRITICAL: HQ BUNKER NOT DEPLOYED."); return; }
+        game.mode = 'COMBAT';
+        document.getElementById('actionBtn').innerText = "IN COMBAT";
         document.getElementById('actionBtn').disabled = true;
+        document.getElementById('weaponSelect').style.display = 'none';
     }
 }
 
-function handleInput() {
-    if (game.mode === 'BASE' && game.selected) {
-        const cfg = CONFIG.BUILDINGS[game.selected];
-        if (game.money >= cfg.cost && isInsideGrid()) {
-            if (!game.buildings.some(b => b.gx === game.mouse.gx && b.gy === game.mouse.gy)) {
-                game.buildings.push({ type: game.selected, gx: game.mouse.gx, gy: game.mouse.gy, lv: 1, cfg });
-                game.money -= cfg.cost; updateStats();
-            }
-        }
-    } else if (game.mode === 'PREP' && game.selected) {
-        const cfg = CONFIG.DEFENSE[game.selected];
-        if (cfg.type === 'core' && game.corePlaced) return;
-        if (game.money >= cfg.cost) {
-            const ent = { ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 };
-            game.entities.push(ent);
-            if (cfg.type === 'core') { game.corePlaced = true; game.player.x = ent.x; game.player.y = ent.y; }
-            else game.money -= cfg.cost;
-            updateStats();
-        }
-    }
+function showReport() {
+    logTerminal(`--- INTEL REPORT WAVE ${game.wave} ---`);
+    logTerminal(`DIR: ${game.spawnDir}`);
+    logTerminal(`LAND: ${game.intel.land} | AMPH: ${game.intel.swim} | AIR: ${game.intel.air}`);
+    logTerminal(`TOTAL SIGNATURES: ${game.enemies.length}`);
 }
 
-function generateTopography() {
+function generateTheater() {
+    game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
+    game.rivers = [];
+    const rCount = Math.floor(Math.random() * 3);
+    for(let i=0; i<rCount; i++) {
+        const isHorizontal = Math.random() > 0.5;
+        const pos = 200 + Math.random() * (isHorizontal ? CONFIG.HEIGHT - 400 : CONFIG.WIDTH - 400);
+        game.rivers.push({ isHorizontal, pos, bridges: [200 + Math.random()*200, 500 + Math.random()*200] });
+    }
     game.hills = [];
-    const count = 4 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < count; i++) {
-        const layers = [];
-        const layerCount = 4 + Math.floor(Math.random() * 4);
-        const centerX = Math.random() * 800;
-        const centerY = Math.random() * 500;
-        const baseR = 60 + Math.random() * 100;
-        
-        for (let j = 1; j <= layerCount; j++) {
-            const vertices = [];
-            const r = baseR * (1 - (j / (layerCount + 1)));
-            for (let a = 0; a < Math.PI * 2; a += 0.3) {
-                const noise = Math.random() * (r * 0.2);
-                vertices.push({ x: Math.cos(a) * (r + noise), y: Math.sin(a) * (r + noise) });
-            }
-            layers.push({ vertices, r });
-        }
-        game.hills.push({ x: centerX, y: centerY, layers });
+    for (let i = 0; i < 8; i++) {
+        game.hills.push({ x: Math.random()*CONFIG.WIDTH, y: Math.random()*CONFIG.HEIGHT, r: 80+Math.random()*120, layers: 5+Math.floor(Math.random()*5)});
     }
 }
 
-function spawnEnemies() {
-    let pool = 400 + (game.wave * 600);
+function spawnProceduralWave() {
+    game.enemies = [];
+    game.intel = { land: 0, swim: 0, air: 0 };
+    let pool = 2000 + (game.wave * 2500);
+    const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
+    const total = r1+r2+r3;
+
     while (pool > 0) {
-        let hp = Math.min(pool, 40 + Math.random() * (pool * 0.4));
-        if (hp < 30) hp = pool;
-        game.enemies.push(createEnemy(hp));
+        const r = Math.random();
+        let moveType = 'FLY';
+        if (r < r1/total) { moveType = 'LAND'; game.intel.land++; }
+        else if (r < (r1+r2)/total) { moveType = 'SWIM'; game.intel.swim++; }
+        else { game.intel.air++; }
+
+        let hp = 50 + Math.random() * 150 + (game.wave * 30);
+        game.enemies.push(createComplexAnomaly(hp, moveType));
         pool -= hp;
     }
 }
 
-function createEnemy(hp) {
-    const size = 10 + (hp * 0.2);
+function createComplexAnomaly(hp, moveType) {
+    let x, y;
+    const off = 300;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*500; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*500; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*500; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*500; y = Math.random()*CONFIG.HEIGHT; }
+
+    const size = 7 + (hp * 0.07);
     const vertices = [];
-    const pts = 60 + Math.floor(Math.random() * 40);
+    const pts = 50 + Math.floor(Math.random() * 40);
     for(let i=0; i<pts; i++) {
         const a = (i/pts) * Math.PI * 2;
         const d = size * (0.6 + Math.random() * 0.8);
         vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, baseDist: d});
     }
-    return { x: Math.random()*800, y: -100, hp, maxHp: hp, size, vertices, speed: 0.6 + (15/size), hitFlash: 0 };
+
+    let color = 'var(--f-red)';
+    if(moveType === 'SWIM') color = 'var(--f-blue)';
+    if(moveType === 'FLY') color = 'var(--f-purple)';
+
+    return { x, y, hp, maxHp: hp, moveType, size, vertices, color, speed: moveType === 'FLY' ? 1.2 : 0.6, hitFlash: 0 };
 }
 
 function gameLoop() {
-    ctx.clearRect(0, 0, 800, 600);
-    if (game.mode === 'BASE') renderBase();
+    ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    if (game.mode === 'BASE') renderBaseGrid();
     else {
-        renderMap();
+        renderTacticalMap();
         if (game.mode === 'COMBAT') updateCombat();
         renderEntities();
-        renderEnemies();
+        renderAnomalies();
         if (game.corePlaced) renderPlayer();
         if (game.mode === 'PREP' && game.selected) renderGhost();
     }
     renderProjectiles();
-    renderParticles();
     updateStats();
     requestAnimationFrame(gameLoop);
 }
 
-function renderMap() {
-    ctx.strokeStyle = "rgba(32, 255, 32, 0.2)"; ctx.lineWidth = 1;
-    game.hills.forEach(hill => {
-        hill.layers.forEach((layer, idx) => {
-            ctx.beginPath();
-            layer.vertices.forEach((v, i) => {
-                if (i === 0) ctx.moveTo(hill.x + v.x, hill.y + v.y);
-                else ctx.lineTo(hill.x + v.x, hill.y + v.y);
-            });
-            ctx.closePath(); ctx.stroke();
-            if (idx === 0) {
-                ctx.fillStyle = "rgba(32, 255, 32, 0.3)"; ctx.font = "10px VT323";
-                ctx.fillText(`${100 + idx*20}m`, hill.x + layer.r, hill.y);
-            }
+function renderTacticalMap() {
+    game.rivers.forEach(r => {
+        ctx.strokeStyle = "rgba(40, 80, 200, 0.2)"; ctx.lineWidth = 30;
+        ctx.beginPath();
+        if(r.isHorizontal) { ctx.moveTo(0, r.pos); ctx.lineTo(CONFIG.WIDTH, r.pos); }
+        else { ctx.moveTo(r.pos, 0); ctx.lineTo(r.pos, CONFIG.HEIGHT); }
+        ctx.stroke();
+        ctx.fillStyle = "#222";
+        r.bridges.forEach(bp => {
+            if(r.isHorizontal) ctx.fillRect(bp - 40, r.pos - 20, 80, 40);
+            else ctx.fillRect(r.pos - 20, bp - 40, 40, 80);
         });
+    });
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)"; ctx.lineWidth = 1;
+    game.hills.forEach(h => {
+        for (let l = 1; l <= h.layers; l++) {
+            ctx.beginPath(); ctx.arc(h.x, h.y, h.r * (l/h.layers), 0, Math.PI*2); ctx.stroke();
+        }
     });
 }
 
@@ -209,16 +234,34 @@ function updateCombat() {
 
     game.enemies.forEach((e, i) => {
         const ang = Math.atan2(core.y - e.y, core.x - e.x);
-        let speedMult = 1.0;
-        game.hills.forEach(h => {
-            const dist = Math.hypot(e.x - h.x, e.y - h.y);
-            h.layers.forEach(l => { if (dist < l.r) speedMult *= 0.75; });
-        });
+        let moveX = Math.cos(ang) * e.speed;
+        let moveY = Math.sin(ang) * e.speed;
 
-        e.x += Math.cos(ang) * e.speed * speedMult;
-        e.y += Math.sin(ang) * e.speed * speedMult;
+        if (e.moveType === 'LAND') {
+            game.rivers.forEach(r => {
+                const onBridge = r.bridges.some(bp => r.isHorizontal ? (Math.abs(e.x - bp) < 45 && Math.abs(e.y - r.pos) < 30) : (Math.abs(e.y - bp) < 45 && Math.abs(e.x - r.pos) < 30));
+                if (!onBridge) {
+                    if (r.isHorizontal && Math.abs(e.y - r.pos) < 20) {
+                        moveY = 0;
+                        const nearB = r.bridges.reduce((p, c) => Math.abs(c - e.x) < Math.abs(p - e.x) ? c : p);
+                        moveX = e.x < nearB ? e.speed : -e.speed;
+                    } else if (!r.isHorizontal && Math.abs(e.x - r.pos) < 20) {
+                        moveX = 0;
+                        const nearB = r.bridges.reduce((p, c) => Math.abs(c - e.y) < Math.abs(p - e.y) ? c : p);
+                        moveY = e.y < nearB ? e.speed : -e.speed;
+                    }
+                }
+            });
+        }
 
-        // Jitter
+        let terrain = 1.0;
+        if(e.moveType !== 'FLY') {
+            game.hills.forEach(h => { if(Math.hypot(e.x-h.x, e.y-h.y) < h.r) terrain *= 0.8; });
+            game.rivers.forEach(r => { if(e.moveType === 'SWIM' && (r.isHorizontal ? Math.abs(e.y-r.pos)<20 : Math.abs(e.x-r.pos)<20)) terrain *= 0.5; });
+        }
+
+        e.x += moveX * terrain; e.y += moveY * terrain;
+
         e.vertices.forEach(v => {
             const jitter = (Math.random() - 0.5) * 1.5;
             const a = Math.atan2(v.y, v.x);
@@ -228,92 +271,116 @@ function updateCombat() {
 
         game.entities.forEach(ent => {
             if (ent.type === 'mine') return;
-            if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + 15) {
-                ent.curHP -= e.hp;
-                createParticles(e.x, e.y, "#f00", 15);
-                game.enemies.splice(i, 1);
+            if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + 10) {
+                ent.curHP -= e.hp; game.enemies.splice(i, 1);
                 if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
             }
         });
     });
 
     game.entities.forEach(u => {
-        if (u.type === 'tower' && now - u.lastFire > (game.pwr < 0 ? u.rof * 2 : u.rof)) {
+        if (u.type === 'tower' && now - u.lastFire > (game.pwr < 0 ? u.rof * 2.5 : u.rof)) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
             if (target) {
                 target.hp -= u.dmg; target.hitFlash = 3; u.lastFire = now;
-                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+                ctx.strokeStyle = "rgba(255, 255, 0, 0.4)"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
             }
         }
         if (u.type === 'mine' && game.enemies.some(e => Math.hypot(e.x-u.x, e.y-u.y) < 30)) {
             game.enemies.forEach(e => { if(Math.hypot(e.x-u.x, e.y-u.y) < u.rad) e.hp -= u.dmg; });
-            createParticles(u.x, u.y, "#f40", 30); u.curHP = 0;
+            u.curHP = 0;
         }
     });
 
-    game.entities = game.entities.filter(ent => ent.curHP > 0 || (ent.type==='mine' && ent.curHP !== 0));
-    game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 15; return false; } return true; });
+    game.entities = game.entities.filter(ent => ent.curHP > 0);
+    game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 12; return false; } return true; });
 
     if (game.enemies.length === 0) {
         game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "START DEFENSE";
-        document.getElementById('actionBtn').disabled = false; logTerminal("AREA SECURED.");
+        document.getElementById('actionBtn').disabled = false; logTerminal("THREATS NEUTRALIZED.");
     }
-    if (game.hp <= 0) { alert("CORE BREACH - OUTPOST LOST"); location.reload(); }
+    if (game.hp <= 0) { alert("HQ DESTROYED."); location.reload(); }
 }
 
-function playerShoot() {
-    const now = Date.now();
-    if (now - game.player.lastShot > CONFIG.PLAYER_ROF) {
-        const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle)*12, vy: Math.sin(angle)*12, dmg: 25 });
-        game.player.lastShot = now;
-    }
+function renderAnomalies() {
+    game.enemies.forEach(e => {
+        const hpPct = Math.max(0, e.hp / e.maxHp);
+        ctx.fillStyle = e.hitFlash > 0 ? "#fff" : e.color.replace(')', ', 0.3)');
+        ctx.beginPath();
+        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = e.hitFlash > 0 ? "#fff" : e.color; ctx.stroke();
+        
+        ctx.fillStyle = "#400"; ctx.fillRect(e.x - 10, e.y - e.size - 8, 20, 3);
+        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - 10, e.y - e.size - 8, 20 * hpPct, 3);
+        if(e.hitFlash > 0) e.hitFlash--;
+    });
 }
 
 function renderEntities() {
     game.entities.forEach(ent => {
-        ctx.fillStyle = ent.color;
-        if (ent.type === 'core') {
-            ctx.beginPath(); ctx.arc(ent.x, ent.y, 20, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = "#fff"; ctx.stroke();
-        } else if (ent.type === 'wall') ctx.fillRect(ent.x-15, ent.y-15, 30, 30);
-        else ctx.fillRect(ent.x-10, ent.y-10, 20, 20);
-        
+        ctx.strokeStyle = ent.color; ctx.lineWidth = 2;
+        if (ent.type === 'core') ctx.strokeRect(ent.x-12, ent.y-12, 24, 24);
+        else if (ent.type === 'wall') ctx.strokeRect(ent.x-8, ent.y-8, 16, 16);
+        else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 7, 0, Math.PI*2); ctx.stroke(); }
         if (ent.type !== 'mine') {
-            ctx.fillStyle = "#400"; ctx.fillRect(ent.x-15, ent.y-25, 30, 3);
-            ctx.fillStyle = "#0f0"; ctx.fillRect(ent.x-15, ent.y-25, (ent.curHP/ent.hp)*30, 3);
+            ctx.fillStyle = "var(--f-green)"; ctx.fillRect(ent.x-10, ent.y+15, (ent.curHP/ent.hp)*20, 2);
         }
     });
 }
 
-function renderEnemies() {
-    game.enemies.forEach(e => {
-        ctx.fillStyle = e.hitFlash > 0 ? "#fff" : "rgba(255, 30, 30, 0.4)";
-        ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
-        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
-        ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = e.hitFlash > 0 ? "#fff" : "#f44"; ctx.stroke();
-        if (e.hitFlash > 0) e.hitFlash--;
+function handleInput() {
+    if (game.mode === 'BASE' && game.selected) {
+        const gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
+        const gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
+        const cfg = CONFIG.BUILDINGS[game.selected];
+        if (game.money >= cfg.cost && gx>=0 && gx<CONFIG.GRID && gy>=0 && gy<CONFIG.GRID) {
+            game.buildings.push({ gx, gy, cfg }); game.money -= cfg.cost; updateStats();
+        }
+    } else if (game.mode === 'PREP' && game.selected) {
+        const cfg = CONFIG.DEFENSE[game.selected];
+        if (cfg.type === 'core' && game.corePlaced) return;
+        if (game.money >= cfg.cost) {
+            game.entities.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 });
+            if (cfg.type === 'core') { game.corePlaced = true; game.player.x = game.mouse.x; game.player.y = game.mouse.y; }
+            else game.money -= cfg.cost;
+            updateStats();
+        }
+    }
+}
+
+function playerShoot() {
+    const now = Date.now();
+    const wpn = CONFIG.WEAPONS[game.player.weapon];
+    if (now - game.player.lastShot > wpn.rof) {
+        const baseA = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+        for(let i=0; i<wpn.count; i++) {
+            const a = baseA + (i - (wpn.count-1)/2) * wpn.spread;
+            game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*20, vy: Math.sin(a)*20, dmg: wpn.dmg });
+        }
+        game.player.lastShot = now;
+    }
+}
+
+function renderProjectiles() {
+    ctx.fillStyle = "#fff";
+    game.projectiles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 2, 2);
+        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+        if (hit) { hit.hp -= p.dmg; hit.hitFlash = 3; game.projectiles.splice(i, 1); }
+        if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
     });
 }
 
 function renderPlayer() {
-    ctx.fillStyle = "#0ff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 4, 0, Math.PI*2); ctx.fill();
     const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-    ctx.save(); ctx.translate(game.player.x, game.player.y); ctx.rotate(a);
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, -3, 18, 6); ctx.restore();
+    ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y);
+    ctx.lineTo(game.player.x + Math.cos(a)*15, game.player.y + Math.sin(a)*15); ctx.stroke();
 }
 
-function renderProjectiles() {
-    game.projectiles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
-        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
-        if (p.x < 0 || p.x > 800 || p.y < 0 || p.y > 600) game.projectiles.splice(i, 1);
-    });
-}
-
-function renderBase() {
+function renderBaseGrid() {
     ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
     for(let i=0; i<=CONFIG.GRID; i++) {
         ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y+600); ctx.stroke();
@@ -326,16 +393,16 @@ function renderBase() {
 
 function renderGhost() {
     const cfg = CONFIG.DEFENSE[game.selected];
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
-    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.fill(); }
-    ctx.fillRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
+    ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
 }
 
 function updateStats() {
-    let p = 0; game.buildings.forEach(b => p += b.cfg.pwr * b.lv); game.pwr = p;
+    let p = 0; game.buildings.forEach(b => p += b.cfg.pwr); game.pwr = p;
     document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
     document.getElementById('ui-power').innerText = `${game.pwr} PWR`;
-    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/1000)*100))}%`;
+    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/5000)*100))}%`;
 }
 
 function updateBuildMenu() {
@@ -353,10 +420,10 @@ function updateBuildMenu() {
     }
 }
 
-function createParticles(x, y, c, count) { for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*6-3, vy:Math.random()*6-3, life:1, c}); }
-function renderParticles() { game.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= 0.04; ctx.fillStyle = p.c; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, 2, 2); if(p.life <= 0) game.particles.splice(i, 1); }); ctx.globalAlpha = 1; }
-function isInsideGrid() { return game.mouse.gx>=0 && game.mouse.gx<CONFIG.GRID && game.mouse.gy>=0 && game.mouse.gy<CONFIG.GRID; }
-function logTerminal(t) { document.getElementById('terminal').innerHTML += `> ${t}<br>`; }
+function logTerminal(t) { 
+    const term = document.getElementById('terminal');
+    term.innerHTML += `> ${t}<br>`; term.scrollTop = term.scrollHeight;
+}
 
 init();
 </script>
