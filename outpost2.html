@@ -2,21 +2,20 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: COMMANDER EDITION</title>
+    <title>OUTPOST '95: CARTOGRAPHER PROTOCOL</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --f-green: #20ff20; --f-bg: #050a05; --panel: #222; --f-red: #ff2020; --f-blue: #00ffff; }
+        :root { --f-green: #20ff20; --f-bg: #080d08; --panel: #1a1a1a; --f-red: #ff3333; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: 'VT323', monospace; display: flex; height: 100vh; overflow: hidden; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; }
-        canvas { border: 4px solid #333; image-rendering: pixelated; background: #0a110a; cursor: crosshair; }
-        #sidebar { width: 320px; background: var(--panel); border-left: 4px solid #444; display: flex; flex-direction: column; padding: 15px; box-shadow: -10px 0 20px #000; }
-        .screen { background: #020802; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; }
-        .btn { background: #333; color: var(--f-green); border: 3px outset #555; padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-transform: uppercase; width: 100%; }
-        .btn:hover:not(:disabled) { background: #444; color: #fff; }
-        .btn:disabled { opacity: 0.2; cursor: not-allowed; }
-        .btn.active { background: #1a4d1a; border-color: var(--f-green); }
+        canvas { border: 2px solid #333; image-rendering: pixelated; background: var(--f-bg); cursor: crosshair; }
+        #sidebar { width: 320px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 15px; }
+        .screen { background: #000; border: 2px solid var(--f-green); padding: 10px; margin-bottom: 10px; box-shadow: inset 0 0 10px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 8px; margin: 3px 0; cursor: pointer; font-family: 'VT323'; font-size: 1.3em; text-transform: uppercase; width: 100%; text-align: left; }
+        .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
+        .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
         .stat { display: flex; justify-content: space-between; font-size: 1.4em; }
-        #terminal { font-size: 0.9em; height: 120px; overflow-y: auto; background: #000; padding: 5px; border: 1px solid #1a331a; color: #8f8; line-height: 1.2; }
+        #terminal { font-size: 0.9em; height: 100px; overflow-y: auto; color: #8f8; line-height: 1.1; }
     </style>
 </head>
 <body>
@@ -26,19 +25,19 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">CMD INTERFACE</h2>
+    <h2 style="text-align:center; border-bottom:1px solid var(--f-green); margin:0 0 10px 0;">STRAT-MAP v9.5</h2>
     
     <div class="screen">
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
         <div class="stat"><span>POWER:</span> <span id="ui-power">0</span></div>
-        <div class="stat"><span>INTEGRITY:</span> <span id="ui-hp">100%</span></div>
+        <div class="stat"><span>HULL:</span> <span id="ui-hp">100%</span></div>
     </div>
 
-    <div class="screen" id="terminal">> SELECT SECTOR...<br>> PREPARE DEFENSES.</div>
+    <div class="screen" id="terminal">> BOOTING CARTOGRAPHY MODULE...<br>> GENERATING ISOHYPSES...</div>
 
-    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;"></div>
+    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
 
-    <button class="btn" id="actionBtn" style="background:#4a1a1a; color:#fff;" onclick="handleAction()">START DEFENSE</button>
+    <button class="btn" id="actionBtn" style="background:#330000; border-color:#f00; color:#f00; font-weight:bold;" onclick="handleAction()">EXECUTE DEFENSE</button>
 </div>
 
 <script>
@@ -51,24 +50,21 @@ const CONFIG = {
     },
     DEFENSE: {
         CORE: { name: "OUTPOST CORE", cost: 0, hp: 1000, type: 'core', color: '#0ff' },
-        WALL: { name: "METAL WALL", cost: 40, hp: 300, type: 'wall', color: '#555' },
-        SENTRY: { name: "SENTRY GUN", cost: 150, range: 200, dmg: 15, rof: 700, hp: 150, type: 'tower', color: '#ff0' },
-        ALPHA: { name: "ALPHA MINE", cost: 50, dmg: 100, rad: 70, type: 'mine', color: '#f22' }
+        WALL: { name: "METAL WALL", cost: 30, hp: 400, type: 'wall', color: '#666' },
+        SENTRY: { name: "SENTRY GUN", cost: 160, range: 180, dmg: 12, rof: 600, hp: 150, type: 'tower', color: '#ff0' },
+        MINE: { name: "ALPHA MINE", cost: 50, dmg: 120, rad: 60, type: 'mine', color: '#f33' }
     },
     PLAYER_ROF: 110
 };
 
 let game = {
     money: 800, hp: 1000, pwr: 0, wave: 0,
-    mode: 'BASE', // BASE, PREP, COMBAT
-    buildings: [], // Base permanent
-    entities: [],  // Combat temporary (Core, Walls, Towers)
-    enemies: [], projectiles: [], particles: [],
-    hills: [],
-    selected: null,
-    mouse: { x: 0, y: 0, gx: 0, gy: 0, down: false },
-    player: { x: 0, y: 0, active: false, lastShot: 0 },
-    corePlaced: false
+    mode: 'BASE',
+    buildings: [], entities: [], enemies: [], projectiles: [], particles: [],
+    hills: [], selected: null, corePlaced: false,
+    mouse: { x:0, y:0, gx:0, gy:0, down: false },
+    player: { x:0, y:0, lastShot: 0 },
+    keys: {}
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -82,219 +78,194 @@ function init() {
         game.mouse.gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
         game.mouse.gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
     });
-    
-    canvas.addEventListener('mousedown', () => { 
-        game.mouse.down = true; 
-        if (game.mode === 'BASE' || game.mode === 'PREP') handlePlacement();
-    });
-    canvas.addEventListener('mouseup', () => { game.mouse.down = false; });
-    
+    canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
+    canvas.addEventListener('mouseup', () => game.mouse.down = false);
     window.addEventListener('keydown', e => game.keys[e.key.toLowerCase()] = true);
     window.addEventListener('keyup', e => game.keys[e.key.toLowerCase()] = false);
-    
     updateBuildMenu();
     gameLoop();
 }
 
 function handleAction() {
     if (game.mode === 'BASE') {
-        game.mode = 'PREP';
-        game.wave++;
-        game.corePlaced = false;
-        game.entities = [];
-        generateTerrain();
-        updateBuildMenu();
-        document.getElementById('actionBtn').innerText = "LOCK IN & ATTACK";
-        logTerminal(`PREP: SECTOR ${game.wave}. PLACE CORE FIRST.`);
+        game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
+        generateTopography(); updateBuildMenu();
+        document.getElementById('actionBtn').innerText = "LOCK POSITIONS";
+        logTerminal(`PREP: WAVE ${game.wave}. TOPOGRAPHY RENDERED.`);
     } else if (game.mode === 'PREP') {
-        if (!game.corePlaced) {
-            logTerminal("ERROR: CORE PLACEMENT REQUIRED.");
-            return;
-        }
-        game.mode = 'COMBAT';
-        spawnEnemies();
-        document.getElementById('actionBtn').innerText = "COMBAT ACTIVE";
+        if (!game.corePlaced) { logTerminal("CORE PLACEMENT MANDATORY."); return; }
+        game.mode = 'COMBAT'; spawnEnemies();
+        document.getElementById('actionBtn').innerText = "ENGAGED";
         document.getElementById('actionBtn').disabled = true;
     }
 }
 
-function handlePlacement() {
+function handleInput() {
     if (game.mode === 'BASE' && game.selected) {
         const cfg = CONFIG.BUILDINGS[game.selected];
         if (game.money >= cfg.cost && isInsideGrid()) {
             if (!game.buildings.some(b => b.gx === game.mouse.gx && b.gy === game.mouse.gy)) {
                 game.buildings.push({ type: game.selected, gx: game.mouse.gx, gy: game.mouse.gy, lv: 1, cfg });
-                game.money -= cfg.cost;
-                updateStats();
+                game.money -= cfg.cost; updateStats();
             }
         }
     } else if (game.mode === 'PREP' && game.selected) {
         const cfg = CONFIG.DEFENSE[game.selected];
-        
         if (cfg.type === 'core' && game.corePlaced) return;
-        
         if (game.money >= cfg.cost) {
-            const newEntity = { ...cfg, x: game.mouse.x, y: game.mouse.y, currentHP: cfg.hp, lastFire: 0 };
-            game.entities.push(newEntity);
-            
-            if (cfg.type === 'core') {
-                game.corePlaced = true;
-                game.player.x = game.mouse.x;
-                game.player.y = game.mouse.y;
-                game.player.active = true;
-            } else {
-                game.money -= cfg.cost;
-            }
+            const ent = { ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 };
+            game.entities.push(ent);
+            if (cfg.type === 'core') { game.corePlaced = true; game.player.x = ent.x; game.player.y = ent.y; }
+            else game.money -= cfg.cost;
             updateStats();
         }
     }
 }
 
-function generateTerrain() {
+function generateTopography() {
     game.hills = [];
-    const count = 5 + Math.floor(Math.random() * 4);
+    const count = 4 + Math.floor(Math.random() * 3);
     for (let i = 0; i < count; i++) {
-        game.hills.push({
-            x: Math.random() * 800, y: Math.random() * 400 + 50,
-            r: 70 + Math.random() * 120,
-            layers: 4 + Math.floor(Math.random() * 3),
-            seed: Math.random() * 10
-        });
+        const layers = [];
+        const layerCount = 4 + Math.floor(Math.random() * 4);
+        const centerX = Math.random() * 800;
+        const centerY = Math.random() * 500;
+        const baseR = 60 + Math.random() * 100;
+        
+        for (let j = 1; j <= layerCount; j++) {
+            const vertices = [];
+            const r = baseR * (1 - (j / (layerCount + 1)));
+            for (let a = 0; a < Math.PI * 2; a += 0.3) {
+                const noise = Math.random() * (r * 0.2);
+                vertices.push({ x: Math.cos(a) * (r + noise), y: Math.sin(a) * (r + noise) });
+            }
+            layers.push({ vertices, r });
+        }
+        game.hills.push({ x: centerX, y: centerY, layers });
     }
 }
 
 function spawnEnemies() {
-    let pool = 300 + (game.wave * 500);
+    let pool = 400 + (game.wave * 600);
     while (pool > 0) {
         let hp = Math.min(pool, 40 + Math.random() * (pool * 0.4));
-        if (hp < 20) hp = pool;
+        if (hp < 30) hp = pool;
         game.enemies.push(createEnemy(hp));
         pool -= hp;
     }
 }
 
 function createEnemy(hp) {
-    const size = 12 + (hp * 0.25);
+    const size = 10 + (hp * 0.2);
     const vertices = [];
-    const pts = 50 + Math.floor(Math.random() * 30);
+    const pts = 60 + Math.floor(Math.random() * 40);
     for(let i=0; i<pts; i++) {
         const a = (i/pts) * Math.PI * 2;
         const d = size * (0.6 + Math.random() * 0.8);
         vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, baseDist: d});
     }
-    // Wrogowie dążą do CORE
-    const core = game.entities.find(e => e.type === 'core');
-    return { x: Math.random()*800, y: -80, hp, maxHp: hp, size, vertices, speed: 0.5 + (15/size), hitFlash: 0 };
+    return { x: Math.random()*800, y: -100, hp, maxHp: hp, size, vertices, speed: 0.6 + (15/size), hitFlash: 0 };
 }
 
 function gameLoop() {
     ctx.clearRect(0, 0, 800, 600);
-    
-    if (game.mode === 'BASE') {
-        renderBaseGrid();
-    } else {
-        renderTopography();
-        renderEntities();
+    if (game.mode === 'BASE') renderBase();
+    else {
+        renderMap();
         if (game.mode === 'COMBAT') updateCombat();
-        if (game.player.active) renderPlayer();
+        renderEntities();
         renderEnemies();
-        if (game.mode === 'PREP') renderGhost();
+        if (game.corePlaced) renderPlayer();
+        if (game.mode === 'PREP' && game.selected) renderGhost();
     }
-
     renderProjectiles();
     renderParticles();
     updateStats();
     requestAnimationFrame(gameLoop);
 }
 
-function renderTopography() {
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.12)";
-    game.hills.forEach(h => {
-        for (let l = 1; l <= h.layers; l++) {
-            const radius = h.r * (l / h.layers);
+function renderMap() {
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.2)"; ctx.lineWidth = 1;
+    game.hills.forEach(hill => {
+        hill.layers.forEach((layer, idx) => {
             ctx.beginPath();
-            for (let a = 0; a < Math.PI * 2; a += 0.25) {
-                const px = h.x + Math.cos(a) * (radius + Math.sin(a * 4 + h.seed) * 5);
-                const py = h.y + Math.sin(a) * (radius + Math.sin(a * 4 + h.seed) * 5);
-                if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
+            layer.vertices.forEach((v, i) => {
+                if (i === 0) ctx.moveTo(hill.x + v.x, hill.y + v.y);
+                else ctx.lineTo(hill.x + v.x, hill.y + v.y);
+            });
             ctx.closePath(); ctx.stroke();
-        }
+            if (idx === 0) {
+                ctx.fillStyle = "rgba(32, 255, 32, 0.3)"; ctx.font = "10px VT323";
+                ctx.fillText(`${100 + idx*20}m`, hill.x + layer.r, hill.y);
+            }
+        });
     });
 }
 
 function updateCombat() {
     if (game.mouse.down) playerShoot();
-    
     const core = game.entities.find(e => e.type === 'core');
     const now = Date.now();
 
     game.enemies.forEach((e, i) => {
-        // Ruch w stronę Core
         const ang = Math.atan2(core.y - e.y, core.x - e.x);
-        let speedMult = 1;
+        let speedMult = 1.0;
         game.hills.forEach(h => {
-            if (Math.hypot(e.x - h.x, e.y - h.y) < h.r) speedMult = 0.45;
+            const dist = Math.hypot(e.x - h.x, e.y - h.y);
+            h.layers.forEach(l => { if (dist < l.r) speedMult *= 0.75; });
         });
 
         e.x += Math.cos(ang) * e.speed * speedMult;
         e.y += Math.sin(ang) * e.speed * speedMult;
 
-        // Kolizje z obiektami bazy (Mury, Wieże, Core)
-        game.entities.forEach(entity => {
-            if (entity.type === 'mine') return;
-            const dist = Math.hypot(e.x - entity.x, e.y - entity.y);
-            if (dist < e.size + 15) {
-                entity.currentHP -= e.hp;
-                createParticles(e.x, e.y, "#f00", 20);
+        // Jitter
+        e.vertices.forEach(v => {
+            const jitter = (Math.random() - 0.5) * 1.5;
+            const a = Math.atan2(v.y, v.x);
+            v.x = Math.cos(a) * (v.baseDist + jitter);
+            v.y = Math.sin(a) * (v.baseDist + jitter);
+        });
+
+        game.entities.forEach(ent => {
+            if (ent.type === 'mine') return;
+            if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + 15) {
+                ent.curHP -= e.hp;
+                createParticles(e.x, e.y, "#f00", 15);
                 game.enemies.splice(i, 1);
-                
-                if (entity.type === 'core') game.hp = Math.max(0, entity.currentHP);
+                if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
             }
         });
     });
 
-    // Wieże strzelają
     game.entities.forEach(u => {
-        if (u.type === 'tower' && u.currentHP > 0) {
-            const penalty = game.pwr < 0 ? 2 : 1;
-            if (now - u.lastFire > u.rof * penalty) {
-                const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
-                if (target) {
-                    target.hp -= u.dmg;
-                    u.lastFire = now;
-                    renderLaser(u.x, u.y, target.x, target.y);
-                }
+        if (u.type === 'tower' && now - u.lastFire > (game.pwr < 0 ? u.rof * 2 : u.rof)) {
+            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (target) {
+                target.hp -= u.dmg; target.hitFlash = 3; u.lastFire = now;
+                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
             }
         }
-        // Miny
-        if (u.type === 'mine') {
-            const trigger = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < 30);
-            if (trigger) {
-                game.enemies.forEach(e => { if(Math.hypot(e.x-u.x, e.y-u.y) < u.rad) e.hp -= u.dmg; });
-                createParticles(u.x, u.y, "#f40", 40);
-                u.currentHP = 0;
-            }
+        if (u.type === 'mine' && game.enemies.some(e => Math.hypot(e.x-u.x, e.y-u.y) < 30)) {
+            game.enemies.forEach(e => { if(Math.hypot(e.x-u.x, e.y-u.y) < u.rad) e.hp -= u.dmg; });
+            createParticles(u.x, u.y, "#f40", 30); u.curHP = 0;
         }
     });
 
-    // Czyszczenie zniszczonych jednostek
-    game.entities = game.entities.filter(ent => ent.currentHP > 0 || ent.type === 'mine' && ent.currentHP !== 0);
-    game.enemies = game.enemies.filter(e => { if(e.hp <= 0) { game.money += 15; return false; } return true; });
+    game.entities = game.entities.filter(ent => ent.curHP > 0 || (ent.type==='mine' && ent.curHP !== 0));
+    game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 15; return false; } return true; });
 
     if (game.enemies.length === 0) {
-        game.mode = 'BASE';
-        document.getElementById('actionBtn').innerText = "START DEFENSE";
-        document.getElementById('actionBtn').disabled = false;
+        game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "START DEFENSE";
+        document.getElementById('actionBtn').disabled = false; logTerminal("AREA SECURED.");
     }
-    if (game.hp <= 0) { alert("OUTPOST CORE DESTROYED"); location.reload(); }
+    if (game.hp <= 0) { alert("CORE BREACH - OUTPOST LOST"); location.reload(); }
 }
 
 function playerShoot() {
     const now = Date.now();
     if (now - game.player.lastShot > CONFIG.PLAYER_ROF) {
         const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12, dmg: 25 });
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle)*12, vy: Math.sin(angle)*12, dmg: 25 });
         game.player.lastShot = now;
     }
 }
@@ -302,65 +273,62 @@ function playerShoot() {
 function renderEntities() {
     game.entities.forEach(ent => {
         ctx.fillStyle = ent.color;
-        if (ent.type === 'wall') ctx.fillRect(ent.x - 15, ent.y - 15, 30, 30);
-        else if (ent.type === 'core') {
-            ctx.beginPath(); ctx.arc(ent.x, ent.y, 25, 0, Math.PI*2); ctx.fill();
+        if (ent.type === 'core') {
+            ctx.beginPath(); ctx.arc(ent.x, ent.y, 20, 0, Math.PI*2); ctx.fill();
             ctx.strokeStyle = "#fff"; ctx.stroke();
-        } else {
-            ctx.fillRect(ent.x - 12, ent.y - 12, 24, 24);
-        }
-        // Pasek HP nad jednostką
+        } else if (ent.type === 'wall') ctx.fillRect(ent.x-15, ent.y-15, 30, 30);
+        else ctx.fillRect(ent.x-10, ent.y-10, 20, 20);
+        
         if (ent.type !== 'mine') {
-            ctx.fillStyle = "#300"; ctx.fillRect(ent.x-15, ent.y-25, 30, 4);
-            ctx.fillStyle = "#0f0"; ctx.fillRect(ent.x-15, ent.y-25, (ent.currentHP/ent.hp)*30, 4);
+            ctx.fillStyle = "#400"; ctx.fillRect(ent.x-15, ent.y-25, 30, 3);
+            ctx.fillStyle = "#0f0"; ctx.fillRect(ent.x-15, ent.y-25, (ent.curHP/ent.hp)*30, 3);
         }
     });
-}
-
-function renderPlayer() {
-    ctx.fillStyle = "#0ff";
-    ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 10, 0, Math.PI*2); ctx.fill();
-    const angle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-    ctx.save(); ctx.translate(game.player.x, game.player.y); ctx.rotate(angle);
-    ctx.fillStyle = "#fff"; ctx.fillRect(0, -3, 20, 6); ctx.restore();
 }
 
 function renderEnemies() {
     game.enemies.forEach(e => {
-        ctx.fillStyle = "rgba(255, 30, 30, 0.4)";
+        ctx.fillStyle = e.hitFlash > 0 ? "#fff" : "rgba(255, 30, 30, 0.4)";
         ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
-        ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#f33"; ctx.stroke();
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = e.hitFlash > 0 ? "#fff" : "#f44"; ctx.stroke();
+        if (e.hitFlash > 0) e.hitFlash--;
     });
 }
 
-function renderGhost() {
-    if (!game.selected) return;
-    const cfg = CONFIG.DEFENSE[game.selected];
-    ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range || 20, 0, Math.PI*2); ctx.fill();
-}
-
-function renderBaseGrid() {
-    ctx.strokeStyle = "rgba(0, 255, 0, 0.1)";
-    for(let i=0; i<=CONFIG.GRID; i++) {
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x + i*50, CONFIG.BASE_OFF.y + 600); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y + i*50); ctx.lineTo(CONFIG.BASE_OFF.x + 600, CONFIG.BASE_OFF.y + i*50); ctx.stroke();
-    }
-    game.buildings.forEach(b => {
-        ctx.fillStyle = b.cfg.color;
-        ctx.fillRect(CONFIG.BASE_OFF.x + b.gx*50+5, CONFIG.BASE_OFF.y + b.gy*50+5, 40, 40);
-    });
+function renderPlayer() {
+    ctx.fillStyle = "#0ff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 8, 0, Math.PI*2); ctx.fill();
+    const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    ctx.save(); ctx.translate(game.player.x, game.player.y); ctx.rotate(a);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, -3, 18, 6); ctx.restore();
 }
 
 function renderProjectiles() {
     game.projectiles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy;
-        ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
+        p.x += p.vx; p.y += p.vy; ctx.fillStyle = "#fff"; ctx.fillRect(p.x-2, p.y-2, 4, 4);
         const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
         if (hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
         if (p.x < 0 || p.x > 800 || p.y < 0 || p.y > 600) game.projectiles.splice(i, 1);
     });
+}
+
+function renderBase() {
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
+    for(let i=0; i<=CONFIG.GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y); ctx.lineTo(CONFIG.BASE_OFF.x+i*50, CONFIG.BASE_OFF.y+600); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(CONFIG.BASE_OFF.x, CONFIG.BASE_OFF.y+i*50); ctx.lineTo(CONFIG.BASE_OFF.x+600, CONFIG.BASE_OFF.y+i*50); ctx.stroke();
+    }
+    game.buildings.forEach(b => {
+        ctx.fillStyle = b.cfg.color; ctx.fillRect(CONFIG.BASE_OFF.x+b.gx*50+5, CONFIG.BASE_OFF.y+b.gy*50+5, 40, 40);
+    });
+}
+
+function renderGhost() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.fill(); }
+    ctx.fillRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
 }
 
 function updateStats() {
@@ -369,10 +337,6 @@ function updateStats() {
     document.getElementById('ui-power').innerText = `${game.pwr} PWR`;
     document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/1000)*100))}%`;
 }
-
-function renderLaser(x1, y1, x2, y2) { ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
-function createParticles(x, y, c, count) { for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*8-4, vy:Math.random()*8-4, life:1, c}); }
-function renderParticles() { game.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= 0.04; ctx.fillStyle = p.c; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, 3, 3); if(p.life <= 0) game.particles.splice(i, 1); }); ctx.globalAlpha = 1; }
 
 function updateBuildMenu() {
     const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
@@ -383,12 +347,14 @@ function updateBuildMenu() {
         const btn = document.createElement('button');
         btn.className = 'btn' + (game.selected === k ? ' active' : '');
         btn.disabled = locked;
-        btn.innerHTML = `${item.name} <br> <span style="font-size:0.7em">$${item.cost}</span>`;
+        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
         btn.onclick = () => { game.selected = k; updateBuildMenu(); };
         menu.appendChild(btn);
     }
 }
 
+function createParticles(x, y, c, count) { for(let i=0; i<count; i++) game.particles.push({x, y, vx:Math.random()*6-3, vy:Math.random()*6-3, life:1, c}); }
+function renderParticles() { game.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life -= 0.04; ctx.fillStyle = p.c; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, 2, 2); if(p.life <= 0) game.particles.splice(i, 1); }); ctx.globalAlpha = 1; }
 function isInsideGrid() { return game.mouse.gx>=0 && game.mouse.gx<CONFIG.GRID && game.mouse.gy>=0 && game.mouse.gy<CONFIG.GRID; }
 function logTerminal(t) { document.getElementById('terminal').innerHTML += `> ${t}<br>`; }
 
