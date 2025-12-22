@@ -92,7 +92,7 @@ function handleAction() {
     if (game.mode === 'BASE') {
         game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
         generateStrategicMap(); 
-        spawnWaveLogic(); // Generuj dane do raportu
+        spawnWaveLogic();
         updateBuildMenu();
         document.getElementById('actionBtn').innerText = "LOCK ALL UNITS";
         showIntelReport();
@@ -167,9 +167,8 @@ function spawnWaveLogic() {
         else if (r < (r1+r2)/total) { moveType = 'SWIM'; game.intel.swim++; }
         else { game.intel.air++; }
 
-        // LOSOWY ROZMIAR I HP (Od małych po giganty)
         let hp = 50 + Math.random() * 300;
-        if (Math.random() > 0.9) hp = 800 + Math.random() * 800; // 10% szans na Behemota
+        if (Math.random() > 0.9) hp = 800 + Math.random() * 800;
         
         game.enemies.push(createEnemy(hp, moveType));
         game.intel.totalHP += hp;
@@ -179,13 +178,12 @@ function spawnWaveLogic() {
 
 function createEnemy(hp, moveType) {
     let x, y, off = 150;
-    // SPAWN SZEROKIM FRONTEM
     if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1000; }
     else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1000; }
     else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
     else { x = -off - Math.random()*1000; y = Math.random()*CONFIG.HEIGHT; }
 
-    const size = 5 + (hp * 0.05); // Rozmiar zależy od HP
+    const size = 5 + (hp * 0.05);
     const vertices = [];
     const pts = 60;
     for(let i=0; i<pts; i++) {
@@ -214,7 +212,6 @@ function gameLoop() {
 }
 
 function updateCombat() {
-    // RUCH GRACZA
     let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
     if (game.keys['KeyW']) game.player.y -= pSpd;
     if (game.keys['KeyS']) game.player.y += pSpd;
@@ -226,6 +223,8 @@ function updateCombat() {
     if (game.mouse.down) playerShoot();
 
     const core = game.entities.find(e => e.type === 'core');
+    if (!core) return;
+    
     const now = Date.now();
 
     game.enemies.forEach((e, i) => {
@@ -245,11 +244,12 @@ function updateCombat() {
         let terrainMult = 1.0;
         if(e.moveType !== 'FLY') {
             game.hills.forEach(h => { if(Math.hypot(e.x-h.x, e.y-h.y) < h.layers[0].radius) terrainMult *= 0.75; });
-            game.rivers.forEach(r => { if(e.moveType === 'SWIM' && r.pts.some(p => Math.hypot(e.x-p.x, e.y-p.y)<30)) terrainMult *= 0.4; });
+            if(e.moveType === 'SWIM') {
+                game.rivers.forEach(r => { if(r.pts.some(p => Math.hypot(e.x-p.x, e.y-p.y)<30)) terrainMult *= 1.5; });
+            }
         }
         e.x += mX * terrainMult; e.y += mY * terrainMult;
 
-        // JITTER WROGÓW
         e.vertices.forEach(v => {
             const jitter = (Math.random()-0.5)*2.5;
             const a = Math.atan2(v.y, v.x);
@@ -265,7 +265,6 @@ function updateCombat() {
         });
     });
 
-    // TURRETS
     game.entities.forEach(u => {
         if (u.type === 'tower' && now - u.lastFire > u.rof) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
@@ -277,20 +276,18 @@ function updateCombat() {
     });
 
     game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 15; return false; } return true; });
-    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "START DEFENSE"; document.getElementById('actionBtn').disabled = false; logTerminal("THREATS NEUTRALIZED."); }
+    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; logTerminal("THREATS NEUTRALIZED."); }
     if (game.hp <= 0) { alert("HQ OVERRUN"); location.reload(); }
 }
 
 function renderAnomalies() {
     game.enemies.forEach(e => {
-        // Ciało Anomalii (Pełny kolor)
         ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color;
         ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
         ctx.closePath(); ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.stroke();
 
-        // HP BAR (Neon Yellow, Wide)
         const barW = Math.max(25, e.size * 2);
         ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
         ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
@@ -299,19 +296,174 @@ function renderAnomalies() {
 }
 
 function renderTacticalMap() {
-    game.rivers.forEach(r => {
-        ctx.strokeStyle = "rgba(40, 80, 200, 0.25)"; ctx.lineWidth = 35; ctx.beginPath();
-        r.pts.forEach((p, i) => { if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
-        ctx.stroke();
-        ctx.fillStyle = "#222"; r.bridges.forEach(bp => { ctx.fillRect(bp.x-35, bp.y-35, 70, 70); });
-    });
-    ctx.strokeStyle = "rgba(32, 255, 32, 0.15)"; ctx.lineWidth = 1;
+    // TŁO - subtelny noise
+    ctx.fillStyle = "#0a0f0a";
+    ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    
+    // Noise pattern
+    for(let i=0; i<500; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? "#0b100b" : "#091109";
+        ctx.fillRect(Math.random()*CONFIG.WIDTH, Math.random()*CONFIG.HEIGHT, 2, 2);
+    }
+    
+    // WZGÓRZA - wypełnione warstwy od najjaśniejszych (najwyższe) do najciemniejszych (najniższe)
     game.hills.forEach(h => {
-        h.layers.forEach(l => {
-            ctx.beginPath(); l.verts.forEach((v, i) => { if(i===0) ctx.moveTo(h.x+v.x, h.y+v.y); else ctx.lineTo(h.x+v.x, h.y+v.y); });
-            ctx.closePath(); ctx.stroke();
+        for(let i = h.layers.length - 1; i >= 0; i--) {
+            const l = h.layers[i];
+            const brightness = 20 + (i / h.layers.length) * 60;
+            ctx.fillStyle = `rgb(${brightness}, ${brightness + 15}, ${brightness})`;
+            ctx.beginPath();
+            l.verts.forEach((v, vi) => {
+                if(vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
+                else ctx.lineTo(h.x + v.x, h.y + v.y);
+            });
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.strokeStyle = `rgba(100, 120, 100, ${0.3 + i/h.layers.length * 0.4})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    });
+    
+    // RZEKI - solidne niebieskie z brzegami
+    game.rivers.forEach(r => {
+        ctx.strokeStyle = "#1a3a5a";
+        ctx.lineWidth = 50;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        r.pts.forEach((p, i) => {
+            if(i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+        
+        ctx.strokeStyle = "#2a5a8a";
+        ctx.lineWidth = 40;
+        ctx.beginPath();
+        r.pts.forEach((p, i) => {
+            if(i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+        
+        ctx.strokeStyle = "rgba(100, 150, 200, 0.3)";
+        ctx.lineWidth = 2;
+        for(let i = 0; i < r.pts.length - 1; i++) {
+            const p1 = r.pts[i], p2 = r.pts[i + 1];
+            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            const perpX = Math.cos(angle + Math.PI/2);
+            const perpY = Math.sin(angle + Math.PI/2);
+            
+            for(let offset = -15; offset <= 15; offset += 10) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x + perpX * offset, p1.y + perpY * offset);
+                ctx.lineTo(p2.x + perpX * offset, p2.y + perpY * offset);
+                ctx.stroke();
+            }
+        }
+        
+        // MOSTY
+        r.bridges.forEach(bp => {
+            ctx.fillStyle = "#3a3020";
+            ctx.fillRect(bp.x - 40, bp.y - 40, 80, 80);
+            
+            ctx.fillStyle = "#5a5040";
+            for(let i = -35; i < 35; i += 8) {
+                if(r.isH) ctx.fillRect(bp.x + i, bp.y - 35, 6, 70);
+                else ctx.fillRect(bp.x - 35, bp.y + i, 70, 6);
+            }
+            
+            ctx.strokeStyle = "#2a2010";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(bp.x - 40, bp.y - 40, 80, 80);
         });
     });
+    
+    // SPAWN ZONE
+    ctx.fillStyle = "rgba(255, 50, 50, 0.15)";
+    ctx.strokeStyle = "rgba(255, 50, 50, 0.6)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 5]);
+    
+    let spawnZone = {x: 0, y: 0, w: 0, h: 0};
+    if(game.spawnDir === 'NORTH') {
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 120};
+    } else if(game.spawnDir === 'SOUTH') {
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 120, w: CONFIG.WIDTH, h: 120};
+    } else if(game.spawnDir === 'EAST') {
+        spawnZone = {x: CONFIG.WIDTH - 120, y: 0, w: 120, h: CONFIG.HEIGHT};
+    } else {
+        spawnZone = {x: 0, y: 0, w: 120, h: CONFIG.HEIGHT};
+    }
+    
+    ctx.fillRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
+    ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
+    ctx.setLineDash([]);
+    
+    // Strzałki kierunku spawnu
+    ctx.fillStyle = "rgba(255, 100, 100, 0.8)";
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+    
+    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 8 : 6;
+    for(let i = 0; i < arrowCount; i++) {
+        let ax, ay;
+        if(game.spawnDir === 'NORTH') {
+            ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
+            ay = 60;
+            drawArrow(ax, ay, Math.PI/2, 20);
+        } else if(game.spawnDir === 'SOUTH') {
+            ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
+            ay = CONFIG.HEIGHT - 60;
+            drawArrow(ax, ay, -Math.PI/2, 20);
+        } else if(game.spawnDir === 'EAST') {
+            ax = CONFIG.WIDTH - 60;
+            ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
+            drawArrow(ax, ay, Math.PI, 20);
+        } else {
+            ax = 60;
+            ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
+            drawArrow(ax, ay, 0, 20);
+        }
+    }
+    
+    // Label spawnu
+    ctx.fillStyle = "#ff5555";
+    ctx.font = "20px VT323";
+    ctx.textAlign = "center";
+    const labelText = `${game.spawnDir} ATTACK VECTOR`;
+    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 30);
+    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 15);
+    else if(game.spawnDir === 'EAST') {
+        ctx.save();
+        ctx.translate(CONFIG.WIDTH - 30, CONFIG.HEIGHT/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText(labelText, 0, 0);
+        ctx.restore();
+    } else {
+        ctx.save();
+        ctx.translate(30, CONFIG.HEIGHT/2);
+        ctx.rotate(Math.PI/2);
+        ctx.fillText(labelText, 0, 0);
+        ctx.restore();
+    }
+}
+
+function drawArrow(x, y, angle, size) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(-size/2, size/2);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(size/2, size/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
 }
 
 function renderPlayerUnit() {
@@ -426,6 +578,8 @@ function logTerminal(t) {
     const term = document.getElementById('terminal');
     term.innerHTML += `> ${t}<br>`; term.scrollTop = term.scrollHeight;
 }
+
+window.handleAction = handleAction;
 
 init();
 </script>
