@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>OUTPOST '95: TACTICAL UPDATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --f-green: #20ff20; 
+            --f-bg: #050805; 
+            --panel: #111411; 
+            --f-red: #ff3333; 
+            --f-blue: #33aaff; 
+            --f-purple: #cc33ff; 
+            --f-hp: #ffff00; 
+        }
+        
+        body { 
+            margin: 0; 
+            background: #000; 
+            color: var(--f-green); 
+            font-family: 'VT323', monospace; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            font-size: 20px; 
+            user-select: none;
+        }
+        
+        #viewport { 
+            flex-grow: 1; 
+            position: relative; 
+            background: #000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 10px;
+        }
+        
+        canvas { 
+            background: var(--f-bg); 
+            cursor: crosshair; 
+            image-rendering: pixelated; 
+            box-shadow: 0 0 30px rgba(32, 255, 32, 0.05);
+            border: 1px solid #333;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        #sidebar { 
+            width: 360px; 
+            min-width: 360px;
+            background: var(--panel); 
+            border-left: 2px solid #333; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            z-index: 10; 
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .screen { 
+            background: #000; 
+            border: 1px solid #444; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border-radius: 2px;
+        }
+        
+        .btn { 
+            background: #1a1a1a; 
+            color: var(--f-green); 
+            border: 1px solid var(--f-green); 
+            padding: 10px; 
+            margin: 4px 0; 
+            cursor: pointer; 
+            font-family: 'VT323'; 
+            font-size: 1.2em; 
+            text-transform: uppercase; 
+            width: 100%; 
+            text-align: left; 
+            transition: all 0.1s;
+        }
+        .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
+        .btn:active:not(:disabled) { transform: translateY(2px); }
+        .btn.active { background: #0a2a0a; box-shadow: inset 0 0 10px var(--f-green); border-width: 2px; }
+        .btn:disabled { border-color: #444; color: #444; cursor: not-allowed; }
+        
+        .stat { display: flex; justify-content: space-between; font-size: 1.2em; margin: 2px 0; }
+        
+        #terminal { 
+            font-size: 0.9em; 
+            height: 140px; 
+            overflow-y: auto; 
+            color: #8f8; 
+            border: 1px solid #242; 
+            padding: 8px; 
+            background: #020502; 
+            line-height: 1.2; 
+            font-family: monospace;
+        }
+        #terminal::-webkit-scrollbar { width: 6px; }
+        #terminal::-webkit-scrollbar-thumb { background: #242; }
+
+        .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 8px; }
+        h2 { font-size: 1.6em; margin: 0 0 10px 0; letter-spacing: 2px; text-shadow: 0 0 5px var(--f-green); }
+
+        #gameOverOverlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #gameOverOverlay h1 { font-size: 4em; color: var(--f-red); margin: 0; text-shadow: 0 0 20px var(--f-red); }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <canvas id="gameCanvas" width="1200" height="900"></canvas>
+    <div id="gameOverOverlay">
+        <h1>SIGNAL LOST</h1>
+        <p style="font-size: 1.5em; margin-bottom: 30px">HQ DESTROYED. SECTOR OVERRUN.</p>
+        <button class="btn" style="width: 200px; text-align: center;" onclick="location.reload()">REBOOT SYSTEM</button>
+    </div>
+</div>
+
+<div id="sidebar">
+    <h2 style="text-align:center; border-bottom:1px solid var(--f-green);">STRAT-COM v2.1</h2>
+    
+    <div class="screen">
+        <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
+        <div class="stat"><span>HQ HULL:</span> <span id="ui-hp" style="color:var(--f-hp)">100%</span></div>
+        <div class="stat"><span>WAVE:</span> <span id="ui-wave">0</span></div>
+        <div id="unit-info" style="font-size:0.8em; color:#686; border-top:1px solid #333; margin-top:5px; padding-top:5px;">
+            UNIT-01: SPD <span id="p-spd">1.0</span> | ROF <span id="p-rof">1.0</span> | DMG <span id="p-dmg">1.0</span>
+        </div>
+    </div>
+
+    <div class="screen" id="terminal">> SYSTEM ONLINE...<br>> AWAITING ORDERS.</div>
+
+    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto; padding-right: 5px;"></div>
+
+    <button class="btn" id="actionBtn" style="background:#200; border-color:#d44; color:#f66; font-weight:bold; text-align:center; margin-top: auto;" onclick="handleAction()">INITIATE DEPLOYMENT</button>
+</div>
+
+<script>
+const CONFIG = {
+    WIDTH: 1200, HEIGHT: 900,
+    SCALE: 0.6, 
+    BASE_OFF: { x: 300, y: 150 }, 
+    CELL: 50, GRID: 12,
+    PATH_GRID: 40, // Rozmiar kratki dla pathfindingu
+    DEFENSE: {
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 5000, type: 'core', color: '#0ff', range: 0, size: 20 },
+        WALL: { name: "PLASTEEL WALL", cost: 25, hp: 2000, type: 'wall', color: '#666', range: 0, size: 15 },
+        SENTRY: { name: "AUTO-TURRET", cost: 150, range: 280, dmg: 15, rof: 400, hp: 500, type: 'tower', color: '#ff0', size: 12 },
+        BATTERY: { name: "PLASMA BATT.", cost: 450, range: 500, dmg: 180, rof: 2500, hp: 800, type: 'tower', color: '#f80', size: 14 },
+        MINE: { name: "STASIS MINE", cost: 50, hp: 10, type: 'mine', color: '#f0f', range: 40, size: 6 }
+    },
+    BUILDINGS: {
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
+        FARM: { name: "HYDROPONICS", cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "AMMO FAB", cost: 500, pwr: -50, color: "#A00" }
+    }
+};
+
+let game = {
+    money: 800, hp: 5000, maxHp: 5000, wave: 0, mode: 'BASE',
+    buildings: [], entities: [], enemies: [], projectiles: [],
+    terrain: { hills: [], lakes: [], forests: [] },
+    flowField: [], // Mapa wektorowa dla AI
+    selected: null, corePlaced: false,
+    mouse: { x:0, y:0, down: false },
+    keys: {},
+    player: { x: 600, y: 450, hp: 500, maxHp: 500, spd: 4.0, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    spawnDir: 'NORTH',
+    intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
+    gameOver: false
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function init() {
+    window.addEventListener('keydown', e => game.keys[e.code] = true);
+    window.addEventListener('keyup', e => game.keys[e.code] = false);
+    
+    canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        game.mouse.x = (e.clientX - r.left) * (canvas.width / r.width);
+        game.mouse.y = (e.clientY - r.top) * (canvas.height / r.height);
+    });
+    
+    canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
+    canvas.addEventListener('mouseup', () => game.mouse.down = false);
+    canvas.addEventListener('contextmenu', e => { e.preventDefault(); game.selected = null; updateBuildMenu(); });
+    
+    updateBuildMenu();
+    gameLoop();
+}
+
+function handleAction() {
+    if (game.gameOver) return;
+
+    if (game.mode === 'BASE') {
+        game.mode = 'PREP'; 
+        game.wave++; 
+        game.entities = []; 
+        game.corePlaced = false;
+        game.player.hp = game.player.maxHp; // Regeneracja gracza na nową mapę
+        
+        generateStrategicMap(); 
+        spawnWaveLogic(); 
+        
+        updateBuildMenu();
+        document.getElementById('actionBtn').innerText = "ENGAGE HOSTILES";
+        document.getElementById('actionBtn').style.borderColor = "#4f4";
+        document.getElementById('actionBtn').style.color = "#4f4";
+        showIntelReport();
+    } else if (game.mode === 'PREP') {
+        if (!game.corePlaced) { 
+            logTerminal("ERROR: COMMAND POST NOT ESTABLISHED."); 
+            return; 
+        }
+        // Generujemy mapę nawigacji dopiero gdy postawimy HQ
+        generateFlowField(); 
+        
+        game.mode = 'COMBAT';
+        document.getElementById('actionBtn').innerText = "COMBAT IN PROGRESS...";
+        document.getElementById('actionBtn').disabled = true;
+        logTerminal(">>> COMBAT INITIATED <<<");
+    }
+}
+
+// === AI: PATHFINDING (FLOW FIELD) ===
+function generateFlowField() {
+    const cols = Math.ceil(CONFIG.WIDTH / CONFIG.PATH_GRID);
+    const rows = Math.ceil(CONFIG.HEIGHT / CONFIG.PATH_GRID);
+    game.flowField = new Array(cols).fill(0).map(() => new Array(rows).fill(null));
+    
+    const queue = [];
+    const core = game.entities.find(e => e.type === 'core');
+    if (!core) return;
+
+    // Pozycja celu (HQ) w siatce
+    const targetX = Math.floor(core.x / CONFIG.PATH_GRID);
+    const targetY = Math.floor(core.y / CONFIG.PATH_GRID);
+    
+    // Inicjalizacja siatki kosztów (Cost Field)
+    // 0 = cel, 255 = ściana, 1 = zwykły teren
+    const costField = new Array(cols).fill(0).map(() => new Array(rows).fill(9999));
+    
+    queue.push({x: targetX, y: targetY, cost: 0});
+    costField[targetX][targetY] = 0;
+
+    // 1. Oznaczanie terenu na siatce kosztów
+    for(let x=0; x<cols; x++) {
+        for(let y=0; y<rows; y++) {
+            const worldX = x * CONFIG.PATH_GRID + CONFIG.PATH_GRID/2;
+            const worldY = y * CONFIG.PATH_GRID + CONFIG.PATH_GRID/2;
+            
+            // Sprawdź teren
+            let terrainCost = 1;
+            
+            // Jeziora to ściany dla jednostek lądowych
+            const inLake = game.terrain.lakes.some(l => isPointInPolygon(worldX, worldY, l.points));
+            if(inLake) terrainCost = 255; 
+            
+            // Góry (szczyty) to ściany
+            if (terrainCost < 255) {
+                const onHill = game.terrain.hills.some(h => Math.hypot(worldX - h.x, worldY - h.y) < h.layers[0].radius * 0.8);
+                if(onHill) terrainCost = 255;
+            }
+
+            // Lasy to trudny teren
+            if (terrainCost < 255) {
+                 const inForest = game.terrain.forests.some(f => Math.hypot(worldX - f.centerX, worldY - f.centerY) < f.radius);
+                 if(inForest) terrainCost = 5;
+            }
+            
+            if(x===targetX && y===targetY) terrainCost = 0; // Cel zawsze dostępny
+            
+            // Jeśli to nie cel, zapisz koszt (jeśli jest ścianą, to zostawiamy 9999 poza kolejką BFS, ale oznaczamy w mapie)
+            if(terrainCost === 255) costField[x][y] = 65000; // Impassable
+        }
+    }
+
+    // 2. Integration Field (BFS Flood Fill)
+    // Rozlewamy "zapach" HQ po mapie
+    while(queue.length > 0) {
+        const cur = queue.shift();
+        
+        // Sąsiedzi (góra, dół, lewo, prawo)
+        const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
+        for(let d of dirs) {
+            const nx = cur.x + d[0];
+            const ny = cur.y + d[1];
+            
+            if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+                // Oblicz koszt wejścia na to pole (tu uproszczenie: sprawdzamy czy to nie ściana)
+                if (costField[nx][ny] < 60000) { 
+                    // Sprawdzamy czy to las czy trawa
+                    const worldX = nx * CONFIG.PATH_GRID;
+                    const worldY = ny * CONFIG.PATH_GRID;
+                    let moveCost = 1;
+                    const inForest = game.terrain.forests.some(f => Math.hypot(worldX - f.centerX, worldY - f.centerY) < f.radius);
+                    if(inForest) moveCost = 5;
+
+                    const newCost = costField[cur.x][cur.y] + moveCost;
+                    
+                    if(newCost < costField[nx][ny]) {
+                        costField[nx][ny] = newCost;
+                        queue.push({x: nx, y: ny});
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Flow Field (Vector Generation)
+    // Dla każdej kratki patrzymy na sąsiada z najmniejszym kosztem i tworzymy wektor w jego stronę
+    for(let x=0; x<cols; x++) {
+        for(let y=0; y<rows; y++) {
+            if(costField[x][y] >= 60000) {
+                game.flowField[x][y] = {x:0, y:0}; // Brak ruchu
+                continue;
+            }
+            
+            let bestCost = costField[x][y];
+            let targetNode = {x, y};
+            
+            const dirs = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]]; // 8 kierunków
+            
+            for(let d of dirs) {
+                const nx = x + d[0];
+                const ny = y + d[1];
+                if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+                    if(costField[nx][ny] < bestCost) {
+                        bestCost = costField[nx][ny];
+                        targetNode = {x: nx, y: ny};
+                    }
+                }
+            }
+            
+            // Wektor znormalizowany
+            const dx = targetNode.x - x;
+            const dy = targetNode.y - y;
+            const len = Math.hypot(dx, dy);
+            if(len > 0) game.flowField[x][y] = { x: dx/len, y: dy/len };
+            else game.flowField[x][y] = { x: 0, y: 0 }; // Jesteśmy w celu
+        }
+    }
+}
+
+// === PHYSICS & TERRAIN ===
+function getTerrainFactor(x, y, moveType) {
+    let factor = 1.0;
+    
+    // FLY units ignore terrain
+    if (moveType === 'FLY') return 1.0;
+
+    // Check Lakes
+    const inLake = game.terrain.lakes.some(l => isPointInPolygon(x, y, l.points));
+    if (inLake) {
+        if (moveType === 'LAND') factor *= 0.2; // Bardzo wolno
+        else if (moveType === 'SWIM') factor *= 1.5; // Przyspieszenie
+    }
+
+    // Check Hills (Base Radius)
+    if (moveType !== 'FLY') {
+        const onHill = game.terrain.hills.some(h => Math.hypot(x - h.x, y - h.y) < h.layers[0].radius);
+        if (onHill) factor *= 0.5; // Zwolnienie pod górę
+    }
+
+    // Check Forests
+    const inForest = game.terrain.forests.some(f => Math.hypot(x - f.centerX, y - f.centerY) < f.radius);
+    if (inForest) factor *= 0.8;
+
+    return factor;
+}
+
+// === GENERACJA MAPY ===
+function generateStrategicMap() {
+    game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
+    game.terrain = { hills: [], lakes: [], forests: [] };
+    const S = CONFIG.SCALE;
+    
+    const featureCount = 5 + Math.floor(Math.random() * 4);
+    for(let f = 0; f < featureCount; f++) {
+        const cx = Math.random() * CONFIG.WIDTH;
+        const cy = Math.random() * CONFIG.HEIGHT;
+        const type = Math.random();
+
+        if (type < 0.35) createMountain(cx, cy, (150 + Math.random() * 150) * S, 5);
+        else if (type < 0.7) createForest(cx, cy);
+        else createLake(cx, cy);
+    }
+    // Wyczyść środek dla gracza
+    game.terrain.hills = game.terrain.hills.filter(h => Math.hypot(h.x - 600, h.y - 450) > 250);
+    game.terrain.lakes = game.terrain.lakes.filter(l => !isPointInPolygon(600, 450, l.points));
+}
+
+function createForest(cx, cy) {
+    const size = (120 + Math.random() * 150) * CONFIG.SCALE;
+    const density = 15;
+    const trees = [];
+    for(let t = 0; t < density; t++) {
+        const a = Math.random() * Math.PI * 2;
+        const d = Math.random() * size;
+        trees.push({x: cx + Math.cos(a)*d, y: cy + Math.sin(a)*d, size: (6+Math.random()*8)*CONFIG.SCALE});
+    }
+    game.terrain.forests.push({ trees, centerX: cx, centerY: cy, radius: size });
+}
+
+function createLake(cx, cy) {
+    const radius = (80 + Math.random() * 100) * CONFIG.SCALE;
+    const points = [];
+    const segments = 12;
+    for(let i = 0; i < segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        points.push({ x: cx + Math.cos(angle) * radius * (0.8+Math.random()*0.4), y: cy + Math.sin(angle) * radius * (0.8+Math.random()*0.4) });
+    }
+    game.terrain.lakes.push({ points, type: 'water' });
+}
+
+function createMountain(cx, cy, baseRadius, layers) {
+    const mountain = { x: cx, y: cy, layers: [], totalLayers: layers };
+    for(let l = 0; l < layers; l++) {
+        const radius = baseRadius * (1 - l / layers);
+        const verts = [];
+        for(let i = 0; i < 16; i++) {
+            const angle = (i / 16) * Math.PI * 2;
+            verts.push({ x: Math.cos(angle) * radius * (0.9+Math.random()*0.2), y: Math.sin(angle) * radius * (0.9+Math.random()*0.2) });
+        }
+        mountain.layers.push({ verts, radius, level: l });
+    }
+    game.terrain.hills.push(mountain);
+}
+
+function spawnWaveLogic() {
+    game.enemies = [];
+    game.intel = { land: 0, swim: 0, air: 0, totalHP: 0 };
+    let pool = 2500 + (game.wave * 1500); 
+    
+    while (pool > 0) {
+        let type = 'LAND';
+        const r = Math.random();
+        if (r < 0.6) type = 'LAND'; else if (r < 0.8) type = 'SWIM'; else type = 'FLY';
+
+        if (type === 'LAND') game.intel.land++;
+        else if (type === 'SWIM') game.intel.swim++;
+        else game.intel.air++;
+
+        let hp = 60 + (game.wave * 10) + Math.random() * 100;
+        if (game.wave > 3 && Math.random() > 0.9) hp *= 3; 
+        
+        game.enemies.push(createEnemy(hp, type));
+        game.intel.totalHP += hp;
+        pool -= hp;
+    }
+}
+
+function createEnemy(hp, moveType) {
+    let x, y;
+    const spread = 800; const padding = 60;
+    
+    if(game.spawnDir === 'NORTH') { x = (CONFIG.WIDTH/2 - spread/2) + Math.random()*spread; y = -padding; }
+    else if(game.spawnDir === 'SOUTH') { x = (CONFIG.WIDTH/2 - spread/2) + Math.random()*spread; y = CONFIG.HEIGHT + padding; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + padding; y = (CONFIG.HEIGHT/2 - spread/2) + Math.random()*spread; }
+    else { x = -padding; y = (CONFIG.HEIGHT/2 - spread/2) + Math.random()*spread; }
+
+    const size = 6 + (hp * 0.03); 
+    const vertices = [];
+    let color;
+    
+    if(moveType === 'LAND') {
+        color = '#ff3333';
+        const s = 4; for(let i=0; i<s; i++) vertices.push({a: (i/s)*6.28 + 0.78, d: size}); // Diamond
+    } else if(moveType === 'SWIM') {
+        color = '#33aaff';
+        const s = 3; for(let i=0; i<s; i++) vertices.push({a: (i/s)*6.28, d: size}); // Triangle
+    } else {
+        color = '#cc33ff';
+        const s = 5; for(let i=0; i<s; i++) vertices.push({a: (i/s)*6.28, d: size * (i%2?0.6:1.2)}); // Star
+    }
+    
+    return { 
+        x, y, hp, maxHp: hp, moveType, size, vertices, color, 
+        speed: (moveType === 'FLY' ? 1.8 : 1.0) * Math.max(0.5, 2.0 - (size/30)) 
+    };
+}
+
+// === GAME LOOP ===
+function gameLoop() {
+    if (game.gameOver) return;
+    renderExplosions();
+    
+    ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    
+    if (game.mode === 'BASE') renderBaseGrid();
+    else {
+        renderTacticalMap();
+        if (game.mode === 'COMBAT') updateCombat();
+        renderEntities(); // Buildings & Player
+        renderEnemies();
+        if (game.mode === 'PREP' && game.selected) renderGhost();
+    }
+    
+    renderProjectiles();
+    updateStatsUI();
+    requestAnimationFrame(gameLoop);
+}
+
+function updateCombat() {
+    // 1. Player Physics & Movement (Ukształtowanie terenu wpływa na gracza)
+    let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.15);
+    
+    // Pobierz modyfikator terenu dla gracza (traktujemy go jak LAND unit)
+    const tFactor = getTerrainFactor(game.player.x, game.player.y, 'LAND');
+    pSpd *= tFactor;
+
+    if (game.keys['KeyW']) game.player.y -= pSpd;
+    if (game.keys['KeyS']) game.player.y += pSpd;
+    if (game.keys['KeyA']) game.player.x -= pSpd;
+    if (game.keys['KeyD']) game.player.x += pSpd;
+    
+    // Bounds check
+    game.player.x = Math.max(20, Math.min(CONFIG.WIDTH-20, game.player.x));
+    game.player.y = Math.max(20, Math.min(CONFIG.HEIGHT-20, game.player.y));
+
+    if (game.mouse.down) playerShoot();
+    
+    const core = game.entities.find(e => e.type === 'core');
+    if (!core) { triggerGameOver(); return; }
+    
+    const now = Date.now();
+
+    // 2. Enemy Logic (AI & Kamikaze)
+    game.enemies.forEach((e) => {
+        let mX = 0, mY = 0;
+
+        // PATHFINDING: Jeśli jednostka lądowa, użyj Flow Field
+        if (e.moveType === 'LAND' || e.moveType === 'SWIM') {
+            const gx = Math.floor(e.x / CONFIG.PATH_GRID);
+            const gy = Math.floor(e.y / CONFIG.PATH_GRID);
+            
+            // Bezpieczeństwo granic tablicy
+            if (gx >= 0 && gx < game.flowField.length && gy >= 0 && gy < game.flowField[0].length) {
+                const vec = game.flowField[gx][gy];
+                if (vec) { mX = vec.x * e.speed; mY = vec.y * e.speed; }
+            } else {
+                // Fallback jeśli poza mapą: leć prosto do HQ
+                const ang = Math.atan2(core.y - e.y, core.x - e.x);
+                mX = Math.cos(ang) * e.speed; mY = Math.sin(ang) * e.speed;
+            }
+        } else {
+            // FLY: Prosto do celu
+            const ang = Math.atan2(core.y - e.y, core.x - e.x);
+            mX = Math.cos(ang) * e.speed; mY = Math.sin(ang) * e.speed;
+        }
+
+        // Modyfikator terenu dla wroga
+        const terrainMult = getTerrainFactor(e.x, e.y, e.moveType);
+        e.x += mX * terrainMult;
+        e.y += mY * terrainMult;
+
+        // 3. KAMIKAZE LOGIC & COLLISION
+        // Kolizja z graczem
+        if (Math.hypot(e.x - game.player.x, e.y - game.player.y) < e.size + 10) {
+            game.player.hp -= e.hp; // Gracz traci tyle ile miał wróg
+            createExplosion(e.x, e.y, 30, '#fff');
+            createExplosion(game.player.x, game.player.y, 20, '#f00');
+            e.hp = 0; // Enemy dies
+            if(game.player.hp <= 0) triggerGameOver();
+            return;
+        }
+
+        // Kolizja z budynkami
+        game.entities.forEach(ent => {
+            if (e.hp <= 0) return; // Już martwy
+            if (ent.type === 'mine') {
+                if (Math.hypot(e.x - ent.x, e.y - ent.y) < ent.range) {
+                    e.hp -= 200; 
+                    ent.curHP = 0; // Mina wybucha
+                    createExplosion(ent.x, ent.y, 50, "#fff");
+                }
+                return;
+            }
+            
+            const dist = Math.hypot(e.x - ent.x, e.y - ent.y);
+            // Hitbox budynku
+            if (dist < e.size + ent.size) {
+                // KAMIKAZE ATTACK
+                ent.curHP -= e.hp;
+                createExplosion(ent.x, ent.y, 20, '#faa');
+                e.hp = 0; // Enemy vanishes
+                
+                if (ent.type === 'core') {
+                    game.hp = Math.max(0, ent.curHP);
+                    document.getElementById('viewport').style.boxShadow = "inset 0 0 50px red";
+                    setTimeout(() => document.getElementById('viewport').style.boxShadow = "none", 100);
+                }
+            }
+        });
+    });
+
+    game.entities = game.entities.filter(e => e.curHP > 0);
+
+    // Towers Shoot
+    game.entities.forEach(u => {
+        if (u.type === 'tower' && now - u.lastFire > u.rof) {
+            let target = null, minDist = u.range;
+            for(let enemy of game.enemies) {
+                if(enemy.hp <= 0) continue;
+                const d = Math.hypot(enemy.x - u.x, enemy.y - u.y);
+                if(d < minDist) { minDist = d; target = enemy; }
+            }
+            if (target) {
+                target.hp -= u.dmg; 
+                u.lastFire = now;
+                ctx.strokeStyle = u.color; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+            }
+        }
+    });
+
+    game.enemies = game.enemies.filter(e => { 
+        if (e.hp <= 0) { 
+            // Jeśli zginął bo miał 0hp (od strzału), daj kasę. Jeśli Kamikaze, to już ma hp=0 ale nie od strzału gracza (uproszczenie)
+            // Można by dodać flagę "killedByPlayer", ale tutaj zostawmy, że zawsze daje $ (rekompensata za straty)
+            game.money += Math.floor(10 + (e.maxHp/20)); 
+            createExplosion(e.x, e.y, e.size, e.color);
+            return false; 
+        } 
+        return true; 
+    });
+    
+    if (game.enemies.length === 0) { 
+        game.mode = 'BASE'; 
+        document.getElementById('actionBtn').innerText = "INITIATE DEPLOYMENT"; 
+        document.getElementById('actionBtn').style.borderColor = "#d44";
+        document.getElementById('actionBtn').style.color = "#f66";
+        document.getElementById('actionBtn').disabled = false; 
+        logTerminal("SECTOR SECURED. RTB."); 
+    }
+}
+
+// === RENDERING (VISUAL HP) ===
+
+// Nowa funkcja do rysowania kształtów z wypełnieniem "cieczą"
+function drawLiquidShape(ctx, x, y, vertices, color, hpPct) {
+    ctx.save();
+    ctx.translate(x, y);
+    
+    // 1. Zdefiniuj ścieżkę kształtu
+    ctx.beginPath();
+    vertices.forEach((v, i) => {
+        const vx = Math.cos(v.a) * v.d;
+        const vy = Math.sin(v.a) * v.d;
+        if(i===0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
+    });
+    ctx.closePath();
+
+    // 2. Rysuj obrys
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    // 3. Clip (Maska) - wszystko co narysujemy dalej będzie tylko wewnątrz kształtu
+    ctx.clip();
+
+    // 4. Oblicz poziom cieczy (HP)
+    // Zakładamy, że kształt ma ok. +/- 20px wysokości. 
+    // Rysujemy prostokąt od dołu.
+    const h = 40; // Max wysokość
+    const fillH = h * hpPct;
+    
+    ctx.fillStyle = color;
+    // Rysujemy prostokąt wypełniający od dołu
+    ctx.fillRect(-20, 20 - fillH, 40, fillH);
+
+    ctx.restore();
+}
+
+function renderEnemies() {
+    game.enemies.forEach(e => {
+        // Animacja pulsowania
+        const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
+        const verts = e.vertices.map(v => ({a: v.a, d: v.d * pulse})); // Kopia z pulsowaniem
+        
+        drawLiquidShape(ctx, e.x, e.y, verts, e.color, e.hp / e.maxHp);
+    });
+}
+
+function renderPlayerUnit() {
+    // Player jako trójkąt
+    const verts = [
+        {a: 0, d: 10}, 
+        {a: 2.6, d: 10}, 
+        {a: 3.7, d: 6} // wcięcie z tyłu
+    ];
+    // Player rotate
+    const ang = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    
+    // Manual transform for the function
+    const rotVerts = [
+        {a: 0 + ang, d: 12}, 
+        {a: 2.35 + ang, d: 10}, 
+        {a: 3.92 + ang, d: 10}
+    ];
+
+    drawLiquidShape(ctx, game.player.x, game.player.y, rotVerts, '#ffffff', game.player.hp / game.player.maxHp);
+
+    // Celownik
+    ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.mouse.x, game.mouse.y); ctx.stroke(); ctx.setLineDash([]);
+}
+
+function renderEntities() {
+    game.entities.forEach(ent => {
+        if (ent.type === 'mine') {
+            ctx.strokeStyle = ent.color;
+            ctx.beginPath(); ctx.arc(ent.x, ent.y, 6, 0, Math.PI*2); ctx.stroke();
+            return;
+        }
+
+        // Budynki też rysujemy z efektem "cieczy"
+        let verts = [];
+        const s = ent.size;
+        if(ent.type === 'core' || ent.type === 'wall') {
+            // Kwadrat
+            verts = [{a:0.78,d:s*1.4}, {a:2.35,d:s*1.4}, {a:3.92,d:s*1.4}, {a:5.49,d:s*1.4}];
+        } else {
+            // Koło (aproksymowane)
+            for(let i=0; i<8; i++) verts.push({a: i/8 * Math.PI*2, d: s});
+        }
+        
+        drawLiquidShape(ctx, ent.x, ent.y, verts, ent.color, ent.curHP / ent.hp);
+        
+        // Reload bar for towers
+        if (ent.type === 'tower') {
+            const reloadPct = Math.min(1, (Date.now() - ent.lastFire) / ent.rof);
+            ctx.strokeStyle = "#0f0"; ctx.beginPath(); 
+            ctx.arc(ent.x, ent.y, s+4, -Math.PI/2, (-Math.PI/2) + (Math.PI*2*reloadPct)); 
+            ctx.stroke();
+        }
+    });
+}
+
+function showIntelReport() {
+    logTerminal(`-------------------------`);
+    logTerminal(`INCOMING WAVE: ${game.wave}`);
+    logTerminal(`VECTOR: ${game.spawnDir}`);
+    logTerminal(`SIGNATURES: ${game.enemies.length}`);
+}
+
+function isPointInPolygon(x, y, points) {
+    let inside = false;
+    for(let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const xi = points[i].x, yi = points[i].y;
+        const xj = points[j].x, yj = points[j].y;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if(intersect) inside = !inside;
+    }
+    return inside;
+}
+
+function triggerGameOver() {
+    game.gameOver = true;
+    document.getElementById('gameOverOverlay').style.display = 'flex';
+}
+
+function playerShoot() {
+    const now = Date.now();
+    const rof = 200 / (1 + (game.player.rofLv-1)*0.25);
+    const dmg = 40 * (1 + (game.player.dmgLv-1)*0.5);
+    if (now - game.player.lastShot > rof) {
+        const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+        game.projectiles.push({ 
+            x: game.player.x, y: game.player.y, 
+            vx: Math.cos(a)*18, vy: Math.sin(a)*18, 
+            dmg, life: 60 
+        });
+        game.player.lastShot = now;
+    }
+}
+
+// Particles & Rendering Utils
+let explosions = [];
+function createExplosion(x, y, size, color) { explosions.push({x, y, size, color, age: 0}); }
+function renderExplosions() {
+    for(let i=explosions.length-1; i>=0; i--) {
+        let e = explosions[i]; e.age++;
+        ctx.globalAlpha = 1 - (e.age/20); ctx.fillStyle = e.color;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size * (e.age/5), 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1; if(e.age > 20) explosions.splice(i, 1);
+    }
+}
+
+function renderProjectiles() {
+    ctx.fillStyle = "#ff8";
+    for (let i = game.projectiles.length - 1; i >= 0; i--) {
+        let p = game.projectiles[i]; p.x += p.vx; p.y += p.vy; p.life--;
+        ctx.fillRect(p.x-2, p.y-2, 4, 4);
+        let hit = false;
+        for (let e of game.enemies) {
+            if (Math.hypot(e.x - p.x, e.y - p.y) < e.size + 5) {
+                e.hp -= p.dmg; hit = true; break;
+            }
+        }
+        if (hit || p.life <= 0 || p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
+    }
+}
+
+function handleInput() {
+    if (game.mode === 'BASE' && game.selected) {
+        const gx = Math.floor((game.mouse.x - CONFIG.BASE_OFF.x) / CONFIG.CELL);
+        const gy = Math.floor((game.mouse.y - CONFIG.BASE_OFF.y) / CONFIG.CELL);
+        if(gx>=0 && gx<CONFIG.GRID && gy>=0 && gy<CONFIG.GRID) {
+            const bCost = CONFIG.BUILDINGS[game.selected].cost;
+            if (game.money >= bCost) {
+                game.buildings.push({ gx, gy, cfg: CONFIG.BUILDINGS[game.selected] });
+                game.money -= bCost; updateStatsUI();
+            }
+        }
+    } else if (game.mode === 'PREP' && game.selected) {
+        const cfg = CONFIG.DEFENSE[game.selected];
+        if (cfg.type === 'core' && game.corePlaced) { logTerminal("HQ ALREADY DEPLOYED."); return; }
+        if (game.money >= cfg.cost) {
+            const tooClose = game.entities.some(e => Math.hypot(e.x - game.mouse.x, e.y - game.mouse.y) < 20);
+            if (!tooClose) {
+                game.entities.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 });
+                if (cfg.type === 'core') { game.corePlaced = true; game.player.x = game.mouse.x; game.player.y = game.mouse.y; } 
+                else game.money -= cfg.cost;
+                updateStatsUI();
+            }
+        }
+    }
+}
+
+function renderBaseGrid() {
+    const OFF = CONFIG.BASE_OFF; const G = CONFIG.GRID * CONFIG.CELL;
+    ctx.fillStyle = "#0a0f0a"; ctx.fillRect(OFF.x, OFF.y, G, G);
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.2)"; ctx.lineWidth = 1;
+    for(let i=0; i<=CONFIG.GRID; i++) {
+        ctx.beginPath(); ctx.moveTo(OFF.x + i*CONFIG.CELL, OFF.y); ctx.lineTo(OFF.x + i*CONFIG.CELL, OFF.y + G); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(OFF.x, OFF.y + i*CONFIG.CELL); ctx.lineTo(OFF.x + G, OFF.y + i*CONFIG.CELL); ctx.stroke();
+    }
+    game.buildings.forEach(b => { 
+        ctx.fillStyle = b.cfg.color; ctx.fillRect(OFF.x + b.gx*CONFIG.CELL + 2, OFF.y + b.gy*CONFIG.CELL + 2, 46, 46); 
+    });
+}
+
+function renderGhost() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = cfg.color; ctx.fillStyle = cfg.color;
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
+    ctx.fillRect(game.mouse.x-10, game.mouse.y-10, 20, 20); ctx.restore();
+}
+
+function updateStatsUI() {
+    document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
+    // Pasek HQ pokazuje teraz HP Core'a
+    const core = game.entities.find(e => e.type === 'core');
+    const hp = core ? core.curHP : 0;
+    const max = CONFIG.DEFENSE.CORE.hp;
+    document.getElementById('ui-hp').innerText = `${Math.ceil((hp/max)*100)}%`;
+    document.getElementById('ui-wave').innerText = game.wave;
+    document.getElementById('p-spd').innerText = (1 + (game.player.spdLv-1)*0.15).toFixed(1);
+}
+
+function updateBuildMenu() {
+    const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
+    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
+    for(let k in list) {
+        const item = list[k];
+        const btn = document.createElement('button');
+        const isAffordable = game.money >= item.cost;
+        btn.className = 'btn' + (game.selected === k ? ' active' : '');
+        btn.disabled = !isAffordable && item.cost > 0 && !(item.type === 'core');
+        if (game.mode === 'PREP' && item.type === 'core') {
+             btn.disabled = game.corePlaced;
+             btn.innerHTML = game.corePlaced ? `HQ DEPLOYED` : `${item.name} <span style="float:right">FREE</span>`;
+        } else btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+        menu.appendChild(btn);
+    }
+    if(game.mode === 'BASE') {
+        const row = document.createElement('div'); row.className = 'upgrade-row';
+        ['SPD', 'ROF', 'DMG'].forEach(s => {
+            const lvl = game.player[s.toLowerCase()+'Lv'];
+            const cost = lvl * 250;
+            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em'; b.style.padding = "5px";
+            b.innerText = `${s} UP ($${cost})`;
+            if (game.money < cost) b.disabled = true;
+            b.onclick = () => { if(game.money >= cost) { game.money -= cost; game.player[s.toLowerCase()+'Lv']++; updateStatsUI(); updateBuildMenu(); }};
+            row.appendChild(b);
+        });
+        menu.appendChild(row);
+    }
+}
+
+function renderTacticalMap() {
+    ctx.fillStyle = "#050505"; ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    // Grid
+    ctx.strokeStyle = "rgba(0, 50, 0, 0.2)"; ctx.lineWidth = 1;
+    for(let x=0; x<=CONFIG.WIDTH; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CONFIG.HEIGHT); ctx.stroke(); }
+    for(let y=0; y<=CONFIG.HEIGHT; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CONFIG.WIDTH,y); ctx.stroke(); }
+    
+    // Terrain
+    game.terrain.lakes.forEach(l => { ctx.fillStyle = "rgba(50, 100, 200, 0.3)"; ctx.strokeStyle = "#48f"; ctx.beginPath(); l.points.forEach((p,i)=>(i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y))); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+    game.terrain.forests.forEach(f => { ctx.fillStyle = "rgba(20, 100, 20, 0.4)"; f.trees.forEach(t => { ctx.beginPath(); ctx.arc(t.x, t.y, t.size, 0, Math.PI*2); ctx.fill(); }); });
+    game.terrain.hills.forEach(h => { h.layers.forEach(l => { ctx.fillStyle = `rgba(80, 60, 40, ${0.3 + (l.level * 0.1)})`; ctx.beginPath(); l.verts.forEach((v, i) => { const vx = h.x + v.x; const vy = h.y + v.y; i===0 ? ctx.moveTo(vx,vy) : ctx.lineTo(vx,vy); }); ctx.closePath(); ctx.fill(); }); });
+
+    // Spawn Warning
+    ctx.strokeStyle = `rgba(255, 50, 50, ${0.3 + Math.sin(Date.now()*0.005)*0.2})`; ctx.lineWidth = 3; ctx.setLineDash([20, 10]);
+    if(game.spawnDir === 'NORTH') ctx.strokeRect(0, 0, CONFIG.WIDTH, 50);
+    else if(game.spawnDir === 'SOUTH') ctx.strokeRect(0, CONFIG.HEIGHT-50, CONFIG.WIDTH, 50);
+    else if(game.spawnDir === 'EAST') ctx.strokeRect(CONFIG.WIDTH-50, 0, 50, CONFIG.HEIGHT);
+    else ctx.strokeRect(0, 0, 50, CONFIG.HEIGHT);
+    ctx.setLineDash([]);
+}
+
+function logTerminal(t) { const term = document.getElementById('terminal'); term.innerHTML += `> ${t}<br>`; term.scrollTop = term.scrollHeight; }
+
+window.handleAction = handleAction;
+init();
+</script>
+</body>
+</html>
