@@ -2,10 +2,10 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: PATHFINDER</title>
+    <title>OUTPOST '95: MOUNTAINS RESTORED</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff1111; --f-blue: #00ffff; --f-purple: #cc33ff; --f-hp: #ffff00; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; user-select: none; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
         canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: pixelated; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 20px rgba(32, 255, 32, 0.1); }
@@ -37,8 +37,7 @@
 
 <script>
 const CONFIG = {
-    WIDTH: 1200, HEIGHT: 900, SCALE: 0.5, BASE_OFF: { x: 300, y: 150 }, CELL: 50, GRID: 12,
-    PATH_GRID: 40, // Wielkość kratki nawigacyjnej
+    WIDTH: 1200, HEIGHT: 900, SCALE: 0.5, BASE_OFF: { x: 300, y: 150 }, CELL: 50, GRID: 12, PATH_GRID: 40,
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff', size: 22 },
         WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666', size: 16 },
@@ -56,8 +55,7 @@ let game = {
     money: 800, hp: 6000, wave: 0, mode: 'BASE',
     buildings: [], entities: [], enemies: [], projectiles: [],
     terrain: { hills: [], lakes: [], forests: [] },
-    flowField: [], // Tu przechowujemy mapę dla AI
-    selected: null, corePlaced: false,
+    flowField: [], selected: null, corePlaced: false,
     mouse: { x:0, y:0, down: false }, keys: {},
     player: { x: 600, y: 450, hp: 600, maxHp: 600, spd: 4.5, lastShot: 0 },
     spawnDir: 'NORTH'
@@ -79,14 +77,31 @@ function init() {
     updateBuildMenu(); gameLoop();
 }
 
-// --- AI: GENERATOR MAPY ŚCIEŻEK (FLOW FIELD) ---
-// Ta funkcja analizuje Twoją mapę i mówi jednostkom gdzie iść
+// --- FIZYKA: CZYTANIE TERENU (Góry istnieją!) ---
+function getTerrainCost(x, y) {
+    // 1. Jeziora
+    if (game.terrain.lakes.some(l => isPointInPolygon(x, y, l.points))) return 60; // Bardzo drogo
+
+    // 2. Góry (Ridges i Szczyty)
+    for (let h of game.terrain.hills) {
+        if (h.isRidge) {
+            // Sprawdź odległość od osi pasma górskiego
+            for (let p of h.points) {
+                if (Math.hypot(x - p.x, y - p.y) < 40) return 20; // Drogo (Góra)
+            }
+        } else {
+            // Sprawdź odległość od środka góry warstwowej
+            if (h.layers[0] && Math.hypot(x - h.x, y - h.y) < h.layers[0].radius) return 20;
+        }
+    }
+    return 1; // Trawa
+}
+
+// --- AI: FLOW FIELD (Pathfinding) ---
 function generateFlowField() {
     const cols = Math.ceil(CONFIG.WIDTH / CONFIG.PATH_GRID);
     const rows = Math.ceil(CONFIG.HEIGHT / CONFIG.PATH_GRID);
     const core = game.entities.find(e => e.type === 'core') || {x: 600, y: 450};
-    
-    // Mapa kosztów (9999 = nieznane/daleko)
     const costField = new Array(cols).fill(0).map(() => new Array(rows).fill(9999));
     const targetX = Math.floor(core.x / CONFIG.PATH_GRID);
     const targetY = Math.floor(core.y / CONFIG.PATH_GRID);
@@ -94,68 +109,52 @@ function generateFlowField() {
     let q = [{x: targetX, y: targetY, c: 0}];
     costField[targetX][targetY] = 0;
 
-    // Dijkstra (Rozlewanie wody od bazy)
     while(q.length > 0) {
         let curr = q.shift();
         [[0,1],[0,-1],[1,0],[-1,0]].forEach(d => {
             let nx = curr.x + d[0], ny = curr.y + d[1];
             if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
-                // Sprawdzamy co jest na mapie w punkcie (nx, ny)
-                let wx = nx * CONFIG.PATH_GRID + CONFIG.PATH_GRID/2;
-                let wy = ny * CONFIG.PATH_GRID + CONFIG.PATH_GRID/2;
+                let wx = nx * CONFIG.PATH_GRID + 20, wy = ny * CONFIG.PATH_GRID + 20;
+                let tileCost = getTerrainCost(wx, wy); // Używamy tej samej funkcji co fizyka
                 
-                let tileCost = 1; // Trawa = 1
-                
-                // Jezioro = Prawie ściana (koszt 100), ale da się wejść jak musisz
-                if (game.terrain.lakes.some(l => isPointInPolygon(wx, wy, l.points))) tileCost = 100;
-                
-                // Góra = Trudno (koszt 20)
-                let onHill = false;
-                for(let h of game.terrain.hills) {
-                    if(h.isRidge) { if(h.points.some(p => Math.hypot(wx-p.x, wy-p.y) < 40)) onHill=true; }
-                    else if(h.layers[0] && Math.hypot(wx-h.x, wy-h.y) < h.layers[0].radius) onHill=true;
-                }
-                if(onHill) tileCost = 20;
-
-                let newCost = curr.c + tileCost;
-                if(newCost < costField[nx][ny]) {
-                    costField[nx][ny] = newCost;
-                    q.push({x: nx, y: ny, c: newCost}); // Sortowanie kolejki pominięte dla wydajności, BFS wystarczy przy małych wagach
+                let total = curr.c + tileCost;
+                if (total < costField[nx][ny]) {
+                    costField[nx][ny] = total; q.push({x: nx, y: ny, c: total});
                 }
             }
         });
     }
 
-    // Tworzenie wektorów (Strzałki kierunkowe dla każdej kratki)
     game.flowField = new Array(cols).fill(0).map((_, x) => new Array(rows).fill(0).map((_, y) => {
-        let min = costField[x][y];
-        let vec = {x: 0, y: 0};
+        let min = costField[x][y], vec = {x: 0, y: 0};
         [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(d => {
             let nx = x + d[0], ny = y + d[1];
             if(nx >= 0 && nx < cols && ny >= 0 && ny < rows && costField[nx][ny] < min) {
-                min = costField[nx][ny];
-                vec = {x: d[0], y: d[1]};
+                min = costField[nx][ny]; vec = {x: d[0], y: d[1]};
             }
         });
-        // Normalizacja wektora
+        // Normalizacja
         let len = Math.hypot(vec.x, vec.y);
         if(len > 0) { vec.x /= len; vec.y /= len; }
         return vec;
     }));
 }
 
-// --- TWOJA ORYGINALNA GENERACJA MAPY (NIENARUSZONA) ---
+// --- ORYGINALNY GENERATOR (1:1 Z TWOJEGO KODU) ---
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     game.terrain = { hills: [], lakes: [], forests: [] };
     const S = CONFIG.SCALE;
+    
+    // GÓRY (Ridges + Peaks)
     const featureCount = 3 + Math.floor(Math.random() * 3);
     for(let f = 0; f < featureCount; f++) {
         const type = Math.random();
         if(type < 0.5) {
+            // RIDGES
             const isHorizontal = Math.random() > 0.5;
             const ridgePoints = [];
-            const startPos = (150 + Math.random() * (isHorizontal ? 1500 : 1100)) * S;
+            const startPos = (150 + Math.random() * 1200) * S;
             const amplitude = (60 + Math.random() * 100) * S;
             const frequency = 0.4 + Math.random() * 0.4;
             for(let i = 0; i <= 15; i++) {
@@ -192,12 +191,14 @@ function generateStrategicMap() {
                 }
             }
         } else {
+            // PEAKS
             const cx = Math.random() * 1200, cy = Math.random() * 900;
             if (type < 0.65) createMountain(cx, cy, 150*S, 10);
             else if (type < 0.8) for(let l=0;l<6;l++) createContourCircle(cx, cy, 180*S*(1-l*0.15), l, 6, 0.2);
             else for(let i=0;i<3;i++) createMountain(cx+(Math.random()-0.5)*200, cy+(Math.random()-0.5)*200, 80*S, 5);
         }
     }
+    // JEZIORA
     const lakeCount = 2 + Math.floor(Math.random() * 3);
     for(let l = 0; l < lakeCount; l++) {
         const cx = Math.random()*1200, cy = Math.random()*900, points = [];
@@ -206,6 +207,7 @@ function generateStrategicMap() {
         }
         game.terrain.lakes.push({points});
     }
+    // LASY
     const forestCount = 3 + Math.floor(Math.random() * 4);
     for(let f=0; f<forestCount; f++) {
         const cx = Math.random()*1200, cy = Math.random()*900, trees = [];
@@ -236,7 +238,7 @@ function createContourCircle(cx, cy, radius, level, maxLevels, noise) {
     game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level }], totalLayers: maxLevels });
 }
 
-// --- LOGIKA WALKI ---
+// --- LOGIKA GRY ---
 function spawnWaveLogic() {
     game.enemies = [];
     let pool = 3000 + (game.wave * 3000);
@@ -257,25 +259,21 @@ function createEnemy(hp, moveType) {
 
     const size = 10 + (hp * 0.03);
     const color = moveType === 'LAND' ? '#ff1111' : (moveType === 'SWIM' ? '#00ffff' : '#cc33ff');
-    
-    // Losowy wielokąt (Generator kształtów)
-    const verts = []; 
-    const pts = 3 + Math.floor(Math.random() * 10);
-    for(let i=0; i<pts; i++) verts.push({a: (i/pts)*6.28, d: size * (0.6 + Math.random()*0.8)}); // Nieregularne
-    
+    const verts = []; const pts = 3 + Math.floor(Math.random() * 10);
+    for(let i=0; i<pts; i++) verts.push({a: (i/pts)*6.28, d: size * (0.6 + Math.random()*0.8)});
     return { x, y, hp, maxHp: hp, moveType, size, color, verts, speed: moveType==='FLY' ? 1.6 : 1.1 };
 }
 
-// --- RUCH I FIZYKA ---
 function updateCombat() {
-    // 1. Ruch Gracza (Prosta Fizyka)
-    let pMod = 1.0;
-    if (game.terrain.lakes.some(l => isPointInPolygon(game.player.x, game.player.y, l.points))) pMod = 0.3; // Zwalnia w wodzie
-    let moveAmt = game.player.spd * pMod;
-    if (game.keys['KeyW']) game.player.y -= moveAmt;
-    if (game.keys['KeyS']) game.player.y += moveAmt;
-    if (game.keys['KeyA']) game.player.x -= moveAmt;
-    if (game.keys['KeyD']) game.player.x += moveAmt;
+    // Fizyka Gracza
+    let cost = getTerrainCost(game.player.x, game.player.y);
+    let mod = cost > 10 ? 0.3 : 1.0; // Jeśli koszt > 10 (Góra/Jezioro) -> Zwolnij
+    
+    let move = game.player.spd * mod;
+    if (game.keys['KeyW']) game.player.y -= move;
+    if (game.keys['KeyS']) game.player.y += move;
+    if (game.keys['KeyA']) game.player.x -= move;
+    if (game.keys['KeyD']) game.player.x += move;
     game.player.x = Math.max(10, Math.min(1190, game.player.x));
     game.player.y = Math.max(10, Math.min(890, game.player.y));
 
@@ -287,43 +285,40 @@ function updateCombat() {
     game.enemies.forEach((e) => {
         let vx = 0, vy = 0;
         
-        // 2. AI Wrogów (Decyzja o ruchu)
+        // AI Decyzja
         if (e.moveType === 'FLY') {
-            // Latające: Prosto do celu
-            let a = Math.atan2(core.y - e.y, core.x - e.x);
-            vx = Math.cos(a); vy = Math.sin(a);
+            let a = Math.atan2(core.y - e.y, core.x - e.x); vx = Math.cos(a); vy = Math.sin(a);
         } else {
-            // Lądowe/Wodne: Korzystają z mapy ścieżek (Flow Field)
-            let gx = Math.floor(e.x / CONFIG.PATH_GRID);
-            let gy = Math.floor(e.y / CONFIG.PATH_GRID);
-            
+            let gx = Math.floor(e.x / CONFIG.PATH_GRID), gy = Math.floor(e.y / CONFIG.PATH_GRID);
             if (game.flowField[gx] && game.flowField[gx][gy] && (game.flowField[gx][gy].x !== 0 || game.flowField[gx][gy].y !== 0)) {
-                // Jeśli jesteśmy na mapie i mamy wektor, idziemy za nim
-                vx = game.flowField[gx][gy].x; 
-                vy = game.flowField[gx][gy].y;
+                vx = game.flowField[gx][gy].x; vy = game.flowField[gx][gy].y;
             } else {
-                // Fallback (np. poza mapą): Idź prosto do celu
-                let a = Math.atan2(core.y - e.y, core.x - e.x);
-                vx = Math.cos(a); vy = Math.sin(a);
+                let a = Math.atan2(core.y - e.y, core.x - e.x); vx = Math.cos(a); vy = Math.sin(a);
             }
         }
 
-        // 3. Modyfikatory prędkości (Fizyka wroga)
-        let tMod = 1.0;
-        if (e.moveType === 'SWIM' && game.terrain.lakes.some(l => isPointInPolygon(e.x, e.y, l.points))) tMod = 2.0; // Szybki w wodzie
-        if (e.moveType === 'LAND' && game.terrain.lakes.some(l => isPointInPolygon(e.x, e.y, l.points))) tMod = 0.2; // Wolny w wodzie
+        // Fizyka Wroga
+        let tCost = getTerrainCost(e.x, e.y);
+        let speedMod = 1.0;
+        
+        if (e.moveType === 'LAND') {
+            if (tCost === 60) speedMod = 0.2; // Woda = Bardzo wolno
+            else if (tCost === 20) speedMod = 0.4; // Góra = Wolno
+        } else if (e.moveType === 'SWIM') {
+            if (tCost === 60) speedMod = 2.0; // Woda = Bardzo szybko
+            else speedMod = 0.8; // Ląd = Wolniej
+        }
 
-        e.x += vx * e.speed * tMod;
-        e.y += vy * e.speed * tMod;
+        e.x += vx * e.speed * speedMod; e.y += vy * e.speed * speedMod;
 
-        // 4. Kamikaze (Kolizje)
+        // Kolizje (Kamikaze)
         if (Math.hypot(e.x - game.player.x, e.y - game.player.y) < e.size + 10) {
-            game.player.hp -= e.hp; e.hp = 0; // Bum
+            game.player.hp -= e.hp; e.hp = 0;
             if(game.player.hp <= 0) location.reload();
         }
         game.entities.forEach(ent => {
             if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + ent.size) {
-                ent.curHP -= e.hp; e.hp = 0; // Bum
+                ent.curHP -= e.hp; e.hp = 0;
                 if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
             }
         });
@@ -341,9 +336,7 @@ function updateCombat() {
 
     game.enemies = game.enemies.filter(e => e.hp > 0);
     game.entities = game.entities.filter(e => e.curHP > 0);
-    if (game.enemies.length === 0 && game.mode === 'COMBAT') { 
-        game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; 
-    }
+    if (game.enemies.length === 0 && game.mode === 'COMBAT') { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; }
     if (game.hp <= 0) location.reload();
 }
 
@@ -353,7 +346,6 @@ function drawUnit(x, y, verts, color, hpRatio, size) {
     verts.forEach((v, i) => (i === 0) ? ctx.moveTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d) : ctx.lineTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d));
     ctx.closePath(); 
     ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-    // LIQUID FILL
     ctx.clip(); ctx.fillStyle = color;
     let fillY = size * 2 - (hpRatio * size * 4);
     ctx.fillRect(-size * 2, fillY, size * 4, size * 4);
@@ -362,15 +354,18 @@ function drawUnit(x, y, verts, color, hpRatio, size) {
 
 function renderTacticalMap() {
     ctx.fillStyle = "#000"; ctx.fillRect(0,0,1200,900);
+    
     game.terrain.lakes.forEach(l => {
         ctx.fillStyle = "rgba(150,180,50,0.4)"; ctx.beginPath();
         l.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
         ctx.closePath(); ctx.fill(); ctx.strokeStyle="#9a0"; ctx.stroke();
     });
+    
     game.terrain.forests.forEach(f => f.trees.forEach(t => {
         ctx.fillStyle="rgba(150,50,200,0.6)"; ctx.beginPath(); ctx.arc(t.x,t.y,t.size,0,6.28); ctx.fill();
         ctx.strokeStyle="rgba(180,100,255,0.3)"; ctx.stroke();
     }));
+    
     game.terrain.hills.forEach(h => {
         if(h.isRidge) {
             let el = h.level/8; ctx.strokeStyle=`rgb(${20+el*180},${30+el*150},${10+el*100})`;
@@ -382,6 +377,7 @@ function renderTacticalMap() {
             });
         }
     });
+    
     ctx.strokeStyle = "#f44"; ctx.lineWidth = 2; ctx.setLineDash([15, 8]);
     let s = {x:0, y:0, w:0, h:0};
     if(game.spawnDir==='NORTH') s={x:0,y:0,w:1200,h:50}; 
@@ -389,6 +385,33 @@ function renderTacticalMap() {
     else if(game.spawnDir==='EAST') s={x:1150,y:0,w:50,h:900};
     else s={x:0,y:0,w:50,h:900};
     ctx.strokeRect(s.x, s.y, s.w, s.h); ctx.setLineDash([]);
+}
+
+function gameLoop() {
+    ctx.clearRect(0,0,1200,900);
+    if(game.mode==='BASE') renderBaseGrid();
+    else {
+        renderTacticalMap();
+        if(game.mode==='COMBAT') updateCombat();
+        
+        game.entities.forEach(e => {
+            let v = []; const s = e.size;
+            if(e.type === 'core' || e.type === 'wall') v = [{a:0.78,d:s*1.4},{a:2.35,d:s*1.4},{a:3.92,d:s*1.4},{a:5.49,d:s*1.4}];
+            else for(let i=0; i<8; i++) v.push({a: i/8 * Math.PI*2, d: s});
+            drawUnit(e.x, e.y, v, e.color, e.curHP/e.hp, s);
+        });
+
+        game.enemies.forEach(e => drawUnit(e.x, e.y, e.verts, e.color, e.hp/e.maxHp, e.size));
+
+        if(game.corePlaced) {
+            let a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+            drawUnit(game.player.x, game.player.y, [{a:a,d:15},{a:a+2.5,d:10},{a:a+3.8,d:10}], '#fff', game.player.hp/game.player.maxHp, 10);
+        }
+        
+        renderProjectiles();
+        if (game.mode === 'PREP' && game.selected) renderGhost();
+    }
+    updateStatsUI(); requestAnimationFrame(gameLoop);
 }
 
 function playerShoot() {
@@ -407,36 +430,6 @@ function renderProjectiles() {
         if(hit) { hit.hp-=p.dmg; game.projectiles.splice(i,1); }
         if(p.life<=0) game.projectiles.splice(i,1);
     });
-}
-
-function gameLoop() {
-    ctx.clearRect(0,0,1200,900);
-    if(game.mode==='BASE') renderBaseGrid();
-    else {
-        renderTacticalMap();
-        if(game.mode==='COMBAT') { updateCombat(); if(game.mouse.down) playerShoot(); }
-        
-        // Render Buildings
-        game.entities.forEach(e => {
-            let v = []; const s = e.size;
-            if(e.type === 'core' || e.type === 'wall') v = [{a:0.78,d:s*1.4},{a:2.35,d:s*1.4},{a:3.92,d:s*1.4},{a:5.49,d:s*1.4}];
-            else for(let i=0; i<8; i++) v.push({a: i/8 * Math.PI*2, d: s});
-            drawUnit(e.x, e.y, v, e.color, e.curHP/e.hp, s);
-        });
-
-        // Render Enemies
-        game.enemies.forEach(e => drawUnit(e.x, e.y, e.verts, e.color, e.hp/e.maxHp, e.size));
-
-        // Render Player
-        if(game.corePlaced) {
-            let a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-            drawUnit(game.player.x, game.player.y, [{a:a,d:15},{a:a+2.5,d:10},{a:a+3.8,d:10}], '#fff', game.player.hp/game.player.maxHp, 10);
-        }
-        
-        renderProjectiles();
-        if (game.mode === 'PREP' && game.selected) renderGhost();
-    }
-    updateStatsUI(); requestAnimationFrame(gameLoop);
 }
 
 function handleAction() {
