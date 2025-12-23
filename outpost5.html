@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>OUTPOST '95: TOPOGRAPHIC</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
+        body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; user-select: none; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: pixelated; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 20px rgba(32, 255, 32, 0.1); }
+        #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; z-index: 10; }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.3em; text-transform: uppercase; width: 100%; text-align: left; }
+        .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
+        .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
+        .stat { display: flex; justify-content: space-between; font-size: 1.5em; }
+        #terminal { font-size: 1em; height: 140px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <canvas id="gameCanvas" width="1200" height="900"></canvas>
+</div>
+
+<div id="sidebar">
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">STRAT-COM INTERFACE</h2>
+    <div class="screen">
+        <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
+        <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
+    </div>
+    <div class="screen" id="terminal">> TOPOGRAPHIC SCAN...<br>> GENERATING ISOLINES...<br>> MAP READY.</div>
+    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
+    <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold;" onclick="handleAction()">EXECUTE COMBAT</button>
+</div>
+
+<script>
+const CONFIG = {
+    WIDTH: 1200, HEIGHT: 900, SCALE: 0.5, BASE_OFF: { x: 300, y: 150 }, CELL: 50, GRID: 12,
+    DEFENSE: {
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff', size: 22 },
+        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666', size: 16 },
+        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 15, rof: 500, hp: 600, type: 'tower', color: '#ff0', size: 14 },
+        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 200, rof: 2800, hp: 1000, type: 'tower', color: '#f80', size: 18 }
+    },
+    BUILDINGS: {
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
+        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
+    }
+};
+
+let game = {
+    money: 800, hp: 6000, wave: 0, mode: 'BASE',
+    buildings: [], entities: [], enemies: [], projectiles: [],
+    heightMap: [], // Nowa mapa wysokości (0.0 - 1.0)
+    selected: null, corePlaced: false,
+    mouse: { x:0, y:0, down: false }, keys: {},
+    player: { x: 600, y: 450, hp: 600, maxHp: 600, spd: 4.5, lastShot: 0 },
+    spawnDir: 'NORTH',
+    mapCanvas: null // Cache dla tła
+};
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- NOWY GENERATOR TERENU (HEIGHTMAP & NOISE) ---
+function noise(x, y) {
+    // Prosta symulacja szumu (złożenie fal sinusoidalnych)
+    let val = Math.sin(x * 0.005 + y * 0.003);
+    val += Math.sin(x * 0.01 - y * 0.01 + 2.0) * 0.5;
+    val += Math.sin(x * 0.03 + y * 0.03 + 1.5) * 0.25;
+    val += Math.sin(x * 0.1 + y * 0.1) * 0.05; // Detale
+    return (val + 1.8) / 3.6; // Normalizacja do 0-1
+}
+
+function generateStrategicMap() {
+    game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
+    
+    // Inicjalizacja tablicy wysokości
+    const res = 4; // Rozdzielczość (renderujemy co 4 piksele dla wydajności i stylu retro)
+    const cols = Math.ceil(CONFIG.WIDTH / res);
+    const rows = Math.ceil(CONFIG.HEIGHT / res);
+    game.heightMap = new Float32Array(cols * rows);
+    
+    // Losowe przesunięcie mapy (Seed)
+    const offsetX = Math.random() * 10000;
+    const offsetY = Math.random() * 10000;
+
+    // Generowanie wysokości
+    for(let y = 0; y < rows; y++) {
+        for(let x = 0; x < cols; x++) {
+            let wx = x * res + offsetX;
+            let wy = y * res + offsetY;
+            
+            // Domenowe zniekształcenie (Domain Warping) dla efektu płynących linii jak na zdjęciu
+            let qx = noise(wx + 5.2, wy + 1.3);
+            let qy = noise(wx + 1.3, wy + 5.2); // Zwiększamy zniekształcenie
+            
+            let h = noise(wx + 400 * qx, wy + 400 * qy);
+            
+            // Modyfikacja krzywej (więcej dolin, ostrzejsze szczyty)
+            h = Math.pow(h, 2.5); 
+            
+            game.heightMap[y * cols + x] = h;
+        }
+    }
+
+    // Renderowanie mapy do off-screen canvas (dla wydajności)
+    renderMapToCache(res, cols, rows);
+}
+
+function renderMapToCache(res, cols, rows) {
+    game.mapCanvas = document.createElement('canvas');
+    game.mapCanvas.width = CONFIG.WIDTH;
+    game.mapCanvas.height = CONFIG.HEIGHT;
+    const mCtx = game.mapCanvas.getContext('2d');
+    
+    // Rysowanie piksel po pikselu (blokami)
+    for(let y = 0; y < rows; y++) {
+        for(let x = 0; x < cols; x++) {
+            let h = game.heightMap[y * cols + x];
+            
+            // KOLORYSTYKA (Cool to Warm)
+            let r, g, b;
+            
+            // Izolinie (paski)
+            // Używamy modulo do stworzenia "schodków"
+            const levels = 25; 
+            const step = Math.floor(h * levels) / levels;
+            const isContour = (h * levels) % 1 < 0.15; // Grubość linii konturowej
+
+            if (isContour && h > 0.15) {
+                // Czarna linia konturowa
+                r=0; g=0; b=0;
+            } else {
+                // Gradient od Zimnego do Ciepłego
+                if (h < 0.25) { // Doliny (Głęboki Fiolet/Granat)
+                    r = 10 + h*40; g = 0; b = 40 + h*100; 
+                } else if (h < 0.5) { // Zbocza niskie (Czerwień/Róż)
+                    r = 100 + (h-0.25)*400; g = 20; b = 80;
+                } else if (h < 0.75) { // Wyżej (Pomarańcz)
+                    r = 200 + (h-0.5)*200; g = 100 + (h-0.5)*400; b = 0;
+                } else { // Szczyty (Żółty/Biały)
+                    r = 255; g = 200 + (h-0.75)*200; b = (h-0.75)*1000;
+                }
+            }
+
+            mCtx.fillStyle = `rgb(${r},${g},${b})`;
+            mCtx.fillRect(x * res, y * res, res, res);
+        }
+    }
+}
+
+// --- FIZYKA TERENU ---
+function getTerrainHeight(x, y) {
+    if (!game.mapCanvas) return 0;
+    // Mapowanie koordynatów na siatkę heightMap
+    const res = 4;
+    const cols = Math.ceil(CONFIG.WIDTH / res);
+    const gx = Math.floor(x / res);
+    const gy = Math.floor(y / res);
+    if (gx < 0 || gx >= cols || gy < 0 || gy >= Math.ceil(CONFIG.HEIGHT / res)) return 0;
+    return game.heightMap[gy * cols + gx];
+}
+
+function getTerrainCost(x, y) {
+    let h = getTerrainHeight(x, y);
+    // < 0.25 = Dolina (Szybko/Normalnie)
+    // > 0.6 = Góra (Wolno)
+    // > 0.85 = Szczyt (Bardzo wolno)
+    if (h > 0.85) return 0.2; // Szczyt
+    if (h > 0.6) return 0.5; // Góra
+    if (h < 0.2) return 0.8; // Dno doliny (może być grząskie)
+    return 1.0; // Twardy grunt (czerwony)
+}
+
+// --- GENEROWANIE JEDNOSTEK ---
+function generateRandomShape(size) {
+    const verts = [];
+    const pts = 3 + Math.floor(Math.random() * 10);
+    for(let i=0; i<pts; i++) {
+        verts.push({a: (i/pts)*6.28, d: size * (0.6 + Math.random()*0.8)});
+    }
+    return verts;
+}
+
+function createEnemy(hp, moveType) {
+    let x, y, off = 50;
+    // Spawnuje w dolinach (niskie h)
+    let attempts = 0;
+    do {
+        if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off; }
+        else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off; }
+        else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off; y = Math.random()*CONFIG.HEIGHT; }
+        else { x = -off; y = Math.random()*CONFIG.HEIGHT; }
+        attempts++;
+    } while (getTerrainHeight(x, Math.max(0, Math.min(CONFIG.HEIGHT, y))) > 0.5 && attempts < 10);
+
+    const size = 10 + (hp * 0.03);
+    const color = moveType === 'LAND' ? '#ff1111' : (moveType === 'SWIM' ? '#00ffff' : '#cc33ff');
+    return { x, y, hp, maxHp: hp, moveType, size, color, verts: generateRandomShape(size), speed: moveType==='FLY' ? 1.6 : 1.1 };
+}
+
+function spawnWaveLogic() {
+    game.enemies = [];
+    let pool = 3000 + (game.wave * 3000);
+    while (pool > 0) {
+        let r = Math.random(), type = r < 0.5 ? 'LAND' : (r < 0.7 ? 'SWIM' : 'FLY');
+        let hp = 100 + Math.random() * 400;
+        game.enemies.push(createEnemy(hp, type));
+        pool -= hp;
+    }
+}
+
+// --- RENDERER I UPDATE ---
+function drawUnit(x, y, verts, color, hpRatio, size) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.beginPath();
+    verts.forEach((v, i) => (i === 0) ? ctx.moveTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d) : ctx.lineTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d));
+    ctx.closePath(); 
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.clip(); ctx.fillStyle = color;
+    ctx.fillRect(-size * 2, (size * 1.5) - (size * 3 * hpRatio), size * 4, size * 4);
+    ctx.restore();
+}
+
+function updateCombat() {
+    // Fizyka Gracza
+    let mod = getTerrainCost(game.player.x, game.player.y);
+    let move = game.player.spd * mod;
+    if (game.keys['KeyW']) game.player.y -= move;
+    if (game.keys['KeyS']) game.player.y += move;
+    if (game.keys['KeyA']) game.player.x -= move;
+    if (game.keys['KeyD']) game.player.x += move;
+    game.player.x = Math.max(10, Math.min(CONFIG.WIDTH-10, game.player.x));
+    game.player.y = Math.max(10, Math.min(CONFIG.HEIGHT-10, game.player.y));
+
+    if (game.mouse.down) playerShoot();
+
+    const core = game.entities.find(e => e.type === 'core');
+    if (!core) return;
+
+    game.enemies.forEach((e) => {
+        let vx = 0, vy = 0;
+        let a = Math.atan2(core.y - e.y, core.x - e.x); 
+        vx = Math.cos(a); vy = Math.sin(a);
+
+        // Fizyka Wroga
+        let tCost = getTerrainCost(e.x, e.y);
+        let speedMod = tCost; 
+        
+        // Jednostki wodne są szybsze w "dolinach" (zakładamy że doliny to woda/błoto)
+        if (e.moveType === 'SWIM' && tCost < 0.9) speedMod = 1.8;
+        if (e.moveType === 'FLY') speedMod = 1.0;
+
+        e.x += vx * e.speed * speedMod; e.y += vy * e.speed * speedMod;
+
+        // Kamikaze
+        if (Math.hypot(e.x - game.player.x, e.y - game.player.y) < e.size + 10) {
+            game.player.hp -= e.hp; e.hp = 0;
+            if(game.player.hp <= 0) location.reload();
+        }
+        game.entities.forEach(ent => {
+            if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + ent.size) {
+                ent.curHP -= e.hp; e.hp = 0;
+                if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
+            }
+        });
+    });
+
+    game.entities.forEach(u => {
+        if (u.type === 'tower' && Date.now() - u.lastFire > u.rof) {
+            let target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (target) {
+                target.hp -= u.dmg; u.lastFire = Date.now();
+                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+            }
+        }
+    });
+
+    game.enemies = game.enemies.filter(e => e.hp > 0);
+    game.entities = game.entities.filter(e => e.curHP > 0);
+    if (game.enemies.length === 0 && game.mode === 'COMBAT') { 
+        game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; 
+    }
+    if (game.hp <= 0) location.reload();
+}
+
+function renderTacticalMap() {
+    // Rysujemy wygenerowaną mapę (Cache)
+    if (game.mapCanvas) {
+        ctx.drawImage(game.mapCanvas, 0, 0);
+    } else {
+        ctx.fillStyle = "#000"; ctx.fillRect(0,0,CONFIG.WIDTH, CONFIG.HEIGHT);
+    }
+    
+    // Grid
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)"; ctx.lineWidth = 1;
+    for(let i=0; i<=CONFIG.WIDTH; i+=100) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CONFIG.HEIGHT); ctx.stroke(); }
+    for(let i=0; i<=CONFIG.HEIGHT; i+=100) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(CONFIG.WIDTH, i); ctx.stroke(); }
+}
+
+function playerShoot() {
+    if(Date.now()-game.player.lastShot > 150) {
+        let a = Math.atan2(game.mouse.y-game.player.y, game.mouse.x-game.player.x);
+        game.projectiles.push({x:game.player.x, y:game.player.y, vx:Math.cos(a)*18, vy:Math.sin(a)*18, dmg:50, life:80});
+        game.player.lastShot=Date.now();
+    }
+}
+
+function renderProjectiles() {
+    ctx.fillStyle="#fff";
+    game.projectiles.forEach((p,i) => {
+        p.x+=p.vx; p.y+=p.vy; p.life--; ctx.fillRect(p.x,p.y,4,4);
+        let hit = game.enemies.find(e=>Math.hypot(e.x-p.x,e.y-p.y)<e.size);
+        if(hit) { hit.hp-=p.dmg; game.projectiles.splice(i,1); }
+        if(p.life<=0) game.projectiles.splice(i,1);
+    });
+}
+
+function gameLoop() {
+    ctx.clearRect(0,0,CONFIG.WIDTH, CONFIG.HEIGHT);
+    if(game.mode==='BASE') renderBaseGrid();
+    else {
+        renderTacticalMap();
+        if(game.mode==='COMBAT') updateCombat();
+        
+        game.entities.forEach(e => {
+            let v = []; const s = e.size;
+            if(e.type === 'core' || e.type === 'wall') v = [{a:0.78,d:s*1.4},{a:2.35,d:s*1.4},{a:3.92,d:s*1.4},{a:5.49,d:s*1.4}];
+            else for(let i=0; i<8; i++) v.push({a: i/8 * Math.PI*2, d: s});
+            drawUnit(e.x, e.y, v, e.color, e.curHP/e.hp, s);
+        });
+
+        game.enemies.forEach(e => drawUnit(e.x, e.y, e.verts, e.color, e.hp/e.maxHp, e.size));
+
+        if(game.corePlaced) {
+            let a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+            drawUnit(game.player.x, game.player.y, [{a:a,d:15},{a:a+2.5,d:10},{a:a+3.8,d:10}], '#fff', game.player.hp/game.player.maxHp, 10);
+        }
+        
+        renderProjectiles();
+        if (game.mode === 'PREP' && game.selected) renderGhost();
+    }
+    updateStatsUI(); requestAnimationFrame(gameLoop);
+}
+
+function handleAction() {
+    if(game.mode==='BASE') { 
+        game.mode='PREP'; game.wave++; game.entities=[]; game.corePlaced=false; 
+        generateStrategicMap(); spawnWaveLogic(); updateBuildMenu(); 
+    }
+    else if(game.mode==='PREP') { if(!game.corePlaced) return; game.mode='COMBAT'; document.getElementById('actionBtn').disabled=true; }
+}
+
+function handleInput() {
+    if(game.mode==='BASE'&&game.selected) {
+        let gx=Math.floor((game.mouse.x-300)/50), gy=Math.floor((game.mouse.y-150)/50);
+        if(gx>=0&&gx<12&&gy>=0&&gy<12) { game.buildings.push({gx,gy,cfg:CONFIG.BUILDINGS[game.selected]}); game.money-=CONFIG.BUILDINGS[game.selected].cost; }
+    } else if(game.mode==='PREP'&&game.selected) {
+        let cfg=CONFIG.DEFENSE[game.selected]; if(cfg.type==='core'&&game.corePlaced) return;
+        game.entities.push({...cfg, x:game.mouse.x, y:game.mouse.y, curHP:cfg.hp, lastFire:0});
+        if(cfg.type==='core') { game.corePlaced=true; game.player.x=game.mouse.x; game.player.y=game.mouse.y; } else game.money-=cfg.cost;
+    }
+}
+
+function renderBaseGrid() {
+    ctx.strokeStyle="#141";
+    for(let i=0;i<=12;i++) { ctx.beginPath(); ctx.moveTo(300+i*50,150); ctx.lineTo(300+i*50,750); ctx.stroke(); ctx.beginPath(); ctx.moveTo(300,150+i*50); ctx.lineTo(900,150+i*50); ctx.stroke(); }
+    game.buildings.forEach(b => { ctx.fillStyle=b.cfg.color; ctx.fillRect(305+b.gx*50,155+b.gy*50,40,40); });
+}
+
+function renderGhost() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, 6.28); ctx.stroke(); }
+    ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
+}
+
+function updateStatsUI() { document.getElementById('ui-money').innerText=`$${game.money}`; document.getElementById('ui-hp').innerText=`${Math.ceil(game.hp/6000*100)}%`; }
+function updateBuildMenu() {
+    const menu=document.getElementById('buildMenu'); menu.innerHTML="";
+    let list=(game.mode==='BASE')?CONFIG.BUILDINGS:CONFIG.DEFENSE;
+    for(let k in list) { let btn=document.createElement('button'); btn.className='btn'; btn.innerHTML=`${list[k].name} $${list[k].cost}`; btn.onclick=()=>game.selected=k; menu.appendChild(btn); }
+}
+
+init();
+</script>
+</body>
+</html>
