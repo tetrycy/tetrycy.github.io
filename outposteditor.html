@@ -2,363 +2,656 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST Map Editor</title>
+    <title>OUTPOST MAP EDITOR</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #000; color: #0f0; font-family: VT323, monospace; font-size: 18px; }
-        #container { display: flex; height: 100vh; }
-        #canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #111; }
-        canvas { border: 2px solid #0f0; background: #000; cursor: crosshair; }
-        #toolbar { width: 320px; background: #1a1a1a; padding: 20px; overflow-y: auto; border-left: 3px solid #0f0; }
-        h1 { color: #0f0; margin: 0 0 20px 0; font-size: 2em; border-bottom: 2px solid #0f0; padding-bottom: 10px; }
-        .section { margin-bottom: 25px; border: 1px solid #0a0; padding: 12px; background: #050505; }
-        .section h2 { margin: 0 0 12px 0; font-size: 1.4em; color: #0f0; }
-        button { background: #222; color: #0f0; border: 2px solid #0f0; padding: 10px 15px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.2em; width: 100%; text-align: left; }
-        button:hover { background: #0f0; color: #000; }
-        button.active { background: #0a0; color: #000; font-weight: bold; }
-        input[type="range"] { width: 100%; }
-        .slider-value { text-align: center; font-size: 1.3em; color: #0f0; margin: 5px 0; }
-        label { display: block; margin: 10px 0 5px 0; color: #0a0; }
-        textarea { width: 100%; height: 120px; background: #000; color: #0f0; border: 1px solid #0a0; font-family: 'Courier New', monospace; font-size: 12px; padding: 8px; }
-        .info { color: #0a0; font-size: 0.9em; margin-top: 5px; font-style: italic; }
-        select { background: #222; color: #0f0; border: 2px solid #0f0; padding: 8px; font-family: VT323; font-size: 1.1em; width: 100%; }
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; }
+        body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+        #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.2em; text-transform: uppercase; width: 100%; text-align: left; }
+        .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
+        .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        h2 { font-size: 1.8em; margin: 0 0 15px 0; text-align: center; border-bottom: 2px solid var(--f-green); padding-bottom: 10px; }
+        h3 { font-size: 1.4em; margin: 15px 0 10px 0; color: #8f8; }
+        .tool-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+        .slider-group { margin: 12px 0; }
+        .slider-group label { display: block; margin-bottom: 5px; font-size: 1.1em; }
+        .slider-group input[type="range"] { width: 100%; }
+        .slider-group .value { float: right; color: #ff0; }
+        .map-card { background: #1a1c1a; border: 1px solid #444; padding: 10px; margin: 8px 0; cursor: pointer; }
+        .map-card:hover { border-color: var(--f-green); background: #222; }
+        .map-card.selected { border-color: var(--f-green); background: #083308; }
+        .map-card-title { font-size: 1.3em; color: var(--f-green); }
+        .map-card-info { font-size: 0.9em; color: #888; margin-top: 5px; }
+        #terminal { font-size: 1em; height: 120px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; line-height: 1.3; }
+        .color-indicator { display: inline-block; width: 20px; height: 20px; border: 1px solid #fff; vertical-align: middle; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-<div id="container">
-    <div id="canvas-area">
-        <canvas id="editor" width="1200" height="900"></canvas>
+<div id="viewport">
+    <canvas id="mapCanvas" width="1200" height="900"></canvas>
+</div>
+
+<div id="sidebar">
+    <h2>MAP EDITOR</h2>
+    
+    <div class="screen">
+        <h3>NARZĘDZIA</h3>
+        <div class="tool-row">
+            <button class="btn active" onclick="selectTool('RIDGE')">PASMO GÓR</button>
+            <button class="btn" onclick="selectTool('PEAK')">SZCZYT</button>
+        </div>
+        <div class="tool-row">
+            <button class="btn" onclick="selectTool('LAKE')">JEZIORO</button>
+            <button class="btn" onclick="selectTool('FOREST')">LAS</button>
+        </div>
+        <button class="btn" onclick="selectTool('ERASE')" style="border-color: #f44; color: #f44;">USUŃ</button>
+        
+        <div class="slider-group">
+            <label>ROZMIAR PĘDZLA: <span class="value" id="size-val">100</span></label>
+            <input type="range" id="brush-size" min="30" max="300" value="100" oninput="updateBrushSize(this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <label>INTENSYWNOŚĆ: <span class="value" id="intensity-val">5</span></label>
+            <input type="range" id="brush-intensity" min="1" max="15" value="5" oninput="updateIntensity(this.value)">
+        </div>
+        
+        <div id="tool-info" style="margin-top: 10px; padding: 10px; background: #111; border: 1px solid #333; font-size: 0.95em;">
+            <strong>PASMO GÓR:</strong> Rysuj długie grzbiety górskie
+        </div>
     </div>
     
-    <div id="toolbar">
-        <h1>MAP EDITOR</h1>
-        
-        <div class="section">
-            <h2>NARZĘDZIA</h2>
-            <button id="tool-mountain" class="active" onclick="setTool('mountain')">⛰️ GÓRA</button>
-            <button id="tool-lake" onclick="setTool('lake')">💧 JEZIORO</button>
-            <button id="tool-forest" onclick="setTool('forest')">🌲 LAS</button>
-            <button id="tool-erase" onclick="setTool('erase')">❌ USUŃ</button>
-        </div>
-        
-        <div class="section">
-            <h2>ROZMIAR</h2>
-            <input type="range" id="brush-size" min="20" max="200" value="80" oninput="updateBrushSize()">
-            <div class="slider-value" id="size-value">80px</div>
-        </div>
-        
-        <div class="section">
-            <h2>SPAWN DIRECTION</h2>
-            <select id="spawn-dir" onchange="updateSpawnDir()">
-                <option value="NORTH">⬇️ NORTH</option>
-                <option value="SOUTH">⬆️ SOUTH</option>
-                <option value="EAST">⬅️ EAST</option>
-                <option value="WEST">➡️ WEST</option>
-            </select>
-        </div>
-        
-        <div class="section">
-            <h2>AKCJE</h2>
-            <button onclick="clearMap()" style="background:#400; border-color:#f00; color:#f00;">WYCZYŚĆ</button>
-            <button onclick="exportMap()">💾 EKSPORT JSON</button>
-            <button onclick="importMap()">📂 IMPORT JSON</button>
-            <div class="info">Eksport kopiuje do schowka</div>
-        </div>
-        
-        <div class="section">
-            <h2>JSON OUTPUT</h2>
-            <textarea id="json-output" readonly placeholder="Tutaj pojawi się JSON..."></textarea>
-        </div>
-        
-        <div class="section">
-            <div class="info">
-                INSTRUKCJA:<br>
-                • Kliknij i przeciągnij aby rysować<br>
-                • Góry: brązowe warstwy (wysokość losowa)<br>
-                • Jeziora: żółto-zielone<br>
-                • Lasy: fioletowe punkty<br>
-                • Usuń: kliknij na element
-            </div>
-        </div>
+    <div class="screen">
+        <h3>AKCJE</h3>
+        <button class="btn" onclick="clearMap()">WYCZYŚĆ MAPĘ</button>
+        <button class="btn" onclick="saveMap()">ZAPISZ MAPĘ</button>
+        <button class="btn" onclick="exportJSON()">EKSPORT JSON</button>
+        <button class="btn" onclick="toggleView()">WIDOK: <span id="view-mode">PEŁNY</span></button>
     </div>
+    
+    <div class="screen">
+        <h3>ZAPISANE MAPY</h3>
+        <div id="saved-maps"></div>
+    </div>
+    
+    <div class="screen" id="terminal">> EDYTOR GOTOWY<br>> Wybierz narzędzie i rysuj na mapie</div>
 </div>
 
 <script>
-const canvas = document.getElementById('editor');
+const canvas = document.getElementById('mapCanvas');
 const ctx = canvas.getContext('2d');
 
 let editor = {
-    tool: 'mountain',
-    brushSize: 80,
-    spawnDir: 'NORTH',
-    features: [],
+    tool: 'RIDGE',
+    brushSize: 100,
+    intensity: 5,
     drawing: false,
-    currentFeature: null,
-    mouse: { x: 0, y: 0 }
+    lastX: 0,
+    lastY: 0,
+    terrain: { hills: [], lakes: [], forests: [] },
+    currentStroke: null,
+    viewMode: 'FULL',
+    selectedMap: null
 };
+
+const TOOL_INFO = {
+    RIDGE: '<strong>PASMO GÓR:</strong> Rysuj długie grzbiety górskie. Spowalniają jednostki lądowe.',
+    PEAK: '<strong>SZCZYT:</strong> Kliknij aby umieścić okrągły szczyt. Spowalnia jednostki lądowe.',
+    LAKE: '<strong>JEZIORO:</strong> Rysuj jeziora siarki. LAND bardzo wolne, SWIM szybkie.',
+    FOREST: '<strong>LAS:</strong> Rysuj lasy. Lekko spowalniają wszystkie jednostki lądowe.',
+    ERASE: '<strong>USUŃ:</strong> Kliknij na element aby go usunąć.'
+};
+
+function selectTool(tool) {
+    editor.tool = tool;
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tool-info').innerHTML = TOOL_INFO[tool];
+    logTerminal(`Narzędzie: ${tool}`);
+}
+
+function updateBrushSize(val) {
+    editor.brushSize = parseInt(val);
+    document.getElementById('size-val').innerText = val;
+}
+
+function updateIntensity(val) {
+    editor.intensity = parseInt(val);
+    document.getElementById('intensity-val').innerText = val;
+}
+
+function toggleView() {
+    editor.viewMode = editor.viewMode === 'FULL' ? 'SIMPLIFIED' : 'FULL';
+    document.getElementById('view-mode').innerText = editor.viewMode === 'FULL' ? 'PEŁNY' : 'UPROSZCZONY';
+    logTerminal(`Widok: ${editor.viewMode}`);
+}
 
 canvas.addEventListener('mousedown', e => {
     const rect = canvas.getBoundingClientRect();
-    editor.mouse.x = e.clientX - rect.left;
-    editor.mouse.y = e.clientY - rect.top;
-    editor.drawing = true;
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
     
-    if(editor.tool === 'erase') {
-        eraseAtPosition(editor.mouse.x, editor.mouse.y);
+    if (editor.tool === 'PEAK') {
+        addPeak(x, y);
+    } else if (editor.tool === 'ERASE') {
+        eraseAt(x, y);
     } else {
-        startFeature();
+        editor.drawing = true;
+        editor.lastX = x;
+        editor.lastY = y;
+        
+        if (editor.tool === 'RIDGE') {
+            editor.currentStroke = { points: [{x, y}], brushSize: editor.brushSize };
+        } else if (editor.tool === 'LAKE') {
+            editor.currentStroke = { points: [{x, y}] };
+        } else if (editor.tool === 'FOREST') {
+            editor.currentStroke = { trees: [], centerX: x, centerY: y, radius: 0 };
+            addTreesAt(x, y);
+        }
     }
-    render();
 });
 
 canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    editor.mouse.x = e.clientX - rect.left;
-    editor.mouse.y = e.clientY - rect.top;
+    if (!editor.drawing) return;
     
-    if(editor.drawing && editor.tool !== 'erase') {
-        updateFeature();
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    const dist = Math.hypot(x - editor.lastX, y - editor.lastY);
+    if (dist < 5) return; // Minimum distance between points
+    
+    if (editor.tool === 'RIDGE' && editor.currentStroke) {
+        editor.currentStroke.points.push({x, y});
+    } else if (editor.tool === 'LAKE' && editor.currentStroke) {
+        editor.currentStroke.points.push({x, y});
+    } else if (editor.tool === 'FOREST' && editor.currentStroke) {
+        addTreesAt(x, y);
+        const dx = x - editor.currentStroke.centerX;
+        const dy = y - editor.currentStroke.centerY;
+        editor.currentStroke.radius = Math.max(editor.currentStroke.radius, Math.sqrt(dx*dx + dy*dy));
     }
-    render();
+    
+    editor.lastX = x;
+    editor.lastY = y;
 });
 
 canvas.addEventListener('mouseup', () => {
-    if(editor.drawing && editor.currentFeature) {
-        editor.features.push(editor.currentFeature);
-        editor.currentFeature = null;
+    if (editor.drawing && editor.currentStroke) {
+        if (editor.tool === 'RIDGE') {
+            generateRidgeFromStroke(editor.currentStroke);
+        } else if (editor.tool === 'LAKE') {
+            generateLakeFromStroke(editor.currentStroke);
+        } else if (editor.tool === 'FOREST') {
+            editor.terrain.forests.push(editor.currentStroke);
+            logTerminal(`Dodano las (${editor.currentStroke.trees.length} drzew)`);
+        }
+        editor.currentStroke = null;
     }
     editor.drawing = false;
-    render();
 });
 
-function startFeature() {
-    if(editor.tool === 'mountain') {
-        editor.currentFeature = {
-            type: 'mountain',
-            x: editor.mouse.x,
-            y: editor.mouse.y,
-            radius: editor.brushSize,
-            layers: 6 + Math.floor(Math.random() * 8)
-        };
-    } else if(editor.tool === 'lake') {
-        editor.currentFeature = {
-            type: 'lake',
-            x: editor.mouse.x,
-            y: editor.mouse.y,
-            radius: editor.brushSize
-        };
-    } else if(editor.tool === 'forest') {
-        editor.currentFeature = {
-            type: 'forest',
-            x: editor.mouse.x,
-            y: editor.mouse.y,
-            radius: editor.brushSize,
-            density: 10 + Math.floor(Math.random() * 15)
-        };
-    }
-}
-
-function updateFeature() {
-    if(!editor.currentFeature) return;
+function addPeak(x, y) {
+    const baseRadius = editor.brushSize;
+    const layers = editor.intensity + 5;
     
-    // Update position as we drag
-    const dx = editor.mouse.x - editor.currentFeature.x;
-    const dy = editor.mouse.y - editor.currentFeature.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const mountain = {
+        x, y,
+        layers: [],
+        totalLayers: layers
+    };
     
-    // Expand radius if dragging
-    if(dist > editor.currentFeature.radius) {
-        editor.currentFeature.radius = Math.min(dist, 300);
-    }
-}
-
-function eraseAtPosition(x, y) {
-    for(let i = editor.features.length - 1; i >= 0; i--) {
-        const f = editor.features[i];
-        const dist = Math.hypot(x - f.x, y - f.y);
-        if(dist < f.radius) {
-            editor.features.splice(i, 1);
-            break;
+    for (let l = 0; l < layers; l++) {
+        const radius = baseRadius * (1 - l / layers);
+        const verts = [];
+        const segments = 25;
+        const seed = Math.random() * 100;
+        const noiseAmount = 0.4;
+        
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+            const r = radius + noise;
+            verts.push({
+                x: Math.cos(angle) * r,
+                y: Math.sin(angle) * r
+            });
         }
+        
+        mountain.layers.push({ verts, radius, level: l });
+    }
+    
+    editor.terrain.hills.push(mountain);
+    logTerminal(`Dodano szczyt (${layers} warstw)`);
+}
+
+function generateRidgeFromStroke(stroke) {
+    const ridgePoints = stroke.points;
+    const maxHeight = editor.brushSize * 1.5;
+    const layers = editor.intensity + 5;
+    
+    // Generate contour layers
+    for (let level = 0; level < layers; level++) {
+        const elevation = level / layers;
+        const currentHeight = maxHeight * (1 - elevation);
+        
+        // Both sides of ridge
+        for (let side of [-1, 1]) {
+            const points = [];
+            
+            for (let i = 0; i < ridgePoints.length; i++) {
+                const ridge = ridgePoints[i];
+                
+                // Height at this position (peak in middle)
+                const t = i / (ridgePoints.length - 1);
+                const peakPos = 0.5;
+                const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                
+                if (heightHere < currentHeight) continue;
+                
+                // Distance from ridge
+                const width = (heightHere - currentHeight) * 0.7;
+                
+                // Perpendicular direction
+                let perpX, perpY;
+                if (i < ridgePoints.length - 1) {
+                    const next = ridgePoints[i + 1];
+                    const dx = next.x - ridge.x;
+                    const dy = next.y - ridge.y;
+                    const len = Math.sqrt(dx*dx + dy*dy);
+                    perpX = -dy / len;
+                    perpY = dx / len;
+                } else {
+                    const prev = ridgePoints[i - 1];
+                    const dx = ridge.x - prev.x;
+                    const dy = ridge.y - prev.y;
+                    const len = Math.sqrt(dx*dx + dy*dy);
+                    perpX = -dy / len;
+                    perpY = dx / len;
+                }
+                
+                points.push({
+                    x: ridge.x + perpX * width * side,
+                    y: ridge.y + perpY * width * side
+                });
+            }
+            
+            if (points.length > 3) {
+                editor.terrain.hills.push({
+                    isRidge: true,
+                    points: points,
+                    level: level,
+                    totalLayers: layers
+                });
+            }
+        }
+    }
+    
+    logTerminal(`Dodano pasmo górskie (${layers} warstw)`);
+}
+
+function generateLakeFromStroke(stroke) {
+    // Smooth and close the path
+    const points = stroke.points;
+    
+    // Add some random variation to make it organic
+    const smoothedPoints = [];
+    for (let i = 0; i < points.length; i++) {
+        const p = points[i];
+        const angle = Math.atan2(p.y - stroke.points[0].y, p.x - stroke.points[0].x);
+        const dist = Math.hypot(p.x - stroke.points[0].x, p.y - stroke.points[0].y);
+        const variation = (Math.random() - 0.5) * editor.brushSize * 0.3;
+        smoothedPoints.push({
+            x: p.x + Math.cos(angle + Math.PI/2) * variation,
+            y: p.y + Math.sin(angle + Math.PI/2) * variation
+        });
+    }
+    
+    editor.terrain.lakes.push({ points: smoothedPoints, type: 'sulfur' });
+    logTerminal(`Dodano jezioro (${smoothedPoints.length} punktów)`);
+}
+
+function addTreesAt(x, y) {
+    const count = Math.floor(editor.intensity * 0.8);
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * editor.brushSize * 0.5;
+        editor.currentStroke.trees.push({
+            x: x + Math.cos(angle) * dist,
+            y: y + Math.sin(angle) * dist,
+            size: 4 + Math.random() * 6
+        });
+    }
+}
+
+function eraseAt(x, y) {
+    let erased = false;
+    
+    // Check peaks
+    editor.terrain.hills = editor.terrain.hills.filter(h => {
+        if (h.isRidge) {
+            // Check if click is near ridge
+            for (let p of h.points) {
+                if (Math.hypot(p.x - x, p.y - y) < 30) {
+                    erased = true;
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            const dist = Math.hypot(h.x - x, h.y - y);
+            if (dist < h.layers[0].radius) {
+                erased = true;
+                return false;
+            }
+            return true;
+        }
+    });
+    
+    // Check lakes
+    editor.terrain.lakes = editor.terrain.lakes.filter(lake => {
+        for (let p of lake.points) {
+            if (Math.hypot(p.x - x, p.y - y) < 30) {
+                erased = true;
+                return false;
+            }
+        }
+        return true;
+    });
+    
+    // Check forests
+    editor.terrain.forests = editor.terrain.forests.filter(forest => {
+        const dist = Math.hypot(forest.centerX - x, forest.centerY - y);
+        if (dist < forest.radius) {
+            erased = true;
+            return false;
+        }
+        return true;
+    });
+    
+    if (erased) {
+        logTerminal('Usunięto element');
+    }
+}
+
+function clearMap() {
+    if (confirm('Czy na pewno wyczyścić całą mapę?')) {
+        editor.terrain = { hills: [], lakes: [], forests: [] };
+        editor.selectedMap = null;
+        logTerminal('Mapa wyczyszczona');
+        updateSavedMapsList();
+    }
+}
+
+function saveMap() {
+    const name = prompt('Nazwa mapy:', `Mapa_${Date.now()}`);
+    if (!name) return;
+    
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    maps[name] = {
+        terrain: JSON.parse(JSON.stringify(editor.terrain)),
+        created: new Date().toISOString(),
+        stats: {
+            hills: editor.terrain.hills.length,
+            lakes: editor.terrain.lakes.length,
+            forests: editor.terrain.forests.length
+        }
+    };
+    
+    localStorage.setItem('outpost_maps', JSON.stringify(maps));
+    logTerminal(`Zapisano: ${name}`);
+    updateSavedMapsList();
+}
+
+function loadMap(name) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    if (maps[name]) {
+        editor.terrain = JSON.parse(JSON.stringify(maps[name].terrain));
+        editor.selectedMap = name;
+        logTerminal(`Wczytano: ${name}`);
+        updateSavedMapsList();
+    }
+}
+
+function deleteMap(name) {
+    if (confirm(`Usunąć mapę "${name}"?`)) {
+        const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+        delete maps[name];
+        localStorage.setItem('outpost_maps', JSON.stringify(maps));
+        if (editor.selectedMap === name) {
+            editor.selectedMap = null;
+        }
+        logTerminal(`Usunięto: ${name}`);
+        updateSavedMapsList();
+    }
+}
+
+function exportJSON() {
+    const json = JSON.stringify(editor.terrain, null, 2);
+    
+    // Create download
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `outpost_map_${Date.now()}.json`;
+    a.click();
+    
+    logTerminal('Wyeksportowano do JSON');
+}
+
+function updateSavedMapsList() {
+    const container = document.getElementById('saved-maps');
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    
+    if (Object.keys(maps).length === 0) {
+        container.innerHTML = '<div style="color: #666; font-size: 0.9em; padding: 10px;">Brak zapisanych map</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    for (let name in maps) {
+        const map = maps[name];
+        const card = document.createElement('div');
+        card.className = 'map-card' + (editor.selectedMap === name ? ' selected' : '');
+        
+        const date = new Date(map.created).toLocaleString('pl-PL');
+        
+        card.innerHTML = `
+            <div class="map-card-title">${name}</div>
+            <div class="map-card-info">
+                G:${map.stats.hills} J:${map.stats.lakes} L:${map.stats.forests} | ${date}
+            </div>
+        `;
+        
+        card.onclick = () => loadMap(name);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerText = 'USUŃ';
+        deleteBtn.className = 'btn';
+        deleteBtn.style.marginTop = '8px';
+        deleteBtn.style.fontSize = '0.9em';
+        deleteBtn.style.borderColor = '#f44';
+        deleteBtn.style.color = '#f44';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteMap(name);
+        };
+        
+        card.appendChild(deleteBtn);
+        container.appendChild(card);
     }
 }
 
 function render() {
-    // Czarne tło
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Background
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Grid
-    ctx.strokeStyle = 'rgba(0,100,0,0.15)';
+    ctx.strokeStyle = 'rgba(0, 100, 0, 0.05)';
     ctx.lineWidth = 1;
-    for(let i = 0; i <= canvas.width; i += 100) {
+    for (let i = 0; i <= canvas.width; i += 150) {
         ctx.beginPath();
         ctx.moveTo(i, 0);
         ctx.lineTo(i, canvas.height);
         ctx.stroke();
     }
-    for(let i = 0; i <= canvas.height; i += 100) {
+    for (let i = 0; i <= canvas.height; i += 150) {
         ctx.beginPath();
         ctx.moveTo(0, i);
         ctx.lineTo(canvas.width, i);
         ctx.stroke();
     }
     
-    // Spawn zone
-    ctx.strokeStyle = '#f44';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 5]);
-    let sz = {x:0, y:0, w:0, h:0};
-    if(editor.spawnDir === 'NORTH') sz = {x:0, y:0, w:canvas.width, h:100};
-    else if(editor.spawnDir === 'SOUTH') sz = {x:0, y:canvas.height-100, w:canvas.width, h:100};
-    else if(editor.spawnDir === 'EAST') sz = {x:canvas.width-100, y:0, w:100, h:canvas.height};
-    else sz = {x:0, y:0, w:100, h:canvas.height};
-    ctx.strokeRect(sz.x, sz.y, sz.w, sz.h);
-    ctx.setLineDash([]);
-    
-    // Features
-    editor.features.forEach(drawFeature);
-    
-    // Current feature being drawn
-    if(editor.currentFeature) {
-        drawFeature(editor.currentFeature, true);
-    }
-    
-    // Cursor preview
-    if(!editor.drawing || editor.tool === 'erase') {
-        ctx.strokeStyle = editor.tool === 'erase' ? '#f00' : '#0f0';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
+    // Lakes
+    editor.terrain.lakes.forEach(lake => {
+        ctx.fillStyle = 'rgba(150, 180, 50, 0.4)';
         ctx.beginPath();
-        ctx.arc(editor.mouse.x, editor.mouse.y, editor.brushSize, 0, Math.PI * 2);
+        lake.points.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.strokeStyle = '#9a0';
+        ctx.lineWidth = 2;
         ctx.stroke();
-        ctx.setLineDash([]);
-    }
-}
-
-function drawFeature(f, preview = false) {
-    const alpha = preview ? 0.6 : 1.0;
+    });
     
-    if(f.type === 'mountain') {
-        // Rysuj od największej warstwy do najmniejszej
-        for(let i = f.layers - 1; i >= 0; i--) {
-            const r = f.radius * (1 - i / f.layers);
-            const elevation = i / f.layers;
+    // Forests
+    editor.terrain.forests.forEach(forest => {
+        forest.trees.forEach(tree => {
+            ctx.fillStyle = 'rgba(150, 50, 200, 0.6)';
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
+            ctx.fill();
             
-            let color;
-            if(elevation < 0.3) {
-                const t = elevation / 0.3;
-                color = `rgba(${20+t*30}, ${30+t*30}, ${10+t*20}, ${alpha})`;
-            } else if(elevation < 0.6) {
+            ctx.strokeStyle = 'rgba(180, 100, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, tree.size + 3, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+    });
+    
+    // Hills
+    editor.terrain.hills.forEach(h => {
+        if (h.isRidge) {
+            if (editor.viewMode === 'SIMPLIFIED' && h.level % 3 !== 0) return;
+            
+            const elevation = h.level / h.totalLayers;
+            
+            let r, g, b;
+            if (elevation < 0.3) {
+                r = 20 + elevation * 100;
+                g = 30 + elevation * 120;
+                b = 10 + elevation * 80;
+            } else if (elevation < 0.6) {
                 const t = (elevation - 0.3) / 0.3;
-                color = `rgba(${50+t*80}, ${60+t*80}, ${30+t*60}, ${alpha})`;
+                r = 50 + t * 80;
+                g = 60 + t * 80;
+                b = 30 + t * 60;
             } else {
                 const t = (elevation - 0.6) / 0.4;
-                color = `rgba(${130+t*90}, ${140+t*90}, ${90+t*120}, ${alpha})`;
+                r = 130 + t * 90;
+                g = 140 + t * 90;
+                b = 90 + t * 120;
             }
             
-            ctx.strokeStyle = color;
-            ctx.lineWidth = i % 3 === 0 ? 2 : 1;
+            const isEveryFifth = h.level % 5 === 0;
+            const lineWidth = editor.viewMode === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+            
+            ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+            ctx.lineWidth = lineWidth;
+            
             ctx.beginPath();
-            ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+            h.points.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+            
+        } else {
+            h.layers.forEach(layer => {
+                if (editor.viewMode === 'SIMPLIFIED' && layer.level % 3 !== 0) return;
+                
+                const elevation = layer.level / h.totalLayers;
+                
+                let r, g, b;
+                if (elevation < 0.3) {
+                    r = 20 + elevation * 100;
+                    g = 30 + elevation * 120;
+                    b = 10 + elevation * 80;
+                } else if (elevation < 0.6) {
+                    const t = (elevation - 0.3) / 0.3;
+                    r = 50 + t * 80;
+                    g = 60 + t * 80;
+                    b = 30 + t * 60;
+                } else {
+                    const t = (elevation - 0.6) / 0.4;
+                    r = 130 + t * 90;
+                    g = 140 + t * 90;
+                    b = 90 + t * 120;
+                }
+                
+                const isEveryFifth = layer.level % 5 === 0;
+                const lineWidth = editor.viewMode === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+                
+                ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                ctx.lineWidth = lineWidth;
+                
+                ctx.beginPath();
+                layer.verts.forEach((v, vi) => {
+                    if (vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
+                    else ctx.lineTo(h.x + v.x, h.y + v.y);
+                });
+                ctx.closePath();
+                ctx.stroke();
+            });
+        }
+    });
+    
+    // Current stroke preview
+    if (editor.drawing && editor.currentStroke) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        
+        if (editor.tool === 'RIDGE' || editor.tool === 'LAKE') {
+            ctx.beginPath();
+            editor.currentStroke.points.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
             ctx.stroke();
         }
         
-    } else if(f.type === 'lake') {
-        ctx.fillStyle = `rgba(150, 180, 50, ${0.4 * alpha})`;
-        ctx.strokeStyle = `rgba(154, 160, 0, ${alpha})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        
-    } else if(f.type === 'forest') {
-        // Rysuj punkty reprezentujące drzewa
-        const trees = f.density;
-        for(let t = 0; t < trees; t++) {
-            const angle = (t / trees) * Math.PI * 2 + Math.random() * 0.5;
-            const dist = Math.random() * f.radius;
-            const tx = f.x + Math.cos(angle) * dist;
-            const ty = f.y + Math.sin(angle) * dist;
-            const size = 4 + Math.random() * 6;
-            
-            ctx.fillStyle = `rgba(150, 50, 200, ${0.6 * alpha})`;
-            ctx.beginPath();
-            ctx.arc(tx, ty, size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        // Outline
-        ctx.strokeStyle = `rgba(180, 100, 255, ${0.3 * alpha})`;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-        ctx.stroke();
         ctx.setLineDash([]);
     }
-}
-
-function setTool(tool) {
-    editor.tool = tool;
-    document.querySelectorAll('button[id^="tool-"]').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('tool-' + tool).classList.add('active');
-}
-
-function updateBrushSize() {
-    editor.brushSize = parseInt(document.getElementById('brush-size').value);
-    document.getElementById('size-value').innerText = editor.brushSize + 'px';
-}
-
-function updateSpawnDir() {
-    editor.spawnDir = document.getElementById('spawn-dir').value;
-    render();
-}
-
-function clearMap() {
-    if(confirm('Czy na pewno wyczyścić mapę?')) {
-        editor.features = [];
-        render();
-    }
-}
-
-function exportMap() {
-    const mapData = {
-        width: canvas.width,
-        height: canvas.height,
-        spawnDir: editor.spawnDir,
-        features: editor.features
-    };
     
-    const json = JSON.stringify(mapData, null, 2);
-    document.getElementById('json-output').value = json;
-    
-    // Kopiuj do schowka
-    navigator.clipboard.writeText(json).then(() => {
-        alert('JSON skopiowany do schowka!');
-    });
+    requestAnimationFrame(render);
 }
 
-function importMap() {
-    const json = prompt('Wklej JSON mapy:');
-    if(!json) return;
-    
-    try {
-        const mapData = JSON.parse(json);
-        editor.spawnDir = mapData.spawnDir;
-        editor.features = mapData.features;
-        document.getElementById('spawn-dir').value = editor.spawnDir;
-        document.getElementById('json-output').value = json;
-        render();
-        alert('Mapa załadowana!');
-    } catch(e) {
-        alert('Błąd: Nieprawidłowy JSON');
-    }
+function logTerminal(msg) {
+    const term = document.getElementById('terminal');
+    term.innerHTML += `> ${msg}<br>`;
+    term.scrollTop = term.scrollHeight;
 }
 
-// Initial render
+// Initialize
+updateSavedMapsList();
 render();
 </script>
 </body>
