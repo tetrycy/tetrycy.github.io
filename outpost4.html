@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: MOUNTAINS RESTORED</title>
+    <title>OUTPOST '95: REAL TERRAIN</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff1111; --f-blue: #00ffff; --f-purple: #cc33ff; --f-hp: #ffff00; }
@@ -30,7 +30,7 @@
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
         <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
     </div>
-    <div class="screen" id="terminal">> SYSTEM ONLINE...</div>
+    <div class="screen" id="terminal">> GEOLOGY SCAN COMPLETE.<br>> MOUNTAINS GENERATED.<br>> READY.</div>
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
     <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold;" onclick="handleAction()">EXECUTE COMBAT</button>
 </div>
@@ -77,27 +77,18 @@ function init() {
     updateBuildMenu(); gameLoop();
 }
 
-// --- FIZYKA: CZYTANIE TERENU (Góry istnieją!) ---
+// --- FIZYKA TERENU ---
 function getTerrainCost(x, y) {
-    // 1. Jeziora
-    if (game.terrain.lakes.some(l => isPointInPolygon(x, y, l.points))) return 60; // Bardzo drogo
-
-    // 2. Góry (Ridges i Szczyty)
+    if (game.terrain.lakes.some(l => isPointInPolygon(x, y, l.points))) return 60; 
     for (let h of game.terrain.hills) {
         if (h.isRidge) {
-            // Sprawdź odległość od osi pasma górskiego
-            for (let p of h.points) {
-                if (Math.hypot(x - p.x, y - p.y) < 40) return 20; // Drogo (Góra)
-            }
-        } else {
-            // Sprawdź odległość od środka góry warstwowej
-            if (h.layers[0] && Math.hypot(x - h.x, y - h.y) < h.layers[0].radius) return 20;
-        }
+            for (let p of h.points) if (Math.hypot(x - p.x, y - p.y) < 40) return 20;
+        } else if (h.layers[0] && Math.hypot(x - h.x, y - h.y) < h.layers[0].radius) return 20;
     }
-    return 1; // Trawa
+    return 1;
 }
 
-// --- AI: FLOW FIELD (Pathfinding) ---
+// --- AI: FLOW FIELD ---
 function generateFlowField() {
     const cols = Math.ceil(CONFIG.WIDTH / CONFIG.PATH_GRID);
     const rows = Math.ceil(CONFIG.HEIGHT / CONFIG.PATH_GRID);
@@ -115,8 +106,7 @@ function generateFlowField() {
             let nx = curr.x + d[0], ny = curr.y + d[1];
             if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
                 let wx = nx * CONFIG.PATH_GRID + 20, wy = ny * CONFIG.PATH_GRID + 20;
-                let tileCost = getTerrainCost(wx, wy); // Używamy tej samej funkcji co fizyka
-                
+                let tileCost = getTerrainCost(wx, wy);
                 let total = curr.c + tileCost;
                 if (total < costField[nx][ny]) {
                     costField[nx][ny] = total; q.push({x: nx, y: ny, c: total});
@@ -133,112 +123,119 @@ function generateFlowField() {
                 min = costField[nx][ny]; vec = {x: d[0], y: d[1]};
             }
         });
-        // Normalizacja
         let len = Math.hypot(vec.x, vec.y);
         if(len > 0) { vec.x /= len; vec.y /= len; }
         return vec;
     }));
 }
 
-// --- ORYGINALNY GENERATOR (1:1 Z TWOJEGO KODU) ---
+// --- GENERATOR TERENU (NAPRAWIONY) ---
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     game.terrain = { hills: [], lakes: [], forests: [] };
     const S = CONFIG.SCALE;
     
-    // GÓRY (Ridges + Peaks)
-    const featureCount = 3 + Math.floor(Math.random() * 3);
-    for(let f = 0; f < featureCount; f++) {
-        const type = Math.random();
-        if(type < 0.5) {
-            // RIDGES
-            const isHorizontal = Math.random() > 0.5;
-            const ridgePoints = [];
-            const startPos = (150 + Math.random() * 1200) * S;
-            const amplitude = (60 + Math.random() * 100) * S;
-            const frequency = 0.4 + Math.random() * 0.4;
-            for(let i = 0; i <= 15; i++) {
-                const t = i / 15;
-                const offset = Math.sin(t * Math.PI * frequency * 2) * amplitude + (Math.random() - 0.5) * 30 * S;
-                if(isHorizontal) ridgePoints.push({ x: (100 + t * 2200) * S, y: startPos + offset });
-                else ridgePoints.push({ x: startPos + offset, y: (100 + t * 1700) * S });
-            }
-            const peakPos = 0.3 + Math.random() * 0.4;
-            const maxHeight = (150 + Math.random() * 120) * S;
-            for(let level = 0; level < 8; level++) {
-                const elevation = level / 8;
-                const currentHeight = maxHeight * (1 - elevation);
-                for(let side of [-1, 1]) {
-                    const points = [];
-                    for(let i = 0; i <= 15; i++) {
-                        const t = i / 15;
-                        const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
-                        const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
-                        if(heightHere < currentHeight) continue;
-                        const width = (heightHere - currentHeight) * 0.7;
-                        const ridge = ridgePoints[i];
-                        let perpX, perpY;
-                        if(i < 15) {
-                            const next = ridgePoints[i + 1]; const dx = next.x - ridge.x; const dy = next.y - ridge.y; const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len; perpY = dx / len;
-                        } else {
-                            const prev = ridgePoints[i - 1]; const dx = ridge.x - prev.x; const dy = ridge.y - prev.y; const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len; perpY = dx / len;
-                        }
-                        points.push({ x: ridge.x + perpX * width * side, y: ridge.y + perpY * width * side });
-                    }
-                    if(points.length > 3) game.terrain.hills.push({ isRidge: true, points: points, level: level, totalLayers: 8 });
+    // 1. PASMA GÓRSKIE (RIDGES)
+    const ridgeCount = 2 + Math.floor(Math.random() * 3);
+    for(let f = 0; f < ridgeCount; f++) {
+        const isHorizontal = Math.random() > 0.5;
+        const ridgePoints = [];
+        const startPos = (150 + Math.random() * 1200) * S;
+        const amplitude = (60 + Math.random() * 100) * S;
+        const frequency = 0.4 + Math.random() * 0.4;
+        
+        for(let i = 0; i <= 15; i++) {
+            const t = i / 15;
+            const offset = Math.sin(t * Math.PI * frequency * 2) * amplitude + (Math.random() - 0.5) * 30 * S;
+            if(isHorizontal) ridgePoints.push({ x: (100 + t * 2200) * S, y: startPos + offset });
+            else ridgePoints.push({ x: startPos + offset, y: (100 + t * 1700) * S });
+        }
+        
+        // Warstwy
+        for(let level = 0; level < 8; level++) {
+            const elevation = level / 8;
+            for(let side of [-1, 1]) {
+                const points = [];
+                for(let i = 0; i < ridgePoints.length; i++) {
+                    const rp = ridgePoints[i];
+                    // Obliczanie wektora normalnego dla grubości
+                    let dx=0, dy=0;
+                    if(i < ridgePoints.length-1) { dx = ridgePoints[i+1].x - rp.x; dy = ridgePoints[i+1].y - rp.y; }
+                    else { dx = rp.x - ridgePoints[i-1].x; dy = rp.y - ridgePoints[i-1].y; }
+                    const len = Math.sqrt(dx*dx + dy*dy);
+                    const nx = -dy/len, ny = dx/len;
+                    
+                    const width = (80 * S) * (1 - elevation);
+                    points.push({ x: rp.x + nx * width * side, y: rp.y + ny * width * side });
                 }
+                game.terrain.hills.push({ isRidge: true, points: points, level: level, totalLayers: 8 });
             }
-        } else {
-            // PEAKS
-            const cx = Math.random() * 1200, cy = Math.random() * 900;
-            if (type < 0.65) createMountain(cx, cy, 150*S, 10);
-            else if (type < 0.8) for(let l=0;l<6;l++) createContourCircle(cx, cy, 180*S*(1-l*0.15), l, 6, 0.2);
-            else for(let i=0;i<3;i++) createMountain(cx+(Math.random()-0.5)*200, cy+(Math.random()-0.5)*200, 80*S, 5);
         }
     }
-    // JEZIORA
+
+    // 2. SZCZYTY PUNKTOWE (MOUNTAINS)
+    const peakCount = 2 + Math.floor(Math.random() * 4);
+    for(let i=0; i<peakCount; i++) {
+        createMountain((200 + Math.random()*2000)*S, (200 + Math.random()*1400)*S, 150*S, 8);
+    }
+
+    // 3. KRATERY (PŁASKIE GÓRY)
+    if(Math.random() > 0.5) {
+        createContourCircle((500+Math.random()*1000)*S, (400+Math.random()*800)*S, 200*S, 5);
+    }
+
+    // 4. JEZIORA
     const lakeCount = 2 + Math.floor(Math.random() * 3);
     for(let l = 0; l < lakeCount; l++) {
         const cx = Math.random()*1200, cy = Math.random()*900, points = [];
         for(let i=0; i<20; i++) {
-            const a = (i/20)*Math.PI*2; points.push({x: cx + Math.cos(a)*(60+Math.random()*40), y: cy + Math.sin(a)*(60+Math.random()*40)});
+            const a = (i/20)*Math.PI*2; 
+            const r = (120*S) * (0.8 + Math.random() * 0.4);
+            points.push({x: cx + Math.cos(a)*r, y: cy + Math.sin(a)*r});
         }
         game.terrain.lakes.push({points});
     }
-    // LASY
-    const forestCount = 3 + Math.floor(Math.random() * 4);
+
+    // 5. LASY
+    const forestCount = 4;
     for(let f=0; f<forestCount; f++) {
         const cx = Math.random()*1200, cy = Math.random()*900, trees = [];
-        for(let t=0; t<15; t++) trees.push({x: cx + (Math.random()-0.5)*200, y: cy + (Math.random()-0.5)*200, size: 8+Math.random()*10});
+        for(let t=0; t<20; t++) trees.push({x: cx + (Math.random()-0.5)*250, y: cy + (Math.random()-0.5)*250, size: 8+Math.random()*10});
         game.terrain.forests.push({trees});
     }
 }
 
+// Funkcja generująca szczyt (BEZ GWIAZD, TYLKO SZUM)
 function createMountain(cx, cy, baseRadius, layers) {
     for(let l = 0; l < layers; l++) {
-        const radius = baseRadius * (1 - l / layers); const verts = [];
+        const radius = baseRadius * (1 - l / layers); 
+        const verts = [];
+        const seed = Math.random() * 100;
         for(let i = 0; i < 25; i++) {
             const a = (i / 25) * Math.PI * 2;
-            const r = radius * (0.8 + Math.sin(a * 5) * 0.2);
+            // WZÓR NA NIEREGULARNĄ SKAŁĘ
+            const noise = 0.3 * radius * ((Math.sin(a * 3 + seed) * 0.5) + (Math.sin(a * 7) * 0.3));
+            const r = radius + noise;
             verts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
         }
         game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level: l }], totalLayers: layers });
     }
 }
 
-function createContourCircle(cx, cy, radius, level, maxLevels, noise) {
-    const verts = [];
-    for(let i = 0; i < 25; i++) {
-        const a = (i / 25) * Math.PI * 2;
-        const r = radius * (1 + (Math.random()-0.5)*noise);
-        verts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+function createContourCircle(cx, cy, radius, maxLevels) {
+    for(let l=0; l<maxLevels; l++) {
+        const r = radius * (1 - l*0.15);
+        const verts = [];
+        for(let i=0; i<25; i++) {
+            const a = (i/25)*Math.PI*2;
+            const nr = r * (0.95 + Math.random()*0.1);
+            verts.push({x: Math.cos(a)*nr, y: Math.sin(a)*nr});
+        }
+        game.terrain.hills.push({x: cx, y: cy, layers:[{verts, radius:r, level:l}], totalLayers: maxLevels});
     }
-    game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level }], totalLayers: maxLevels });
 }
 
-// --- LOGIKA GRY ---
+// --- LOGIKA WALKI ---
 function spawnWaveLogic() {
     game.enemies = [];
     let pool = 3000 + (game.wave * 3000);
@@ -267,8 +264,7 @@ function createEnemy(hp, moveType) {
 function updateCombat() {
     // Fizyka Gracza
     let cost = getTerrainCost(game.player.x, game.player.y);
-    let mod = cost > 10 ? 0.3 : 1.0; // Jeśli koszt > 10 (Góra/Jezioro) -> Zwolnij
-    
+    let mod = cost > 10 ? 0.3 : 1.0; 
     let move = game.player.spd * mod;
     if (game.keys['KeyW']) game.player.y -= move;
     if (game.keys['KeyS']) game.player.y += move;
@@ -284,7 +280,6 @@ function updateCombat() {
 
     game.enemies.forEach((e) => {
         let vx = 0, vy = 0;
-        
         // AI Decyzja
         if (e.moveType === 'FLY') {
             let a = Math.atan2(core.y - e.y, core.x - e.x); vx = Math.cos(a); vy = Math.sin(a);
@@ -300,18 +295,17 @@ function updateCombat() {
         // Fizyka Wroga
         let tCost = getTerrainCost(e.x, e.y);
         let speedMod = 1.0;
-        
         if (e.moveType === 'LAND') {
-            if (tCost === 60) speedMod = 0.2; // Woda = Bardzo wolno
-            else if (tCost === 20) speedMod = 0.4; // Góra = Wolno
+            if (tCost === 60) speedMod = 0.2; 
+            else if (tCost === 20) speedMod = 0.4;
         } else if (e.moveType === 'SWIM') {
-            if (tCost === 60) speedMod = 2.0; // Woda = Bardzo szybko
-            else speedMod = 0.8; // Ląd = Wolniej
+            if (tCost === 60) speedMod = 2.0; 
+            else speedMod = 0.8;
         }
 
         e.x += vx * e.speed * speedMod; e.y += vy * e.speed * speedMod;
 
-        // Kolizje (Kamikaze)
+        // Kolizje
         if (Math.hypot(e.x - game.player.x, e.y - game.player.y) < e.size + 10) {
             game.player.hp -= e.hp; e.hp = 0;
             if(game.player.hp <= 0) location.reload();
@@ -336,16 +330,17 @@ function updateCombat() {
 
     game.enemies = game.enemies.filter(e => e.hp > 0);
     game.entities = game.entities.filter(e => e.curHP > 0);
-    if (game.enemies.length === 0 && game.mode === 'COMBAT') { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; }
-    if (game.hp <= 0) location.reload();
+    if (game.enemies.length === 0 && game.mode === 'COMBAT') { 
+        game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; 
+    }
+    if (game.hp <= 0) { alert("HQ DESTROYED"); location.reload(); }
 }
 
 function drawUnit(x, y, verts, color, hpRatio, size) {
     ctx.save(); ctx.translate(x, y);
     ctx.beginPath();
     verts.forEach((v, i) => (i === 0) ? ctx.moveTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d) : ctx.lineTo(Math.cos(v.a)*v.d, Math.sin(v.a)*v.d));
-    ctx.closePath(); 
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.closePath(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
     ctx.clip(); ctx.fillStyle = color;
     let fillY = size * 2 - (hpRatio * size * 4);
     ctx.fillRect(-size * 2, fillY, size * 4, size * 4);
@@ -355,24 +350,29 @@ function drawUnit(x, y, verts, color, hpRatio, size) {
 function renderTacticalMap() {
     ctx.fillStyle = "#000"; ctx.fillRect(0,0,1200,900);
     
+    // JEZIORA
     game.terrain.lakes.forEach(l => {
         ctx.fillStyle = "rgba(150,180,50,0.4)"; ctx.beginPath();
         l.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
-        ctx.closePath(); ctx.fill(); ctx.strokeStyle="#9a0"; ctx.stroke();
+        ctx.closePath(); ctx.fill(); ctx.strokeStyle="#9a0"; ctx.lineWidth=2; ctx.stroke();
     });
     
+    // LASY
     game.terrain.forests.forEach(f => f.trees.forEach(t => {
         ctx.fillStyle="rgba(150,50,200,0.6)"; ctx.beginPath(); ctx.arc(t.x,t.y,t.size,0,6.28); ctx.fill();
-        ctx.strokeStyle="rgba(180,100,255,0.3)"; ctx.stroke();
+        ctx.strokeStyle="rgba(180,100,255,0.3)"; ctx.lineWidth=1; ctx.stroke();
     }));
     
+    // GÓRY (RIDGES + SZCZYTY)
     game.terrain.hills.forEach(h => {
         if(h.isRidge) {
             let el = h.level/8; ctx.strokeStyle=`rgb(${20+el*180},${30+el*150},${10+el*100})`;
+            ctx.lineWidth = h.level%5===0 ? 2.5 : 1;
             ctx.beginPath(); h.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
         } else {
             h.layers.forEach(l => {
                 let el = l.level/h.totalLayers; ctx.strokeStyle=`rgb(${20+el*180},${30+el*150},${10+el*100})`;
+                ctx.lineWidth = 1.2;
                 ctx.beginPath(); l.verts.forEach((v,i)=>i===0?ctx.moveTo(h.x+v.x,h.y+v.y):ctx.lineTo(h.x+v.x,h.y+v.y)); ctx.closePath(); ctx.stroke();
             });
         }
