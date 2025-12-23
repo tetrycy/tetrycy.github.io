@@ -2,18 +2,21 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST MAP EDITOR</title>
+    <title>OUTPOST MAP EDITOR v2.1</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
         canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+        canvas.edit-mode { cursor: move; }
         #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
         .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
         .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.2em; text-transform: uppercase; width: 100%; text-align: left; }
         .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
         .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
+        .btn.edit-mode-btn { border-color: #4af; color: #4af; }
+        .btn.edit-mode-btn.active { background: #083338; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
         h2 { font-size: 1.8em; margin: 0 0 15px 0; text-align: center; border-bottom: 2px solid var(--f-green); padding-bottom: 10px; }
         h3 { font-size: 1.4em; margin: 15px 0 10px 0; color: #8f8; }
@@ -28,7 +31,7 @@
         .map-card-title { font-size: 1.3em; color: var(--f-green); }
         .map-card-info { font-size: 0.9em; color: #888; margin-top: 5px; }
         #terminal { font-size: 1em; height: 120px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; line-height: 1.3; }
-        .color-indicator { display: inline-block; width: 20px; height: 20px; border: 1px solid #fff; vertical-align: middle; margin-left: 10px; }
+        .height-badge { display: inline-block; padding: 2px 8px; border: 1px solid; margin-left: 10px; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -38,7 +41,17 @@
 </div>
 
 <div id="sidebar">
-    <h2>MAP EDITOR</h2>
+    <h2>MAP EDITOR v2.1</h2>
+    
+    <div class="screen">
+        <h3>TRYB</h3>
+        <button class="btn edit-mode-btn" onclick="toggleEditMode()">
+            <span id="mode-label">TRYB: RYSOWANIE</span>
+        </button>
+        <div id="edit-info" style="margin-top: 8px; padding: 8px; background: #111; border: 1px solid #333; font-size: 0.9em; display: none;">
+            Kliknij i przeciągnij linie konturowe aby je przesunąć. Kliknij obiekt aby go zaznaczyć/odznaczyć.
+        </div>
+    </div>
     
     <div class="screen">
         <h3>NARZĘDZIA</h3>
@@ -48,9 +61,18 @@
         </div>
         <div class="tool-row">
             <button class="btn" onclick="selectTool('LAKE')">JEZIORO</button>
-            <button class="btn" onclick="selectTool('FOREST')">LAS</button>
+            <button class="btn" onclick="selectTool('LAKE_CIRCLE')">JEZIORO OKRĄG</button>
         </div>
+        <button class="btn" onclick="selectTool('FOREST')">LAS</button>
         <button class="btn" onclick="selectTool('ERASE')" style="border-color: #f44; color: #f44;">USUŃ</button>
+        
+        <div class="slider-group">
+            <label>WYSOKOŚĆ (warstwy): <span class="value" id="height-val">5</span></label>
+            <input type="range" id="terrain-height" min="1" max="15" value="5" oninput="updateHeight(this.value)">
+            <div style="font-size: 0.85em; color: #888; margin-top: 5px;">
+                1 poziom = 1 kreska, 10 poziomów = 10 kresek
+            </div>
+        </div>
         
         <div class="slider-group">
             <label>ROZMIAR PĘDZLA: <span class="value" id="size-val">100</span></label>
@@ -58,8 +80,11 @@
         </div>
         
         <div class="slider-group">
-            <label>INTENSYWNOŚĆ: <span class="value" id="intensity-val">5</span></label>
+            <label>GĘSTOŚĆ LASU: <span class="value" id="intensity-val">5</span></label>
             <input type="range" id="brush-intensity" min="1" max="15" value="5" oninput="updateIntensity(this.value)">
+            <div style="font-size: 0.85em; color: #888; margin-top: 5px;">
+                Dotyczy tylko lasów - liczba drzew
+            </div>
         </div>
         
         <div id="tool-info" style="margin-top: 10px; padding: 10px; background: #111; border: 1px solid #333; font-size: 0.95em;">
@@ -80,7 +105,7 @@
         <div id="saved-maps"></div>
     </div>
     
-    <div class="screen" id="terminal">> EDYTOR GOTOWY<br>> Wybierz narzędzie i rysuj na mapie</div>
+    <div class="screen" id="terminal">> EDYTOR v2.1 GOTOWY<br>> Nowe: okrągłe jeziora, kontrola wysokości, tryb edycji</div>
 </div>
 
 <script>
@@ -91,7 +116,12 @@ let editor = {
     tool: 'RIDGE',
     brushSize: 100,
     intensity: 5,
+    height: 5,  // Terrain height (1-10)
     drawing: false,
+    editMode: false,
+    dragging: false,
+    selectedFeature: null,
+    dragOffset: {x: 0, y: 0},
     lastX: 0,
     lastY: 0,
     terrain: { hills: [], lakes: [], forests: [] },
@@ -101,16 +131,43 @@ let editor = {
 };
 
 const TOOL_INFO = {
-    RIDGE: '<strong>PASMO GÓR:</strong> Rysuj długie grzbiety górskie. Spowalniają jednostki lądowe.',
-    PEAK: '<strong>SZCZYT:</strong> Kliknij aby umieścić okrągły szczyt. Spowalnia jednostki lądowe.',
-    LAKE: '<strong>JEZIORO:</strong> Rysuj jeziora siarki. LAND bardzo wolne, SWIM szybkie.',
+    RIDGE: '<strong>PASMO GÓR:</strong> Rysuj długie grzbiety górskie. Wysokość = liczba kresek.',
+    PEAK: '<strong>SZCZYT:</strong> Kliknij aby umieścić okrągły szczyt. Wysokość = liczba kresek.',
+    LAKE: '<strong>JEZIORO:</strong> Rysuj nieregularne jeziora siarki. LAND bardzo wolne, SWIM szybkie.',
+    LAKE_CIRCLE: '<strong>JEZIORO OKRĄG:</strong> Kliknij aby stworzyć okrągłe jezioro.',
     FOREST: '<strong>LAS:</strong> Rysuj lasy. Lekko spowalniają wszystkie jednostki lądowe.',
     ERASE: '<strong>USUŃ:</strong> Kliknij na element aby go usunąć.'
 };
 
+function toggleEditMode() {
+    editor.editMode = !editor.editMode;
+    const label = document.getElementById('mode-label');
+    const info = document.getElementById('edit-info');
+    const canvas = document.getElementById('mapCanvas');
+    
+    if (editor.editMode) {
+        label.innerText = 'TRYB: EDYCJA';
+        info.style.display = 'block';
+        canvas.classList.add('edit-mode');
+        document.querySelector('.edit-mode-btn').classList.add('active');
+        logTerminal('Tryb edycji aktywny - przeciągaj obiekty');
+    } else {
+        label.innerText = 'TRYB: RYSOWANIE';
+        info.style.display = 'none';
+        canvas.classList.remove('edit-mode');
+        document.querySelector('.edit-mode-btn').classList.remove('active');
+        editor.selectedFeature = null;
+        logTerminal('Tryb rysowania aktywny');
+    }
+}
+
 function selectTool(tool) {
     editor.tool = tool;
-    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.btn').forEach(b => {
+        if (!b.classList.contains('edit-mode-btn')) {
+            b.classList.remove('active');
+        }
+    });
     event.target.classList.add('active');
     document.getElementById('tool-info').innerHTML = TOOL_INFO[tool];
     logTerminal(`Narzędzie: ${tool}`);
@@ -126,6 +183,11 @@ function updateIntensity(val) {
     document.getElementById('intensity-val').innerText = val;
 }
 
+function updateHeight(val) {
+    editor.height = parseInt(val);
+    document.getElementById('height-val').innerText = val;
+}
+
 function toggleView() {
     editor.viewMode = editor.viewMode === 'FULL' ? 'SIMPLIFIED' : 'FULL';
     document.getElementById('view-mode').innerText = editor.viewMode === 'FULL' ? 'PEŁNY' : 'UPROSZCZONY';
@@ -137,8 +199,33 @@ canvas.addEventListener('mousedown', e => {
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
     
+    if (editor.editMode) {
+        // Edit mode - check if clicking on feature
+        const feature = findFeatureAt(x, y);
+        if (feature) {
+            if (editor.selectedFeature === feature) {
+                // Start dragging
+                editor.dragging = true;
+                editor.dragOffset = {
+                    x: x - (feature.x || 0),
+                    y: y - (feature.y || 0)
+                };
+            } else {
+                // Select feature
+                editor.selectedFeature = feature;
+                logTerminal(`Zaznaczono: ${getFeatureType(feature)}`);
+            }
+        } else {
+            editor.selectedFeature = null;
+        }
+        return;
+    }
+    
+    // Draw mode
     if (editor.tool === 'PEAK') {
         addPeak(x, y);
+    } else if (editor.tool === 'LAKE_CIRCLE') {
+        addCircularLake(x, y);
     } else if (editor.tool === 'ERASE') {
         eraseAt(x, y);
     } else {
@@ -147,7 +234,7 @@ canvas.addEventListener('mousedown', e => {
         editor.lastY = y;
         
         if (editor.tool === 'RIDGE') {
-            editor.currentStroke = { points: [{x, y}], brushSize: editor.brushSize };
+            editor.currentStroke = { points: [{x, y}], brushSize: editor.brushSize, height: editor.height };
         } else if (editor.tool === 'LAKE') {
             editor.currentStroke = { points: [{x, y}] };
         } else if (editor.tool === 'FOREST') {
@@ -158,14 +245,47 @@ canvas.addEventListener('mousedown', e => {
 });
 
 canvas.addEventListener('mousemove', e => {
-    if (!editor.drawing) return;
-    
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
     
+    if (editor.editMode && editor.dragging && editor.selectedFeature) {
+        // Drag feature
+        const feature = editor.selectedFeature;
+        
+        if (feature.x !== undefined) {
+            // Peak - move center
+            feature.x = x - editor.dragOffset.x;
+            feature.y = y - editor.dragOffset.y;
+        } else if (feature.points) {
+            // Ridge or lake - move all points
+            const dx = x - editor.lastX;
+            const dy = y - editor.lastY;
+            feature.points.forEach(p => {
+                p.x += dx;
+                p.y += dy;
+            });
+        } else if (feature.centerX !== undefined) {
+            // Forest - move center
+            const dx = x - feature.centerX;
+            const dy = y - feature.centerY;
+            feature.centerX = x;
+            feature.centerY = y;
+            feature.trees.forEach(t => {
+                t.x += dx;
+                t.y += dy;
+            });
+        }
+        
+        editor.lastX = x;
+        editor.lastY = y;
+        return;
+    }
+    
+    if (!editor.drawing) return;
+    
     const dist = Math.hypot(x - editor.lastX, y - editor.lastY);
-    if (dist < 5) return; // Minimum distance between points
+    if (dist < 5) return;
     
     if (editor.tool === 'RIDGE' && editor.currentStroke) {
         editor.currentStroke.points.push({x, y});
@@ -183,6 +303,12 @@ canvas.addEventListener('mousemove', e => {
 });
 
 canvas.addEventListener('mouseup', () => {
+    if (editor.dragging) {
+        editor.dragging = false;
+        logTerminal('Przesunięto obiekt');
+        return;
+    }
+    
     if (editor.drawing && editor.currentStroke) {
         if (editor.tool === 'RIDGE') {
             generateRidgeFromStroke(editor.currentStroke);
@@ -197,14 +323,85 @@ canvas.addEventListener('mouseup', () => {
     editor.drawing = false;
 });
 
+function findFeatureAt(x, y) {
+    // Check hills (peaks and ridges)
+    for (let h of editor.terrain.hills) {
+        if (h.x !== undefined) {
+            // Peak
+            const dist = Math.hypot(h.x - x, h.y - y);
+            if (dist < h.layers[0].radius) {
+                return h;
+            }
+        } else if (h.points) {
+            // Ridge
+            for (let p of h.points) {
+                if (Math.hypot(p.x - x, p.y - y) < 30) {
+                    return h;
+                }
+            }
+        }
+    }
+    
+    // Check lakes
+    for (let lake of editor.terrain.lakes) {
+        for (let p of lake.points) {
+            if (Math.hypot(p.x - x, p.y - y) < 30) {
+                return lake;
+            }
+        }
+    }
+    
+    // Check forests
+    for (let forest of editor.terrain.forests) {
+        const dist = Math.hypot(forest.centerX - x, forest.centerY - y);
+        if (dist < forest.radius) {
+            return forest;
+        }
+    }
+    
+    return null;
+}
+
+function getFeatureType(feature) {
+    if (editor.terrain.hills.includes(feature)) {
+        return feature.isRidge ? 'Pasmo gór' : 'Szczyt';
+    } else if (editor.terrain.lakes.includes(feature)) {
+        return 'Jezioro';
+    } else if (editor.terrain.forests.includes(feature)) {
+        return 'Las';
+    }
+    return 'Nieznany';
+}
+
+function addCircularLake(x, y) {
+    const radius = editor.brushSize;
+    const points = [];
+    const segments = 30;
+    const variation = 0.1; // Slight irregularity
+    
+    for (let i = 0; i < segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        const r = radius * (1 - variation + Math.random() * variation * 2);
+        points.push({
+            x: x + Math.cos(angle) * r,
+            y: y + Math.sin(angle) * r
+        });
+    }
+    
+    editor.terrain.lakes.push({ points, type: 'sulfur' });
+    logTerminal(`Dodano okrągłe jezioro (r=${Math.floor(radius)})`);
+}
+
 function addPeak(x, y) {
     const baseRadius = editor.brushSize;
-    const layers = editor.intensity + 5;
+    const layers = editor.height;  // Direct: height = number of layers
+    const height = editor.height;
     
     const mountain = {
         x, y,
         layers: [],
-        totalLayers: layers
+        totalLayers: layers,
+        height: height  // Store height for game
     };
     
     for (let l = 0; l < layers; l++) {
@@ -234,21 +431,18 @@ function addPeak(x, y) {
 function generateRidgeFromStroke(stroke) {
     const ridgePoints = stroke.points;
     const maxHeight = editor.brushSize * 1.5;
-    const layers = editor.intensity + 5;
+    const layers = stroke.height;  // Direct: height = number of layers
+    const height = stroke.height;
     
-    // Generate contour layers
     for (let level = 0; level < layers; level++) {
         const elevation = level / layers;
         const currentHeight = maxHeight * (1 - elevation);
         
-        // Both sides of ridge
         for (let side of [-1, 1]) {
             const points = [];
             
             for (let i = 0; i < ridgePoints.length; i++) {
                 const ridge = ridgePoints[i];
-                
-                // Height at this position (peak in middle)
                 const t = i / (ridgePoints.length - 1);
                 const peakPos = 0.5;
                 const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
@@ -256,10 +450,8 @@ function generateRidgeFromStroke(stroke) {
                 
                 if (heightHere < currentHeight) continue;
                 
-                // Distance from ridge
                 const width = (heightHere - currentHeight) * 0.7;
                 
-                // Perpendicular direction
                 let perpX, perpY;
                 if (i < ridgePoints.length - 1) {
                     const next = ridgePoints[i + 1];
@@ -288,7 +480,8 @@ function generateRidgeFromStroke(stroke) {
                     isRidge: true,
                     points: points,
                     level: level,
-                    totalLayers: layers
+                    totalLayers: layers,
+                    height: height  // Store height for game
                 });
             }
         }
@@ -298,15 +491,12 @@ function generateRidgeFromStroke(stroke) {
 }
 
 function generateLakeFromStroke(stroke) {
-    // Smooth and close the path
     const points = stroke.points;
-    
-    // Add some random variation to make it organic
     const smoothedPoints = [];
+    
     for (let i = 0; i < points.length; i++) {
         const p = points[i];
-        const angle = Math.atan2(p.y - stroke.points[0].y, p.x - stroke.points[0].x);
-        const dist = Math.hypot(p.x - stroke.points[0].x, p.y - stroke.points[0].y);
+        const angle = Math.atan2(p.y - points[0].y, p.x - points[0].x);
         const variation = (Math.random() - 0.5) * editor.brushSize * 0.3;
         smoothedPoints.push({
             x: p.x + Math.cos(angle + Math.PI/2) * variation,
@@ -334,10 +524,8 @@ function addTreesAt(x, y) {
 function eraseAt(x, y) {
     let erased = false;
     
-    // Check peaks
     editor.terrain.hills = editor.terrain.hills.filter(h => {
         if (h.isRidge) {
-            // Check if click is near ridge
             for (let p of h.points) {
                 if (Math.hypot(p.x - x, p.y - y) < 30) {
                     erased = true;
@@ -355,7 +543,6 @@ function eraseAt(x, y) {
         }
     });
     
-    // Check lakes
     editor.terrain.lakes = editor.terrain.lakes.filter(lake => {
         for (let p of lake.points) {
             if (Math.hypot(p.x - x, p.y - y) < 30) {
@@ -366,7 +553,6 @@ function eraseAt(x, y) {
         return true;
     });
     
-    // Check forests
     editor.terrain.forests = editor.terrain.forests.filter(forest => {
         const dist = Math.hypot(forest.centerX - x, forest.centerY - y);
         if (dist < forest.radius) {
@@ -385,6 +571,7 @@ function clearMap() {
     if (confirm('Czy na pewno wyczyścić całą mapę?')) {
         editor.terrain = { hills: [], lakes: [], forests: [] };
         editor.selectedMap = null;
+        editor.selectedFeature = null;
         logTerminal('Mapa wyczyszczona');
         updateSavedMapsList();
     }
@@ -398,6 +585,7 @@ function saveMap() {
     maps[name] = {
         terrain: JSON.parse(JSON.stringify(editor.terrain)),
         created: new Date().toISOString(),
+        version: 2.1,
         stats: {
             hills: editor.terrain.hills.length,
             lakes: editor.terrain.lakes.length,
@@ -415,6 +603,7 @@ function loadMap(name) {
     if (maps[name]) {
         editor.terrain = JSON.parse(JSON.stringify(maps[name].terrain));
         editor.selectedMap = name;
+        editor.selectedFeature = null;
         logTerminal(`Wczytano: ${name}`);
         updateSavedMapsList();
     }
@@ -435,15 +624,12 @@ function deleteMap(name) {
 
 function exportJSON() {
     const json = JSON.stringify(editor.terrain, null, 2);
-    
-    // Create download
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `outpost_map_${Date.now()}.json`;
     a.click();
-    
     logTerminal('Wyeksportowano do JSON');
 }
 
@@ -464,11 +650,13 @@ function updateSavedMapsList() {
         card.className = 'map-card' + (editor.selectedMap === name ? ' selected' : '');
         
         const date = new Date(map.created).toLocaleString('pl-PL');
+        const version = map.version ? `v${map.version}` : 'v1';
         
         card.innerHTML = `
             <div class="map-card-title">${name}</div>
             <div class="map-card-info">
-                G:${map.stats.hills} J:${map.stats.lakes} L:${map.stats.forests} | ${date}
+                ${version} | G:${map.stats.hills} J:${map.stats.lakes} L:${map.stats.forests}<br>
+                ${date}
             </div>
         `;
         
@@ -494,11 +682,9 @@ function updateSavedMapsList() {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Background
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Grid
     ctx.strokeStyle = 'rgba(0, 100, 0, 0.05)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += 150) {
@@ -516,6 +702,8 @@ function render() {
     
     // Lakes
     editor.terrain.lakes.forEach(lake => {
+        const isSelected = lake === editor.selectedFeature;
+        
         ctx.fillStyle = 'rgba(150, 180, 50, 0.4)';
         ctx.beginPath();
         lake.points.forEach((p, i) => {
@@ -525,56 +713,64 @@ function render() {
         ctx.closePath();
         ctx.fill();
         
-        ctx.strokeStyle = '#9a0';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isSelected ? '#0ff' : '#9a0';
+        ctx.lineWidth = isSelected ? 3 : 2;
         ctx.stroke();
     });
     
     // Forests
     editor.terrain.forests.forEach(forest => {
+        const isSelected = forest === editor.selectedFeature;
+        
         forest.trees.forEach(tree => {
             ctx.fillStyle = 'rgba(150, 50, 200, 0.6)';
             ctx.beginPath();
             ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
             ctx.fill();
             
-            ctx.strokeStyle = 'rgba(180, 100, 255, 0.3)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = isSelected ? 'rgba(0, 255, 255, 0.8)' : 'rgba(180, 100, 255, 0.3)';
+            ctx.lineWidth = isSelected ? 2 : 1;
             ctx.beginPath();
             ctx.arc(tree.x, tree.y, tree.size + 3, 0, Math.PI * 2);
             ctx.stroke();
         });
     });
     
-    // Hills
+    // Hills with height-based colors
     editor.terrain.hills.forEach(h => {
+        const isSelected = h === editor.selectedFeature;
+        const height = h.height || 5; // Default to 5 if not set
+        
         if (h.isRidge) {
             if (editor.viewMode === 'SIMPLIFIED' && h.level % 3 !== 0) return;
             
             const elevation = h.level / h.totalLayers;
             
+            // Color based on height (1-10)
             let r, g, b;
+            const heightIntensity = (height - 1) / 9; // Normalize to 0-1
+            
             if (elevation < 0.3) {
-                r = 20 + elevation * 100;
-                g = 30 + elevation * 120;
-                b = 10 + elevation * 80;
+                r = 20 + elevation * 100 + heightIntensity * 60;
+                g = 30 + elevation * 120 + heightIntensity * 70;
+                b = 10 + elevation * 80 + heightIntensity * 50;
             } else if (elevation < 0.6) {
                 const t = (elevation - 0.3) / 0.3;
-                r = 50 + t * 80;
-                g = 60 + t * 80;
-                b = 30 + t * 60;
+                r = 50 + t * 80 + heightIntensity * 70;
+                g = 60 + t * 80 + heightIntensity * 80;
+                b = 30 + t * 60 + heightIntensity * 90;
             } else {
                 const t = (elevation - 0.6) / 0.4;
-                r = 130 + t * 90;
-                g = 140 + t * 90;
-                b = 90 + t * 120;
+                r = 130 + t * 90 + heightIntensity * 35;
+                g = 140 + t * 90 + heightIntensity * 40;
+                b = 90 + t * 120 + heightIntensity * 85;
             }
             
             const isEveryFifth = h.level % 5 === 0;
             const lineWidth = editor.viewMode === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
             
-            ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = isSelected ? '#0ff' : `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+            ctx.lineWidth = isSelected ? lineWidth + 1 : lineWidth;
             
             ctx.beginPath();
             h.points.forEach((p, i) => {
@@ -590,27 +786,29 @@ function render() {
                 const elevation = layer.level / h.totalLayers;
                 
                 let r, g, b;
+                const heightIntensity = (height - 1) / 9;
+                
                 if (elevation < 0.3) {
-                    r = 20 + elevation * 100;
-                    g = 30 + elevation * 120;
-                    b = 10 + elevation * 80;
+                    r = 20 + elevation * 100 + heightIntensity * 60;
+                    g = 30 + elevation * 120 + heightIntensity * 70;
+                    b = 10 + elevation * 80 + heightIntensity * 50;
                 } else if (elevation < 0.6) {
                     const t = (elevation - 0.3) / 0.3;
-                    r = 50 + t * 80;
-                    g = 60 + t * 80;
-                    b = 30 + t * 60;
+                    r = 50 + t * 80 + heightIntensity * 70;
+                    g = 60 + t * 80 + heightIntensity * 80;
+                    b = 30 + t * 60 + heightIntensity * 90;
                 } else {
                     const t = (elevation - 0.6) / 0.4;
-                    r = 130 + t * 90;
-                    g = 140 + t * 90;
-                    b = 90 + t * 120;
+                    r = 130 + t * 90 + heightIntensity * 35;
+                    g = 140 + t * 90 + heightIntensity * 40;
+                    b = 90 + t * 120 + heightIntensity * 85;
                 }
                 
                 const isEveryFifth = layer.level % 5 === 0;
                 const lineWidth = editor.viewMode === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
                 
-                ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-                ctx.lineWidth = lineWidth;
+                ctx.strokeStyle = isSelected ? '#0ff' : `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                ctx.lineWidth = isSelected ? lineWidth + 1 : lineWidth;
                 
                 ctx.beginPath();
                 layer.verts.forEach((v, vi) => {
@@ -650,7 +848,6 @@ function logTerminal(msg) {
     term.scrollTop = term.scrollHeight;
 }
 
-// Initialize
 updateSavedMapsList();
 render();
 </script>
