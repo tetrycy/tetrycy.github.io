@@ -2,267 +2,1112 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Generator Map Topograficznych</title>
+    <title>OUTPOST '95: SUPREME COMMANDER [PATHFINDING]</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #222; color: #fff; font-family: monospace; overflow: hidden; display: flex; height: 100vh; }
-        #sidebar { 
-            width: 300px; background: #333; padding: 20px; display: flex; flex-direction: column; gap: 15px; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5); z-index: 10;
-        }
-        #viewport { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #111; position: relative; }
-        canvas { 
-            background: #fff; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
-            max-width: 95%; max-height: 95%;
-            image-rendering: pixelated; /* Dla ostrości */
-        }
-        .control { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 0.8em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        input[type="range"] { width: 100%; cursor: pointer; }
-        button { 
-            background: #4a90e2; color: white; border: none; padding: 15px; 
-            font-family: monospace; font-size: 1.2em; cursor: pointer; margin-top: 10px; 
-            transition: 0.2s;
-        }
-        button:hover { background: #357abd; }
-        .val-disp { float: right; color: #4a90e2; }
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
+        body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; }
+        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 0; min-height: 0; }
+        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: crisp-edges; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+        #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; }
+        .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
+        .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.3em; text-transform: uppercase; width: 100%; text-align: left; }
+        .btn:hover:not(:disabled) { background: var(--f-green); color: #000; }
+        .btn.active { background: #083308; box-shadow: 0 0 10px var(--f-green); }
+        .stat { display: flex; justify-content: space-between; font-size: 1.5em; margin: 5px 0; }
+        #terminal { font-size: 1em; height: 160px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; line-height: 1.3; }
+        .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+        h2 { font-size: 1.8em; margin: 0 0 15px 0; }
+        select { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 8px; font-family: VT323; font-size: 1.1em; width: 100%; margin: 8px 0; }
+        .pathfind-badge { background: #083308; color: #8f8; padding: 4px 8px; border: 1px solid #0f0; font-size: 0.9em; display: inline-block; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h2 style="margin: 0 0 10px 0; border-bottom: 2px solid #555; padding-bottom: 10px;">TOPO-GEN v1.0</h2>
-    
-    <div class="control">
-        <label>Skala (Zoom) <span id="val-scale" class="val-disp">50</span></label>
-        <input type="range" id="scale" min="20" max="150" value="60">
-    </div>
-
-    <div class="control">
-        <label>Szczegółowość (Octaves) <span id="val-oct" class="val-disp">4</span></label>
-        <input type="range" id="octaves" min="1" max="8" value="5">
-    </div>
-
-    <div class="control">
-        <label>Gęstość Linii (Izolinie) <span id="val-lines" class="val-disp">15</span></label>
-        <input type="range" id="lines" min="5" max="50" value="20">
-    </div>
-
-    <div class="control">
-        <label>Poziom Wody <span id="val-water" class="val-disp">0.3</span></label>
-        <input type="range" id="water" min="0" max="80" value="25">
-    </div>
-
-    <div class="control">
-        <label>Styl Mapy</label>
-        <select id="style" style="padding: 10px; background: #222; color: #fff; border: 1px solid #555;">
-            <option value="topo">Topograficzna (Kolor)</option>
-            <option value="print">Druk (Czarno-Biała)</option>
-            <option value="heat">Mapa Ciepła (Heatmap)</option>
-        </select>
-    </div>
-
-    <button onclick="generate()">GENERUJ NOWĄ</button>
-    <div style="margin-top:auto; font-size: 0.7em; color: #666;">
-        Generator oparty na szumie fraktalnym (FBM).<br>
-        Generuje wysokość dla każdego piksela.
-    </div>
+<div id="viewport">
+    <canvas id="gameCanvas" width="2400" height="1800"></canvas>
 </div>
 
-<div id="viewport">
-    <canvas id="mapCanvas" width="800" height="600"></canvas>
+<div id="sidebar">
+    <h2 style="text-align:center; border-bottom:2px solid var(--f-green); margin:0 0 10px 0;">STRAT-COM INTERFACE</h2>
+    
+    <div class="screen">
+        <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
+        <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
+        <div id="unit-info" style="font-size:0.75em; color:#888; border-top:1px solid #333; margin-top:5px; padding-top:5px;">
+            UNIT-01: SPD <span id="p-spd">1.0</span> | ROF <span id="p-rof">1.0</span> | DMG <span id="p-dmg">1.0</span>
+        </div>
+        <div class="pathfind-badge">✓ PATHFINDING ACTIVE</div>
+    </div>
+
+    <div class="screen" id="terminal">> PATHFINDING ENABLED<br>> Wrogowie omijają trudny teren</div>
+
+    <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
+
+    <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold; text-align:center;" onclick="handleAction()">EXECUTE COMBAT</button>
 </div>
 
 <script>
-// --- KONFIGURACJA I ZMIENNE ---
-const canvas = document.getElementById('mapCanvas');
+const CONFIG = {
+    WIDTH: 2400, HEIGHT: 1800,
+    GRID_SIZE: 60, // Flow field resolution
+    DEFENSE: {
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
+        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666' },
+        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 12, rof: 500, hp: 400, type: 'tower', color: '#ff0' },
+        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 200, rof: 2800, hp: 600, type: 'tower', color: '#f80' }
+    },
+    BUILDINGS: {
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
+        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
+    }
+};
+
+let game = {
+    money: 800, hp: 6000, wave: 0, mode: 'BASE',
+    buildings: [], entities: [], enemies: [], projectiles: [],
+    terrain: { hills: [], lakes: [], forests: [] },
+    selected: null, corePlaced: false,
+    mouse: { x:0, y:0, down: false },
+    keys: {},
+    player: { x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    spawnDir: 'NORTH',
+    intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
+    mapView: 'DETAILED',
+    selectedCustomMap: null,
+    flowField: { land: null, swim: null, fly: null } // NEW: Flow fields for each type
+};
+
+const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-let seed = Math.random() * 10000;
 
-// --- PROSTA IMPLEMENTACJA SZUMU (Pseudo-Perlin) ---
-// Tworzymy tablicę permutacji dla losowości
-const perm = new Uint8Array(512);
-const p = new Uint8Array(256);
-function initSeed() {
-    for(let i=0; i<256; i++) p[i] = i;
-    for(let i=0; i<256; i++) { // Tasowanie (Fisher-Yates)
-        let r = Math.floor(Math.random() * 256);
-        let temp = p[i]; p[i] = p[r]; p[r] = temp;
+function init() {
+    window.addEventListener('keydown', e => game.keys[e.code] = true);
+    window.addEventListener('keyup', e => game.keys[e.code] = false);
+    canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
+        game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
+    });
+    canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
+    canvas.addEventListener('mouseup', () => game.mouse.down = false);
+    updateBuildMenu();
+    gameLoop();
+}
+
+function handleAction() {
+    if (game.mode === 'BASE') {
+        game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
+        
+        if (game.selectedCustomMap) {
+            loadCustomMap(game.selectedCustomMap);
+        } else {
+            generateStrategicMap();
+        }
+        
+        spawnWaveLogic();
+        updateBuildMenu();
+        document.getElementById('actionBtn').innerText = "LOCK ALL UNITS";
+        showIntelReport();
+    } else if (game.mode === 'PREP') {
+        if (!game.corePlaced) { logTerminal("CRITICAL: HQ MUST BE DEPLOYED."); return; }
+        
+        // NEW: Calculate flow fields for pathfinding
+        const core = game.entities.find(e => e.type === 'core');
+        if (core) {
+            logTerminal("CALCULATING PATHFINDING...");
+            game.flowField.land = calculateFlowField(core.x, core.y, 'LAND');
+            game.flowField.swim = calculateFlowField(core.x, core.y, 'SWIM');
+            game.flowField.fly = calculateFlowField(core.x, core.y, 'FLY');
+            logTerminal("✓ PATHFINDING READY");
+        }
+        
+        game.mode = 'COMBAT';
+        document.getElementById('actionBtn').innerText = "IN COMBAT";
+        document.getElementById('actionBtn').disabled = true;
     }
-    for(let i=0; i<512; i++) perm[i] = p[i & 255];
 }
 
-function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-function lerp(t, a, b) { return a + t * (b - a); }
-function grad(hash, x, y) {
-    const h = hash & 15;
-    const u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14 ? x : 0);
-    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+// NEW: Calculate terrain cost for specific moveType
+function getTerrainCost(x, y, moveType) {
+    let cost = 1.0;
+    
+    if (moveType === 'FLY') return 1.0; // FLY ignores terrain
+    
+    // Mountains
+    game.terrain.hills.forEach(h => {
+        const height = h.height || 5;
+        const baseSlowdown = 0.15 + (height / 15) * 0.60;
+        
+        if (h.isRidge) {
+            let minDist = Infinity;
+            h.points.forEach(p => {
+                const dist = Math.hypot(x - p.x, y - p.y);
+                minDist = Math.min(minDist, dist);
+            });
+            
+            const width = 80 * (1 - h.level / h.totalLayers);
+            if (minDist < width) {
+                const depth = 1 - (minDist / width);
+                cost += depth * baseSlowdown * 5; // Multiply by 5 for pathfinding weight
+            }
+        } else {
+            const dist = Math.hypot(x - h.x, y - h.y);
+            const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
+            if (dist < outerRadius) {
+                const depth = 1 - (dist / outerRadius);
+                cost += depth * baseSlowdown * 5;
+            }
+        }
+    });
+    
+    // Lakes
+    game.terrain.lakes.forEach(lake => {
+        if (isPointInPolygon(x, y, lake.points)) {
+            if (moveType === 'LAND') cost += 4.0; // Very expensive for LAND
+            else if (moveType === 'SWIM') cost *= 0.7; // Cheaper for SWIM
+        }
+    });
+    
+    // Forests
+    game.terrain.forests.forEach(forest => {
+        const dist = Math.hypot(x - forest.centerX, y - forest.centerY);
+        if (dist < forest.radius) {
+            cost += 0.3; // Slightly expensive
+        }
+    });
+    
+    return cost;
 }
 
-function noise2D(x, y) {
-    const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
-    x -= Math.floor(x); y -= Math.floor(y);
-    const u = fade(x), v = fade(y);
-    const A = perm[X] + Y, B = perm[X + 1] + Y;
-    return lerp(v, lerp(u, grad(perm[A], x, y), grad(perm[B], x - 1, y)),
-                   lerp(u, grad(perm[A + 1], x, y - 1), grad(perm[B + 1], x - 1, y - 1)));
-}
-
-// --- FRACTAL BROWNIAN MOTION (FBM) ---
-// To tworzy "naturalność" terenu przez nakładanie warstw szumu
-function fbm(x, y, octaves) {
-    let total = 0;
-    let amplitude = 1;
-    let frequency = 1;
-    let maxValue = 0;  // Używane do normalizacji
-
-    for(let i=0; i<octaves; i++) {
-        total += noise2D(x * frequency, y * frequency) * amplitude;
-        maxValue += amplitude;
-        amplitude *= 0.5;
-        frequency *= 2;
+// NEW: Calculate flow field using Dijkstra-like algorithm
+function calculateFlowField(targetX, targetY, moveType) {
+    const gridCols = Math.ceil(CONFIG.WIDTH / CONFIG.GRID_SIZE);
+    const gridRows = Math.ceil(CONFIG.HEIGHT / CONFIG.GRID_SIZE);
+    
+    // Initialize cost grid
+    const costs = Array(gridRows).fill(null).map(() => Array(gridCols).fill(Infinity));
+    const directions = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
+    
+    // Target cell
+    const targetCol = Math.floor(targetX / CONFIG.GRID_SIZE);
+    const targetRow = Math.floor(targetY / CONFIG.GRID_SIZE);
+    
+    if (targetCol < 0 || targetCol >= gridCols || targetRow < 0 || targetRow >= gridRows) {
+        return { costs, directions, gridCols, gridRows };
     }
     
-    // Normalizacja do zakresu 0 - 1
-    return (total / maxValue) + 0.5; 
-}
-
-// --- GENERATOR MAPY ---
-function generate() {
-    // Pobranie wartości z UI
-    const scale = parseInt(document.getElementById('scale').value);
-    const octaves = parseInt(document.getElementById('octaves').value);
-    const lineDensity = parseInt(document.getElementById('lines').value);
-    const waterLevel = parseInt(document.getElementById('water').value) / 100;
-    const style = document.getElementById('style').value;
-
-    // Aktualizacja wyświetlanych wartości
-    document.getElementById('val-scale').innerText = scale;
-    document.getElementById('val-oct').innerText = octaves;
-    document.getElementById('val-lines').innerText = lineDensity;
-    document.getElementById('val-water').innerText = waterLevel;
-
-    // Nowe ziarno losowości przy generowaniu (tylko jeśli kliknięto przycisk)
-    // Jeśli tylko przesuwamy suwaki, chcemy widzieć zmiany na TYM SAMYM terenie
-    // W tej wersji uprościmy: przycisk losuje seed, suwaki zmieniają parametry
-}
-
-// Funkcja rysująca piksel po pikselu
-function draw() {
-    const width = canvas.width;
-    const height = canvas.height;
+    costs[targetRow][targetCol] = 0;
     
-    // Tworzymy bufor obrazu (szybkie rysowanie)
-    const imgData = ctx.createImageData(width, height);
-    const data = imgData.data;
-
-    // Parametry z UI
-    const zoom = parseInt(document.getElementById('scale').value) / 1000;
-    const octaves = parseInt(document.getElementById('octaves').value);
-    const steps = parseInt(document.getElementById('lines').value);
-    const waterLvl = parseInt(document.getElementById('water').value) / 100;
-    const mapStyle = document.getElementById('style').value;
-
-    // Pętla po wszystkich pikselach
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+    // Priority queue (simple array for now)
+    const queue = [{col: targetCol, row: targetRow, cost: 0}];
+    
+    while (queue.length > 0) {
+        // Get lowest cost cell
+        queue.sort((a, b) => a.cost - b.cost);
+        const current = queue.shift();
+        
+        const {col, row, cost} = current;
+        
+        if (cost > costs[row][col]) continue;
+        
+        // Check 8 neighbors
+        const neighbors = [
+            {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+            {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+        ];
+        
+        for (let {dc, dr} of neighbors) {
+            const newCol = col + dc;
+            const newRow = row + dr;
             
-            // 1. Obliczamy wysokość w tym punkcie (0.0 do 1.0)
-            let h = fbm(x * zoom + seed, y * zoom + seed, octaves);
+            if (newCol < 0 || newCol >= gridCols || newRow < 0 || newRow >= gridRows) continue;
             
-            // 2. Koloryzacja
-            let r, g, b;
-
-            // Logika Izolinii (Czy ten piksel jest na granicy wysokości?)
-            // Mnożymy wysokość przez liczbę kroków i sprawdzamy część ułamkową
-            let contour = (h * steps) % 1; 
-            let isLine = contour < 0.1 && h > waterLvl; // 0.1 to grubość linii
-
-            if (mapStyle === 'print') {
-                // STYL CZARNO-BIAŁY (Klasyczny techniczny)
-                if (h < waterLvl) { // Woda
-                    r = g = b = 240; // Jasnoszary
-                } else if (isLine) { // Linia
-                    r = g = b = 0; // Czarny
-                } else { // Ląd
-                    r = g = b = 255; // Biały
-                }
-            } 
-            else if (mapStyle === 'heat') {
-                // STYL HEATMAP (Dobra do debugowania wysokości)
-                if (h < waterLvl) { r=0; g=0; b=150; }
-                else if (isLine) { r=0; g=0; b=0; }
-                else {
-                    r = h * 255;
-                    g = (1-h) * 50;
-                    b = 0;
-                }
+            // Calculate terrain cost for this cell
+            const cellX = newCol * CONFIG.GRID_SIZE + CONFIG.GRID_SIZE / 2;
+            const cellY = newRow * CONFIG.GRID_SIZE + CONFIG.GRID_SIZE / 2;
+            const terrainCost = getTerrainCost(cellX, cellY, moveType);
+            
+            // Diagonal movement costs more
+            const moveCost = (dc !== 0 && dr !== 0) ? 1.414 : 1.0;
+            const newCost = cost + moveCost * terrainCost;
+            
+            if (newCost < costs[newRow][newCol]) {
+                costs[newRow][newCol] = newCost;
+                queue.push({col: newCol, row: newRow, cost: newCost});
             }
-            else {
-                // STYL TOPOGRAFICZNY (Kolorowy)
-                if (h < waterLvl) {
-                    // Woda (Głębia)
-                    let wDepth = h / waterLvl; 
-                    r = 50 * wDepth; g = 100 * wDepth; b = 200 + 55 * wDepth;
-                } else if (isLine) {
-                    // Kontur (Brązowy ciemny)
-                    r = 60; g = 40; b = 20;
-                } else {
-                    // Ląd (Hipsometria)
-                    if (h < 0.4) { // Niziny (Zielony)
-                        r = 100; g = 180; b = 100;
-                    } else if (h < 0.6) { // Wyżyny (Żółty/Beż)
-                        r = 210; g = 200; b = 130;
-                    } else if (h < 0.8) { // Góry (Brąz)
-                        r = 160; g = 100; b = 60;
-                    } else { // Szczyty (Biały/Szary)
-                        r = 220; g = 220; b = 220;
-                    }
-                    
-                    // Cieniowanie (lekki gradient w ramach strefy)
-                    r *= (0.9 + contour*0.1);
-                    g *= (0.9 + contour*0.1);
-                    b *= (0.9 + contour*0.1);
-                }
-            }
-
-            // 3. Wpisanie piksela do bufora
-            const index = (y * width + x) * 4;
-            data[index] = r;     // R
-            data[index + 1] = g; // G
-            data[index + 2] = b; // B
-            data[index + 3] = 255; // Alpha
         }
     }
-
-    // Rysuj bufor na ekranie
-    ctx.putImageData(imgData, 0, 0);
+    
+    // FIXED: Now calculate directions based on costs - each cell points to lowest cost neighbor
+    for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+            if (costs[row][col] === Infinity) continue;
+            if (row === targetRow && col === targetCol) continue; // Target has no direction
+            
+            let bestCost = costs[row][col];
+            let bestDx = 0, bestDy = 0;
+            
+            // Check all 8 neighbors
+            const neighbors = [
+                {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+                {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+            ];
+            
+            for (let {dc, dr} of neighbors) {
+                const nCol = col + dc;
+                const nRow = row + dr;
+                
+                if (nCol < 0 || nCol >= gridCols || nRow < 0 || nRow >= gridRows) continue;
+                
+                if (costs[nRow][nCol] < bestCost) {
+                    bestCost = costs[nRow][nCol];
+                    bestDx = dc;
+                    bestDy = dr;
+                }
+            }
+            
+            if (bestDx !== 0 || bestDy !== 0) {
+                directions[row][col] = {dx: bestDx, dy: bestDy};
+            }
+        }
+    }
+    
+    return { costs, directions, gridCols, gridRows };
 }
 
-// Obsługa UI
-document.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('input', () => {
-        // Aktualizacja labeli
-        document.getElementById('val-scale').innerText = document.getElementById('scale').value;
-        document.getElementById('val-oct').innerText = document.getElementById('octaves').value;
-        document.getElementById('val-lines').innerText = document.getElementById('lines').value;
-        document.getElementById('val-water').innerText = document.getElementById('water').value;
-        draw();
+// NEW: Get direction from flow field
+function getFlowDirection(x, y, flowField) {
+    if (!flowField || !flowField.directions) return {dx: 0, dy: 0};
+    
+    const col = Math.floor(x / CONFIG.GRID_SIZE);
+    const row = Math.floor(y / CONFIG.GRID_SIZE);
+    
+    if (col < 0 || col >= flowField.gridCols || row < 0 || row >= flowField.gridRows) {
+        return {dx: 0, dy: 0};
+    }
+    
+    const dir = flowField.directions[row][col];
+    return dir || {dx: 0, dy: 0};
+}
+
+function loadCustomMap(mapName) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    if (maps[mapName]) {
+        game.terrain = JSON.parse(JSON.stringify(maps[mapName].terrain));
+        
+        const scaleX = CONFIG.WIDTH / 1200;
+        const scaleY = CONFIG.HEIGHT / 900;
+        
+        game.terrain.hills.forEach(h => {
+            if (h.isRidge) {
+                h.points.forEach(p => {
+                    p.x *= scaleX;
+                    p.y *= scaleY;
+                });
+            } else {
+                h.x *= scaleX;
+                h.y *= scaleY;
+                h.layers.forEach(layer => {
+                    layer.radius *= scaleX;
+                    layer.verts.forEach(v => {
+                        v.x *= scaleX;
+                        v.y *= scaleY;
+                    });
+                });
+            }
+        });
+        
+        game.terrain.lakes.forEach(lake => {
+            lake.points.forEach(p => {
+                p.x *= scaleX;
+                p.y *= scaleY;
+            });
+        });
+        
+        game.terrain.forests.forEach(forest => {
+            forest.centerX *= scaleX;
+            forest.centerY *= scaleY;
+            forest.radius *= scaleX;
+            forest.trees.forEach(tree => {
+                tree.x *= scaleX;
+                tree.y *= scaleY;
+                tree.size *= scaleX;
+            });
+        });
+        
+        logTerminal(`CUSTOM MAP LOADED: ${mapName}`);
+    } else {
+        logTerminal("MAP NOT FOUND - GENERATING RANDOM");
+        generateStrategicMap();
+    }
+}
+
+function showIntelReport() {
+    logTerminal(`--- INTEL REPORT WAVE ${game.wave} ---`);
+    logTerminal(`FRONT: ${game.spawnDir} BORDER`);
+    logTerminal(`HOSTILES: ${game.enemies.length} SIGNATURES`);
+    logTerminal(`L:${game.intel.land} S:${game.intel.swim} A:${game.intel.air}`);
+    logTerminal(`TOTAL MASS: ${Math.floor(game.intel.totalHP)} HP`);
+}
+
+function generateStrategicMap() {
+    game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
+    game.terrain = { hills: [], lakes: [], forests: [] };
+    
+    const S = 1; // Scale factor
+    
+    // Helper function to create mountain with noise
+    function createMountain(centerX, centerY, baseRadius, totalLayers) {
+        const mountain = { x: centerX, y: centerY, layers: [], totalLayers, height: totalLayers };
+        
+        for(let l = 0; l < totalLayers; l++) {
+            const radius = baseRadius * (1 - l / totalLayers);
+            const verts = [];
+            const segments = 25;
+            const seed = Math.random() * 100;
+            const noiseAmount = 0.4;
+            
+            for(let i = 0; i < segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                // NOISE for irregular shapes
+                const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+                const r = radius + noise;
+                verts.push({
+                    x: Math.cos(angle) * r,
+                    y: Math.sin(angle) * r
+                });
+            }
+            
+            mountain.layers.push({ verts, radius, level: l });
+        }
+        
+        game.terrain.hills.push(mountain);
+    }
+    
+    // === MOUNTAINS & RIDGES ===
+    const mountainCount = 3 + Math.floor(Math.random() * 3);
+    
+    for(let i = 0; i < mountainCount; i++) {
+        const type = Math.random();
+        
+        // 40% chance for RIDGE (mountain range)
+        if(type < 0.4) {
+            const startX = (400 + Math.random() * 1600) * S;
+            const startY = (400 + Math.random() * 1200) * S;
+            
+            const ridgeLength = (600 + Math.random() * 800) * S;
+            const ridgeAngle = Math.random() * Math.PI * 2;
+            
+            const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
+            const endY = startY + Math.sin(ridgeAngle) * ridgeLength;
+            
+            const segments = 8 + Math.floor(Math.random() * 6);
+            const ridgePoints = [];
+            
+            for(let s = 0; s < segments; s++) {
+                const t = s / (segments - 1);
+                const curvature = (Math.random() - 0.5) * 300 * S;
+                const perpX = -Math.sin(ridgeAngle);
+                const perpY = Math.cos(ridgeAngle);
+                
+                ridgePoints.push({
+                    x: startX * (1 - t) + endX * t + perpX * curvature,
+                    y: startY * (1 - t) + endY * t + perpY * curvature
+                });
+            }
+            
+            const maxHeight = (100 + Math.random() * 100) * S;
+            const layers = 5 + Math.floor(Math.random() * 6);
+            
+            // Generate ridge contours
+            for(let level = 0; level < layers; level++) {
+                const elevation = level / layers;
+                const currentHeight = maxHeight * (1 - elevation);
+                
+                for(let side of [-1, 1]) {
+                    const points = [];
+                    
+                    for(let i = 0; i < ridgePoints.length; i++) {
+                        const ridge = ridgePoints[i];
+                        
+                        const t = i / (ridgePoints.length - 1);
+                        const peakPos = 0.5;
+                        const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                        const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                        
+                        if(heightHere < currentHeight) continue;
+                        
+                        const width = (heightHere - currentHeight) * 0.7;
+                        
+                        let perpX, perpY;
+                        if(i < ridgePoints.length - 1) {
+                            const next = ridgePoints[i + 1];
+                            const dx = next.x - ridge.x;
+                            const dy = next.y - ridge.y;
+                            const len = Math.sqrt(dx*dx + dy*dy);
+                            perpX = -dy / len;
+                            perpY = dx / len;
+                        } else {
+                            const prev = ridgePoints[i - 1];
+                            const dx = ridge.x - prev.x;
+                            const dy = ridge.y - prev.y;
+                            const len = Math.sqrt(dx*dx + dy*dy);
+                            perpX = -dy / len;
+                            perpY = dx / len;
+                        }
+                        
+                        points.push({
+                            x: ridge.x + perpX * width * side,
+                            y: ridge.y + perpY * width * side
+                        });
+                    }
+                    
+                    if(points.length > 3) {
+                        game.terrain.hills.push({
+                            isRidge: true,
+                            points: points,
+                            level: level,
+                            totalLayers: layers,
+                            height: layers
+                        });
+                    }
+                }
+            }
+            
+        } else {
+            // SINGLE PEAK
+            const centerX = (400 + Math.random() * 1600) * S;
+            const centerY = (400 + Math.random() * 1200) * S;
+            
+            if(type < 0.65) {
+                // Regular mountain
+                createMountain(centerX, centerY, (150 + Math.random() * 120) * S, 8 + Math.floor(Math.random() * 8));
+            } else if(type < 0.85) {
+                // Mountain cluster
+                const count = 2 + Math.floor(Math.random() * 3);
+                for(let c = 0; c < count; c++) {
+                    const offsetX = (Math.random() - 0.5) * 250 * S;
+                    const offsetY = (Math.random() - 0.5) * 250 * S;
+                    createMountain(centerX + offsetX, centerY + offsetY, (70 + Math.random() * 70) * S, 4 + Math.floor(Math.random() * 5));
+                }
+            } else {
+                // Plateau
+                const plateauSize = (200 + Math.random() * 150) * S;
+                const layers = 5 + Math.floor(Math.random() * 4);
+                
+                const mountain = { x: centerX, y: centerY, layers: [], totalLayers: layers, height: layers };
+                
+                for(let l = 0; l < layers; l++) {
+                    const radius = plateauSize * (1 - l / layers * 0.3); // Flatter top
+                    const verts = [];
+                    const segments = 25;
+                    const seed = Math.random() * 100;
+                    const noiseAmount = 0.2; // Less noise for plateau
+                    
+                    for(let i = 0; i < segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+                        const r = radius + noise;
+                        verts.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
+                    }
+                    
+                    mountain.layers.push({ verts, radius, level: l });
+                }
+                
+                game.terrain.hills.push(mountain);
+            }
+        }
+    }
+    
+    // === LAKES ===
+    const lakeCount = 2 + Math.floor(Math.random() * 3);
+    
+    for(let l = 0; l < lakeCount; l++) {
+        const centerX = (500 + Math.random() * 1400) * S;
+        const centerY = (500 + Math.random() * 800) * S;
+        
+        const isLarge = Math.random() > 0.6;
+        
+        if(isLarge) {
+            const radius = (100 + Math.random() * 80) * S;
+            const points = [];
+            const segments = 20;
+            for(let i = 0; i < segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const r = radius * (0.8 + Math.random() * 0.4);
+                points.push({
+                    x: centerX + Math.cos(angle) * r,
+                    y: centerY + Math.sin(angle) * r
+                });
+            }
+            game.terrain.lakes.push({ points, type: 'sulfur' });
+        } else {
+            const count = 2 + Math.floor(Math.random() * 3);
+            for(let i = 0; i < count; i++) {
+                const offsetX = (Math.random() - 0.5) * 180 * S;
+                const offsetY = (Math.random() - 0.5) * 180 * S;
+                const radius = (35 + Math.random() * 35) * S;
+                const points = [];
+                const segments = 12;
+                for(let s = 0; s < segments; s++) {
+                    const angle = (s / segments) * Math.PI * 2;
+                    const r = radius * (0.8 + Math.random() * 0.4);
+                    points.push({
+                        x: centerX + offsetX + Math.cos(angle) * r,
+                        y: centerY + offsetY + Math.sin(angle) * r
+                    });
+                }
+                game.terrain.lakes.push({ points, type: 'sulfur' });
+            }
+        }
+    }
+    
+    // === ALIEN FORESTS ===
+    const forestCount = 2 + Math.floor(Math.random() * 4);
+    
+    for(let f = 0; f < forestCount; f++) {
+        const centerX = (400 + Math.random() * 1600) * S;
+        const centerY = (400 + Math.random() * 1200) * S;
+        const radius = (80 + Math.random() * 80) * S;
+        const density = 15 + Math.floor(Math.random() * 15);
+        
+        const trees = [];
+        for(let t = 0; t < density; t++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            trees.push({
+                x: centerX + Math.cos(angle) * dist,
+                y: centerY + Math.sin(angle) * dist,
+                size: 6 + Math.random() * 8
+            });
+        }
+        
+        game.terrain.forests.push({ trees, centerX, centerY, radius });
+    }
+}
+
+function spawnWaveLogic() {
+    game.enemies = [];
+    game.intel = { land: 0, swim: 0, air: 0, totalHP: 0 };
+    let pool = 3000 + (game.wave * 4000);
+    const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
+    const total = r1+r2+r3;
+
+    while (pool > 0) {
+        const r = Math.random();
+        let moveType = 'FLY';
+        if (r < r1/total) { moveType = 'LAND'; game.intel.land++; }
+        else if (r < (r1+r2)/total) { moveType = 'SWIM'; game.intel.swim++; }
+        else { game.intel.air++; }
+
+        let hp = 50 + Math.random() * 300;
+        if (Math.random() > 0.9) hp = 800 + Math.random() * 800;
+        
+        game.enemies.push(createEnemy(hp, moveType));
+        game.intel.totalHP += hp;
+        pool -= hp;
+    }
+}
+
+function createEnemy(hp, moveType) {
+    let x, y, off = 300;
+    if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1500; }
+    else if(game.spawnDir === 'SOUTH') { x = Math.random()*CONFIG.WIDTH; y = CONFIG.HEIGHT + off + Math.random()*1500; }
+    else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
+    else { x = -off - Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
+
+    const size = 5 + (hp * 0.05);
+    const vertices = [];
+    let color;
+    
+    if(moveType === 'LAND') {
+        color = 'var(--f-red)';
+        const sides = 4 + Math.floor(Math.random() * 3);
+        for(let i = 0; i < sides; i++) {
+            const a = (i / sides) * Math.PI * 2;
+            const d = size * (1.2 + Math.random() * 0.3);
+            vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
+        }
+    } else if(moveType === 'SWIM') {
+        color = 'var(--f-blue)';
+        const pts = 20;
+        for(let i = 0; i < pts; i++) {
+            const a = (i / pts) * Math.PI * 2;
+            const d = size * (0.8 + Math.random() * 0.3);
+            vertices.push({x: Math.cos(a) * d * 1.8, y: Math.sin(a) * d * 0.6, bD: d});
+        }
+    } else {
+        color = 'var(--f-purple)';
+        const pts = 3 + Math.floor(Math.random() * 2);
+        for(let i = 0; i < pts; i++) {
+            const a = (i / pts) * Math.PI * 2;
+            const d = size * (1.0 + Math.random() * 0.5);
+            const scale = i === 0 ? 1.5 : 1.0;
+            vertices.push({x: Math.cos(a)*d*scale, y: Math.sin(a)*d, bD: d});
+        }
+    }
+    
+    return { 
+        x, y, hp, maxHp: hp, moveType, size, vertices, color, 
+        speed: moveType==='FLY'?(1.5+Math.random()):(0.6 + (5/size)), 
+        hitF: 0 
+    };
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    if (game.mode === 'BASE') renderBaseGrid();
+    else {
+        renderTacticalMap();
+        if (game.mode === 'COMBAT') updateCombat();
+        renderEntities();
+        renderAnomalies();
+        if (game.corePlaced) renderPlayerUnit();
+        if (game.mode === 'PREP' && game.selected) renderGhost();
+    }
+    renderProjectiles();
+    updateStatsUI();
+    requestAnimationFrame(gameLoop);
+}
+
+function updateCombat() {
+    let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
+    if (game.keys['KeyW']) game.player.y -= pSpd;
+    if (game.keys['KeyS']) game.player.y += pSpd;
+    if (game.keys['KeyA']) game.player.x -= pSpd;
+    if (game.keys['KeyD']) game.player.x += pSpd;
+    game.player.x = Math.max(5, Math.min(CONFIG.WIDTH-5, game.player.x));
+    game.player.y = Math.max(5, Math.min(CONFIG.HEIGHT-5, game.player.y));
+
+    if (game.mouse.down) playerShoot();
+
+    const core = game.entities.find(e => e.type === 'core');
+    if (!core) return;
+    
+    const now = Date.now();
+
+    game.enemies.forEach((e, i) => {
+        // NEW: Use flow field for pathfinding
+        let flowField = null;
+        if (e.moveType === 'LAND') flowField = game.flowField.land;
+        else if (e.moveType === 'SWIM') flowField = game.flowField.swim;
+        else if (e.moveType === 'FLY') flowField = game.flowField.fly;
+        
+        let dirX, dirY;
+        
+        if (flowField && flowField.directions) {
+            // Follow flow field
+            const dir = getFlowDirection(e.x, e.y, flowField);
+            dirX = dir.dx;
+            dirY = dir.dy;
+            
+            // Normalize
+            const len = Math.sqrt(dirX*dirX + dirY*dirY);
+            if (len > 0) {
+                dirX /= len;
+                dirY /= len;
+            } else {
+                // Fallback to direct path
+                const ang = Math.atan2(core.y - e.y, core.x - e.x);
+                dirX = Math.cos(ang);
+                dirY = Math.sin(ang);
+            }
+        } else {
+            // Fallback to direct path
+            const ang = Math.atan2(core.y - e.y, core.x - e.x);
+            dirX = Math.cos(ang);
+            dirY = Math.sin(ang);
+        }
+        
+        // Apply speed and terrain modifiers
+        let terrainMult = 1.0;
+        
+        if(e.moveType !== 'FLY') {
+            // Apply terrain slowdown
+            const cost = getTerrainCost(e.x, e.y, e.moveType);
+            terrainMult = 1.0 / Math.max(1.0, cost * 0.3); // Convert cost to speed multiplier
+        }
+        
+        e.x += dirX * e.speed * terrainMult;
+        e.y += dirY * e.speed * terrainMult;
+
+        e.vertices.forEach(v => {
+            const jitter = (Math.random()-0.5)*2.5;
+            const a = Math.atan2(v.y, v.x);
+            v.x = Math.cos(a) * (v.bD + jitter);
+            v.y = Math.sin(a) * (v.bD + jitter);
+        });
+
+        game.entities.forEach(ent => {
+            if (ent.type === 'mine') return;
+            if (Math.hypot(e.x - ent.x, e.y - ent.y) < e.size + 15) {
+                ent.curHP -= e.hp; game.enemies.splice(i, 1);
+                if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
+            }
+        });
     });
-});
 
-// Funkcja generująca nowe ziarno
-window.generate = function() {
-    seed = Math.random() * 10000;
-    initSeed(); // Przelosuj tablicę permutacji
-    draw();
+    game.entities.forEach(u => {
+        if (u.type === 'tower' && now - u.lastFire > u.rof) {
+            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (target) {
+                target.hp -= u.dmg; target.hitF = 3; u.lastFire = now;
+                ctx.strokeStyle = "rgba(255,255,0,0.5)"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+            }
+        }
+    });
+
+    game.enemies = game.enemies.filter(e => { if (e.hp <= 0) { game.money += 15; return false; } return true; });
+    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').innerText = "EXECUTE COMBAT"; document.getElementById('actionBtn').disabled = false; logTerminal("THREATS NEUTRALIZED."); }
+    if (game.hp <= 0) { alert("HQ OVERRUN"); location.reload(); }
 }
 
-// Start
-initSeed();
-generate();
+function isPointInPolygon(x, y, points) {
+    let inside = false;
+    for(let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const xi = points[i].x, yi = points[i].y;
+        const xj = points[j].x, yj = points[j].y;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if(intersect) inside = !inside;
+    }
+    return inside;
+}
 
+function renderAnomalies() {
+    game.enemies.forEach(e => {
+        ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color;
+        ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.stroke();
+
+        const barW = Math.max(25, e.size * 2);
+        ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
+        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
+        if(e.hitF > 0) e.hitF--;
+    });
+}
+
+function renderTacticalMap() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    
+    if(game.mapView === 'DETAILED') {
+        ctx.strokeStyle = "rgba(0, 100, 0, 0.05)";
+        ctx.lineWidth = 1;
+        for(let i=0; i<=CONFIG.WIDTH; i+=300) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, CONFIG.HEIGHT);
+            ctx.stroke();
+        }
+        for(let i=0; i<=CONFIG.HEIGHT; i+=300) {
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(CONFIG.WIDTH, i);
+            ctx.stroke();
+        }
+    }
+    
+    game.terrain.lakes.forEach(lake => {
+        ctx.fillStyle = "rgba(150, 180, 50, 0.4)";
+        ctx.beginPath();
+        lake.points.forEach((p, i) => {
+            if(i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.strokeStyle = "#9a0";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    });
+    
+    game.terrain.forests.forEach(forest => {
+        forest.trees.forEach(tree => {
+            ctx.fillStyle = "rgba(150, 50, 200, 0.6)";
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = "rgba(180, 100, 255, 0.3)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(tree.x, tree.y, tree.size + 3, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+    });
+    
+    game.terrain.hills.forEach(h => {
+        if(h.isRidge) {
+            if(game.mapView === 'SIMPLIFIED' && h.level % 3 !== 0) return;
+            
+            const elevation = h.level / h.totalLayers;
+            const height = h.height || 5;
+            const heightIntensity = (height - 1) / 14;
+            
+            let r, g, b;
+            if(elevation < 0.3) {
+                r = 20 + elevation * 100 + heightIntensity * 60;
+                g = 30 + elevation * 120 + heightIntensity * 70;
+                b = 10 + elevation * 80 + heightIntensity * 50;
+            } else if(elevation < 0.6) {
+                const t = (elevation - 0.3) / 0.3;
+                r = 50 + t * 80 + heightIntensity * 70;
+                g = 60 + t * 80 + heightIntensity * 80;
+                b = 30 + t * 60 + heightIntensity * 90;
+            } else {
+                const t = (elevation - 0.6) / 0.4;
+                r = 130 + t * 90 + heightIntensity * 35;
+                g = 140 + t * 90 + heightIntensity * 40;
+                b = 90 + t * 120 + heightIntensity * 85;
+            }
+            
+            const isEveryFifth = h.level % 5 === 0;
+            const lineWidth = game.mapView === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+            
+            ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+            ctx.lineWidth = lineWidth;
+            
+            ctx.beginPath();
+            h.points.forEach((p, i) => {
+                if(i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+            
+        } else {
+            h.layers.forEach(layer => {
+                if(game.mapView === 'SIMPLIFIED' && layer.level % 3 !== 0) return;
+                
+                const elevation = layer.level / h.totalLayers;
+                const height = h.height || 5;
+                const heightIntensity = (height - 1) / 14;
+                
+                let r, g, b;
+                if(elevation < 0.3) {
+                    r = 20 + elevation * 100 + heightIntensity * 60;
+                    g = 30 + elevation * 120 + heightIntensity * 70;
+                    b = 10 + elevation * 80 + heightIntensity * 50;
+                } else if(elevation < 0.6) {
+                    const t = (elevation - 0.3) / 0.3;
+                    r = 50 + t * 80 + heightIntensity * 70;
+                    g = 60 + t * 80 + heightIntensity * 80;
+                    b = 30 + t * 60 + heightIntensity * 90;
+                } else {
+                    const t = (elevation - 0.6) / 0.4;
+                    r = 130 + t * 90 + heightIntensity * 35;
+                    g = 140 + t * 90 + heightIntensity * 40;
+                    b = 90 + t * 120 + heightIntensity * 85;
+                }
+                
+                const isEveryFifth = layer.level % 5 === 0;
+                const lineWidth = game.mapView === 'SIMPLIFIED' ? 2 : (isEveryFifth ? 2.5 : 1.2);
+                
+                ctx.strokeStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                ctx.lineWidth = lineWidth;
+                
+                ctx.beginPath();
+                layer.verts.forEach((v, vi) => {
+                    if(vi === 0) ctx.moveTo(h.x + v.x, h.y + v.y);
+                    else ctx.lineTo(h.x + v.x, h.y + v.y);
+                });
+                ctx.closePath();
+                ctx.stroke();
+            });
+        }
+    });
+    
+    ctx.strokeStyle = "#f44";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([15, 8]);
+    
+    let spawnZone = {x: 0, y: 0, w: 0, h: 0};
+    if(game.spawnDir === 'NORTH') {
+        spawnZone = {x: 0, y: 0, w: CONFIG.WIDTH, h: 180};
+    } else if(game.spawnDir === 'SOUTH') {
+        spawnZone = {x: 0, y: CONFIG.HEIGHT - 180, w: CONFIG.WIDTH, h: 180};
+    } else if(game.spawnDir === 'EAST') {
+        spawnZone = {x: CONFIG.WIDTH - 180, y: 0, w: 180, h: CONFIG.HEIGHT};
+    } else {
+        spawnZone = {x: 0, y: 0, w: 180, h: CONFIG.HEIGHT};
+    }
+    
+    ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
+    ctx.setLineDash([]);
+}
+
+function renderPlayerUnit() {
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y-12); ctx.lineTo(game.player.x+12, game.player.y); ctx.lineTo(game.player.x, game.player.y+12); ctx.lineTo(game.player.x-12, game.player.y); ctx.closePath(); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 2, 0, Math.PI*2); ctx.fill();
+    const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.player.x+Math.cos(a)*40, game.player.y+Math.sin(a)*40); ctx.stroke(); ctx.setLineDash([]);
+}
+
+function playerShoot() {
+    const now = Date.now();
+    const rof = 140 / (1 + (game.player.rofLv-1)*0.3);
+    const dmg = 35 * (1 + (game.player.dmgLv-1)*0.5);
+    if (now - game.player.lastShot > rof) {
+        const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, dmg });
+        game.player.lastShot = now;
+    }
+}
+
+function renderEntities() {
+    game.entities.forEach(ent => {
+        ctx.strokeStyle = ent.color; ctx.lineWidth = 2;
+        if (ent.type === 'core') ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
+        else if (ent.type === 'wall') ctx.strokeRect(ent.x-10, ent.y-10, 20, 20);
+        else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 10, 0, Math.PI*2); ctx.stroke(); }
+        ctx.fillStyle = "var(--f-green)"; ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
+    });
+}
+
+function handleInput() {
+    if (game.mode === 'BASE' && game.selected) {
+        const gx = Math.floor((game.mouse.x - 150) / 50), gy = Math.floor((game.mouse.y - 150) / 50);
+        if(gx>=0 && gx<12 && gy>=0 && gy<12) {
+            game.buildings.push({ gx, gy, cfg: CONFIG.BUILDINGS[game.selected] });
+            game.money -= CONFIG.BUILDINGS[game.selected].cost; updateStatsUI();
+        }
+    } else if (game.mode === 'PREP' && game.selected) {
+        const cfg = CONFIG.DEFENSE[game.selected];
+        if (cfg.type === 'core' && game.corePlaced) return;
+        if (game.money >= cfg.cost) {
+            game.entities.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 });
+            if (cfg.type === 'core') { game.corePlaced = true; game.player.x = game.mouse.x; game.player.y = game.mouse.y; }
+            else game.money -= cfg.cost;
+            updateStatsUI();
+        }
+    }
+}
+
+function renderProjectiles() {
+    ctx.fillStyle = "#fff";
+    game.projectiles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 3, 3);
+        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+        if (hit) { hit.hp -= p.dmg; hit.hitF = 3; game.projectiles.splice(i, 1); }
+        if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
+    });
+}
+
+function renderBaseGrid() {
+    ctx.strokeStyle = "rgba(32, 255, 32, 0.1)";
+    for(let i=0; i<=12; i++) {
+        ctx.beginPath(); ctx.moveTo(150+i*50, 150); ctx.lineTo(150+i*50, 750); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(150, 150+i*50); ctx.lineTo(750, 150+i*50); ctx.stroke();
+    }
+    game.buildings.forEach(b => { ctx.fillStyle = b.cfg.color; ctx.fillRect(150+b.gx*50+5, 150+b.gy*50+5, 40, 40); });
+}
+
+function renderGhost() {
+    const cfg = CONFIG.DEFENSE[game.selected];
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
+    ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
+}
+
+function updateStatsUI() {
+    document.getElementById('ui-money').innerText = `$${Math.floor(game.money)}`;
+    document.getElementById('ui-hp').innerText = `${Math.max(0, Math.ceil((game.hp/6000)*100))}%`;
+    document.getElementById('p-spd').innerText = (1 + (game.player.spdLv-1)*0.2).toFixed(1);
+    document.getElementById('p-rof').innerText = (1 + (game.player.rofLv-1)*0.3).toFixed(1);
+    document.getElementById('p-dmg').innerText = (1 + (game.player.dmgLv-1)*0.5).toFixed(1);
+}
+
+function updateBuildMenu() {
+    const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
+    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
+    
+    if(game.mode === 'BASE') {
+        const mapSelectorDiv = document.createElement('div');
+        mapSelectorDiv.style.marginBottom = '15px';
+        mapSelectorDiv.innerHTML = '<h3 style="margin: 0 0 8px 0; font-size: 1.3em;">WYBIERZ MAPĘ:</h3>';
+        
+        const mapSelect = document.createElement('select');
+        mapSelect.id = 'map-selector';
+        
+        const randomOption = document.createElement('option');
+        randomOption.value = '';
+        randomOption.innerText = '[ LOSOWA MAPA ]';
+        mapSelect.appendChild(randomOption);
+        
+        const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+        for(let name in maps) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.innerText = name;
+            if(game.selectedCustomMap === name) option.selected = true;
+            mapSelect.appendChild(option);
+        }
+        
+        mapSelect.onchange = (e) => {
+            game.selectedCustomMap = e.target.value || null;
+            logTerminal(game.selectedCustomMap ? `Wybrano: ${game.selectedCustomMap}` : 'Losowa mapa');
+        };
+        
+        mapSelectorDiv.appendChild(mapSelect);
+        menu.appendChild(mapSelectorDiv);
+        
+        const hr = document.createElement('div');
+        hr.style.borderTop = '1px solid #444';
+        hr.style.margin = '15px 0';
+        menu.appendChild(hr);
+    }
+    
+    for(let k in list) {
+        const item = list[k];
+        const btn = document.createElement('button');
+        btn.className = 'btn' + (game.selected === k ? ' active' : '');
+        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+        menu.appendChild(btn);
+    }
+    
+    if(game.mode === 'PREP') {
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn';
+        viewBtn.style.marginTop = '15px';
+        viewBtn.style.background = '#333';
+        viewBtn.style.borderColor = '#888';
+        viewBtn.innerHTML = `MAP VIEW: ${game.mapView}`;
+        viewBtn.onclick = () => {
+            game.mapView = game.mapView === 'DETAILED' ? 'SIMPLIFIED' : 'DETAILED';
+            updateBuildMenu();
+        };
+        menu.appendChild(viewBtn);
+    }
+    
+    if(game.mode === 'BASE') {
+        const row = document.createElement('div'); row.className = 'upgrade-row';
+        ['SPD', 'ROF', 'DMG'].forEach(s => {
+            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
+            b.innerText = `UP ${s}`;
+            b.onclick = () => { 
+                let cost = game.player[s.toLowerCase()+'Lv']*300;
+                if(game.money >= cost) { game.money -= cost; game.player[s.toLowerCase()+'Lv']++; updateStatsUI(); updateBuildMenu(); }
+            };
+            row.appendChild(b);
+        });
+        menu.appendChild(row);
+    }
+}
+
+function logTerminal(t) { 
+    const term = document.getElementById('terminal');
+    term.innerHTML += `> ${t}<br>`; term.scrollTop = term.scrollHeight;
+}
+
+window.handleAction = handleAction;
+
+init();
 </script>
 </body>
 </html>
