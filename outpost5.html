@@ -76,7 +76,8 @@ let game = {
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
     mapView: 'DETAILED',
     selectedCustomMap: null,
-    flowField: { land: null, swim: null, fly: null } // NEW: Flow fields for each type
+    flowField: { land: null, swim: null, fly: null },
+    debugPathfinding: false // NEW: Toggle pathfinding visualization
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -138,35 +139,52 @@ function getTerrainCost(x, y, moveType) {
     // Mountains
     game.terrain.hills.forEach(h => {
         const height = h.height || 5;
-        const baseSlowdown = 0.15 + (height / 15) * 0.60;
+        const baseSlowdown = 0.15 + (height / 15) * 0.60; // 0.20 to 0.75
         
         if (h.isRidge) {
+            // FIXED: Better ridge detection - check distance to line segments
             let minDist = Infinity;
+            
+            // Check distance to each segment of the ridge
+            for (let i = 0; i < h.points.length - 1; i++) {
+                const p1 = h.points[i];
+                const p2 = h.points[i + 1];
+                
+                // Distance from point to line segment
+                const segmentDist = distanceToSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+                minDist = Math.min(minDist, segmentDist);
+            }
+            
+            // Also check distance to points (for endpoints)
             h.points.forEach(p => {
                 const dist = Math.hypot(x - p.x, y - p.y);
                 minDist = Math.min(minDist, dist);
             });
             
-            const width = 80 * (1 - h.level / h.totalLayers);
+            // Ridge width increases with lower elevation (wider at base)
+            const elevationFactor = 1 - (h.level / h.totalLayers);
+            const width = 120 * elevationFactor; // Base width 120px
+            
             if (minDist < width) {
                 const depth = 1 - (minDist / width);
-                cost += depth * baseSlowdown * 5; // Multiply by 5 for pathfinding weight
+                cost += depth * baseSlowdown * 8; // FIXED: Increased from 5 to 8 for stronger effect
             }
         } else {
+            // Peak detection (unchanged)
             const dist = Math.hypot(x - h.x, y - h.y);
             const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
             if (dist < outerRadius) {
                 const depth = 1 - (dist / outerRadius);
-                cost += depth * baseSlowdown * 5;
+                cost += depth * baseSlowdown * 8; // FIXED: Increased from 5 to 8 for stronger effect
             }
         }
     });
     
-    // Lakes
+    // Lakes - LAND units avoid, SWIM units prefer
     game.terrain.lakes.forEach(lake => {
         if (isPointInPolygon(x, y, lake.points)) {
-            if (moveType === 'LAND') cost += 4.0; // Very expensive for LAND
-            else if (moveType === 'SWIM') cost *= 0.7; // Cheaper for SWIM
+            if (moveType === 'LAND') cost += 15.0; // EXTREMELY expensive for LAND (almost impossible!)
+            else if (moveType === 'SWIM') cost *= 0.5; // CHEAP for SWIM (prefer!)
         }
     });
     
@@ -179,6 +197,27 @@ function getTerrainCost(x, y, moveType) {
     });
     
     return cost;
+}
+
+// Helper: Distance from point (x,y) to line segment (x1,y1)-(x2,y2)
+function distanceToSegment(x, y, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+    
+    if (lengthSquared === 0) {
+        // Segment is a point
+        return Math.hypot(x - x1, y - y1);
+    }
+    
+    // Project point onto line segment
+    let t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t)); // Clamp to segment
+    
+    const projX = x1 + t * dx;
+    const projY = y1 + t * dy;
+    
+    return Math.hypot(x - projX, y - projY);
 }
 
 // NEW: Calculate flow field using Dijkstra-like algorithm
@@ -371,7 +410,6 @@ function generateStrategicMap() {
             
             for(let i = 0; i < segments; i++) {
                 const angle = (i / segments) * Math.PI * 2;
-                // NOISE for irregular shapes
                 const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
                 const r = radius + noise;
                 verts.push({
@@ -386,193 +424,97 @@ function generateStrategicMap() {
         game.terrain.hills.push(mountain);
     }
     
-    // === MOUNTAINS & RIDGES ===
-    const mountainCount = 3 + Math.floor(Math.random() * 3);
-    
-    for(let i = 0; i < mountainCount; i++) {
-        const type = Math.random();
+    function createRidge(startX, startY, ridgeLength, ridgeAngle, layers) {
+        const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
+        const endY = startY + Math.sin(ridgeAngle) * ridgeLength;
         
-        // 40% chance for RIDGE (mountain range)
-        if(type < 0.4) {
-            const startX = (400 + Math.random() * 1600) * S;
-            const startY = (400 + Math.random() * 1200) * S;
+        const segments = 8 + Math.floor(Math.random() * 6);
+        const ridgePoints = [];
+        
+        for(let s = 0; s < segments; s++) {
+            const t = s / (segments - 1);
+            const curvature = (Math.random() - 0.5) * 300 * S;
+            const perpX = -Math.sin(ridgeAngle);
+            const perpY = Math.cos(ridgeAngle);
             
-            const ridgeLength = (600 + Math.random() * 800) * S;
-            const ridgeAngle = Math.random() * Math.PI * 2;
-            
-            const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
-            const endY = startY + Math.sin(ridgeAngle) * ridgeLength;
-            
-            const segments = 8 + Math.floor(Math.random() * 6);
-            const ridgePoints = [];
-            
-            for(let s = 0; s < segments; s++) {
-                const t = s / (segments - 1);
-                const curvature = (Math.random() - 0.5) * 300 * S;
-                const perpX = -Math.sin(ridgeAngle);
-                const perpY = Math.cos(ridgeAngle);
-                
-                ridgePoints.push({
-                    x: startX * (1 - t) + endX * t + perpX * curvature,
-                    y: startY * (1 - t) + endY * t + perpY * curvature
-                });
-            }
-            
-            const maxHeight = (100 + Math.random() * 100) * S;
-            const layers = 5 + Math.floor(Math.random() * 6);
-            
-            // Generate ridge contours
-            for(let level = 0; level < layers; level++) {
-                const elevation = level / layers;
-                const currentHeight = maxHeight * (1 - elevation);
-                
-                for(let side of [-1, 1]) {
-                    const points = [];
-                    
-                    for(let i = 0; i < ridgePoints.length; i++) {
-                        const ridge = ridgePoints[i];
-                        
-                        const t = i / (ridgePoints.length - 1);
-                        const peakPos = 0.5;
-                        const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
-                        const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
-                        
-                        if(heightHere < currentHeight) continue;
-                        
-                        const width = (heightHere - currentHeight) * 0.7;
-                        
-                        let perpX, perpY;
-                        if(i < ridgePoints.length - 1) {
-                            const next = ridgePoints[i + 1];
-                            const dx = next.x - ridge.x;
-                            const dy = next.y - ridge.y;
-                            const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len;
-                            perpY = dx / len;
-                        } else {
-                            const prev = ridgePoints[i - 1];
-                            const dx = ridge.x - prev.x;
-                            const dy = ridge.y - prev.y;
-                            const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len;
-                            perpY = dx / len;
-                        }
-                        
-                        points.push({
-                            x: ridge.x + perpX * width * side,
-                            y: ridge.y + perpY * width * side
-                        });
-                    }
-                    
-                    if(points.length > 3) {
-                        game.terrain.hills.push({
-                            isRidge: true,
-                            points: points,
-                            level: level,
-                            totalLayers: layers,
-                            height: layers
-                        });
-                    }
-                }
-            }
-            
-        } else {
-            // SINGLE PEAK
-            const centerX = (400 + Math.random() * 1600) * S;
-            const centerY = (400 + Math.random() * 1200) * S;
-            
-            if(type < 0.65) {
-                // Regular mountain
-                createMountain(centerX, centerY, (150 + Math.random() * 120) * S, 8 + Math.floor(Math.random() * 8));
-            } else if(type < 0.85) {
-                // Mountain cluster
-                const count = 2 + Math.floor(Math.random() * 3);
-                for(let c = 0; c < count; c++) {
-                    const offsetX = (Math.random() - 0.5) * 250 * S;
-                    const offsetY = (Math.random() - 0.5) * 250 * S;
-                    createMountain(centerX + offsetX, centerY + offsetY, (70 + Math.random() * 70) * S, 4 + Math.floor(Math.random() * 5));
-                }
-            } else {
-                // Plateau
-                const plateauSize = (200 + Math.random() * 150) * S;
-                const layers = 5 + Math.floor(Math.random() * 4);
-                
-                const mountain = { x: centerX, y: centerY, layers: [], totalLayers: layers, height: layers };
-                
-                for(let l = 0; l < layers; l++) {
-                    const radius = plateauSize * (1 - l / layers * 0.3); // Flatter top
-                    const verts = [];
-                    const segments = 25;
-                    const seed = Math.random() * 100;
-                    const noiseAmount = 0.2; // Less noise for plateau
-                    
-                    for(let i = 0; i < segments; i++) {
-                        const angle = (i / segments) * Math.PI * 2;
-                        const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
-                        const r = radius + noise;
-                        verts.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
-                    }
-                    
-                    mountain.layers.push({ verts, radius, level: l });
-                }
-                
-                game.terrain.hills.push(mountain);
-            }
+            ridgePoints.push({
+                x: startX * (1 - t) + endX * t + perpX * curvature,
+                y: startY * (1 - t) + endY * t + perpY * curvature
+            });
         }
-    }
-    
-    // === LAKES ===
-    const lakeCount = 2 + Math.floor(Math.random() * 3);
-    
-    for(let l = 0; l < lakeCount; l++) {
-        const centerX = (500 + Math.random() * 1400) * S;
-        const centerY = (500 + Math.random() * 800) * S;
         
-        const isLarge = Math.random() > 0.6;
+        const maxHeight = (100 + Math.random() * 100) * S;
         
-        if(isLarge) {
-            const radius = (100 + Math.random() * 80) * S;
-            const points = [];
-            const segments = 20;
-            for(let i = 0; i < segments; i++) {
-                const angle = (i / segments) * Math.PI * 2;
-                const r = radius * (0.8 + Math.random() * 0.4);
-                points.push({
-                    x: centerX + Math.cos(angle) * r,
-                    y: centerY + Math.sin(angle) * r
-                });
-            }
-            game.terrain.lakes.push({ points, type: 'sulfur' });
-        } else {
-            const count = 2 + Math.floor(Math.random() * 3);
-            for(let i = 0; i < count; i++) {
-                const offsetX = (Math.random() - 0.5) * 180 * S;
-                const offsetY = (Math.random() - 0.5) * 180 * S;
-                const radius = (35 + Math.random() * 35) * S;
+        for(let level = 0; level < layers; level++) {
+            const elevation = level / layers;
+            const currentHeight = maxHeight * (1 - elevation);
+            
+            for(let side of [-1, 1]) {
                 const points = [];
-                const segments = 12;
-                for(let s = 0; s < segments; s++) {
-                    const angle = (s / segments) * Math.PI * 2;
-                    const r = radius * (0.8 + Math.random() * 0.4);
+                
+                for(let i = 0; i < ridgePoints.length; i++) {
+                    const ridge = ridgePoints[i];
+                    
+                    const t = i / (ridgePoints.length - 1);
+                    const peakPos = 0.5;
+                    const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                    const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                    
+                    if(heightHere < currentHeight) continue;
+                    
+                    const width = (heightHere - currentHeight) * 0.7;
+                    
+                    let perpX, perpY;
+                    if(i < ridgePoints.length - 1) {
+                        const next = ridgePoints[i + 1];
+                        const dx = next.x - ridge.x;
+                        const dy = next.y - ridge.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    } else {
+                        const prev = ridgePoints[i - 1];
+                        const dx = ridge.x - prev.x;
+                        const dy = ridge.y - prev.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    }
+                    
                     points.push({
-                        x: centerX + offsetX + Math.cos(angle) * r,
-                        y: centerY + offsetY + Math.sin(angle) * r
+                        x: ridge.x + perpX * width * side,
+                        y: ridge.y + perpY * width * side
                     });
                 }
-                game.terrain.lakes.push({ points, type: 'sulfur' });
+                
+                if(points.length > 3) {
+                    game.terrain.hills.push({
+                        isRidge: true,
+                        points: points,
+                        level: level,
+                        totalLayers: layers,
+                        height: layers
+                    });
+                }
             }
         }
     }
     
-    // === ALIEN FORESTS ===
-    const forestCount = 2 + Math.floor(Math.random() * 4);
+    function createLake(centerX, centerY, radius) {
+        const points = [];
+        const segments = 20;
+        for(let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const r = radius * (0.8 + Math.random() * 0.4);
+            points.push({
+                x: centerX + Math.cos(angle) * r,
+                y: centerY + Math.sin(angle) * r
+            });
+        }
+        game.terrain.lakes.push({ points, type: 'sulfur' });
+    }
     
-    for(let f = 0; f < forestCount; f++) {
-        const centerX = (400 + Math.random() * 1600) * S;
-        const centerY = (400 + Math.random() * 1200) * S;
-        const radius = (80 + Math.random() * 80) * S;
-        const density = 15 + Math.floor(Math.random() * 15);
-        
+    function createForest(centerX, centerY, radius, density) {
         const trees = [];
         for(let t = 0; t < density; t++) {
             const angle = Math.random() * Math.PI * 2;
@@ -583,9 +525,73 @@ function generateStrategicMap() {
                 size: 6 + Math.random() * 8
             });
         }
-        
         game.terrain.forests.push({ trees, centerX, centerY, radius });
     }
+    
+    // === PRAWDZIWIE LOSOWA GENERACJA - BEZ ARCHETYPÓW ===
+    
+    // Góry: 0-15 (każda niezależnie losowana)
+    const mountainCount = Math.floor(Math.random() * 16);
+    
+    for(let i = 0; i < mountainCount; i++) {
+        // Dla każdej góry: losuj typ, pozycję, rozmiar, wysokość
+        const mountainType = Math.random();
+        const x = 300 + Math.random() * 1800;
+        const y = 300 + Math.random() * 1200;
+        
+        if(mountainType < 0.3) {
+            // RIDGE - losowa długość i wysokość
+            createRidge(
+                x, y,
+                400 + Math.random() * 1000,  // długość: 400-1400
+                Math.random() * Math.PI * 2,
+                3 + Math.floor(Math.random() * 15)  // wysokość: 3-17
+            );
+        } else if(mountainType < 0.7) {
+            // PEAK - losowy rozmiar i wysokość
+            createMountain(
+                x, y,
+                50 + Math.random() * 250,  // promień: 50-300
+                3 + Math.floor(Math.random() * 18)  // wysokość: 3-20
+            );
+        } else {
+            // CLUSTER - losowa liczba szczytów
+            const clusterSize = 2 + Math.floor(Math.random() * 4);  // 2-5 szczytów
+            for(let c = 0; c < clusterSize; c++) {
+                createMountain(
+                    x + (Math.random() - 0.5) * 300,
+                    y + (Math.random() - 0.5) * 300,
+                    40 + Math.random() * 100,  // promień: 40-140
+                    3 + Math.floor(Math.random() * 8)  // wysokość: 3-10
+                );
+            }
+        }
+    }
+    
+    // Jeziora: 0-12 (każde niezależnie losowane)
+    const lakeCount = Math.floor(Math.random() * 13);
+    
+    for(let i = 0; i < lakeCount; i++) {
+        createLake(
+            400 + Math.random() * 1600,
+            300 + Math.random() * 1200,
+            40 + Math.random() * 200  // promień: 40-240 (pełny zakres!)
+        );
+    }
+    
+    // Lasy: 0-10 (każdy niezależnie losowany)
+    const forestCount = Math.floor(Math.random() * 11);
+    
+    for(let i = 0; i < forestCount; i++) {
+        createForest(
+            400 + Math.random() * 1600,
+            300 + Math.random() * 1200,
+            60 + Math.random() * 120,  // promień: 60-180
+            8 + Math.floor(Math.random() * 30)  // gęstość: 8-37 drzew
+        );
+    }
+    
+    logTerminal(`Wygenerowano: G:${game.terrain.hills.length} J:${game.terrain.lakes.length} L:${game.terrain.forests.length}`);
 }
 
 function spawnWaveLogic() {
@@ -623,7 +629,7 @@ function createEnemy(hp, moveType) {
     let color;
     
     if(moveType === 'LAND') {
-        color = 'var(--f-red)';
+        color = '#ff3333'; // FIXED: Red for LAND (was CSS var)
         const sides = 4 + Math.floor(Math.random() * 3);
         for(let i = 0; i < sides; i++) {
             const a = (i / sides) * Math.PI * 2;
@@ -631,7 +637,7 @@ function createEnemy(hp, moveType) {
             vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
         }
     } else if(moveType === 'SWIM') {
-        color = 'var(--f-blue)';
+        color = '#33aaff'; // FIXED: Blue for SWIM (was CSS var)
         const pts = 20;
         for(let i = 0; i < pts; i++) {
             const a = (i / pts) * Math.PI * 2;
@@ -639,7 +645,7 @@ function createEnemy(hp, moveType) {
             vertices.push({x: Math.cos(a) * d * 1.8, y: Math.sin(a) * d * 0.6, bD: d});
         }
     } else {
-        color = 'var(--f-purple)';
+        color = '#cc33ff'; // FIXED: Purple for FLY (was CSS var)
         const pts = 3 + Math.floor(Math.random() * 2);
         for(let i = 0; i < pts; i++) {
             const a = (i / pts) * Math.PI * 2;
@@ -725,9 +731,15 @@ function updateCombat() {
         let terrainMult = 1.0;
         
         if(e.moveType !== 'FLY') {
-            // Apply terrain slowdown
+            // Apply terrain slowdown - FIXED: Much stronger effect
             const cost = getTerrainCost(e.x, e.y, e.moveType);
-            terrainMult = 1.0 / Math.max(1.0, cost * 0.3); // Convert cost to speed multiplier
+            
+            // Convert cost to speed multiplier
+            // cost=1.0 (flat ground) → speed 100%
+            // cost=2.0 (light terrain) → speed 50%
+            // cost=4.0 (mountain) → speed 25%
+            // cost=7.0 (high mountain) → speed ~14%
+            terrainMult = 1.0 / cost;
         }
         
         e.x += dirX * e.speed * terrainMult;
@@ -785,7 +797,8 @@ function renderAnomalies() {
 
         const barW = Math.max(25, e.size * 2);
         ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
-        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
+        ctx.fillStyle = "#ffff00"; // FIXED: Yellow HP bar (was CSS var)
+        ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
         if(e.hitF > 0) e.hitF--;
     });
 }
@@ -938,6 +951,48 @@ function renderTacticalMap() {
     
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
     ctx.setLineDash([]);
+    
+    // NEW: Debug pathfinding visualization
+    if (game.debugPathfinding && game.flowField.land) {
+        const ff = game.flowField.land;
+        const spacing = CONFIG.GRID_SIZE;
+        
+        ctx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
+        ctx.fillStyle = 'rgba(255, 0, 255, 0.6)';
+        ctx.lineWidth = 2;
+        
+        for (let row = 0; row < ff.gridRows; row += 2) {  // Draw every 2nd cell for clarity
+            for (let col = 0; col < ff.gridCols; col += 2) {
+                const x = col * spacing + spacing / 2;
+                const y = row * spacing + spacing / 2;
+                
+                const dir = ff.directions[row][col];
+                if (!dir) continue;
+                
+                const cost = ff.costs[row][col];
+                if (cost === Infinity) continue;
+                
+                // Draw arrow showing flow direction
+                const arrowLen = 20;
+                const dx = dir.dx * arrowLen;
+                const dy = dir.dy * arrowLen;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + dx, y + dy);
+                ctx.stroke();
+                
+                // Arrowhead
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath();
+                ctx.moveTo(x + dx, y + dy);
+                ctx.lineTo(x + dx - 8 * Math.cos(angle - 0.3), y + dy - 8 * Math.sin(angle - 0.3));
+                ctx.lineTo(x + dx - 8 * Math.cos(angle + 0.3), y + dy - 8 * Math.sin(angle + 0.3));
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+    }
 }
 
 function renderPlayerUnit() {
@@ -965,7 +1020,8 @@ function renderEntities() {
         if (ent.type === 'core') ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
         else if (ent.type === 'wall') ctx.strokeRect(ent.x-10, ent.y-10, 20, 20);
         else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 10, 0, Math.PI*2); ctx.stroke(); }
-        ctx.fillStyle = "var(--f-green)"; ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
+        ctx.fillStyle = "#20ff20"; // FIXED: Green HP bar (was CSS var)
+        ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
     });
 }
 
@@ -1071,7 +1127,7 @@ function updateBuildMenu() {
         menu.appendChild(btn);
     }
     
-    if(game.mode === 'PREP') {
+    if(game.mode === 'PREP' || game.mode === 'COMBAT') {
         const viewBtn = document.createElement('button');
         viewBtn.className = 'btn';
         viewBtn.style.marginTop = '15px';
@@ -1083,6 +1139,20 @@ function updateBuildMenu() {
             updateBuildMenu();
         };
         menu.appendChild(viewBtn);
+        
+        // NEW: Debug pathfinding visualization
+        const debugBtn = document.createElement('button');
+        debugBtn.className = 'btn';
+        debugBtn.style.background = game.debugPathfinding ? '#083308' : '#222';
+        debugBtn.style.borderColor = '#4af';
+        debugBtn.style.color = '#4af';
+        debugBtn.innerHTML = `DEBUG: ${game.debugPathfinding ? 'ON' : 'OFF'}`;
+        debugBtn.onclick = () => {
+            game.debugPathfinding = !game.debugPathfinding;
+            updateBuildMenu();
+            logTerminal(game.debugPathfinding ? 'DEBUG: Pokazuję flow field' : 'DEBUG: Ukryto flow field');
+        };
+        menu.appendChild(debugBtn);
     }
     
     if(game.mode === 'BASE') {
