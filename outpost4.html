@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: SUPREME COMMANDER [FINAL REVISION]</title>
+    <title>OUTPOST '95: SUPREME COMMANDER [RESTORATION]</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff1111; --f-blue: #00ffff; --f-purple: #cc33ff; --f-hp: #ffff00; }
@@ -41,8 +41,8 @@ const CONFIG = {
     WIDTH: 1200, HEIGHT: 900, SCALE: 0.5, BASE_OFF: { x: 300, y: 150 }, CELL: 50, GRID: 12,
     PATH_GRID: 40,
     DEFENSE: {
-        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff', size: 22 },
-        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666', size: 16 },
+        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff', size: 20 },
+        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666', size: 15 },
         SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 18, rof: 500, hp: 600, type: 'tower', color: '#ff0', size: 14 },
         BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 220, rof: 2800, hp: 900, type: 'tower', color: '#f80', size: 16 }
     },
@@ -66,72 +66,34 @@ let game = {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// --- AI: CZYTANIE TWOJEGO TERENU ---
-function getTerrainWeight(wx, wy) {
-    if (game.terrain.lakes.some(l => isPointInPolygon(wx, wy, l.points))) return 50; // Jezioro to przeszkoda
-    for (let h of game.terrain.hills) {
-        if (h.isRidge) {
-            for (let p of h.points) if (Math.hypot(wx-p.x, wy-p.y) < 40) return 15; // Góra spowalnia
-        } else if (h.layers[0] && Math.hypot(wx-h.x, wy-h.y) < h.layers[0].radius) return 15;
-    }
-    return 1;
-}
-
-function generateFlowField() {
-    const cols = Math.ceil(CONFIG.WIDTH / CONFIG.PATH_GRID);
-    const rows = Math.ceil(CONFIG.HEIGHT / CONFIG.PATH_GRID);
-    const core = game.entities.find(e => e.type === 'core') || {x: 600, y: 450};
-    const costField = new Array(cols).fill(0).map(() => new Array(rows).fill(9999));
-    const targetX = Math.floor(core.x / CONFIG.PATH_GRID);
-    const targetY = Math.floor(core.y / CONFIG.PATH_GRID);
-
-    let q = [{x: targetX, y: targetY, c: 0}];
-    costField[targetX][targetY] = 0;
-
-    while(q.length > 0) {
-        let curr = q.shift();
-        [[0,1],[0,-1],[1,0],[-1,0]].forEach(d => {
-            let nx = curr.x + d[0], ny = curr.y + d[1];
-            if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
-                let weight = getTerrainWeight(nx * CONFIG.PATH_GRID, ny * CONFIG.PATH_GRID);
-                let total = curr.c + weight;
-                if (total < costField[nx][ny]) {
-                    costField[nx][ny] = total; q.push({x: nx, y: ny, c: total});
-                }
-            }
-        });
-    }
-
-    game.flowField = new Array(cols).fill(0).map((_, x) => new Array(rows).fill(0).map((_, y) => {
-        let min = costField[x][y], vec = {x: 0, y: 0};
-        [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(d => {
-            let nx = x + d[0], ny = y + d[1];
-            if(nx >= 0 && nx < cols && ny >= 0 && ny < rows && costField[nx][ny] < min) {
-                min = costField[nx][ny]; vec = {x: d[0], y: d[1]};
-            }
-        });
-        return vec;
-    }));
-}
+// --- STEROWANIE ---
+window.addEventListener('keydown', e => game.keys[e.code] = true);
+window.addEventListener('keyup', e => game.keys[e.code] = false);
 
 // --- RENDERER: WYRAZISTE KOLORY I LIQUID HP ---
 function drawUnit(x, y, verts, color, hpRatio, size) {
-    ctx.save(); ctx.translate(x, y);
+    ctx.save();
+    ctx.translate(x, y);
     ctx.beginPath();
     verts.forEach((v, i) => {
-        let vx = Math.cos(v.a) * v.d; let vy = Math.sin(v.a) * v.d;
+        let vx = Math.cos(v.a) * v.d;
+        let vy = Math.sin(v.a) * v.d;
         if(i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
     });
     ctx.closePath();
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
     ctx.clip();
     ctx.fillStyle = color;
-    let fillY = size * 2 - (hpRatio * size * 4);
-    ctx.fillRect(-size * 2, fillY, size * 4, size * 4);
+    let h = size * 3;
+    let fillY = (size * 1.5) - (h * hpRatio);
+    ctx.fillRect(-size * 2, fillY, size * 4, h);
     ctx.restore();
 }
 
-// --- TWOJE ORYGINALNE FUNKCJE (BEZ ZMIAN) ---
+// --- TWOJE ORYGINALNE FUNKCJE GENERATORA (NIENARUSZONE) ---
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     game.terrain = { hills: [], lakes: [], forests: [] };
@@ -203,10 +165,13 @@ function generateStrategicMap() {
     }
     const lakeCount = 2 + Math.floor(Math.random() * 3);
     for(let l = 0; l < lakeCount; l++) {
-        const centerX = (250 + Math.random() * 1900) * S, centerY = (250 + Math.random() * 1300) * S;
-        const radius = (120 + Math.random() * 100) * S, points = [];
+        const centerX = (250 + Math.random() * 1900) * S;
+        const centerY = (250 + Math.random() * 1300) * S;
+        const radius = (120 + Math.random() * 100) * S;
+        const points = [];
         for(let i = 0; i < 20; i++) {
-            const angle = (i / 20) * Math.PI * 2; const r = radius * (0.8 + Math.random() * 0.4);
+            const angle = (i / 20) * Math.PI * 2;
+            const r = radius * (0.8 + Math.random() * 0.4);
             points.push({ x: centerX + Math.cos(angle) * r, y: centerY + Math.sin(angle) * r });
         }
         game.terrain.lakes.push({ points, type: 'sulfur' });
@@ -216,7 +181,9 @@ function generateStrategicMap() {
 function createMountain(cx, cy, baseRadius, layers) {
     const mountain = { x: cx, y: cy, layers: [], totalLayers: layers };
     for(let l = 0; l < layers; l++) {
-        const radius = baseRadius * (1 - l / layers); const verts = []; const seed = Math.random() * 100;
+        const radius = baseRadius * (1 - l / layers);
+        const verts = [];
+        const seed = Math.random() * 100;
         for(let i = 0; i < 25; i++) {
             const angle = (i / 25) * Math.PI * 2;
             const noise = 0.4 * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
@@ -228,7 +195,8 @@ function createMountain(cx, cy, baseRadius, layers) {
 }
 
 function createContourCircle(cx, cy, radius, level, maxLevels, noiseAmount) {
-    const verts = []; const seed = Math.random() * 100;
+    const verts = [];
+    const seed = Math.random() * 100;
     for(let i = 0; i < 25; i++) {
         const angle = (i / 25) * Math.PI * 2;
         const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
@@ -237,7 +205,7 @@ function createContourCircle(cx, cy, radius, level, maxLevels, noiseAmount) {
     game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level }], totalLayers: maxLevels });
 }
 
-// --- LOGIKA WALKI I JEDNOSTEK ---
+// --- LOGIKA WALKI ---
 function spawnWaveLogic() {
     game.enemies = [];
     let pool = 3000 + (game.wave * 4000);
@@ -259,7 +227,6 @@ function createEnemy(hp, moveType) {
 
     const size = 10 + (hp * 0.03);
     const color = moveType === 'LAND' ? '#ff1111' : (moveType === 'SWIM' ? '#00ffff' : '#cc33ff');
-    
     const verts = []; const pts = 3 + Math.floor(Math.random() * 12);
     for(let i=0; i<pts; i++) verts.push({a: (i/pts)*6.28, d: size * (0.7 + Math.random()*0.6)});
 
@@ -267,9 +234,8 @@ function createEnemy(hp, moveType) {
 }
 
 function updateCombat() {
-    let pMod = 1.0;
-    if (game.terrain.lakes.some(l => isPointInPolygon(game.player.x, game.player.y, l.points))) pMod = 0.3;
-    
+    // Ruch gracza
+    let pMod = isPointInPolygon(game.player.x, game.player.y, game.terrain.lakes.flatMap(l => l.points)) ? 0.3 : 1.0;
     if (game.keys['KeyW']) game.player.y -= game.player.spd * pMod;
     if (game.keys['KeyS']) game.player.y += game.player.spd * pMod;
     if (game.keys['KeyA']) game.player.x -= game.player.spd * pMod;
@@ -277,18 +243,10 @@ function updateCombat() {
 
     const core = game.entities.find(e => e.type === 'core');
     game.enemies.forEach((e) => {
-        let vx = 0, vy = 0;
-        if (e.moveType === 'FLY') {
-            let a = Math.atan2(core.y - e.y, core.x - e.x); vx = Math.cos(a); vy = Math.sin(a);
-        } else {
-            let gx = Math.floor(e.x / CONFIG.PATH_GRID), gy = Math.floor(e.y / CONFIG.PATH_GRID);
-            if (game.flowField[gx] && game.flowField[gx][gy]) { vx = game.flowField[gx][gy].x; vy = game.flowField[gx][gy].y; }
-        }
-        
-        let moveMod = 1.0;
-        if (e.moveType === 'SWIM' && game.terrain.lakes.some(l => isPointInPolygon(e.x, e.y, l.points))) moveMod = 2.0;
-
-        e.x += vx * e.speed * moveMod; e.y += vy * e.speed * moveMod;
+        let a = Math.atan2(core.y - e.y, core.x - e.x);
+        let moveMod = (e.moveType === 'SWIM' && isPointInPolygon(e.x, e.y, game.terrain.lakes.flatMap(l => l.points))) ? 2.0 : 1.0;
+        e.x += Math.cos(a) * e.speed * moveMod;
+        e.y += Math.sin(a) * e.speed * moveMod;
 
         // Kamikaze
         game.entities.forEach(ent => {
@@ -299,9 +257,20 @@ function updateCombat() {
         });
     });
 
+    // Wieżyczki
+    game.entities.forEach(u => {
+        if (u.type === 'tower' && Date.now() - u.lastFire > u.rof) {
+            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (target) {
+                target.hp -= u.dmg; u.lastFire = Date.now();
+                ctx.strokeStyle = "#ff0"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+            }
+        }
+    });
+
     game.enemies = game.enemies.filter(e => e.hp > 0);
     game.entities = game.entities.filter(e => e.curHP > 0);
-    if (game.enemies.length === 0) { game.mode = 'BASE'; document.getElementById('actionBtn').disabled = false; }
+    if (game.enemies.length === 0 && game.mode === 'COMBAT') { game.mode = 'BASE'; document.getElementById('actionBtn').disabled = false; }
     if (game.hp <= 0) location.reload();
 }
 
@@ -322,15 +291,53 @@ function renderTacticalMap() {
     });
 }
 
+function playerShoot() {
+    if(Date.now() - game.player.lastShot > 200) {
+        let a = Math.atan2(game.mouse.y-game.player.y, game.mouse.x-game.player.x);
+        game.projectiles.push({x: game.player.x, y: game.player.y, vx: Math.cos(a)*15, vy: Math.sin(a)*15, dmg: 50, life: 100});
+        game.player.lastShot = Date.now();
+    }
+}
+
+function renderProjectiles() {
+    ctx.fillStyle = "#fff";
+    game.projectiles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life--;
+        ctx.fillRect(p.x, p.y, 4, 4);
+        let hit = game.enemies.find(e => Math.hypot(e.x-p.x, e.y-p.y) < e.size);
+        if(hit) { hit.hp -= p.dmg; game.projectiles.splice(i, 1); }
+        if(p.life <= 0) game.projectiles.splice(i, 1);
+    });
+}
+
+function gameLoop() {
+    ctx.clearRect(0,0,1200,900);
+    if(game.mode === 'BASE') renderBaseGrid();
+    else {
+        renderTacticalMap();
+        if(game.mode === 'COMBAT') {
+            updateCombat();
+            if(game.mouse.down) playerShoot();
+        }
+        game.entities.forEach(e => {
+            let v = [{a:0.78,d:e.size*1.4},{a:2.35,d:e.size*1.4},{a:3.92,d:e.size*1.4},{a:5.49,d:e.size*1.4}];
+            drawUnit(e.x, e.y, v, e.color, e.curHP/e.hp, e.size);
+        });
+        game.enemies.forEach(e => drawUnit(e.x, e.y, e.verts, e.color, e.hp/e.maxHp, e.size));
+        if(game.corePlaced) drawUnit(game.player.x, game.player.y, [{a:0,d:15},{a:2.5,d:12},{a:3.7,d:12}], '#fff', game.player.hp/game.player.maxHp, 10);
+        renderProjectiles();
+    }
+    updateStatsUI(); requestAnimationFrame(gameLoop);
+}
+
 function init() {
-    window.addEventListener('keydown', e => game.keys[e.code] = true);
-    window.addEventListener('keyup', e => game.keys[e.code] = false);
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
         game.mouse.x = (e.clientX - r.left) * (canvas.width / r.width);
         game.mouse.y = (e.clientY - r.top) * (canvas.height / r.height);
     });
-    canvas.addEventListener('mousedown', handleInput);
+    canvas.addEventListener('mousedown', () => game.mouse.down = true);
+    canvas.addEventListener('mouseup', () => { game.mouse.down = false; handleInput(); });
     updateBuildMenu(); gameLoop();
 }
 
@@ -340,25 +347,9 @@ function handleAction() {
         generateStrategicMap(); spawnWaveLogic(); updateBuildMenu();
     } else if (game.mode === 'PREP') {
         if (!game.corePlaced) return;
-        generateFlowField(); game.mode = 'COMBAT';
+        game.mode = 'COMBAT';
         document.getElementById('actionBtn').disabled = true;
     }
-}
-
-function gameLoop() {
-    ctx.clearRect(0,0,1200,900);
-    if(game.mode === 'BASE') renderBaseGrid();
-    else {
-        renderTacticalMap();
-        if(game.mode === 'COMBAT') updateCombat();
-        game.entities.forEach(e => {
-            let v = [{a:0.78,d:e.size*1.4},{a:2.35,d:e.size*1.4},{a:3.92,d:e.size*1.4},{a:5.49,d:e.size*1.4}];
-            drawUnit(e.x, e.y, v, e.color, e.curHP/e.hp, e.size);
-        });
-        game.enemies.forEach(e => drawUnit(e.x, e.y, e.verts, e.color, e.hp/e.maxHp, e.size));
-        if(game.corePlaced) drawUnit(game.player.x, game.player.y, [{a:0,d:15},{a:2.5,d:12},{a:3.7,d:12}], '#fff', game.player.hp/game.player.maxHp, 10);
-    }
-    updateStatsUI(); requestAnimationFrame(gameLoop);
 }
 
 function handleInput() {
@@ -402,6 +393,7 @@ function updateBuildMenu() {
 }
 
 function isPointInPolygon(x, y, points) {
+    if (!points || points.length < 3) return false;
     let inside = false;
     for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
         let xi = points[i].x, yi = points[i].y, xj = points[j].x, yj = points[j].y;
