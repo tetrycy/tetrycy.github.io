@@ -2,13 +2,13 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: SUPREME COMMANDER [ULTIMATE]</title>
+    <title>OUTPOST '95: OPERATIONAL</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff1111; --f-blue: #00ffff; --f-purple: #cc33ff; --f-hp: #ffff00; }
+        :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff2222; --f-blue: #00ffff; --f-purple: #ff00ff; --f-hp: #ffff00; }
         body { margin: 0; background: #000; color: var(--f-green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 18px; user-select: none; }
         #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: pixelated; max-width: 100%; max-height: 100%; object-fit: contain; }
+        canvas { border: 2px solid var(--f-green); background: var(--f-bg); cursor: crosshair; image-rendering: pixelated; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 20px rgba(32, 255, 32, 0.1); }
         #sidebar { width: 380px; background: var(--panel); border-left: 4px ridge #444; display: flex; flex-direction: column; padding: 20px; z-index: 10; }
         .screen { background: #000; border: 1px solid var(--f-green); padding: 15px; margin-bottom: 12px; box-shadow: inset 0 0 15px rgba(0,255,0,0.2); }
         .btn { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 12px; margin: 5px 0; cursor: pointer; font-family: VT323; font-size: 1.3em; text-transform: uppercase; width: 100%; }
@@ -30,7 +30,7 @@
         <div class="stat"><span>CREDITS:</span> <span id="ui-money">$800</span></div>
         <div class="stat"><span>HQ HULL:</span> <span id="ui-hp">100%</span></div>
     </div>
-    <div class="screen" id="terminal">> AWAITING MISSION...</div>
+    <div class="screen" id="terminal">> SYSTEM REBOOTED.<br>> TERRAIN GENERATOR: OK.<br>> AWAITING MISSION...</div>
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
     <button class="btn" id="actionBtn" style="background:#400; border-color:#f44; color:#f44; font-weight:bold;" onclick="handleAction()">EXECUTE COMBAT</button>
 </div>
@@ -46,9 +46,9 @@ const CONFIG = {
         BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 250, rof: 2800, hp: 1000, type: 'tower', color: '#f80', size: 18 }
     },
     BUILDINGS: {
-        SOLAR: { name: "SOLAR ARRAY", cost: 150, color: "#AA0" },
-        FARM: { name: "BIO-FARM", cost: 200, color: "#0A0" },
-        MUNITION: { name: "MUNITION FAB", cost: 450, color: "#A00" }
+        SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
+        FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
     }
 };
 
@@ -65,7 +65,7 @@ let game = {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// --- AI: FLOW FIELD (CZYTANIE TWOJEGO TERENU) ---
+// --- AI: FLOW FIELD (MAPA KOSZTÓW RUCHU) ---
 function generateFlowField() {
     const cols = Math.ceil(CONFIG.WIDTH / CONFIG.PATH_GRID);
     const rows = Math.ceil(CONFIG.HEIGHT / CONFIG.PATH_GRID);
@@ -83,8 +83,16 @@ function generateFlowField() {
             if(nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
                 let wx = nx * CONFIG.PATH_GRID, wy = ny * CONFIG.PATH_GRID;
                 let tileCost = 1;
+                // Jezioro = duży koszt, Góra = średni koszt
                 if (game.terrain.lakes.some(l => isPointInPolygon(wx, wy, l.points))) tileCost = 60;
-                if (game.terrain.hills.some(h => h.isRidge && h.points.some(p => Math.hypot(wx-p.x, wy-p.y) < 40))) tileCost = 20;
+                
+                // Sprawdź oba typy gór (Ridges i Mountains)
+                let onHill = false;
+                for(let h of game.terrain.hills) {
+                    if(h.isRidge) { if(h.points.some(p => Math.hypot(wx-p.x, wy-p.y) < 40)) onHill=true; }
+                    else { if(h.layers[0] && Math.hypot(wx-h.x, wy-h.y) < h.layers[0].radius) onHill=true; }
+                }
+                if(onHill) tileCost = 20;
 
                 let total = curr.c + tileCost;
                 if (total < costField[nx][ny]) { costField[nx][ny] = total; q.push({x: nx, y: ny, c: total}); }
@@ -101,7 +109,7 @@ function generateFlowField() {
     }));
 }
 
-// --- RENDERER: WYRAZISTE KOLORY I LIQUID HP ---
+// --- RENDERER: LIQUID HP ---
 function drawUnit(x, y, verts, color, hpRatio, size) {
     ctx.save(); ctx.translate(x, y);
     ctx.beginPath();
@@ -113,49 +121,82 @@ function drawUnit(x, y, verts, color, hpRatio, size) {
     ctx.restore();
 }
 
-// --- TWOJE ORYGINALNE FUNKCJE TERENU (LASY PRZYWRÓCONE) ---
+// --- GENERATOR TERENU (PRZYWRÓCONE WSZYSTKIE TYPY) ---
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     game.terrain = { hills: [], lakes: [], forests: [] };
     const S = CONFIG.SCALE;
+    const featureCount = 3 + Math.floor(Math.random() * 3);
     
-    // GÓRY (RIDGES)
-    for(let f=0; f<4; f++) {
-        const isHorizontal = Math.random() > 0.5;
-        const ridgePoints = [];
-        const startPos = (150 + Math.random() * 1200) * S;
-        for(let i=0; i<=15; i++) {
-            const t = i/15;
-            const off = Math.sin(t * Math.PI * 1.5) * 100 * S;
-            ridgePoints.push(isHorizontal ? {x: (100+t*2200)*S, y: startPos+off} : {x: startPos+off, y: (100+t*1700)*S});
-        }
-        for(let level=0; level<8; level++) {
-            const elevation = level/8;
-            for(let side of [-1, 1]) {
-                const points = ridgePoints.map(p => ({x: p.x + (side*(1-elevation)*40*S), y: p.y + (side*(1-elevation)*40*S)}));
-                game.terrain.hills.push({isRidge: true, points, level, totalLayers: 8});
+    // Generowanie Gór (Ridges i Mountains)
+    for(let f = 0; f < featureCount; f++) {
+        const type = Math.random();
+        if(type < 0.5) {
+            // RIDGES (PASMA)
+            const isHorizontal = Math.random() > 0.5;
+            const ridgePoints = [];
+            const startPos = (150 + Math.random() * 1200) * S;
+            for(let i=0; i<=15; i++) {
+                const t = i/15;
+                const off = Math.sin(t * Math.PI * 1.5) * 100 * S;
+                ridgePoints.push(isHorizontal ? {x: (100+t*2200)*S, y: startPos+off} : {x: startPos+off, y: (100+t*1700)*S});
             }
+            for(let level=0; level<8; level++) {
+                const elevation = level/8;
+                for(let side of [-1, 1]) {
+                    const points = ridgePoints.map(p => ({x: p.x + (side*(1-elevation)*40*S), y: p.y + (side*(1-elevation)*40*S)}));
+                    game.terrain.hills.push({isRidge: true, points, level, totalLayers: 8});
+                }
+            }
+        } else {
+            // MOUNTAINS (SZCZYTY I KRATERY)
+            const cx = Math.random() * 1200, cy = Math.random() * 900;
+            if (type < 0.65) createMountain(cx, cy, 150*S, 10);
+            else if (type < 0.8) for(let l=0;l<6;l++) createContourCircle(cx, cy, 180*S*(1-l*0.15), l, 6, 0.2);
+            else for(let i=0;i<3;i++) createMountain(cx+(Math.random()-0.5)*200, cy+(Math.random()-0.5)*200, 80*S, 5);
         }
     }
+    
     // JEZIORA SIARKI
     for(let l=0; l<3; l++) {
         const cx = Math.random()*1200, cy = Math.random()*900, points = [];
-        for(let i=0; i<12; i++) {
-            const a = (i/12)*Math.PI*2;
-            points.push({x: cx + Math.cos(a)*(60+Math.random()*40), y: cy + Math.sin(a)*(60+Math.random()*40)});
+        for(let i=0; i<20; i++) {
+            const a = (i/20)*Math.PI*2; points.push({x: cx + Math.cos(a)*(60+Math.random()*40), y: cy + Math.sin(a)*(60+Math.random()*40)});
         }
         game.terrain.lakes.push({points});
     }
-    // KOSMICZNE LASY (PRZYWRÓCONE)
+    
+    // LASY
     for(let f=0; f<4; f++) {
         const cx = Math.random()*1200, cy = Math.random()*900, trees = [];
-        for(let t=0; t<15; t++) {
-            trees.push({x: cx + (Math.random()-0.5)*150, y: cy + (Math.random()-0.5)*150, size: 8+Math.random()*10});
-        }
+        for(let t=0; t<15; t++) trees.push({x: cx + (Math.random()-0.5)*200, y: cy + (Math.random()-0.5)*200, size: 8+Math.random()*10});
         game.terrain.forests.push({trees});
     }
 }
 
+function createMountain(cx, cy, baseRadius, layers) {
+    for(let l = 0; l < layers; l++) {
+        const radius = baseRadius * (1 - l / layers); const verts = [];
+        for(let i = 0; i < 25; i++) {
+            const a = (i / 25) * Math.PI * 2;
+            const r = radius * (0.8 + Math.sin(a * 5) * 0.2);
+            verts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+        }
+        game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level: l }], totalLayers: layers });
+    }
+}
+
+function createContourCircle(cx, cy, radius, level, maxLevels, noise) {
+    const verts = [];
+    for(let i = 0; i < 25; i++) {
+        const a = (i / 25) * Math.PI * 2;
+        const r = radius * (1 + (Math.random()-0.5)*noise);
+        verts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+    }
+    game.terrain.hills.push({ x: cx, y: cy, layers: [{ verts, radius, level }], totalLayers: maxLevels });
+}
+
+// --- LOGIKA WALKI ---
 function spawnWaveLogic() {
     game.enemies = [];
     let pool = 3000 + (game.wave * 3000);
@@ -232,7 +273,10 @@ function renderTacticalMap() {
     }));
     game.terrain.hills.forEach(h => {
         let el = h.level/8; ctx.strokeStyle=`rgb(${20+el*180},${30+el*150},${10+el*100})`;
-        ctx.beginPath(); h.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
+        ctx.beginPath();
+        if(h.isRidge) h.points.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+        else h.layers[0].verts.forEach((v,i)=>i===0?ctx.moveTo(h.x+v.x,h.y+v.y):ctx.lineTo(h.x+v.x,h.y+v.y));
+        if(!h.isRidge) ctx.closePath(); ctx.stroke();
     });
 }
 
@@ -305,6 +349,9 @@ function isPointInPolygon(x,y,pts) {
 window.addEventListener('mousemove', e => { let r=canvas.getBoundingClientRect(); game.mouse.x=(e.clientX-r.left)*(1200/r.width); game.mouse.y=(e.clientY-r.top)*(900/r.height); });
 window.addEventListener('mousedown', () => game.mouse.down=true);
 window.addEventListener('mouseup', () => { game.mouse.down=false; handleInput(); });
+window.addEventListener('keydown', e => game.keys[e.code] = true);
+window.addEventListener('keyup', e => game.keys[e.code] = false);
+
 init(); updateBuildMenu(); gameLoop();
 </script>
 </body>
