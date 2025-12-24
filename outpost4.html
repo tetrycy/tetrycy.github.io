@@ -220,6 +220,9 @@ function handleAction() {
 
 // FIXED: Calculate terrain cost - lakes override mountains for SWIM units
 function getTerrainCost(x, y, moveType, entityRadius = 0) {
+    // Safety check - if terrain not initialized yet, return default cost
+    if (!game.terrain) return 1.0;
+    
     let cost = 1.0;
     
     // FIXED: Check lakes with entity radius - check if ANY part of entity touches water
@@ -261,33 +264,6 @@ function getTerrainCost(x, y, moveType, entityRadius = 0) {
     if (inLake && moveType === 'SWIM') {
         return cost;
     }
-
-// NEW FUNCTION: Check if moving in a direction will cause collision with lake
-function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
-    if (moveType !== 'LAND') return false; // Only LAND units care
-    
-    // Check multiple points along the movement trajectory (prevent tunneling)
-    const steps = 3; // Check 3 intermediate positions
-    for (let step = 1; step <= steps; step++) {
-        const t = step / steps;
-        const checkX = x + dirX * t;
-        const checkY = y + dirY * t;
-        
-        // Check multiple points around the entity's perimeter at this position
-        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) { // 12 points
-            const perimeterX = checkX + Math.cos(angle) * size;
-            const perimeterY = checkY + Math.sin(angle) * size;
-            
-            for (let lake of game.terrain.lakes) {
-                if (isPointInPolygon(perimeterX, perimeterY, lake.points)) {
-                    return true; // Collision detected!
-                }
-            }
-        }
-    }
-    
-    return false;
-}
     
     // Mountains (only if not SWIM in lake)
     if (!inLake || moveType !== 'SWIM') {
@@ -341,6 +317,34 @@ function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
     });
     
     return cost;
+}
+
+// NEW FUNCTION: Check if moving in a direction will cause collision with lake
+function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
+    if (moveType !== 'LAND') return false; // Only LAND units care
+    if (!game.terrain || !game.terrain.lakes || game.terrain.lakes.length === 0) return false; // No lakes to check
+    
+    // Check multiple points along the movement trajectory (prevent tunneling)
+    const steps = 3; // Check 3 intermediate positions
+    for (let step = 1; step <= steps; step++) {
+        const t = step / steps;
+        const checkX = x + dirX * t;
+        const checkY = y + dirY * t;
+        
+        // Check multiple points around the entity's perimeter at this position
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) { // 12 points
+            const perimeterX = checkX + Math.cos(angle) * size;
+            const perimeterY = checkY + Math.sin(angle) * size;
+            
+            for (let lake of game.terrain.lakes) {
+                if (isPointInPolygon(perimeterX, perimeterY, lake.points)) {
+                    return true; // Collision detected!
+                }
+            }
+        }
+    }
+    
+    return false;
 }
 
 function distanceToSegment(x, y, x1, y1, x2, y2) {
