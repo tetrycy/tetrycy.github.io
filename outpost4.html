@@ -37,6 +37,10 @@
         <div id="unit-info" style="font-size:0.75em; color:#888; border-top:1px solid #333; margin-top:5px; padding-top:5px;">
             UNIT-01: SPD <span id="p-spd">1.0</span> | ROF <span id="p-rof">1.0</span> | DMG <span id="p-dmg">1.0</span>
         </div>
+        <div id="weapon-info" style="font-size:0.75em; color:#4af; margin-top:5px;">
+            <div>LMB: <span id="weapon-primary">ASSAULT RIFLE</span></div>
+            <div>RMB: <span id="weapon-secondary">FRAG GRENADE</span></div>
+        </div>
         <div class="pathfind-badge">✓ PATHFINDING ACTIVE</div>
     </div>
 
@@ -53,25 +57,96 @@ const CONFIG = {
     GRID_SIZE: 60, // Flow field resolution
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
-        WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666' },
-        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 12, rof: 500, hp: 400, type: 'tower', color: '#ff0' },
-        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 200, rof: 2800, hp: 600, type: 'tower', color: '#f80' }
+        WALL: { name: "HEAVY WALL", cost: 0, hp: 1500, type: 'wall', color: '#666' },
+        SENTRY: { name: "AUTO-TURRET", cost: 0, range: 250, dmg: 12, rof: 250, hp: 400, type: 'tower', color: '#ff0' },
+        BATTERY: { name: "LR BATTERY", cost: 0, range: 420, dmg: 100, rof: 1000, hp: 600, type: 'tower', color: '#f80' },
+        MORTAR: { name: "GRENADE TURRET", cost: 0, range: 380, dmg: 80, blastRadius: 100, rof: 3500, hp: 500, type: 'tower', color: '#4f4' },
+        SHOTGUN_TURRET: { name: "SHOTGUN TURRET", cost: 0, range: 180, dmg: 15, pellets: 6, spread: 0.2, rof: 800, hp: 450, type: 'tower', color: '#f4f' },
+        ROCKET_TURRET: { name: "ROCKET TURRET", cost: 0, range: 500, dmg: 200, blastRadius: 90, velocity: 12, rof: 4000, hp: 550, type: 'tower', color: '#f66' }
     },
     BUILDINGS: {
         SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
         FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
         MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
+    },
+    WEAPONS_PRIMARY: {
+        RIFLE: { 
+            name: "ASSAULT RIFLE", cost: 0, rof: 140, dmg: 35, spread: 0, 
+            velocity: 22, desc: "Balanced firepower"
+        },
+        MINIGUN: { 
+            name: "MINIGUN", cost: 0, rof: 60, dmg: 18, spread: 0.15, 
+            velocity: 26, desc: "High ROF, low accuracy"
+        },
+        SHOTGUN: { 
+            name: "COMBAT SHOTGUN", cost: 0, rof: 600, dmg: 15, pellets: 8, spread: 0.25, 
+            knockback: 18, velocity: 20, desc: "Spread damage + knockback"
+        },
+        SNIPER: { 
+            name: "SNIPER RIFLE", cost: 0, rof: 1200, dmg: 150, spread: 0, 
+            velocity: 35, desc: "High damage, slow fire"
+        },
+        FLAMETHROWER: { 
+            name: "FLAMETHROWER", cost: 0, rof: 50, dmg: 3, range: 200, 
+            continuous: true, desc: "Continuous cone damage"
+        },
+        RAILGUN: { 
+            name: "RAILGUN", cost: 0, rof: 2000, dmg: 250, spread: 0, 
+            velocity: 50, piercing: true, desc: "Pierces all enemies"
+        }
+    },
+    WEAPONS_SECONDARY: {
+        GRENADE: {
+            name: "FRAG GRENADE", cost: 0, cooldown: 2500, damage: 100, 
+            blastRadius: 120, range: 450, desc: "Standard explosive"
+        },
+        CLUSTER: {
+            name: "CLUSTER BOMB", cost: 0, cooldown: 4000, damage: 60, 
+            blastRadius: 80, range: 420, clusters: 6, desc: "Multiple explosions"
+        },
+        INCENDIARY: {
+            name: "INCENDIARY", cost: 0, cooldown: 3500, damage: 25, 
+            blastRadius: 150, burnTime: 80, burnDmg: 2, range: 400, desc: "Damage over time"
+        },
+        ROCKET: {
+            name: "ROCKET LAUNCHER", cost: 0, cooldown: 3000, damage: 250, 
+            blastRadius: 100, range: 600, velocity: 15, desc: "High damage projectile"
+        },
+        POISON: {
+            name: "TOXIC GRENADE", cost: 0, cooldown: 3000, damage: 40, 
+            blastRadius: 140, range: 420, poisonDmg: 3, poisonTime: 100, desc: "Poison cloud DOT"
+        },
+        EMP: {
+            name: "EMP BLAST", cost: 0, cooldown: 4500, damage: 0, 
+            blastRadius: 200, range: 450, stunTime: 60, desc: "Stuns enemies"
+        },
+        BANANA: {
+            name: "BANANA GRENADE", cost: 0, cooldown: 5000, damage: 80,
+            blastRadius: 100, range: 450, bananas: 7, desc: "Splits into 7 bananas!"
+        }
     }
 };
 
 let game = {
     money: 800, hp: 6000, wave: 0, mode: 'BASE',
     buildings: [], entities: [], enemies: [], projectiles: [],
+    grenades: [], explosions: [], burnZones: [], rockets: [], towerGrenades: [],
+    poisonClouds: [], // NEW: Poison gas areas
     terrain: { hills: [], lakes: [], forests: [] },
     selected: null, corePlaced: false,
-    mouse: { x:0, y:0, down: false },
+    mouse: { x:0, y:0, down: false, rightDown: false },
     keys: {},
-    player: { x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { 
+        x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, 
+        lastShot: 0, lastGrenade: 0,
+        primaryWeapon: 'RIFLE',
+        secondaryWeapon: 'GRENADE',
+        ownedWeapons: { 
+            // TEST MODE: All weapons unlocked from start
+            RIFLE: true, MINIGUN: true, SHOTGUN: true, SNIPER: true, FLAMETHROWER: true, RAILGUN: true,
+            GRENADE: true, CLUSTER: true, INCENDIARY: true, ROCKET: true, POISON: true, EMP: true, BANANA: true
+        }
+    },
     spawnDir: 'NORTH',
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
     mapView: 'DETAILED',
@@ -91,8 +166,22 @@ function init() {
         game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
         game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
     });
-    canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
-    canvas.addEventListener('mouseup', () => game.mouse.down = false);
+    canvas.addEventListener('mousedown', (e) => { 
+        if (e.button === 0) { // Left click
+            game.mouse.down = true; 
+            handleInput(); 
+        } else if (e.button === 2) { // Right click
+            game.mouse.rightDown = true;
+            if (game.mode === 'COMBAT' && game.corePlaced) {
+                throwGrenade();
+            }
+        }
+    });
+    canvas.addEventListener('mouseup', (e) => {
+        if (e.button === 0) game.mouse.down = false;
+        if (e.button === 2) game.mouse.rightDown = false;
+    });
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault()); // Disable right-click menu
     updateBuildMenu();
     gameLoop();
 }
@@ -130,27 +219,75 @@ function handleAction() {
 }
 
 // FIXED: Calculate terrain cost - lakes override mountains for SWIM units
-function getTerrainCost(x, y, moveType) {
+function getTerrainCost(x, y, moveType, entityRadius = 0) {
     let cost = 1.0;
     
-    // FIXED: Check lakes FIRST for SWIM units (they ignore terrain in water!)
+    // FIXED: Check lakes with entity radius - check if ANY part of entity touches water
     let inLake = false;
+    let touchesLake = false;
+    
     game.terrain.lakes.forEach(lake => {
+        // Check center point
         if (isPointInPolygon(x, y, lake.points)) {
             inLake = true;
-            if (moveType === 'LAND') {
-                cost += 99.0; // EXTREMELY expensive - practically impassable wall!
-            } else if (moveType === 'SWIM') {
-                cost = 0.3; // Super cheap - ignore all other terrain!
-                // SWIM in lake ignores mountains/forests - return immediately
+        }
+        
+        // If entity has radius, check if it touches lake (check 8 points around entity)
+        if (entityRadius > 0 && !inLake) {
+            for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+                const checkX = x + Math.cos(angle) * entityRadius;
+                const checkY = y + Math.sin(angle) * entityRadius;
+                if (isPointInPolygon(checkX, checkY, lake.points)) {
+                    touchesLake = true;
+                    break;
+                }
             }
         }
     });
+    
+    // If center OR edge touches lake
+    if (inLake || touchesLake) {
+        if (moveType === 'LAND') {
+            // CRITICAL: LAND units avoid water completely
+            cost = 10000.0; // Extreme cost - pathfinder treats as impassable
+        } else if (moveType === 'SWIM') {
+            cost = 0.3; // Super cheap - ignore all other terrain!
+            // SWIM in lake ignores mountains/forests - return immediately
+            return cost;
+        }
+    }
     
     // If SWIM in lake, return immediately (ignore mountains/forests)
     if (inLake && moveType === 'SWIM') {
         return cost;
     }
+
+// NEW FUNCTION: Check if moving in a direction will cause collision with lake
+function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
+    if (moveType !== 'LAND') return false; // Only LAND units care
+    
+    // Check multiple points along the movement trajectory (prevent tunneling)
+    const steps = 3; // Check 3 intermediate positions
+    for (let step = 1; step <= steps; step++) {
+        const t = step / steps;
+        const checkX = x + dirX * t;
+        const checkY = y + dirY * t;
+        
+        // Check multiple points around the entity's perimeter at this position
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) { // 12 points
+            const perimeterX = checkX + Math.cos(angle) * size;
+            const perimeterY = checkY + Math.sin(angle) * size;
+            
+            for (let lake of game.terrain.lakes) {
+                if (isPointInPolygon(perimeterX, perimeterY, lake.points)) {
+                    return true; // Collision detected!
+                }
+            }
+        }
+    }
+    
+    return false;
+}
     
     // Mountains (only if not SWIM in lake)
     if (!inLake || moveType !== 'SWIM') {
@@ -382,6 +519,12 @@ function showIntelReport() {
     logTerminal(`HOSTILES: ${game.enemies.length} SIGNATURES`);
     logTerminal(`L:${game.intel.land} S:${game.intel.swim} A:${game.intel.air}`);
     logTerminal(`TOTAL MASS: ${Math.floor(game.intel.totalHP)} HP`);
+    if (game.wave === 1) {
+        logTerminal(`--- ARSENAL AVAILABLE ---`);
+        logTerminal(`TOWERS: SENTRY/BATTERY/MORTAR/SHOTGUN/ROCKET`);
+        logTerminal(`PRIMARY: RIFLE/MINIGUN/SHOTGUN/SNIPER/FLAMETHROWER/RAILGUN`);
+        logTerminal(`SECONDARY: GRENADE/CLUSTER/INCENDIARY/ROCKET/POISON/EMP/BANANA`);
+    }
 }
 
 function generateStrategicMap() {
@@ -603,7 +746,7 @@ function spawnWaveLogic() {
     }
 }
 
-// FIXED: Random size independent of HP, speed depends on size
+// FIXED: Size proportional to HP, speed inversely proportional to size
 function createEnemy(hp, moveType) {
     let x, y, off = 300;
     if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1500; }
@@ -611,10 +754,11 @@ function createEnemy(hp, moveType) {
     else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
     else { x = -off - Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
 
-    // FIXED: Random size independent of HP (range 8-28)
-    const size = 8 + Math.random() * 20;
+    // Size based on HP with some randomness
+    const baseSize = 8 + (hp / 80); // 50 HP ≈ 8.6, 1500 HP ≈ 26.75
+    const size = baseSize + (Math.random() - 0.5) * 4; // ±2 variance
     
-    // FIXED: Speed inversely proportional to size
+    // Speed inversely proportional to size
     let baseSpeed;
     if (moveType === 'FLY') {
         baseSpeed = 1.2 + (20 / size); // Flying units: 1.9 to 3.7
@@ -664,11 +808,17 @@ function gameLoop() {
     if (game.mode === 'BASE') renderBaseGrid();
     else {
         renderTacticalMap();
+        renderBurnZones();
+        renderPoisonClouds();
         if (game.mode === 'COMBAT') updateCombat();
         renderEntities();
         renderAnomalies();
         if (game.corePlaced) renderPlayerUnit();
         if (game.mode === 'PREP' && game.selected) renderGhost();
+        renderGrenades();
+        renderRockets();
+        renderTowerGrenades();
+        renderExplosions();
     }
     renderProjectiles();
     updateStatsUI();
@@ -676,11 +826,36 @@ function gameLoop() {
 }
 
 function updateCombat() {
+    // Player movement with terrain cost (player moves like LAND unit)
+    // Player has radius ~12px (diamond shape)
     let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
-    if (game.keys['KeyW']) game.player.y -= pSpd;
-    if (game.keys['KeyS']) game.player.y += pSpd;
-    if (game.keys['KeyA']) game.player.x -= pSpd;
-    if (game.keys['KeyD']) game.player.x += pSpd;
+    const terrainCost = getTerrainCost(game.player.x, game.player.y, 'LAND', 12);
+    const terrainMult = 1.0 / terrainCost;
+    pSpd *= terrainMult;
+    
+    // Calculate intended movement
+    let moveX = 0, moveY = 0;
+    if (game.keys['KeyW']) moveY -= pSpd;
+    if (game.keys['KeyS']) moveY += pSpd;
+    if (game.keys['KeyA']) moveX -= pSpd;
+    if (game.keys['KeyD']) moveX += pSpd;
+    
+    // CRITICAL FIX: Check if movement will cause lake collision
+    if ((moveX !== 0 || moveY !== 0) && willCollideWithLake(game.player.x, game.player.y, moveX, moveY, 12, 'LAND')) {
+        // Try moving in only one axis (slide along edge)
+        if (moveX !== 0 && !willCollideWithLake(game.player.x, game.player.y, moveX, 0, 12, 'LAND')) {
+            moveY = 0; // Only horizontal movement
+        } else if (moveY !== 0 && !willCollideWithLake(game.player.x, game.player.y, 0, moveY, 12, 'LAND')) {
+            moveX = 0; // Only vertical movement
+        } else {
+            // Both axes would collide, stop completely
+            moveX = 0;
+            moveY = 0;
+        }
+    }
+    
+    game.player.x += moveX;
+    game.player.y += moveY;
     game.player.x = Math.max(5, Math.min(CONFIG.WIDTH-5, game.player.x));
     game.player.y = Math.max(5, Math.min(CONFIG.HEIGHT-5, game.player.y));
 
@@ -692,6 +867,36 @@ function updateCombat() {
     const now = Date.now();
 
     game.enemies.forEach((e, i) => {
+        // Handle stun effect
+        if (e.stunned) {
+            e.stunTimer = e.stunTimer || 0;
+            e.stunTimer--;
+            
+            if (e.stunTimer <= 0) {
+                e.stunned = false;
+                e.speed = e.originalSpeed || e.speed;
+            }
+            
+            // Visual indicator for stunned enemies
+            ctx.strokeStyle = "rgba(0,200,255,0.7)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Small sparks
+            for (let s = 0; s < 3; s++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = e.size + Math.random() * 10;
+                ctx.fillStyle = "rgba(100,200,255,0.8)";
+                ctx.fillRect(
+                    e.x + Math.cos(angle) * dist - 1,
+                    e.y + Math.sin(angle) * dist - 1,
+                    2, 2
+                );
+            }
+        }
+        
         let flowField = null;
         if (e.moveType === 'LAND') flowField = game.flowField.land;
         else if (e.moveType === 'SWIM') flowField = game.flowField.swim;
@@ -721,8 +926,40 @@ function updateCombat() {
         
         let terrainMult = 1.0;
         
-        const cost = getTerrainCost(e.x, e.y, e.moveType);
+        // FIXED: Pass enemy size to check if edges touch water
+        const cost = getTerrainCost(e.x, e.y, e.moveType, e.size);
         terrainMult = 1.0 / cost;
+        
+        // CRITICAL FIX: Predict collision with lake and correct direction
+        if (e.moveType === 'LAND' && willCollideWithLake(e.x, e.y, dirX * e.speed * terrainMult, dirY * e.speed * terrainMult, e.size, e.moveType)) {
+            // Collision predicted! Try to slide along the edge (tangent direction)
+            // Try perpendicular directions
+            const perpDirs = [
+                {dx: -dirY, dy: dirX},  // 90° counterclockwise
+                {dx: dirY, dy: -dirX},  // 90° clockwise
+                {dx: dirX * 0.5 - dirY * 0.5, dy: dirY * 0.5 + dirX * 0.5},  // 45° ccw
+                {dx: dirX * 0.5 + dirY * 0.5, dy: dirY * 0.5 - dirX * 0.5}   // 45° cw
+            ];
+            
+            let foundSafe = false;
+            for (let altDir of perpDirs) {
+                const len = Math.sqrt(altDir.dx * altDir.dx + altDir.dy * altDir.dy);
+                const normDx = altDir.dx / len;
+                const normDy = altDir.dy / len;
+                
+                if (!willCollideWithLake(e.x, e.y, normDx * e.speed * terrainMult, normDy * e.speed * terrainMult, e.size, e.moveType)) {
+                    dirX = normDx;
+                    dirY = normDy;
+                    foundSafe = true;
+                    break;
+                }
+            }
+            
+            // If no safe direction, stop movement
+            if (!foundSafe) {
+                terrainMult = 0;
+            }
+        }
         
         e.x += dirX * e.speed * terrainMult;
         e.y += dirY * e.speed * terrainMult;
@@ -747,8 +984,89 @@ function updateCombat() {
         if (u.type === 'tower' && now - u.lastFire > u.rof) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
             if (target) {
-                target.hp -= u.dmg; target.hitF = 3; u.lastFire = now;
-                ctx.strokeStyle = "rgba(255,255,0,0.5)"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+                if (u.name === 'GRENADE TURRET') {
+                    // Launch grenade
+                    game.towerGrenades.push({
+                        x: u.x,
+                        y: u.y,
+                        targetX: target.x,
+                        targetY: target.y,
+                        startX: u.x,
+                        startY: u.y,
+                        progress: 0,
+                        speed: 0.04, // Slower than player grenades
+                        damage: u.dmg,
+                        blastRadius: u.blastRadius
+                    });
+                    u.lastFire = now;
+                } else if (u.name === 'SHOTGUN TURRET') {
+                    // Fire shotgun pellets
+                    const baseAngle = Math.atan2(target.y - u.y, target.x - u.x);
+                    for (let i = 0; i < u.pellets; i++) {
+                        const spread = (Math.random() - 0.5) * u.spread;
+                        const angle = baseAngle + spread;
+                        game.projectiles.push({
+                            x: u.x,
+                            y: u.y,
+                            vx: Math.cos(angle) * 20,
+                            vy: Math.sin(angle) * 20,
+                            dmg: u.dmg,
+                            isShotgun: true
+                        });
+                    }
+                    u.lastFire = now;
+                    
+                    // Visual effect
+                    ctx.strokeStyle = "rgba(255,100,255,0.6)";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(u.x, u.y);
+                    ctx.lineTo(target.x, target.y);
+                    ctx.stroke();
+                } else if (u.name === 'ROCKET TURRET') {
+                    // Launch rocket
+                    const angle = Math.atan2(target.y - u.y, target.x - u.x);
+                    game.rockets.push({
+                        x: u.x,
+                        y: u.y,
+                        vx: Math.cos(angle) * u.velocity,
+                        vy: Math.sin(angle) * u.velocity,
+                        damage: u.dmg,
+                        blastRadius: u.blastRadius,
+                        trail: [],
+                        fromTower: true
+                    });
+                    u.lastFire = now;
+                } else {
+                    target.hp -= u.dmg; 
+                    target.hitF = 3; 
+                    u.lastFire = now;
+                    
+                    // Visual effect based on tower type
+                    if (u.name === 'LR BATTERY') {
+                        // Stronger visual for BATTERY
+                        ctx.strokeStyle = "rgba(255,140,0,0.9)";
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(u.x, u.y);
+                        ctx.lineTo(target.x, target.y);
+                        ctx.stroke();
+                        
+                        // Impact flash
+                        ctx.fillStyle = "rgba(255,200,0,0.6)";
+                        ctx.beginPath();
+                        ctx.arc(target.x, target.y, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Normal AUTO-TURRET visual
+                        ctx.strokeStyle = "rgba(255,255,0,0.5)";
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(u.x, u.y);
+                        ctx.lineTo(target.x, target.y);
+                        ctx.stroke();
+                    }
+                }
             }
         }
     });
@@ -776,6 +1094,17 @@ function renderAnomalies() {
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
         ctx.closePath(); ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.stroke();
+        
+        // Visual indicator when slowed by terrain
+        const terrainCost = getTerrainCost(e.x, e.y, e.moveType, e.size);
+        if (terrainCost > 1.5) {
+            // Show red ring when significantly slowed
+            ctx.strokeStyle = "rgba(255, 50, 50, 0.7)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size + 4, 0, Math.PI * 2);
+            ctx.stroke();
+        }
 
         const barW = Math.max(25, e.size * 2);
         ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
@@ -975,22 +1304,252 @@ function renderTacticalMap() {
 }
 
 function renderPlayerUnit() {
+    // Check terrain cost and show visual indicator if slowed
+    const terrainCost = getTerrainCost(game.player.x, game.player.y, 'LAND', 12);
+    
+    // Red ring when significantly slowed
+    if (terrainCost > 1.5) {
+        ctx.strokeStyle = "rgba(255, 50, 50, 0.6)";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(game.player.x, game.player.y, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y-12); ctx.lineTo(game.player.x+12, game.player.y); ctx.lineTo(game.player.x, game.player.y+12); ctx.lineTo(game.player.x-12, game.player.y); ctx.closePath(); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 2, 0, Math.PI*2); ctx.fill();
     const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
     ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.player.x+Math.cos(a)*40, game.player.y+Math.sin(a)*40); ctx.stroke(); ctx.setLineDash([]);
+    
+    // Secondary weapon range indicator when right mouse is down
+    if (game.mouse.rightDown && game.mode === 'COMBAT') {
+        const weapon = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon];
+        const now = Date.now();
+        const ready = (now - game.player.lastGrenade) >= weapon.cooldown;
+        
+        // Draw max range circle
+        ctx.strokeStyle = ready ? "rgba(100, 255, 100, 0.3)" : "rgba(255, 100, 100, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 5]);
+        ctx.beginPath();
+        ctx.arc(game.player.x, game.player.y, weapon.range, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Draw target point
+        const dx = game.mouse.x - game.player.x;
+        const dy = game.mouse.y - game.player.y;
+        const dist = Math.hypot(dx, dy);
+        
+        let targetX = game.mouse.x;
+        let targetY = game.mouse.y;
+        if (dist > weapon.range) {
+            const angle = Math.atan2(dy, dx);
+            targetX = game.player.x + Math.cos(angle) * weapon.range;
+            targetY = game.player.y + Math.sin(angle) * weapon.range;
+        }
+        
+        // Draw blast radius at target
+        ctx.strokeStyle = ready ? "rgba(255, 150, 0, 0.5)" : "rgba(255, 100, 100, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(targetX, targetY, weapon.blastRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Crosshair at target
+        ctx.strokeStyle = ready ? "#4f4" : "#f44";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(targetX - 10, targetY);
+        ctx.lineTo(targetX + 10, targetY);
+        ctx.moveTo(targetX, targetY - 10);
+        ctx.lineTo(targetX, targetY + 10);
+        ctx.stroke();
+    }
 }
 
 function playerShoot() {
     const now = Date.now();
-    const rof = 140 / (1 + (game.player.rofLv-1)*0.3);
-    const dmg = 35 * (1 + (game.player.dmgLv-1)*0.5);
-    if (now - game.player.lastShot > rof) {
-        const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, dmg });
-        game.player.lastShot = now;
+    const weapon = CONFIG.WEAPONS_PRIMARY[game.player.primaryWeapon];
+    const rof = weapon.rof / (1 + (game.player.rofLv-1)*0.3);
+    
+    if (now - game.player.lastShot < rof) return;
+    
+    const baseAngle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    const dmg = weapon.dmg * (1 + (game.player.dmgLv-1)*0.5);
+    
+    if (game.player.primaryWeapon === 'SHOTGUN') {
+        // Shotgun - multiple pellets with spread
+        for (let i = 0; i < weapon.pellets; i++) {
+            const spread = (Math.random() - 0.5) * weapon.spread;
+            const angle = baseAngle + spread;
+            game.projectiles.push({ 
+                x: game.player.x, 
+                y: game.player.y, 
+                vx: Math.cos(angle) * weapon.velocity, 
+                vy: Math.sin(angle) * weapon.velocity, 
+                dmg,
+                knockback: weapon.knockback,
+                type: 'shotgun'
+            });
+        }
+    } else if (game.player.primaryWeapon === 'MINIGUN') {
+        // Minigun - single shot with spread
+        const spread = (Math.random() - 0.5) * weapon.spread;
+        const angle = baseAngle + spread;
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(angle) * weapon.velocity, 
+            vy: Math.sin(angle) * weapon.velocity, 
+            dmg,
+            type: 'minigun'
+        });
+    } else if (game.player.primaryWeapon === 'FLAMETHROWER') {
+        // Flamethrower - continuous cone damage (no projectile, instant hit)
+        game.enemies.forEach(e => {
+            const dist = Math.hypot(e.x - game.player.x, e.y - game.player.y);
+            if (dist < weapon.range) {
+                // Check if in cone
+                const angleToEnemy = Math.atan2(e.y - game.player.y, e.x - game.player.x);
+                const angleDiff = Math.abs(angleToEnemy - baseAngle);
+                const coneAngle = 0.4; // ~23 degrees each side
+                
+                if (angleDiff < coneAngle || angleDiff > Math.PI * 2 - coneAngle) {
+                    e.hp -= dmg;
+                    e.hitF = 2;
+                }
+            }
+        });
+        
+        // Visual effect
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        const gradient = ctx.createRadialGradient(
+            game.player.x, game.player.y, 0,
+            game.player.x + Math.cos(baseAngle) * weapon.range, 
+            game.player.y + Math.sin(baseAngle) * weapon.range, 
+            weapon.range * 0.5
+        );
+        gradient.addColorStop(0, 'rgba(255,150,0,0.8)');
+        gradient.addColorStop(0.5, 'rgba(255,50,0,0.4)');
+        gradient.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = gradient;
+        
+        ctx.beginPath();
+        ctx.moveTo(game.player.x, game.player.y);
+        ctx.arc(game.player.x, game.player.y, weapon.range, baseAngle - 0.4, baseAngle + 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        
+    } else if (game.player.primaryWeapon === 'RAILGUN') {
+        // Railgun - piercing shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'railgun',
+            piercing: true,
+            hitEnemies: [] // Track which enemies were hit
+        });
+        
+        // Visual effect
+        ctx.strokeStyle = "rgba(0,255,255,0.9)";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#0ff";
+        ctx.beginPath();
+        ctx.moveTo(game.player.x, game.player.y);
+        ctx.lineTo(
+            game.player.x + Math.cos(baseAngle) * 2000,
+            game.player.y + Math.sin(baseAngle) * 2000
+        );
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+    } else if (game.player.primaryWeapon === 'SNIPER') {
+        // Sniper - high damage precise shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'sniper'
+        });
+    } else {
+        // Rifle - precise single shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'rifle'
+        });
     }
+    
+    game.player.lastShot = now;
+}
+
+function throwGrenade() {
+    const now = Date.now();
+    const weapon = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon];
+    
+    if (now - game.player.lastGrenade < weapon.cooldown) return;
+    
+    const dx = game.mouse.x - game.player.x;
+    const dy = game.mouse.y - game.player.y;
+    const dist = Math.hypot(dx, dy);
+    
+    // Clamp to max range
+    let targetX = game.mouse.x;
+    let targetY = game.mouse.y;
+    if (dist > weapon.range) {
+        const angle = Math.atan2(dy, dx);
+        targetX = game.player.x + Math.cos(angle) * weapon.range;
+        targetY = game.player.y + Math.sin(angle) * weapon.range;
+    }
+    
+    if (game.player.secondaryWeapon === 'ROCKET') {
+        // Rocket - direct projectile
+        const angle = Math.atan2(targetY - game.player.y, targetX - game.player.x);
+        game.rockets.push({
+            x: game.player.x,
+            y: game.player.y,
+            vx: Math.cos(angle) * weapon.velocity,
+            vy: Math.sin(angle) * weapon.velocity,
+            damage: weapon.damage,
+            blastRadius: weapon.blastRadius,
+            trail: []
+        });
+    } else {
+        // Grenade-based weapons (arc trajectory)
+        const actualDist = Math.hypot(targetX - game.player.x, targetY - game.player.y);
+        const travelTime = actualDist / 8;
+        
+        game.grenades.push({
+            x: game.player.x,
+            y: game.player.y,
+            targetX,
+            targetY,
+            startX: game.player.x,
+            startY: game.player.y,
+            progress: 0,
+            speed: 1 / travelTime,
+            damage: weapon.damage,
+            blastRadius: weapon.blastRadius,
+            weaponType: game.player.secondaryWeapon
+        });
+    }
+    
+    game.player.lastGrenade = now;
 }
 
 function renderEntities() {
@@ -1024,12 +1583,561 @@ function handleInput() {
 }
 
 function renderProjectiles() {
-    ctx.fillStyle = "#fff";
     game.projectiles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 3, 3);
-        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) { hit.hp -= p.dmg; hit.hitF = 3; game.projectiles.splice(i, 1); }
+        p.x += p.vx; 
+        p.y += p.vy;
+        
+        // Visual based on type
+        if (p.type === 'minigun') {
+            ctx.fillStyle = "#ffa500";
+            ctx.fillRect(p.x - 1, p.y - 1, 3, 3);
+        } else if (p.type === 'shotgun') {
+            ctx.fillStyle = "#ff4444";
+            ctx.fillRect(p.x - 1, p.y - 1, 4, 4);
+        } else if (p.type === 'sniper') {
+            ctx.fillStyle = "#ff0";
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = "#ff0";
+            ctx.fillRect(p.x - 2, p.y - 2, 5, 5);
+            ctx.shadowBlur = 0;
+        } else if (p.type === 'railgun') {
+            ctx.fillStyle = "#0ff";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#0ff";
+            ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
+            ctx.shadowBlur = 0;
+        } else {
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(p.x, p.y, 3, 3);
+        }
+        
+        // Piercing logic for railgun
+        if (p.piercing) {
+            p.hitEnemies = p.hitEnemies || [];
+            game.enemies.forEach(e => {
+                if (!p.hitEnemies.includes(e) && Math.hypot(e.x - p.x, e.y - p.y) < e.size) {
+                    e.hp -= p.dmg;
+                    e.hitF = 5;
+                    p.hitEnemies.push(e);
+                    
+                    // Impact effect
+                    ctx.fillStyle = "rgba(0,255,255,0.7)";
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, e.size + 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        } else {
+            // Normal hit detection
+            const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+            if (hit) { 
+                hit.hp -= p.dmg; 
+                hit.hitF = 3;
+                
+                // Knockback for shotgun
+                if (p.knockback) {
+                    const angle = Math.atan2(p.vy, p.vx);
+                    hit.x += Math.cos(angle) * p.knockback;
+                    hit.y += Math.sin(angle) * p.knockback;
+                }
+                
+                game.projectiles.splice(i, 1); 
+            }
+        }
+        
         if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
+    });
+}
+
+function renderGrenades() {
+    game.grenades.forEach((g, i) => {
+        // Update grenade position
+        g.progress += g.speed;
+        
+        if (g.progress >= 1) {
+            // Grenade landed - create explosion based on type
+            if (g.weaponType === 'CLUSTER') {
+                // Main explosion
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 20,
+                    hasDealtDamage: false
+                });
+                
+                // Spawn cluster bomblets
+                for (let c = 0; c < CONFIG.WEAPONS_SECONDARY.CLUSTER.clusters; c++) {
+                    const angle = (c / CONFIG.WEAPONS_SECONDARY.CLUSTER.clusters) * Math.PI * 2;
+                    const dist = 60 + Math.random() * 40;
+                    game.explosions.push({
+                        x: g.targetX + Math.cos(angle) * dist,
+                        y: g.targetY + Math.sin(angle) * dist,
+                        radius: 0,
+                        maxRadius: g.blastRadius * 0.7,
+                        damage: g.damage * 0.8,
+                        frame: Math.floor(Math.random() * 5), // Stagger
+                        maxFrames: 18,
+                        hasDealtDamage: false
+                    });
+                }
+            } else if (g.weaponType === 'INCENDIARY') {
+                // Create burn zone
+                const weapon = CONFIG.WEAPONS_SECONDARY.INCENDIARY;
+                game.burnZones.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: g.blastRadius,
+                    damage: weapon.burnDmg,
+                    duration: weapon.burnTime,
+                    frame: 0
+                });
+                
+                // Initial blast
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 25,
+                    hasDealtDamage: false,
+                    color: 'fire'
+                });
+            } else if (g.weaponType === 'POISON') {
+                // Create poison cloud
+                const weapon = CONFIG.WEAPONS_SECONDARY.POISON;
+                game.poisonClouds.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: g.blastRadius,
+                    damage: weapon.poisonDmg,
+                    duration: weapon.poisonTime,
+                    frame: 0
+                });
+                
+                // Initial blast
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 25,
+                    hasDealtDamage: false,
+                    color: 'poison'
+                });
+            } else if (g.weaponType === 'EMP') {
+                // EMP blast - stuns enemies
+                game.enemies.forEach(enemy => {
+                    const dist = Math.hypot(enemy.x - g.targetX, enemy.y - g.targetY);
+                    if (dist < g.blastRadius) {
+                        enemy.stunned = true;
+                        enemy.stunTimer = CONFIG.WEAPONS_SECONDARY.EMP.stunTime;
+                        enemy.originalSpeed = enemy.speed;
+                        enemy.speed = 0;
+                    }
+                });
+                
+                // EMP visual effect
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: 0, // No damage
+                    frame: 0,
+                    maxFrames: 30,
+                    hasDealtDamage: true, // Skip damage dealing
+                    color: 'emp'
+                });
+            } else if (g.weaponType === 'BANANA') {
+                // BANANA GRENADE - Worms style!
+                const weapon = CONFIG.WEAPONS_SECONDARY.BANANA;
+                
+                // Main banana explosion
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 20,
+                    hasDealtDamage: false,
+                    color: 'banana'
+                });
+                
+                // Spawn 7 secondary bananas that arc outward
+                for (let b = 0; b < weapon.bananas; b++) {
+                    const angle = (b / weapon.bananas) * Math.PI * 2;
+                    const dist = 120 + Math.random() * 80; // 120-200px distance
+                    const targetX = g.targetX + Math.cos(angle) * dist;
+                    const targetY = g.targetY + Math.sin(angle) * dist;
+                    
+                    // Create secondary banana grenades
+                    game.grenades.push({
+                        x: g.targetX,
+                        y: g.targetY,
+                        targetX: targetX,
+                        targetY: targetY,
+                        startX: g.targetX,
+                        startY: g.targetY,
+                        progress: 0,
+                        speed: 0.03 + Math.random() * 0.02, // Varied speed
+                        damage: g.damage * 0.5, // Half damage for secondary
+                        blastRadius: g.blastRadius * 0.6, // Smaller radius
+                        weaponType: 'BANANA_SECONDARY' // Special flag to prevent infinite recursion
+                    });
+                }
+            } else if (g.weaponType === 'BANANA_SECONDARY') {
+                // Secondary banana - just explode, no more splitting
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 18,
+                    hasDealtDamage: false,
+                    color: 'banana'
+                });
+            } else {
+                // Standard grenade
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 20,
+                    hasDealtDamage: false
+                });
+            }
+            game.grenades.splice(i, 1);
+            return;
+        }
+        
+        // Arc trajectory
+        g.x = g.startX + (g.targetX - g.startX) * g.progress;
+        g.y = g.startY + (g.targetY - g.startY) * g.progress;
+        
+        // Arc height (parabola)
+        const arcHeight = 80;
+        const heightOffset = -arcHeight * Math.sin(g.progress * Math.PI);
+        
+        // Draw grenade with color based on type
+        let grenadeColor = "#4f4";
+        if (g.weaponType === 'CLUSTER') grenadeColor = "#88f";
+        else if (g.weaponType === 'INCENDIARY') grenadeColor = "#f84";
+        else if (g.weaponType === 'POISON') grenadeColor = "#8f4";
+        else if (g.weaponType === 'EMP') grenadeColor = "#4af";
+        else if (g.weaponType === 'BANANA' || g.weaponType === 'BANANA_SECONDARY') grenadeColor = "#ff0";
+        
+        ctx.fillStyle = grenadeColor;
+        ctx.strokeStyle = grenadeColor === "#4f4" ? "#2a2" : grenadeColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + heightOffset, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.beginPath();
+        ctx.ellipse(g.x, g.y, 4, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function renderRockets() {
+    game.rockets.forEach((r, i) => {
+        // Update position
+        r.x += r.vx;
+        r.y += r.vy;
+        
+        // Add to trail
+        r.trail.push({x: r.x, y: r.y});
+        if (r.trail.length > 15) r.trail.shift();
+        
+        // Draw trail
+        ctx.strokeStyle = "rgba(255, 150, 50, 0.6)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        r.trail.forEach((t, ti) => {
+            if (ti === 0) ctx.moveTo(t.x, t.y);
+            else ctx.lineTo(t.x, t.y);
+        });
+        ctx.stroke();
+        
+        // Draw rocket
+        const angle = Math.atan2(r.vy, r.vx);
+        ctx.save();
+        ctx.translate(r.x, r.y);
+        ctx.rotate(angle);
+        
+        // Rocket body
+        ctx.fillStyle = "#888";
+        ctx.fillRect(-8, -3, 16, 6);
+        
+        // Nose cone
+        ctx.fillStyle = "#f44";
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(14, -3);
+        ctx.lineTo(14, 3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Fins
+        ctx.fillStyle = "#666";
+        ctx.fillRect(-8, -5, 4, 2);
+        ctx.fillRect(-8, 3, 4, 2);
+        
+        ctx.restore();
+        
+        // Check collision
+        const hit = game.enemies.find(e => Math.hypot(e.x - r.x, e.y - r.y) < e.size + 10);
+        const outOfBounds = r.x < 0 || r.x > CONFIG.WIDTH || r.y < 0 || r.y > CONFIG.HEIGHT;
+        
+        if (hit || outOfBounds) {
+            // Explode
+            game.explosions.push({
+                x: r.x,
+                y: r.y,
+                radius: 0,
+                maxRadius: r.blastRadius,
+                damage: r.damage,
+                frame: 0,
+                maxFrames: 25,
+                hasDealtDamage: false,
+                color: 'rocket'
+            });
+            game.rockets.splice(i, 1);
+        }
+    });
+}
+
+function renderBurnZones() {
+    game.burnZones.forEach((z, i) => {
+        z.frame++;
+        
+        // Apply burn damage to enemies in zone
+        if (z.frame % 10 === 0) { // Every 10 frames
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - z.x, enemy.y - z.y);
+                if (dist < z.radius) {
+                    enemy.hp -= z.damage;
+                    enemy.hitF = 2;
+                }
+            });
+        }
+        
+        // Render fire particles
+        const alpha = 1 - (z.frame / z.duration);
+        const particleCount = 30;
+        
+        for (let p = 0; p < particleCount; p++) {
+            const angle = (p / particleCount) * Math.PI * 2 + z.frame * 0.05;
+            const dist = Math.random() * z.radius;
+            const x = z.x + Math.cos(angle) * dist;
+            const y = z.y + Math.sin(angle) * dist;
+            
+            const flicker = 0.5 + Math.random() * 0.5;
+            ctx.fillStyle = `rgba(255, ${100 + Math.random() * 100}, 0, ${alpha * flicker * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 3 + Math.random() * 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Border glow
+        ctx.strokeStyle = `rgba(255, 80, 0, ${alpha * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        if (z.frame >= z.duration) {
+            game.burnZones.splice(i, 1);
+        }
+    });
+}
+
+function renderPoisonClouds() {
+    game.poisonClouds.forEach((z, i) => {
+        z.frame++;
+        
+        // Apply poison damage to enemies in cloud
+        if (z.frame % 10 === 0) { // Every 10 frames
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - z.x, enemy.y - z.y);
+                if (dist < z.radius) {
+                    enemy.hp -= z.damage;
+                    enemy.hitF = 2;
+                }
+            });
+        }
+        
+        // Render poison cloud particles
+        const alpha = 1 - (z.frame / z.duration);
+        const particleCount = 40;
+        
+        for (let p = 0; p < particleCount; p++) {
+            const angle = (p / particleCount) * Math.PI * 2 + z.frame * 0.03;
+            const dist = Math.random() * z.radius;
+            const x = z.x + Math.cos(angle) * dist;
+            const y = z.y + Math.sin(angle) * dist - Math.sin(z.frame * 0.05 + p) * 5; // Floating effect
+            
+            const flicker = 0.5 + Math.random() * 0.5;
+            ctx.fillStyle = `rgba(${50 + Math.random() * 100}, 255, ${50 + Math.random() * 50}, ${alpha * flicker * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 4 + Math.random() * 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Border glow (green)
+        ctx.strokeStyle = `rgba(100, 255, 100, ${alpha * 0.4})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        if (z.frame >= z.duration) {
+            game.poisonClouds.splice(i, 1);
+        }
+    });
+}
+
+function renderTowerGrenades() {
+    game.towerGrenades.forEach((g, i) => {
+        g.progress += g.speed;
+        
+        if (g.progress >= 1) {
+            // Create explosion
+            game.explosions.push({
+                x: g.targetX,
+                y: g.targetY,
+                radius: 0,
+                maxRadius: g.blastRadius,
+                damage: g.damage,
+                frame: 0,
+                maxFrames: 20,
+                hasDealtDamage: false
+            });
+            game.towerGrenades.splice(i, 1);
+            return;
+        }
+        
+        // Arc trajectory
+        g.x = g.startX + (g.targetX - g.startX) * g.progress;
+        g.y = g.startY + (g.targetY - g.startY) * g.progress;
+        
+        const arcHeight = 60;
+        const heightOffset = -arcHeight * Math.sin(g.progress * Math.PI);
+        
+        // Draw grenade
+        ctx.fillStyle = "#9f9";
+        ctx.strokeStyle = "#5a5";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + heightOffset, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.beginPath();
+        ctx.ellipse(g.x, g.y, 3, 1.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function renderExplosions() {
+    game.explosions.forEach((e, i) => {
+        e.frame++;
+        
+        // Expanding blast radius
+        if (e.frame < e.maxFrames / 2) {
+            e.radius = (e.frame / (e.maxFrames / 2)) * e.maxRadius;
+        } else {
+            e.radius = e.maxRadius * (1 - (e.frame - e.maxFrames / 2) / (e.maxFrames / 2));
+        }
+        
+        // Deal damage once at peak
+        if (e.frame === Math.floor(e.maxFrames / 2) && !e.hasDealtDamage) {
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - e.x, enemy.y - e.y);
+                if (dist < e.maxRadius) {
+                    // Damage falloff based on distance
+                    const falloff = 1 - (dist / e.maxRadius);
+                    const damage = e.damage * falloff;
+                    enemy.hp -= damage;
+                    enemy.hitF = 5;
+                }
+            });
+            e.hasDealtDamage = true;
+        }
+        
+        // Colors based on weapon type
+        let outerColor, innerColor, coreColor;
+        if (e.color === 'fire') {
+            outerColor = [255, 80, 0];
+            innerColor = [255, 150, 0];
+            coreColor = [255, 220, 100];
+        } else if (e.color === 'rocket') {
+            outerColor = [255, 120, 0];
+            innerColor = [255, 200, 50];
+            coreColor = [255, 255, 220];
+        } else if (e.color === 'poison') {
+            outerColor = [100, 255, 100];
+            innerColor = [150, 255, 150];
+            coreColor = [200, 255, 200];
+        } else if (e.color === 'emp') {
+            outerColor = [0, 150, 255];
+            innerColor = [100, 200, 255];
+            coreColor = [200, 230, 255];
+        } else if (e.color === 'banana') {
+            outerColor = [255, 220, 0];
+            innerColor = [255, 240, 100];
+            coreColor = [255, 255, 200];
+        } else {
+            outerColor = [255, 100, 0];
+            innerColor = [255, 200, 0];
+            coreColor = [255, 255, 200];
+        }
+        
+        const alpha = 1 - (e.frame / e.maxFrames);
+        
+        // Outer ring
+        ctx.strokeStyle = `rgba(${outerColor[0]}, ${outerColor[1]}, ${outerColor[2]}, ${alpha * 0.8})`;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Inner flash
+        ctx.fillStyle = `rgba(${innerColor[0]}, ${innerColor[1]}, ${innerColor[2]}, ${alpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Core
+        ctx.fillStyle = `rgba(${coreColor[0]}, ${coreColor[1]}, ${coreColor[2]}, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Remove finished explosions
+        if (e.frame >= e.maxFrames) {
+            game.explosions.splice(i, 1);
+        }
     });
 }
 
@@ -1055,6 +2163,12 @@ function updateStatsUI() {
     document.getElementById('p-spd').innerText = (1 + (game.player.spdLv-1)*0.2).toFixed(1);
     document.getElementById('p-rof').innerText = (1 + (game.player.rofLv-1)*0.3).toFixed(1);
     document.getElementById('p-dmg').innerText = (1 + (game.player.dmgLv-1)*0.5).toFixed(1);
+    
+    // Update weapon names
+    const primName = document.getElementById('weapon-primary');
+    const secName = document.getElementById('weapon-secondary');
+    if (primName) primName.innerText = CONFIG.WEAPONS_PRIMARY[game.player.primaryWeapon].name;
+    if (secName) secName.innerText = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon].name;
 }
 
 function updateBuildMenu() {
@@ -1062,16 +2176,117 @@ function updateBuildMenu() {
     const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
     
     if(game.mode === 'BASE') {
+        // === WEAPON SELECTION ===
+        const weaponDiv = document.createElement('div');
+        weaponDiv.style.marginBottom = '20px';
+        weaponDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 1.4em; color: #4af;">⚔ ARMORY</h3>';
+        
+        // Primary weapons
+        weaponDiv.innerHTML += '<div style="font-size: 1.1em; margin: 10px 0 5px 0; color: #8f8;">PRIMARY (LMB):</div>';
+        for (let key in CONFIG.WEAPONS_PRIMARY) {
+            const wpn = CONFIG.WEAPONS_PRIMARY[key];
+            const owned = game.player.ownedWeapons[key];
+            const selected = game.player.primaryWeapon === key;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.fontSize = '0.9em';
+            btn.style.padding = '8px';
+            btn.style.background = selected ? '#0a4' : (owned ? '#222' : '#400');
+            btn.style.borderColor = selected ? '#0f0' : (owned ? '#4af' : '#844');
+            btn.style.color = selected ? '#fff' : (owned ? '#4af' : '#844');
+            btn.style.fontWeight = selected ? 'bold' : 'normal';
+            
+            const costStr = owned ? '' : ` [$${wpn.cost}]`;
+            btn.innerHTML = `${wpn.name}${costStr}<br><span style="font-size: 0.8em; color: #888;">${wpn.desc}</span>`;
+            
+            btn.onclick = () => {
+                if (!owned) {
+                    if (game.money >= wpn.cost) {
+                        game.money -= wpn.cost;
+                        game.player.ownedWeapons[key] = true;
+                        game.player.primaryWeapon = key;
+                        console.log(`[PRIMARY] Purchased & Selected: ${key}`);
+                        logTerminal(`EQUIPPED PRIMARY: ${wpn.name}`);
+                        updateBuildMenu();
+                        updateStatsUI();
+                    } else {
+                        logTerminal(`INSUFFICIENT FUNDS: ${wpn.name}`);
+                    }
+                } else {
+                    game.player.primaryWeapon = key;
+                    console.log(`[PRIMARY] Selected: ${key}`);
+                    logTerminal(`EQUIPPED PRIMARY: ${wpn.name}`);
+                    updateBuildMenu();
+                    updateStatsUI();
+                }
+            };
+            
+            weaponDiv.appendChild(btn);
+        }
+        
+        // Secondary weapons
+        weaponDiv.innerHTML += '<div style="font-size: 1.1em; margin: 15px 0 5px 0; color: #8f8;">SECONDARY (RMB):</div>';
+        for (let key in CONFIG.WEAPONS_SECONDARY) {
+            const wpn = CONFIG.WEAPONS_SECONDARY[key];
+            const owned = game.player.ownedWeapons[key];
+            const selected = game.player.secondaryWeapon === key;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.fontSize = '0.9em';
+            btn.style.padding = '8px';
+            btn.style.background = selected ? '#0a4' : (owned ? '#222' : '#400');
+            btn.style.borderColor = selected ? '#0f0' : (owned ? '#f84' : '#844');
+            btn.style.color = selected ? '#fff' : (owned ? '#f84' : '#844');
+            btn.style.fontWeight = selected ? 'bold' : 'normal';
+            
+            const costStr = owned ? '' : ` [$${wpn.cost}]`;
+            btn.innerHTML = `${wpn.name}${costStr}<br><span style="font-size: 0.8em; color: #888;">${wpn.desc}</span>`;
+            
+            btn.onclick = () => {
+                if (!owned) {
+                    if (game.money >= wpn.cost) {
+                        game.money -= wpn.cost;
+                        game.player.ownedWeapons[key] = true;
+                        game.player.secondaryWeapon = key;
+                        console.log(`[SECONDARY] Purchased & Selected: ${key}`);
+                        logTerminal(`EQUIPPED SECONDARY: ${wpn.name}`);
+                        updateBuildMenu();
+                        updateStatsUI();
+                    } else {
+                        logTerminal(`INSUFFICIENT FUNDS: ${wpn.name}`);
+                    }
+                } else {
+                    game.player.secondaryWeapon = key;
+                    console.log(`[SECONDARY] Selected: ${key}`);
+                    logTerminal(`EQUIPPED SECONDARY: ${wpn.name}`);
+                    updateBuildMenu();
+                    updateStatsUI();
+                }
+            };
+            
+            weaponDiv.appendChild(btn);
+        }
+        
+        menu.appendChild(weaponDiv);
+        
+        const hr1 = document.createElement('div');
+        hr1.style.borderTop = '2px solid #444';
+        hr1.style.margin = '15px 0';
+        menu.appendChild(hr1);
+        
+        // === MAP SELECTION ===
         const mapSelectorDiv = document.createElement('div');
         mapSelectorDiv.style.marginBottom = '15px';
-        mapSelectorDiv.innerHTML = '<h3 style="margin: 0 0 8px 0; font-size: 1.3em;">WYBIERZ MAPĘ:</h3>';
+        mapSelectorDiv.innerHTML = '<h3 style="margin: 0 0 8px 0; font-size: 1.3em;">🗺 BATTLEFIELD:</h3>';
         
         const mapSelect = document.createElement('select');
         mapSelect.id = 'map-selector';
         
         const randomOption = document.createElement('option');
         randomOption.value = '';
-        randomOption.innerText = '[ LOSOWA MAPA ]';
+        randomOption.innerText = '[ RANDOM MAP ]';
         mapSelect.appendChild(randomOption);
         
         const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
@@ -1085,25 +2300,46 @@ function updateBuildMenu() {
         
         mapSelect.onchange = (e) => {
             game.selectedCustomMap = e.target.value || null;
-            logTerminal(game.selectedCustomMap ? `Wybrano: ${game.selectedCustomMap}` : 'Losowa mapa');
+            logTerminal(game.selectedCustomMap ? `Selected: ${game.selectedCustomMap}` : 'Random map');
         };
         
         mapSelectorDiv.appendChild(mapSelect);
         menu.appendChild(mapSelectorDiv);
         
-        const hr = document.createElement('div');
-        hr.style.borderTop = '1px solid #444';
-        hr.style.margin = '15px 0';
-        menu.appendChild(hr);
-    }
-    
-    for(let k in list) {
-        const item = list[k];
-        const btn = document.createElement('button');
-        btn.className = 'btn' + (game.selected === k ? ' active' : '');
-        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
-        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
-        menu.appendChild(btn);
+        const hr2 = document.createElement('div');
+        hr2.style.borderTop = '1px solid #444';
+        hr2.style.margin = '15px 0';
+        menu.appendChild(hr2);
+        
+        // === UPGRADES ===
+        menu.innerHTML += '<div style="font-size: 1.1em; margin: 10px 0 5px 0; color: #8f8;">UNIT UPGRADES:</div>';
+        const row = document.createElement('div'); row.className = 'upgrade-row';
+        ['SPD', 'ROF', 'DMG'].forEach(s => {
+            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
+            const cost = game.player[s.toLowerCase()+'Lv']*300;
+            b.innerText = `${s} LV${game.player[s.toLowerCase()+'Lv']} [$${cost}]`;
+            b.onclick = () => { 
+                if(game.money >= cost) { 
+                    game.money -= cost; 
+                    game.player[s.toLowerCase()+'Lv']++; 
+                    updateStatsUI(); 
+                    updateBuildMenu();
+                    logTerminal(`UPGRADED: ${s}`);
+                }
+            };
+            row.appendChild(b);
+        });
+        menu.appendChild(row);
+    } else {
+        // PREP/COMBAT mode - show defense structures
+        for(let k in list) {
+            const item = list[k];
+            const btn = document.createElement('button');
+            btn.className = 'btn' + (game.selected === k ? ' active' : '');
+            btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+            btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+            menu.appendChild(btn);
+        }
     }
     
     if(game.mode === 'PREP' || game.mode === 'COMBAT') {
@@ -1128,23 +2364,9 @@ function updateBuildMenu() {
         debugBtn.onclick = () => {
             game.debugPathfinding = !game.debugPathfinding;
             updateBuildMenu();
-            logTerminal(game.debugPathfinding ? 'DEBUG: Pokazuję flow field' : 'DEBUG: Ukryto flow field');
+            logTerminal(game.debugPathfinding ? 'DEBUG: Flow field visible' : 'DEBUG: Flow field hidden');
         };
         menu.appendChild(debugBtn);
-    }
-    
-    if(game.mode === 'BASE') {
-        const row = document.createElement('div'); row.className = 'upgrade-row';
-        ['SPD', 'ROF', 'DMG'].forEach(s => {
-            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
-            b.innerText = `UP ${s}`;
-            b.onclick = () => { 
-                let cost = game.player[s.toLowerCase()+'Lv']*300;
-                if(game.money >= cost) { game.money -= cost; game.player[s.toLowerCase()+'Lv']++; updateStatsUI(); updateBuildMenu(); }
-            };
-            row.appendChild(b);
-        });
-        menu.appendChild(row);
     }
 }
 
@@ -1154,6 +2376,7 @@ function logTerminal(t) {
 }
 
 window.handleAction = handleAction;
+window.throwGrenade = throwGrenade;
 
 init();
 </script>
