@@ -2177,9 +2177,9 @@ function updateStatsUI() {
 
 function updateBuildMenu() {
     const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
-    const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
     
-    if(game.mode === 'BASE') {
+    // === WEAPON SELECTION === (Available in PREP and COMBAT modes)
+    if(game.mode === 'PREP' || game.mode === 'COMBAT') {
         // === WEAPON SELECTION ===
         const weaponDiv = document.createElement('div');
         weaponDiv.style.marginBottom = '20px';
@@ -2274,6 +2274,20 @@ function updateBuildMenu() {
         }
         
         menu.appendChild(weaponDiv);
+    }
+    
+    // === BASE MODE MENU ===
+    if(game.mode === 'BASE') {
+        // === BUILDINGS ===
+        menu.innerHTML += '<div style="font-size: 1.1em; margin: 10px 0 5px 0; color: #8f8;">STRUCTURES:</div>';
+        for(let k in CONFIG.BUILDINGS) {
+            const item = CONFIG.BUILDINGS[k];
+            const btn = document.createElement('button');
+            btn.className = 'btn' + (game.selected === k ? ' active' : '');
+            btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+            btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+            menu.appendChild(btn);
+        }
         
         const hr1 = document.createElement('div');
         hr1.style.borderTop = '2px solid #444';
@@ -2334,10 +2348,19 @@ function updateBuildMenu() {
             row.appendChild(b);
         });
         menu.appendChild(row);
-    } else {
+    }
+    
+    // === DEFENSE STRUCTURES === (Available in PREP and COMBAT modes)
+    if(game.mode === 'PREP' || game.mode === 'COMBAT') {
+        // Separator before defense structures
+        const hr = document.createElement('div');
+        hr.style.borderTop = '2px solid #444';
+        hr.style.margin = '15px 0';
+        menu.appendChild(hr);
+        
         // PREP/COMBAT mode - show defense structures
-        for(let k in list) {
-            const item = list[k];
+        for(let k in CONFIG.DEFENSE) {
+            const item = CONFIG.DEFENSE[k];
             const btn = document.createElement('button');
             btn.className = 'btn' + (game.selected === k ? ' active' : '');
             btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
