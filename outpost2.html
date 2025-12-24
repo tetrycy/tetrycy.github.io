@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>OUTPOST '95: SUPREME COMMANDER</title>
+    <title>OUTPOST '95: SUPREME COMMANDER [PATHFINDING]</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root { --f-green: #20ff20; --f-bg: #050805; --panel: #1a1c1a; --f-red: #ff3333; --f-blue: #33aaff; --f-purple: #cc33ff; --f-hp: #ffff00; }
@@ -18,6 +18,8 @@
         #terminal { font-size: 1em; height: 160px; overflow-y: auto; color: #8f8; border: 1px solid #1a331a; padding: 8px; background: #020502; line-height: 1.3; }
         .upgrade-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
         h2 { font-size: 1.8em; margin: 0 0 15px 0; }
+        select { background: #222; color: var(--f-green); border: 2px solid var(--f-green); padding: 8px; font-family: VT323; font-size: 1.1em; width: 100%; margin: 8px 0; }
+        .pathfind-badge { background: #083308; color: #8f8; padding: 4px 8px; border: 1px solid #0f0; font-size: 0.9em; display: inline-block; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -35,9 +37,14 @@
         <div id="unit-info" style="font-size:0.75em; color:#888; border-top:1px solid #333; margin-top:5px; padding-top:5px;">
             UNIT-01: SPD <span id="p-spd">1.0</span> | ROF <span id="p-rof">1.0</span> | DMG <span id="p-dmg">1.0</span>
         </div>
+        <div id="weapon-info" style="font-size:0.75em; color:#4af; margin-top:5px;">
+            <div>LMB: <span id="weapon-primary">ASSAULT RIFLE</span></div>
+            <div>RMB: <span id="weapon-secondary">FRAG GRENADE</span></div>
+        </div>
+        <div class="pathfind-badge">✓ PATHFINDING ACTIVE</div>
     </div>
 
-    <div class="screen" id="terminal">> AWAITING MISSION...</div>
+    <div class="screen" id="terminal">> PATHFINDING ENABLED<br>> Wrogowie omijają trudny teren</div>
 
     <div id="buildMenu" style="flex-grow: 1; overflow-y: auto;"></div>
 
@@ -47,32 +54,97 @@
 <script>
 const CONFIG = {
     WIDTH: 2400, HEIGHT: 1800,
-    SCALE: 0.5,
-    BASE_OFF: { x: 150, y: 150 }, CELL: 50, GRID: 12,
+    GRID_SIZE: 60, // Flow field resolution
     DEFENSE: {
         CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
         WALL: { name: "HEAVY WALL", cost: 20, hp: 1500, type: 'wall', color: '#666' },
-        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 12, rof: 500, hp: 400, type: 'tower', color: '#ff0' },
-        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 200, rof: 2800, hp: 600, type: 'tower', color: '#f80' }
+        SENTRY: { name: "AUTO-TURRET", cost: 180, range: 250, dmg: 12, rof: 250, hp: 400, type: 'tower', color: '#ff0' },
+        BATTERY: { name: "LR BATTERY", cost: 400, range: 420, dmg: 100, rof: 1000, hp: 600, type: 'tower', color: '#f80' },
+        MORTAR: { name: "GRENADE TURRET", cost: 320, range: 380, dmg: 80, blastRadius: 100, rof: 3500, hp: 500, type: 'tower', color: '#4f4' },
+        SHOTGUN_TURRET: { name: "SHOTGUN TURRET", cost: 280, range: 180, dmg: 15, pellets: 6, spread: 0.2, rof: 800, hp: 450, type: 'tower', color: '#f4f' },
+        ROCKET_TURRET: { name: "ROCKET TURRET", cost: 550, range: 500, dmg: 200, blastRadius: 90, velocity: 12, rof: 4000, hp: 550, type: 'tower', color: '#f66' }
     },
     BUILDINGS: {
         SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
         FARM: { name: "BIO-FARM", cost: 200, pwr: -10, color: "#0A0" },
         MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
+    },
+    WEAPONS_PRIMARY: {
+        RIFLE: { 
+            name: "ASSAULT RIFLE", cost: 0, rof: 140, dmg: 35, spread: 0, 
+            velocity: 22, desc: "Balanced firepower"
+        },
+        MINIGUN: { 
+            name: "MINIGUN", cost: 450, rof: 60, dmg: 18, spread: 0.15, 
+            velocity: 26, desc: "High ROF, low accuracy"
+        },
+        SHOTGUN: { 
+            name: "COMBAT SHOTGUN", cost: 380, rof: 600, dmg: 15, pellets: 8, spread: 0.25, 
+            knockback: 18, velocity: 20, desc: "Spread damage + knockback"
+        },
+        SNIPER: { 
+            name: "SNIPER RIFLE", cost: 500, rof: 1200, dmg: 150, spread: 0, 
+            velocity: 35, desc: "High damage, slow fire"
+        },
+        FLAMETHROWER: { 
+            name: "FLAMETHROWER", cost: 420, rof: 50, dmg: 3, range: 200, 
+            continuous: true, desc: "Continuous cone damage"
+        },
+        RAILGUN: { 
+            name: "RAILGUN", cost: 700, rof: 2000, dmg: 250, spread: 0, 
+            velocity: 50, piercing: true, desc: "Pierces all enemies"
+        }
+    },
+    WEAPONS_SECONDARY: {
+        GRENADE: {
+            name: "FRAG GRENADE", cost: 0, cooldown: 2500, damage: 100, 
+            blastRadius: 120, range: 450, desc: "Standard explosive"
+        },
+        CLUSTER: {
+            name: "CLUSTER BOMB", cost: 520, cooldown: 4000, damage: 60, 
+            blastRadius: 80, range: 420, clusters: 6, desc: "Multiple explosions"
+        },
+        INCENDIARY: {
+            name: "INCENDIARY", cost: 400, cooldown: 3500, damage: 25, 
+            blastRadius: 150, burnTime: 80, burnDmg: 2, range: 400, desc: "Damage over time"
+        },
+        ROCKET: {
+            name: "ROCKET LAUNCHER", cost: 650, cooldown: 3000, damage: 250, 
+            blastRadius: 100, range: 600, velocity: 15, desc: "High damage projectile"
+        },
+        POISON: {
+            name: "TOXIC GRENADE", cost: 450, cooldown: 3000, damage: 40, 
+            blastRadius: 140, range: 420, poisonDmg: 3, poisonTime: 100, desc: "Poison cloud DOT"
+        },
+        EMP: {
+            name: "EMP BLAST", cost: 550, cooldown: 4500, damage: 0, 
+            blastRadius: 200, range: 450, stunTime: 60, desc: "Stuns enemies"
+        }
     }
 };
 
 let game = {
     money: 800, hp: 6000, wave: 0, mode: 'BASE',
     buildings: [], entities: [], enemies: [], projectiles: [],
+    grenades: [], explosions: [], burnZones: [], rockets: [], towerGrenades: [],
+    poisonClouds: [], // NEW: Poison gas areas
     terrain: { hills: [], lakes: [], forests: [] },
     selected: null, corePlaced: false,
-    mouse: { x:0, y:0, down: false },
+    mouse: { x:0, y:0, down: false, rightDown: false },
     keys: {},
-    player: { x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, lastShot: 0 },
+    player: { 
+        x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, 
+        lastShot: 0, lastGrenade: 0,
+        primaryWeapon: 'RIFLE',
+        secondaryWeapon: 'GRENADE',
+        ownedWeapons: { RIFLE: true, GRENADE: true } // Free weapons
+    },
     spawnDir: 'NORTH',
     intel: { land: 0, swim: 0, air: 0, totalHP: 0 },
-    mapView: 'DETAILED'
+    mapView: 'DETAILED',
+    selectedCustomMap: null,
+    flowField: { land: null, swim: null, fly: null },
+    debugPathfinding: false
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -86,8 +158,22 @@ function init() {
         game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
         game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
     });
-    canvas.addEventListener('mousedown', () => { game.mouse.down = true; handleInput(); });
-    canvas.addEventListener('mouseup', () => game.mouse.down = false);
+    canvas.addEventListener('mousedown', (e) => { 
+        if (e.button === 0) { // Left click
+            game.mouse.down = true; 
+            handleInput(); 
+        } else if (e.button === 2) { // Right click
+            game.mouse.rightDown = true;
+            if (game.mode === 'COMBAT' && game.corePlaced) {
+                throwGrenade();
+            }
+        }
+    });
+    canvas.addEventListener('mouseup', (e) => {
+        if (e.button === 0) game.mouse.down = false;
+        if (e.button === 2) game.mouse.rightDown = false;
+    });
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault()); // Disable right-click menu
     updateBuildMenu();
     gameLoop();
 }
@@ -95,16 +181,279 @@ function init() {
 function handleAction() {
     if (game.mode === 'BASE') {
         game.mode = 'PREP'; game.wave++; game.entities = []; game.corePlaced = false;
-        generateStrategicMap(); 
+        
+        if (game.selectedCustomMap) {
+            loadCustomMap(game.selectedCustomMap);
+        } else {
+            generateStrategicMap();
+        }
+        
         spawnWaveLogic();
         updateBuildMenu();
         document.getElementById('actionBtn').innerText = "LOCK ALL UNITS";
         showIntelReport();
     } else if (game.mode === 'PREP') {
         if (!game.corePlaced) { logTerminal("CRITICAL: HQ MUST BE DEPLOYED."); return; }
+        
+        const core = game.entities.find(e => e.type === 'core');
+        if (core) {
+            logTerminal("CALCULATING PATHFINDING...");
+            game.flowField.land = calculateFlowField(core.x, core.y, 'LAND');
+            game.flowField.swim = calculateFlowField(core.x, core.y, 'SWIM');
+            game.flowField.fly = calculateFlowField(core.x, core.y, 'FLY');
+            logTerminal("✓ PATHFINDING READY");
+        }
+        
         game.mode = 'COMBAT';
         document.getElementById('actionBtn').innerText = "IN COMBAT";
         document.getElementById('actionBtn').disabled = true;
+    }
+}
+
+// FIXED: Calculate terrain cost - lakes override mountains for SWIM units
+function getTerrainCost(x, y, moveType) {
+    let cost = 1.0;
+    
+    // FIXED: Check lakes FIRST for SWIM units (they ignore terrain in water!)
+    let inLake = false;
+    game.terrain.lakes.forEach(lake => {
+        if (isPointInPolygon(x, y, lake.points)) {
+            inLake = true;
+            if (moveType === 'LAND') {
+                cost += 99.0; // EXTREMELY expensive - practically impassable wall!
+            } else if (moveType === 'SWIM') {
+                cost = 0.3; // Super cheap - ignore all other terrain!
+                // SWIM in lake ignores mountains/forests - return immediately
+            }
+        }
+    });
+    
+    // If SWIM in lake, return immediately (ignore mountains/forests)
+    if (inLake && moveType === 'SWIM') {
+        return cost;
+    }
+    
+    // Mountains (only if not SWIM in lake)
+    if (!inLake || moveType !== 'SWIM') {
+        game.terrain.hills.forEach(h => {
+            const height = h.height || 5;
+            const baseSlowdown = 0.15 + (height / 15) * 0.60;
+            
+            if (h.isRidge) {
+                let minDist = Infinity;
+                
+                for (let i = 0; i < h.points.length - 1; i++) {
+                    const p1 = h.points[i];
+                    const p2 = h.points[i + 1];
+                    const segmentDist = distanceToSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+                    minDist = Math.min(minDist, segmentDist);
+                }
+                
+                h.points.forEach(p => {
+                    const dist = Math.hypot(x - p.x, y - p.y);
+                    minDist = Math.min(minDist, dist);
+                });
+                
+                const elevationFactor = 1 - (h.level / h.totalLayers);
+                const width = 120 * elevationFactor;
+                
+                if (minDist < width) {
+                    const depth = 1 - (minDist / width);
+                    if (moveType !== 'FLY') {
+                        cost += depth * baseSlowdown * 8;
+                    }
+                }
+            } else {
+                const dist = Math.hypot(x - h.x, y - h.y);
+                const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
+                if (dist < outerRadius) {
+                    const depth = 1 - (dist / outerRadius);
+                    if (moveType !== 'FLY') {
+                        cost += depth * baseSlowdown * 8;
+                    }
+                }
+            }
+        });
+    }
+    
+    // Forests affect ONLY FLY units
+    game.terrain.forests.forEach(forest => {
+        const dist = Math.hypot(x - forest.centerX, y - forest.centerY);
+        if (dist < forest.radius && moveType === 'FLY') {
+            cost += 2.33; // FLY units slow to 0.3x speed (1/0.3 ≈ 3.33, so +2.33)
+        }
+    });
+    
+    return cost;
+}
+
+function distanceToSegment(x, y, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+    
+    if (lengthSquared === 0) {
+        return Math.hypot(x - x1, y - y1);
+    }
+    
+    let t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t));
+    
+    const projX = x1 + t * dx;
+    const projY = y1 + t * dy;
+    
+    return Math.hypot(x - projX, y - projY);
+}
+
+function calculateFlowField(targetX, targetY, moveType) {
+    const gridCols = Math.ceil(CONFIG.WIDTH / CONFIG.GRID_SIZE);
+    const gridRows = Math.ceil(CONFIG.HEIGHT / CONFIG.GRID_SIZE);
+    
+    const costs = Array(gridRows).fill(null).map(() => Array(gridCols).fill(Infinity));
+    const directions = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
+    
+    const targetCol = Math.floor(targetX / CONFIG.GRID_SIZE);
+    const targetRow = Math.floor(targetY / CONFIG.GRID_SIZE);
+    
+    if (targetCol < 0 || targetCol >= gridCols || targetRow < 0 || targetRow >= gridRows) {
+        return { costs, directions, gridCols, gridRows };
+    }
+    
+    costs[targetRow][targetCol] = 0;
+    
+    const queue = [{col: targetCol, row: targetRow, cost: 0}];
+    
+    while (queue.length > 0) {
+        queue.sort((a, b) => a.cost - b.cost);
+        const current = queue.shift();
+        
+        const {col, row, cost} = current;
+        
+        if (cost > costs[row][col]) continue;
+        
+        const neighbors = [
+            {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+            {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+        ];
+        
+        for (let {dc, dr} of neighbors) {
+            const newCol = col + dc;
+            const newRow = row + dr;
+            
+            if (newCol < 0 || newCol >= gridCols || newRow < 0 || newRow >= gridRows) continue;
+            
+            const cellX = newCol * CONFIG.GRID_SIZE + CONFIG.GRID_SIZE / 2;
+            const cellY = newRow * CONFIG.GRID_SIZE + CONFIG.GRID_SIZE / 2;
+            const terrainCost = getTerrainCost(cellX, cellY, moveType);
+            
+            const moveCost = (dc !== 0 && dr !== 0) ? 1.414 : 1.0;
+            const newCost = cost + moveCost * terrainCost;
+            
+            if (newCost < costs[newRow][newCol]) {
+                costs[newRow][newCol] = newCost;
+                queue.push({col: newCol, row: newRow, cost: newCost});
+            }
+        }
+    }
+    
+    for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+            if (costs[row][col] === Infinity) continue;
+            if (row === targetRow && col === targetCol) continue;
+            
+            let bestCost = costs[row][col];
+            let bestDx = 0, bestDy = 0;
+            
+            const neighbors = [
+                {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+                {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+            ];
+            
+            for (let {dc, dr} of neighbors) {
+                const nCol = col + dc;
+                const nRow = row + dr;
+                
+                if (nCol < 0 || nCol >= gridCols || nRow < 0 || nRow >= gridRows) continue;
+                
+                if (costs[nRow][nCol] < bestCost) {
+                    bestCost = costs[nRow][nCol];
+                    bestDx = dc;
+                    bestDy = dr;
+                }
+            }
+            
+            if (bestDx !== 0 || bestDy !== 0) {
+                directions[row][col] = {dx: bestDx, dy: bestDy};
+            }
+        }
+    }
+    
+    return { costs, directions, gridCols, gridRows };
+}
+
+function getFlowDirection(x, y, flowField) {
+    if (!flowField || !flowField.directions) return {dx: 0, dy: 0};
+    
+    const col = Math.floor(x / CONFIG.GRID_SIZE);
+    const row = Math.floor(y / CONFIG.GRID_SIZE);
+    
+    if (col < 0 || col >= flowField.gridCols || row < 0 || row >= flowField.gridRows) {
+        return {dx: 0, dy: 0};
+    }
+    
+    const dir = flowField.directions[row][col];
+    return dir || {dx: 0, dy: 0};
+}
+
+function loadCustomMap(mapName) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    if (maps[mapName]) {
+        game.terrain = JSON.parse(JSON.stringify(maps[mapName].terrain));
+        
+        const scaleX = CONFIG.WIDTH / 1200;
+        const scaleY = CONFIG.HEIGHT / 900;
+        
+        game.terrain.hills.forEach(h => {
+            if (h.isRidge) {
+                h.points.forEach(p => {
+                    p.x *= scaleX;
+                    p.y *= scaleY;
+                });
+            } else {
+                h.x *= scaleX;
+                h.y *= scaleY;
+                h.layers.forEach(layer => {
+                    layer.radius *= scaleX;
+                    layer.verts.forEach(v => {
+                        v.x *= scaleX;
+                        v.y *= scaleY;
+                    });
+                });
+            }
+        });
+        
+        game.terrain.lakes.forEach(lake => {
+            lake.points.forEach(p => {
+                p.x *= scaleX;
+                p.y *= scaleY;
+            });
+        });
+        
+        game.terrain.forests.forEach(forest => {
+            forest.centerX *= scaleX;
+            forest.centerY *= scaleY;
+            forest.radius *= scaleX;
+            forest.trees.forEach(tree => {
+                tree.x *= scaleX;
+                tree.y *= scaleY;
+                tree.size *= scaleX;
+            });
+        });
+        
+        logTerminal(`CUSTOM MAP LOADED: ${mapName}`);
+    } else {
+        logTerminal("MAP NOT FOUND - GENERATING RANDOM");
+        generateStrategicMap();
     }
 }
 
@@ -114,257 +463,208 @@ function showIntelReport() {
     logTerminal(`HOSTILES: ${game.enemies.length} SIGNATURES`);
     logTerminal(`L:${game.intel.land} S:${game.intel.swim} A:${game.intel.air}`);
     logTerminal(`TOTAL MASS: ${Math.floor(game.intel.totalHP)} HP`);
+    if (game.wave === 1) {
+        logTerminal(`--- ARSENAL AVAILABLE ---`);
+        logTerminal(`TOWERS: SENTRY/BATTERY/MORTAR/SHOTGUN/ROCKET`);
+        logTerminal(`PRIMARY: RIFLE/MINIGUN/SHOTGUN/SNIPER/FLAMETHROWER/RAILGUN`);
+        logTerminal(`SECONDARY: GRENADE/CLUSTER/INCENDIARY/ROCKET/POISON/EMP`);
+    }
 }
 
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
-    
     game.terrain = { hills: [], lakes: [], forests: [] };
-    const S = CONFIG.SCALE;
     
-    // === GÓRY: MIX PASM I SZCZYTÓW ===
-    const featureCount = 3 + Math.floor(Math.random() * 3);
+    const S = 1;
     
-    for(let f = 0; f < featureCount; f++) {
-        const type = Math.random();
+    function createMountain(centerX, centerY, baseRadius, totalLayers) {
+        const mountain = { x: centerX, y: centerY, layers: [], totalLayers, height: totalLayers };
         
-        if(type < 0.5) {
-            // PASMO GÓRSKIE - długi grzbiet
-            const isHorizontal = Math.random() > 0.5;
-            const ridgePoints = [];
-            const segments = 15;
+        for(let l = 0; l < totalLayers; l++) {
+            const radius = baseRadius * (1 - l / totalLayers);
+            const verts = [];
+            const segments = 25;
+            const seed = Math.random() * 100;
+            const noiseAmount = 0.4;
             
-            // Linia grzbietu
-            const startPos = (300 + Math.random() * (isHorizontal ? 3000 : 2200)) * S;
-            const amplitude = (60 + Math.random() * 100) * S;
-            const frequency = 0.4 + Math.random() * 0.4;
-            
-            for(let i = 0; i <= segments; i++) {
-                const t = i / segments;
-                const offset = Math.sin(t * Math.PI * frequency * 2) * amplitude + (Math.random() - 0.5) * 30 * S;
-                
-                if(isHorizontal) {
-                    ridgePoints.push({
-                        x: (200 + t * 4400) * S,
-                        y: startPos + offset
-                    });
-                } else {
-                    ridgePoints.push({
-                        x: startPos + offset,
-                        y: (200 + t * 3400) * S
-                    });
-                }
-            }
-            
-            // Wysokość pasma (szczyt w środku)
-            const peakPos = 0.3 + Math.random() * 0.4;
-            const maxHeight = (150 + Math.random() * 120) * S;
-            const layers = 8 + Math.floor(Math.random() * 6);
-            
-            // Generuj warstwy konturu
-            for(let level = 0; level < layers; level++) {
-                const elevation = level / layers;
-                const currentHeight = maxHeight * (1 - elevation);
-                
-                // Obie strony grzbietu
-                for(let side of [-1, 1]) {
-                    const points = [];
-                    
-                    for(let i = 0; i <= segments; i++) {
-                        const t = i / segments;
-                        
-                        // Wysokość w tym miejscu
-                        const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
-                        const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
-                        
-                        if(heightHere < currentHeight) continue;
-                        
-                        // Odległość od grzbietu
-                        const width = (heightHere - currentHeight) * 0.7;
-                        
-                        const ridge = ridgePoints[i];
-                        
-                        // Kierunek prostopadły
-                        let perpX, perpY;
-                        if(i < segments) {
-                            const next = ridgePoints[i + 1];
-                            const dx = next.x - ridge.x;
-                            const dy = next.y - ridge.y;
-                            const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len;
-                            perpY = dx / len;
-                        } else {
-                            const prev = ridgePoints[i - 1];
-                            const dx = ridge.x - prev.x;
-                            const dy = ridge.y - prev.y;
-                            const len = Math.sqrt(dx*dx + dy*dy);
-                            perpX = -dy / len;
-                            perpY = dx / len;
-                        }
-                        
-                        points.push({
-                            x: ridge.x + perpX * width * side,
-                            y: ridge.y + perpY * width * side
-                        });
-                    }
-                    
-                    if(points.length > 3) {
-                        game.terrain.hills.push({
-                            isRidge: true,
-                            points: points,
-                            level: level,
-                            totalLayers: layers
-                        });
-                    }
-                }
-            }
-            
-        } else {
-            // PUNKTOWY SZCZYT (jak dotychczas)
-            const centerX = (400 + Math.random() * 4000) * S;
-            const centerY = (400 + Math.random() * 2800) * S;
-            
-            if(type < 0.65) {
-                createMountain(centerX, centerY, (200 + Math.random() * 150) * S, 12 + Math.floor(Math.random() * 10));
-            } else if(type < 0.8) {
-                const plateauSize = (250 + Math.random() * 200) * S;
-                const layers = 6 + Math.floor(Math.random() * 4);
-                for(let l = 0; l < layers; l++) {
-                    const radius = plateauSize * (1 - l / layers * 0.3);
-                    createContourCircle(centerX, centerY, radius, l, layers, 0.2);
-                }
-            } else {
-                const count = 2 + Math.floor(Math.random() * 3);
-                for(let i = 0; i < count; i++) {
-                    const offsetX = (Math.random() - 0.5) * 300 * S;
-                    const offsetY = (Math.random() - 0.5) * 300 * S;
-                    createMountain(centerX + offsetX, centerY + offsetY, (80 + Math.random() * 80) * S, 4 + Math.floor(Math.random() * 5));
-                }
-            }
-        }
-    }
-    
-    // === JEZIORA SIARKI ===
-    const lakeCount = 2 + Math.floor(Math.random() * 3);
-    
-    for(let l = 0; l < lakeCount; l++) {
-        const centerX = (500 + Math.random() * 3800) * S;
-        const centerY = (500 + Math.random() * 2600) * S;
-        
-        const isLarge = Math.random() > 0.6;
-        
-        if(isLarge) {
-            const radius = (120 + Math.random() * 100) * S;
-            const points = [];
-            const segments = 20;
             for(let i = 0; i < segments; i++) {
                 const angle = (i / segments) * Math.PI * 2;
-                const r = radius * (0.8 + Math.random() * 0.4);
-                points.push({
-                    x: centerX + Math.cos(angle) * r,
-                    y: centerY + Math.sin(angle) * r
+                const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+                const r = radius + noise;
+                verts.push({
+                    x: Math.cos(angle) * r,
+                    y: Math.sin(angle) * r
                 });
             }
-            game.terrain.lakes.push({ points, type: 'sulfur' });
-        } else {
-            const count = 2 + Math.floor(Math.random() * 3);
-            for(let i = 0; i < count; i++) {
-                const offsetX = (Math.random() - 0.5) * 200 * S;
-                const offsetY = (Math.random() - 0.5) * 200 * S;
-                const radius = (40 + Math.random() * 40) * S;
+            
+            mountain.layers.push({ verts, radius, level: l });
+        }
+        
+        game.terrain.hills.push(mountain);
+    }
+    
+    function createRidge(startX, startY, ridgeLength, ridgeAngle, layers) {
+        const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
+        const endY = startY + Math.sin(ridgeAngle) * ridgeLength;
+        
+        const segments = 8 + Math.floor(Math.random() * 6);
+        const ridgePoints = [];
+        
+        for(let s = 0; s < segments; s++) {
+            const t = s / (segments - 1);
+            const curvature = (Math.random() - 0.5) * 300 * S;
+            const perpX = -Math.sin(ridgeAngle);
+            const perpY = Math.cos(ridgeAngle);
+            
+            ridgePoints.push({
+                x: startX * (1 - t) + endX * t + perpX * curvature,
+                y: startY * (1 - t) + endY * t + perpY * curvature
+            });
+        }
+        
+        const maxHeight = (100 + Math.random() * 100) * S;
+        
+        for(let level = 0; level < layers; level++) {
+            const elevation = level / layers;
+            const currentHeight = maxHeight * (1 - elevation);
+            
+            for(let side of [-1, 1]) {
                 const points = [];
-                const segments = 12;
-                for(let s = 0; s < segments; s++) {
-                    const angle = (s / segments) * Math.PI * 2;
-                    const r = radius * (0.8 + Math.random() * 0.3);
+                
+                for(let i = 0; i < ridgePoints.length; i++) {
+                    const ridge = ridgePoints[i];
+                    
+                    const t = i / (ridgePoints.length - 1);
+                    const peakPos = 0.5;
+                    const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                    const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                    
+                    if(heightHere < currentHeight) continue;
+                    
+                    const width = (heightHere - currentHeight) * 0.7;
+                    
+                    let perpX, perpY;
+                    if(i < ridgePoints.length - 1) {
+                        const next = ridgePoints[i + 1];
+                        const dx = next.x - ridge.x;
+                        const dy = next.y - ridge.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    } else {
+                        const prev = ridgePoints[i - 1];
+                        const dx = ridge.x - prev.x;
+                        const dy = ridge.y - prev.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    }
+                    
                     points.push({
-                        x: centerX + offsetX + Math.cos(angle) * r,
-                        y: centerY + offsetY + Math.sin(angle) * r
+                        x: ridge.x + perpX * width * side,
+                        y: ridge.y + perpY * width * side
                     });
                 }
-                game.terrain.lakes.push({ points, type: 'sulfur' });
+                
+                if(points.length > 3) {
+                    game.terrain.hills.push({
+                        isRidge: true,
+                        points: points,
+                        level: level,
+                        totalLayers: layers,
+                        height: layers
+                    });
+                }
             }
         }
     }
     
-    // === KOSMICZNE LASY ===
-    const forestCount = 3 + Math.floor(Math.random() * 4);
+    function createLake(centerX, centerY, radius) {
+        const points = [];
+        const segments = 20;
+        for(let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const r = radius * (0.8 + Math.random() * 0.4);
+            points.push({
+                x: centerX + Math.cos(angle) * r,
+                y: centerY + Math.sin(angle) * r
+            });
+        }
+        game.terrain.lakes.push({ points, type: 'sulfur' });
+    }
     
-    for(let f = 0; f < forestCount; f++) {
-        const centerX = (500 + Math.random() * 3800) * S;
-        const centerY = (500 + Math.random() * 2600) * S;
-        const size = (100 + Math.random() * 150) * S;
-        const density = 15 + Math.floor(Math.random() * 20);
-        
+    function createForest(centerX, centerY, radius, density) {
         const trees = [];
         for(let t = 0; t < density; t++) {
             const angle = Math.random() * Math.PI * 2;
-            const dist = Math.random() * size;
+            const dist = Math.random() * radius;
             trees.push({
                 x: centerX + Math.cos(angle) * dist,
                 y: centerY + Math.sin(angle) * dist,
-                size: (8 + Math.random() * 12) * S
+                size: 6 + Math.random() * 8
             });
         }
-        
-        game.terrain.forests.push({ trees, centerX, centerY, radius: size });
+        game.terrain.forests.push({ trees, centerX, centerY, radius });
     }
-}
-
-// Helper: tworzy górę
-function createMountain(cx, cy, baseRadius, layers) {
-    const mountain = {
-        x: cx,
-        y: cy,
-        layers: [],
-        totalLayers: layers
-    };
     
-    for(let l = 0; l < layers; l++) {
-        const radius = baseRadius * (1 - l / layers);
-        const verts = [];
-        const segments = 25;
-        const seed = Math.random() * 100;
-        const noiseAmount = 0.4;
+    // Góry: 0-15
+    const mountainCount = Math.floor(Math.random() * 16);
+    
+    for(let i = 0; i < mountainCount; i++) {
+        const mountainType = Math.random();
+        const x = 300 + Math.random() * 1800;
+        const y = 300 + Math.random() * 1200;
         
-        for(let i = 0; i < segments; i++) {
-            const angle = (i / segments) * Math.PI * 2;
-            const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
-            const r = radius + noise;
-            verts.push({
-                x: Math.cos(angle) * r,
-                y: Math.sin(angle) * r
-            });
+        if(mountainType < 0.3) {
+            createRidge(
+                x, y,
+                400 + Math.random() * 1000,
+                Math.random() * Math.PI * 2,
+                3 + Math.floor(Math.random() * 15)
+            );
+        } else if(mountainType < 0.7) {
+            createMountain(
+                x, y,
+                50 + Math.random() * 250,
+                3 + Math.floor(Math.random() * 18)
+            );
+        } else {
+            const clusterSize = 2 + Math.floor(Math.random() * 4);
+            for(let c = 0; c < clusterSize; c++) {
+                createMountain(
+                    x + (Math.random() - 0.5) * 300,
+                    y + (Math.random() - 0.5) * 300,
+                    40 + Math.random() * 100,
+                    3 + Math.floor(Math.random() * 8)
+                );
+            }
         }
-        
-        mountain.layers.push({ verts, radius, level: l });
     }
     
-    game.terrain.hills.push(mountain);
-}
-
-// Helper: tworzy pojedynczą warstwę konturu dla plateau
-function createContourCircle(cx, cy, radius, level, maxLevels, noiseAmount) {
-    const verts = [];
-    const segments = 25;
-    const seed = Math.random() * 100;
+    // Jeziora: 0-12
+    const lakeCount = Math.floor(Math.random() * 13);
     
-    for(let i = 0; i < segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
-        const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
-        const r = radius + noise;
-        verts.push({
-            x: Math.cos(angle) * r,
-            y: Math.sin(angle) * r
-        });
+    for(let i = 0; i < lakeCount; i++) {
+        createLake(
+            400 + Math.random() * 1600,
+            300 + Math.random() * 1200,
+            40 + Math.random() * 200
+        );
     }
     
-    game.terrain.hills.push({
-        x: cx,
-        y: cy,
-        layers: [{ verts, radius, level }],
-        totalLayers: maxLevels
-    });
+    // FIXED: Lasy: 3-18 (więcej lasów!)
+    const forestCount = 3 + Math.floor(Math.random() * 16);
+    
+    for(let i = 0; i < forestCount; i++) {
+        createForest(
+            400 + Math.random() * 1600,
+            300 + Math.random() * 1200,
+            80 + Math.random() * 140,  // promień: 80-220 (większe lasy)
+            15 + Math.floor(Math.random() * 40)  // gęstość: 15-54 drzew (więcej drzew)
+        );
+    }
+    
+    logTerminal(`Wygenerowano: G:${game.terrain.hills.length} J:${game.terrain.lakes.length} L:${game.terrain.forests.length}`);
 }
 
 function spawnWaveLogic() {
@@ -390,6 +690,7 @@ function spawnWaveLogic() {
     }
 }
 
+// FIXED: Size proportional to HP, speed inversely proportional to size
 function createEnemy(hp, moveType) {
     let x, y, off = 300;
     if(game.spawnDir === 'NORTH') { x = Math.random()*CONFIG.WIDTH; y = -off - Math.random()*1500; }
@@ -397,42 +698,43 @@ function createEnemy(hp, moveType) {
     else if(game.spawnDir === 'EAST') { x = CONFIG.WIDTH + off + Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
     else { x = -off - Math.random()*1500; y = Math.random()*CONFIG.HEIGHT; }
 
-    const size = 5 + (hp * 0.05);
+    // Size based on HP with some randomness
+    const baseSize = 8 + (hp / 80); // 50 HP ≈ 8.6, 1500 HP ≈ 26.75
+    const size = baseSize + (Math.random() - 0.5) * 4; // ±2 variance
+    
+    // Speed inversely proportional to size
+    let baseSpeed;
+    if (moveType === 'FLY') {
+        baseSpeed = 1.2 + (20 / size); // Flying units: 1.9 to 3.7
+    } else {
+        baseSpeed = 0.8 + (15 / size); // Ground/water: 1.3 to 2.6
+    }
+    
     const vertices = [];
     let color;
     
     if(moveType === 'LAND') {
-        // LAND: Kwadratowe/czołgowate - ostre kąty
-        color = 'var(--f-red)';
-        const sides = 4 + Math.floor(Math.random() * 3); // 4-6 boków
+        color = '#ff3333';
+        const sides = 4 + Math.floor(Math.random() * 3);
         for(let i = 0; i < sides; i++) {
             const a = (i / sides) * Math.PI * 2;
             const d = size * (1.2 + Math.random() * 0.3);
             vertices.push({x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d});
         }
     } else if(moveType === 'SWIM') {
-        // SWIM: Długie/węgorzowate - eliptyczne
-        color = 'var(--f-blue)';
+        color = '#33aaff';
         const pts = 20;
         for(let i = 0; i < pts; i++) {
             const a = (i / pts) * Math.PI * 2;
-            const stretchX = 1.8; // Wydłużone
-            const stretchY = 0.6;
             const d = size * (0.8 + Math.random() * 0.3);
-            vertices.push({
-                x: Math.cos(a) * d * stretchX,
-                y: Math.sin(a) * d * stretchY,
-                bD: d
-            });
+            vertices.push({x: Math.cos(a) * d * 1.8, y: Math.sin(a) * d * 0.6, bD: d});
         }
     } else {
-        // FLY: Trójkątne/lotnicze - ostre, mało punktów
-        color = 'var(--f-purple)';
-        const pts = 3 + Math.floor(Math.random() * 2); // 3-4 punkty
+        color = '#cc33ff';
+        const pts = 3 + Math.floor(Math.random() * 2);
         for(let i = 0; i < pts; i++) {
             const a = (i / pts) * Math.PI * 2;
             const d = size * (1.0 + Math.random() * 0.5);
-            // Skierowane do przodu (jeden punkt większy)
             const scale = i === 0 ? 1.5 : 1.0;
             vertices.push({x: Math.cos(a)*d*scale, y: Math.sin(a)*d, bD: d});
         }
@@ -440,7 +742,7 @@ function createEnemy(hp, moveType) {
     
     return { 
         x, y, hp, maxHp: hp, moveType, size, vertices, color, 
-        speed: moveType==='FLY'?(1.5+Math.random()):(0.6 + (5/size)), 
+        speed: baseSpeed, 
         hitF: 0 
     };
 }
@@ -450,11 +752,17 @@ function gameLoop() {
     if (game.mode === 'BASE') renderBaseGrid();
     else {
         renderTacticalMap();
+        renderBurnZones();
+        renderPoisonClouds();
         if (game.mode === 'COMBAT') updateCombat();
         renderEntities();
         renderAnomalies();
         if (game.corePlaced) renderPlayerUnit();
         if (game.mode === 'PREP' && game.selected) renderGhost();
+        renderGrenades();
+        renderRockets();
+        renderTowerGrenades();
+        renderExplosions();
     }
     renderProjectiles();
     updateStatsUI();
@@ -478,64 +786,76 @@ function updateCombat() {
     const now = Date.now();
 
     game.enemies.forEach((e, i) => {
-        const ang = Math.atan2(core.y - e.y, core.x - e.x);
-        let mX = Math.cos(ang) * e.speed, mY = Math.sin(ang) * e.speed;
-
-        // TERRAIN MODIFIERS
-        let terrainMult = 1.0;
-        
-        if(e.moveType !== 'FLY') {
-            // Góry spowalniają
-            game.terrain.hills.forEach(h => {
-                if(h.isRidge) {
-                    // PASMO - sprawdź odległość do linii
-                    let minDist = Infinity;
-                    h.points.forEach(p => {
-                        const dist = Math.hypot(e.x - p.x, e.y - p.y);
-                        minDist = Math.min(minDist, dist);
-                    });
-                    
-                    // Grubość pasma zależy od poziomu
-                    const width = 80 * (1 - h.level / h.totalLayers);
-                    if(minDist < width) {
-                        const depth = 1 - (minDist / width);
-                        terrainMult *= 1 - (depth * 0.4);
-                    }
-                } else {
-                    // PUNKTOWY SZCZYT - okrągły
-                    const dist = Math.hypot(e.x - h.x, e.y - h.y);
-                    const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
-                    if(dist < outerRadius) {
-                        const depth = 1 - (dist / outerRadius);
-                        terrainMult *= 1 - (depth * 0.4);
-                    }
-                }
-            });
+        // Handle stun effect
+        if (e.stunned) {
+            e.stunTimer = e.stunTimer || 0;
+            e.stunTimer--;
             
-            // Jeziora - LAND bardzo wolno, SWIM szybko
-            game.terrain.lakes.forEach(lake => {
-                const inLake = isPointInPolygon(e.x, e.y, lake.points);
-                if(inLake) {
-                    if(e.moveType === 'LAND') terrainMult *= 0.2;
-                    else if(e.moveType === 'SWIM') terrainMult *= 1.3;
-                }
-            });
+            if (e.stunTimer <= 0) {
+                e.stunned = false;
+                e.speed = e.originalSpeed || e.speed;
+            }
             
-            // Lasy spowalniają trochę
-            game.terrain.forests.forEach(forest => {
-                const dist = Math.hypot(e.x - forest.centerX, e.y - forest.centerY);
-                if(dist < forest.radius) {
-                    terrainMult *= 0.85;
-                }
-            });
+            // Visual indicator for stunned enemies
+            ctx.strokeStyle = "rgba(0,200,255,0.7)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Small sparks
+            for (let s = 0; s < 3; s++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = e.size + Math.random() * 10;
+                ctx.fillStyle = "rgba(100,200,255,0.8)";
+                ctx.fillRect(
+                    e.x + Math.cos(angle) * dist - 1,
+                    e.y + Math.sin(angle) * dist - 1,
+                    2, 2
+                );
+            }
         }
         
-        e.x += mX * terrainMult; e.y += mY * terrainMult;
+        let flowField = null;
+        if (e.moveType === 'LAND') flowField = game.flowField.land;
+        else if (e.moveType === 'SWIM') flowField = game.flowField.swim;
+        else if (e.moveType === 'FLY') flowField = game.flowField.fly;
+        
+        let dirX, dirY;
+        
+        if (flowField && flowField.directions) {
+            const dir = getFlowDirection(e.x, e.y, flowField);
+            dirX = dir.dx;
+            dirY = dir.dy;
+            
+            const len = Math.sqrt(dirX*dirX + dirY*dirY);
+            if (len > 0) {
+                dirX /= len;
+                dirY /= len;
+            } else {
+                const ang = Math.atan2(core.y - e.y, core.x - e.x);
+                dirX = Math.cos(ang);
+                dirY = Math.sin(ang);
+            }
+        } else {
+            const ang = Math.atan2(core.y - e.y, core.x - e.x);
+            dirX = Math.cos(ang);
+            dirY = Math.sin(ang);
+        }
+        
+        let terrainMult = 1.0;
+        
+        const cost = getTerrainCost(e.x, e.y, e.moveType);
+        terrainMult = 1.0 / cost;
+        
+        e.x += dirX * e.speed * terrainMult;
+        e.y += dirY * e.speed * terrainMult;
 
         e.vertices.forEach(v => {
             const jitter = (Math.random()-0.5)*2.5;
             const a = Math.atan2(v.y, v.x);
-            v.x = Math.cos(a) * (v.bD + jitter); v.y = Math.sin(a) * (v.bD + jitter);
+            v.x = Math.cos(a) * (v.bD + jitter);
+            v.y = Math.sin(a) * (v.bD + jitter);
         });
 
         game.entities.forEach(ent => {
@@ -551,8 +871,89 @@ function updateCombat() {
         if (u.type === 'tower' && now - u.lastFire > u.rof) {
             const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
             if (target) {
-                target.hp -= u.dmg; target.hitF = 3; u.lastFire = now;
-                ctx.strokeStyle = "rgba(255,255,0,0.5)"; ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
+                if (u.name === 'GRENADE TURRET') {
+                    // Launch grenade
+                    game.towerGrenades.push({
+                        x: u.x,
+                        y: u.y,
+                        targetX: target.x,
+                        targetY: target.y,
+                        startX: u.x,
+                        startY: u.y,
+                        progress: 0,
+                        speed: 0.04, // Slower than player grenades
+                        damage: u.dmg,
+                        blastRadius: u.blastRadius
+                    });
+                    u.lastFire = now;
+                } else if (u.name === 'SHOTGUN TURRET') {
+                    // Fire shotgun pellets
+                    const baseAngle = Math.atan2(target.y - u.y, target.x - u.x);
+                    for (let i = 0; i < u.pellets; i++) {
+                        const spread = (Math.random() - 0.5) * u.spread;
+                        const angle = baseAngle + spread;
+                        game.projectiles.push({
+                            x: u.x,
+                            y: u.y,
+                            vx: Math.cos(angle) * 20,
+                            vy: Math.sin(angle) * 20,
+                            dmg: u.dmg,
+                            isShotgun: true
+                        });
+                    }
+                    u.lastFire = now;
+                    
+                    // Visual effect
+                    ctx.strokeStyle = "rgba(255,100,255,0.6)";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(u.x, u.y);
+                    ctx.lineTo(target.x, target.y);
+                    ctx.stroke();
+                } else if (u.name === 'ROCKET TURRET') {
+                    // Launch rocket
+                    const angle = Math.atan2(target.y - u.y, target.x - u.x);
+                    game.rockets.push({
+                        x: u.x,
+                        y: u.y,
+                        vx: Math.cos(angle) * u.velocity,
+                        vy: Math.sin(angle) * u.velocity,
+                        damage: u.dmg,
+                        blastRadius: u.blastRadius,
+                        trail: [],
+                        fromTower: true
+                    });
+                    u.lastFire = now;
+                } else {
+                    target.hp -= u.dmg; 
+                    target.hitF = 3; 
+                    u.lastFire = now;
+                    
+                    // Visual effect based on tower type
+                    if (u.name === 'LR BATTERY') {
+                        // Stronger visual for BATTERY
+                        ctx.strokeStyle = "rgba(255,140,0,0.9)";
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(u.x, u.y);
+                        ctx.lineTo(target.x, target.y);
+                        ctx.stroke();
+                        
+                        // Impact flash
+                        ctx.fillStyle = "rgba(255,200,0,0.6)";
+                        ctx.beginPath();
+                        ctx.arc(target.x, target.y, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Normal AUTO-TURRET visual
+                        ctx.strokeStyle = "rgba(255,255,0,0.5)";
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(u.x, u.y);
+                        ctx.lineTo(target.x, target.y);
+                        ctx.stroke();
+                    }
+                }
             }
         }
     });
@@ -583,17 +984,16 @@ function renderAnomalies() {
 
         const barW = Math.max(25, e.size * 2);
         ctx.fillStyle = "#400"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW, 6);
-        ctx.fillStyle = "var(--f-hp)"; ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
+        ctx.fillStyle = "#ffff00";
+        ctx.fillRect(e.x - barW/2, e.y - e.size - 15, barW * (e.hp/e.maxHp), 6);
         if(e.hitF > 0) e.hitF--;
     });
 }
 
 function renderTacticalMap() {
-    // CZARNE TŁO
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
     
-    // Subtelny grid pomocniczy (tylko w DETAILED)
     if(game.mapView === 'DETAILED') {
         ctx.strokeStyle = "rgba(0, 100, 0, 0.05)";
         ctx.lineWidth = 1;
@@ -611,10 +1011,8 @@ function renderTacticalMap() {
         }
     }
     
-    // === JEZIORA SIARKI ===
     game.terrain.lakes.forEach(lake => {
-        // Wypełnienie jeziora
-        ctx.fillStyle = "rgba(150, 180, 50, 0.4)"; // Żółto-zielona siarczana woda
+        ctx.fillStyle = "rgba(150, 180, 50, 0.4)";
         ctx.beginPath();
         lake.points.forEach((p, i) => {
             if(i === 0) ctx.moveTo(p.x, p.y);
@@ -623,22 +1021,18 @@ function renderTacticalMap() {
         ctx.closePath();
         ctx.fill();
         
-        // Brzeg jeziora
-        ctx.strokeStyle = "#9a0"; // Żółto-zielony brzeg
+        ctx.strokeStyle = "#9a0";
         ctx.lineWidth = 2;
         ctx.stroke();
     });
     
-    // === KOSMICZNE LASY ===
     game.terrain.forests.forEach(forest => {
         forest.trees.forEach(tree => {
-            // Fioletowe "drzewa" jako małe kółka
             ctx.fillStyle = "rgba(150, 50, 200, 0.6)";
             ctx.beginPath();
             ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
             ctx.fill();
             
-            // Poświata
             ctx.strokeStyle = "rgba(180, 100, 255, 0.3)";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -647,29 +1041,29 @@ function renderTacticalMap() {
         });
     });
     
-    // === LINIE KONTUROWE - GÓRY ===
     game.terrain.hills.forEach(h => {
         if(h.isRidge) {
-            // PASMO GÓRSKIE - prosta linia
             if(game.mapView === 'SIMPLIFIED' && h.level % 3 !== 0) return;
             
             const elevation = h.level / h.totalLayers;
+            const height = h.height || 5;
+            const heightIntensity = (height - 1) / 14;
             
             let r, g, b;
             if(elevation < 0.3) {
-                r = 20 + elevation * 100;
-                g = 30 + elevation * 120;
-                b = 10 + elevation * 80;
+                r = 20 + elevation * 100 + heightIntensity * 60;
+                g = 30 + elevation * 120 + heightIntensity * 70;
+                b = 10 + elevation * 80 + heightIntensity * 50;
             } else if(elevation < 0.6) {
                 const t = (elevation - 0.3) / 0.3;
-                r = 50 + t * 80;
-                g = 60 + t * 80;
-                b = 30 + t * 60;
+                r = 50 + t * 80 + heightIntensity * 70;
+                g = 60 + t * 80 + heightIntensity * 80;
+                b = 30 + t * 60 + heightIntensity * 90;
             } else {
                 const t = (elevation - 0.6) / 0.4;
-                r = 130 + t * 90;
-                g = 140 + t * 90;
-                b = 90 + t * 120;
+                r = 130 + t * 90 + heightIntensity * 35;
+                g = 140 + t * 90 + heightIntensity * 40;
+                b = 90 + t * 120 + heightIntensity * 85;
             }
             
             const isEveryFifth = h.level % 5 === 0;
@@ -686,27 +1080,28 @@ function renderTacticalMap() {
             ctx.stroke();
             
         } else {
-            // PUNKTOWY SZCZYT - okrągły
             h.layers.forEach(layer => {
                 if(game.mapView === 'SIMPLIFIED' && layer.level % 3 !== 0) return;
                 
                 const elevation = layer.level / h.totalLayers;
+                const height = h.height || 5;
+                const heightIntensity = (height - 1) / 14;
                 
                 let r, g, b;
                 if(elevation < 0.3) {
-                    r = 20 + elevation * 100;
-                    g = 30 + elevation * 120;
-                    b = 10 + elevation * 80;
+                    r = 20 + elevation * 100 + heightIntensity * 60;
+                    g = 30 + elevation * 120 + heightIntensity * 70;
+                    b = 10 + elevation * 80 + heightIntensity * 50;
                 } else if(elevation < 0.6) {
                     const t = (elevation - 0.3) / 0.3;
-                    r = 50 + t * 80;
-                    g = 60 + t * 80;
-                    b = 30 + t * 60;
+                    r = 50 + t * 80 + heightIntensity * 70;
+                    g = 60 + t * 80 + heightIntensity * 80;
+                    b = 30 + t * 60 + heightIntensity * 90;
                 } else {
                     const t = (elevation - 0.6) / 0.4;
-                    r = 130 + t * 90;
-                    g = 140 + t * 90;
-                    b = 90 + t * 120;
+                    r = 130 + t * 90 + heightIntensity * 35;
+                    g = 140 + t * 90 + heightIntensity * 40;
+                    b = 90 + t * 120 + heightIntensity * 85;
                 }
                 
                 const isEveryFifth = layer.level % 5 === 0;
@@ -726,7 +1121,6 @@ function renderTacticalMap() {
         }
     });
     
-    // SPAWN ZONE
     ctx.strokeStyle = "#f44";
     ctx.lineWidth = 2;
     ctx.setLineDash([15, 8]);
@@ -745,68 +1139,44 @@ function renderTacticalMap() {
     ctx.strokeRect(spawnZone.x, spawnZone.y, spawnZone.w, spawnZone.h);
     ctx.setLineDash([]);
     
-    // Strzałki kierunku
-    ctx.fillStyle = "#f44";
-    ctx.strokeStyle = "#f44";
-    ctx.lineWidth = 1.5;
-    
-    const arrowCount = game.spawnDir === 'NORTH' || game.spawnDir === 'SOUTH' ? 14 : 11;
-    for(let i = 0; i < arrowCount; i++) {
-        let ax, ay;
-        if(game.spawnDir === 'NORTH') {
-            ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = 90;
-            drawArrow(ax, ay, Math.PI/2, 15);
-        } else if(game.spawnDir === 'SOUTH') {
-            ax = (i + 1) * (CONFIG.WIDTH / (arrowCount + 1));
-            ay = CONFIG.HEIGHT - 90;
-            drawArrow(ax, ay, -Math.PI/2, 15);
-        } else if(game.spawnDir === 'EAST') {
-            ax = CONFIG.WIDTH - 90;
-            ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
-            drawArrow(ax, ay, Math.PI, 15);
-        } else {
-            ax = 90;
-            ay = (i + 1) * (CONFIG.HEIGHT / (arrowCount + 1));
-            drawArrow(ax, ay, 0, 15);
+    if (game.debugPathfinding && game.flowField.land) {
+        const ff = game.flowField.land;
+        const spacing = CONFIG.GRID_SIZE;
+        
+        ctx.strokeStyle = 'rgba(255, 0, 255, 0.6)';
+        ctx.fillStyle = 'rgba(255, 0, 255, 0.6)';
+        ctx.lineWidth = 2;
+        
+        for (let row = 0; row < ff.gridRows; row += 2) {
+            for (let col = 0; col < ff.gridCols; col += 2) {
+                const x = col * spacing + spacing / 2;
+                const y = row * spacing + spacing / 2;
+                
+                const dir = ff.directions[row][col];
+                if (!dir) continue;
+                
+                const cost = ff.costs[row][col];
+                if (cost === Infinity) continue;
+                
+                const arrowLen = 20;
+                const dx = dir.dx * arrowLen;
+                const dy = dir.dy * arrowLen;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + dx, y + dy);
+                ctx.stroke();
+                
+                const angle = Math.atan2(dy, dx);
+                ctx.beginPath();
+                ctx.moveTo(x + dx, y + dy);
+                ctx.lineTo(x + dx - 8 * Math.cos(angle - 0.3), y + dy - 8 * Math.sin(angle - 0.3));
+                ctx.lineTo(x + dx - 8 * Math.cos(angle + 0.3), y + dy - 8 * Math.sin(angle + 0.3));
+                ctx.closePath();
+                ctx.fill();
+            }
         }
     }
-    
-    // Label spawnu
-    ctx.fillStyle = "#f44";
-    ctx.font = "24px VT323";
-    ctx.textAlign = "center";
-    const labelText = `${game.spawnDir} FRONT`;
-    if(game.spawnDir === 'NORTH') ctx.fillText(labelText, CONFIG.WIDTH/2, 40);
-    else if(game.spawnDir === 'SOUTH') ctx.fillText(labelText, CONFIG.WIDTH/2, CONFIG.HEIGHT - 25);
-    else if(game.spawnDir === 'EAST') {
-        ctx.save();
-        ctx.translate(CONFIG.WIDTH - 35, CONFIG.HEIGHT/2);
-        ctx.rotate(-Math.PI/2);
-        ctx.fillText(labelText, 0, 0);
-        ctx.restore();
-    } else {
-        ctx.save();
-        ctx.translate(35, CONFIG.HEIGHT/2);
-        ctx.rotate(Math.PI/2);
-        ctx.fillText(labelText, 0, 0);
-        ctx.restore();
-    }
-}
-
-function drawArrow(x, y, angle, size) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angle);
-    ctx.beginPath();
-    ctx.moveTo(0, -size);
-    ctx.lineTo(-size/2, size/2);
-    ctx.lineTo(0, 0);
-    ctx.lineTo(size/2, size/2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
 }
 
 function renderPlayerUnit() {
@@ -815,17 +1185,233 @@ function renderPlayerUnit() {
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 2, 0, Math.PI*2); ctx.fill();
     const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
     ctx.setLineDash([2, 4]); ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.player.x+Math.cos(a)*40, game.player.y+Math.sin(a)*40); ctx.stroke(); ctx.setLineDash([]);
+    
+    // Secondary weapon range indicator when right mouse is down
+    if (game.mouse.rightDown && game.mode === 'COMBAT') {
+        const weapon = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon];
+        const now = Date.now();
+        const ready = (now - game.player.lastGrenade) >= weapon.cooldown;
+        
+        // Draw max range circle
+        ctx.strokeStyle = ready ? "rgba(100, 255, 100, 0.3)" : "rgba(255, 100, 100, 0.3)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 5]);
+        ctx.beginPath();
+        ctx.arc(game.player.x, game.player.y, weapon.range, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Draw target point
+        const dx = game.mouse.x - game.player.x;
+        const dy = game.mouse.y - game.player.y;
+        const dist = Math.hypot(dx, dy);
+        
+        let targetX = game.mouse.x;
+        let targetY = game.mouse.y;
+        if (dist > weapon.range) {
+            const angle = Math.atan2(dy, dx);
+            targetX = game.player.x + Math.cos(angle) * weapon.range;
+            targetY = game.player.y + Math.sin(angle) * weapon.range;
+        }
+        
+        // Draw blast radius at target
+        ctx.strokeStyle = ready ? "rgba(255, 150, 0, 0.5)" : "rgba(255, 100, 100, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(targetX, targetY, weapon.blastRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Crosshair at target
+        ctx.strokeStyle = ready ? "#4f4" : "#f44";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(targetX - 10, targetY);
+        ctx.lineTo(targetX + 10, targetY);
+        ctx.moveTo(targetX, targetY - 10);
+        ctx.lineTo(targetX, targetY + 10);
+        ctx.stroke();
+    }
 }
 
 function playerShoot() {
     const now = Date.now();
-    const rof = 140 / (1 + (game.player.rofLv-1)*0.3);
-    const dmg = 35 * (1 + (game.player.dmgLv-1)*0.5);
-    if (now - game.player.lastShot > rof) {
-        const a = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a)*22, vy: Math.sin(a)*22, dmg });
-        game.player.lastShot = now;
+    const weapon = CONFIG.WEAPONS_PRIMARY[game.player.primaryWeapon];
+    const rof = weapon.rof / (1 + (game.player.rofLv-1)*0.3);
+    
+    if (now - game.player.lastShot < rof) return;
+    
+    const baseAngle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+    const dmg = weapon.dmg * (1 + (game.player.dmgLv-1)*0.5);
+    
+    if (game.player.primaryWeapon === 'SHOTGUN') {
+        // Shotgun - multiple pellets with spread
+        for (let i = 0; i < weapon.pellets; i++) {
+            const spread = (Math.random() - 0.5) * weapon.spread;
+            const angle = baseAngle + spread;
+            game.projectiles.push({ 
+                x: game.player.x, 
+                y: game.player.y, 
+                vx: Math.cos(angle) * weapon.velocity, 
+                vy: Math.sin(angle) * weapon.velocity, 
+                dmg,
+                knockback: weapon.knockback,
+                type: 'shotgun'
+            });
+        }
+    } else if (game.player.primaryWeapon === 'MINIGUN') {
+        // Minigun - single shot with spread
+        const spread = (Math.random() - 0.5) * weapon.spread;
+        const angle = baseAngle + spread;
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(angle) * weapon.velocity, 
+            vy: Math.sin(angle) * weapon.velocity, 
+            dmg,
+            type: 'minigun'
+        });
+    } else if (game.player.primaryWeapon === 'FLAMETHROWER') {
+        // Flamethrower - continuous cone damage (no projectile, instant hit)
+        game.enemies.forEach(e => {
+            const dist = Math.hypot(e.x - game.player.x, e.y - game.player.y);
+            if (dist < weapon.range) {
+                // Check if in cone
+                const angleToEnemy = Math.atan2(e.y - game.player.y, e.x - game.player.x);
+                const angleDiff = Math.abs(angleToEnemy - baseAngle);
+                const coneAngle = 0.4; // ~23 degrees each side
+                
+                if (angleDiff < coneAngle || angleDiff > Math.PI * 2 - coneAngle) {
+                    e.hp -= dmg;
+                    e.hitF = 2;
+                }
+            }
+        });
+        
+        // Visual effect
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        const gradient = ctx.createRadialGradient(
+            game.player.x, game.player.y, 0,
+            game.player.x + Math.cos(baseAngle) * weapon.range, 
+            game.player.y + Math.sin(baseAngle) * weapon.range, 
+            weapon.range * 0.5
+        );
+        gradient.addColorStop(0, 'rgba(255,150,0,0.8)');
+        gradient.addColorStop(0.5, 'rgba(255,50,0,0.4)');
+        gradient.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = gradient;
+        
+        ctx.beginPath();
+        ctx.moveTo(game.player.x, game.player.y);
+        ctx.arc(game.player.x, game.player.y, weapon.range, baseAngle - 0.4, baseAngle + 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        
+    } else if (game.player.primaryWeapon === 'RAILGUN') {
+        // Railgun - piercing shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'railgun',
+            piercing: true,
+            hitEnemies: [] // Track which enemies were hit
+        });
+        
+        // Visual effect
+        ctx.strokeStyle = "rgba(0,255,255,0.9)";
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#0ff";
+        ctx.beginPath();
+        ctx.moveTo(game.player.x, game.player.y);
+        ctx.lineTo(
+            game.player.x + Math.cos(baseAngle) * 2000,
+            game.player.y + Math.sin(baseAngle) * 2000
+        );
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+    } else if (game.player.primaryWeapon === 'SNIPER') {
+        // Sniper - high damage precise shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'sniper'
+        });
+    } else {
+        // Rifle - precise single shot
+        game.projectiles.push({ 
+            x: game.player.x, 
+            y: game.player.y, 
+            vx: Math.cos(baseAngle) * weapon.velocity, 
+            vy: Math.sin(baseAngle) * weapon.velocity, 
+            dmg,
+            type: 'rifle'
+        });
     }
+    
+    game.player.lastShot = now;
+}
+
+function throwGrenade() {
+    const now = Date.now();
+    const weapon = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon];
+    
+    if (now - game.player.lastGrenade < weapon.cooldown) return;
+    
+    const dx = game.mouse.x - game.player.x;
+    const dy = game.mouse.y - game.player.y;
+    const dist = Math.hypot(dx, dy);
+    
+    // Clamp to max range
+    let targetX = game.mouse.x;
+    let targetY = game.mouse.y;
+    if (dist > weapon.range) {
+        const angle = Math.atan2(dy, dx);
+        targetX = game.player.x + Math.cos(angle) * weapon.range;
+        targetY = game.player.y + Math.sin(angle) * weapon.range;
+    }
+    
+    if (game.player.secondaryWeapon === 'ROCKET') {
+        // Rocket - direct projectile
+        const angle = Math.atan2(targetY - game.player.y, targetX - game.player.x);
+        game.rockets.push({
+            x: game.player.x,
+            y: game.player.y,
+            vx: Math.cos(angle) * weapon.velocity,
+            vy: Math.sin(angle) * weapon.velocity,
+            damage: weapon.damage,
+            blastRadius: weapon.blastRadius,
+            trail: []
+        });
+    } else {
+        // Grenade-based weapons (arc trajectory)
+        const actualDist = Math.hypot(targetX - game.player.x, targetY - game.player.y);
+        const travelTime = actualDist / 8;
+        
+        game.grenades.push({
+            x: game.player.x,
+            y: game.player.y,
+            targetX,
+            targetY,
+            startX: game.player.x,
+            startY: game.player.y,
+            progress: 0,
+            speed: 1 / travelTime,
+            damage: weapon.damage,
+            blastRadius: weapon.blastRadius,
+            weaponType: game.player.secondaryWeapon
+        });
+    }
+    
+    game.player.lastGrenade = now;
 }
 
 function renderEntities() {
@@ -834,7 +1420,8 @@ function renderEntities() {
         if (ent.type === 'core') ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
         else if (ent.type === 'wall') ctx.strokeRect(ent.x-10, ent.y-10, 20, 20);
         else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 10, 0, Math.PI*2); ctx.stroke(); }
-        ctx.fillStyle = "var(--f-green)"; ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
+        ctx.fillStyle = "#20ff20";
+        ctx.fillRect(ent.x-12, ent.y+18, (ent.curHP/ent.hp)*24, 3);
     });
 }
 
@@ -858,12 +1445,504 @@ function handleInput() {
 }
 
 function renderProjectiles() {
-    ctx.fillStyle = "#fff";
     game.projectiles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; ctx.fillRect(p.x, p.y, 3, 3);
-        const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
-        if (hit) { hit.hp -= p.dmg; hit.hitF = 3; game.projectiles.splice(i, 1); }
+        p.x += p.vx; 
+        p.y += p.vy;
+        
+        // Visual based on type
+        if (p.type === 'minigun') {
+            ctx.fillStyle = "#ffa500";
+            ctx.fillRect(p.x - 1, p.y - 1, 3, 3);
+        } else if (p.type === 'shotgun') {
+            ctx.fillStyle = "#ff4444";
+            ctx.fillRect(p.x - 1, p.y - 1, 4, 4);
+        } else if (p.type === 'sniper') {
+            ctx.fillStyle = "#ff0";
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = "#ff0";
+            ctx.fillRect(p.x - 2, p.y - 2, 5, 5);
+            ctx.shadowBlur = 0;
+        } else if (p.type === 'railgun') {
+            ctx.fillStyle = "#0ff";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#0ff";
+            ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
+            ctx.shadowBlur = 0;
+        } else {
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(p.x, p.y, 3, 3);
+        }
+        
+        // Piercing logic for railgun
+        if (p.piercing) {
+            p.hitEnemies = p.hitEnemies || [];
+            game.enemies.forEach(e => {
+                if (!p.hitEnemies.includes(e) && Math.hypot(e.x - p.x, e.y - p.y) < e.size) {
+                    e.hp -= p.dmg;
+                    e.hitF = 5;
+                    p.hitEnemies.push(e);
+                    
+                    // Impact effect
+                    ctx.fillStyle = "rgba(0,255,255,0.7)";
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, e.size + 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        } else {
+            // Normal hit detection
+            const hit = game.enemies.find(e => Math.hypot(e.x - p.x, e.y - p.y) < e.size);
+            if (hit) { 
+                hit.hp -= p.dmg; 
+                hit.hitF = 3;
+                
+                // Knockback for shotgun
+                if (p.knockback) {
+                    const angle = Math.atan2(p.vy, p.vx);
+                    hit.x += Math.cos(angle) * p.knockback;
+                    hit.y += Math.sin(angle) * p.knockback;
+                }
+                
+                game.projectiles.splice(i, 1); 
+            }
+        }
+        
         if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) game.projectiles.splice(i, 1);
+    });
+}
+
+function renderGrenades() {
+    game.grenades.forEach((g, i) => {
+        // Update grenade position
+        g.progress += g.speed;
+        
+        if (g.progress >= 1) {
+            // Grenade landed - create explosion based on type
+            if (g.weaponType === 'CLUSTER') {
+                // Main explosion
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 20,
+                    hasDealtDamage: false
+                });
+                
+                // Spawn cluster bomblets
+                for (let c = 0; c < CONFIG.WEAPONS_SECONDARY.CLUSTER.clusters; c++) {
+                    const angle = (c / CONFIG.WEAPONS_SECONDARY.CLUSTER.clusters) * Math.PI * 2;
+                    const dist = 60 + Math.random() * 40;
+                    game.explosions.push({
+                        x: g.targetX + Math.cos(angle) * dist,
+                        y: g.targetY + Math.sin(angle) * dist,
+                        radius: 0,
+                        maxRadius: g.blastRadius * 0.7,
+                        damage: g.damage * 0.8,
+                        frame: Math.floor(Math.random() * 5), // Stagger
+                        maxFrames: 18,
+                        hasDealtDamage: false
+                    });
+                }
+            } else if (g.weaponType === 'INCENDIARY') {
+                // Create burn zone
+                const weapon = CONFIG.WEAPONS_SECONDARY.INCENDIARY;
+                game.burnZones.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: g.blastRadius,
+                    damage: weapon.burnDmg,
+                    duration: weapon.burnTime,
+                    frame: 0
+                });
+                
+                // Initial blast
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 25,
+                    hasDealtDamage: false,
+                    color: 'fire'
+                });
+            } else if (g.weaponType === 'POISON') {
+                // Create poison cloud
+                const weapon = CONFIG.WEAPONS_SECONDARY.POISON;
+                game.poisonClouds.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: g.blastRadius,
+                    damage: weapon.poisonDmg,
+                    duration: weapon.poisonTime,
+                    frame: 0
+                });
+                
+                // Initial blast
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 25,
+                    hasDealtDamage: false,
+                    color: 'poison'
+                });
+            } else if (g.weaponType === 'EMP') {
+                // EMP blast - stuns enemies
+                game.enemies.forEach(enemy => {
+                    const dist = Math.hypot(enemy.x - g.targetX, enemy.y - g.targetY);
+                    if (dist < g.blastRadius) {
+                        enemy.stunned = true;
+                        enemy.stunTimer = CONFIG.WEAPONS_SECONDARY.EMP.stunTime;
+                        enemy.originalSpeed = enemy.speed;
+                        enemy.speed = 0;
+                    }
+                });
+                
+                // EMP visual effect
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: 0, // No damage
+                    frame: 0,
+                    maxFrames: 30,
+                    hasDealtDamage: true, // Skip damage dealing
+                    color: 'emp'
+                });
+            } else {
+                // Standard grenade
+                game.explosions.push({
+                    x: g.targetX,
+                    y: g.targetY,
+                    radius: 0,
+                    maxRadius: g.blastRadius,
+                    damage: g.damage,
+                    frame: 0,
+                    maxFrames: 20,
+                    hasDealtDamage: false
+                });
+            }
+            game.grenades.splice(i, 1);
+            return;
+        }
+        
+        // Arc trajectory
+        g.x = g.startX + (g.targetX - g.startX) * g.progress;
+        g.y = g.startY + (g.targetY - g.startY) * g.progress;
+        
+        // Arc height (parabola)
+        const arcHeight = 80;
+        const heightOffset = -arcHeight * Math.sin(g.progress * Math.PI);
+        
+        // Draw grenade with color based on type
+        let grenadeColor = "#4f4";
+        if (g.weaponType === 'CLUSTER') grenadeColor = "#88f";
+        else if (g.weaponType === 'INCENDIARY') grenadeColor = "#f84";
+        else if (g.weaponType === 'POISON') grenadeColor = "#8f4";
+        else if (g.weaponType === 'EMP') grenadeColor = "#4af";
+        
+        ctx.fillStyle = grenadeColor;
+        ctx.strokeStyle = grenadeColor === "#4f4" ? "#2a2" : grenadeColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + heightOffset, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.beginPath();
+        ctx.ellipse(g.x, g.y, 4, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function renderRockets() {
+    game.rockets.forEach((r, i) => {
+        // Update position
+        r.x += r.vx;
+        r.y += r.vy;
+        
+        // Add to trail
+        r.trail.push({x: r.x, y: r.y});
+        if (r.trail.length > 15) r.trail.shift();
+        
+        // Draw trail
+        ctx.strokeStyle = "rgba(255, 150, 50, 0.6)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        r.trail.forEach((t, ti) => {
+            if (ti === 0) ctx.moveTo(t.x, t.y);
+            else ctx.lineTo(t.x, t.y);
+        });
+        ctx.stroke();
+        
+        // Draw rocket
+        const angle = Math.atan2(r.vy, r.vx);
+        ctx.save();
+        ctx.translate(r.x, r.y);
+        ctx.rotate(angle);
+        
+        // Rocket body
+        ctx.fillStyle = "#888";
+        ctx.fillRect(-8, -3, 16, 6);
+        
+        // Nose cone
+        ctx.fillStyle = "#f44";
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(14, -3);
+        ctx.lineTo(14, 3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Fins
+        ctx.fillStyle = "#666";
+        ctx.fillRect(-8, -5, 4, 2);
+        ctx.fillRect(-8, 3, 4, 2);
+        
+        ctx.restore();
+        
+        // Check collision
+        const hit = game.enemies.find(e => Math.hypot(e.x - r.x, e.y - r.y) < e.size + 10);
+        const outOfBounds = r.x < 0 || r.x > CONFIG.WIDTH || r.y < 0 || r.y > CONFIG.HEIGHT;
+        
+        if (hit || outOfBounds) {
+            // Explode
+            game.explosions.push({
+                x: r.x,
+                y: r.y,
+                radius: 0,
+                maxRadius: r.blastRadius,
+                damage: r.damage,
+                frame: 0,
+                maxFrames: 25,
+                hasDealtDamage: false,
+                color: 'rocket'
+            });
+            game.rockets.splice(i, 1);
+        }
+    });
+}
+
+function renderBurnZones() {
+    game.burnZones.forEach((z, i) => {
+        z.frame++;
+        
+        // Apply burn damage to enemies in zone
+        if (z.frame % 10 === 0) { // Every 10 frames
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - z.x, enemy.y - z.y);
+                if (dist < z.radius) {
+                    enemy.hp -= z.damage;
+                    enemy.hitF = 2;
+                }
+            });
+        }
+        
+        // Render fire particles
+        const alpha = 1 - (z.frame / z.duration);
+        const particleCount = 30;
+        
+        for (let p = 0; p < particleCount; p++) {
+            const angle = (p / particleCount) * Math.PI * 2 + z.frame * 0.05;
+            const dist = Math.random() * z.radius;
+            const x = z.x + Math.cos(angle) * dist;
+            const y = z.y + Math.sin(angle) * dist;
+            
+            const flicker = 0.5 + Math.random() * 0.5;
+            ctx.fillStyle = `rgba(255, ${100 + Math.random() * 100}, 0, ${alpha * flicker * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 3 + Math.random() * 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Border glow
+        ctx.strokeStyle = `rgba(255, 80, 0, ${alpha * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        if (z.frame >= z.duration) {
+            game.burnZones.splice(i, 1);
+        }
+    });
+}
+
+function renderPoisonClouds() {
+    game.poisonClouds.forEach((z, i) => {
+        z.frame++;
+        
+        // Apply poison damage to enemies in cloud
+        if (z.frame % 10 === 0) { // Every 10 frames
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - z.x, enemy.y - z.y);
+                if (dist < z.radius) {
+                    enemy.hp -= z.damage;
+                    enemy.hitF = 2;
+                }
+            });
+        }
+        
+        // Render poison cloud particles
+        const alpha = 1 - (z.frame / z.duration);
+        const particleCount = 40;
+        
+        for (let p = 0; p < particleCount; p++) {
+            const angle = (p / particleCount) * Math.PI * 2 + z.frame * 0.03;
+            const dist = Math.random() * z.radius;
+            const x = z.x + Math.cos(angle) * dist;
+            const y = z.y + Math.sin(angle) * dist - Math.sin(z.frame * 0.05 + p) * 5; // Floating effect
+            
+            const flicker = 0.5 + Math.random() * 0.5;
+            ctx.fillStyle = `rgba(${50 + Math.random() * 100}, 255, ${50 + Math.random() * 50}, ${alpha * flicker * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 4 + Math.random() * 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Border glow (green)
+        ctx.strokeStyle = `rgba(100, 255, 100, ${alpha * 0.4})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        if (z.frame >= z.duration) {
+            game.poisonClouds.splice(i, 1);
+        }
+    });
+}
+
+function renderTowerGrenades() {
+    game.towerGrenades.forEach((g, i) => {
+        g.progress += g.speed;
+        
+        if (g.progress >= 1) {
+            // Create explosion
+            game.explosions.push({
+                x: g.targetX,
+                y: g.targetY,
+                radius: 0,
+                maxRadius: g.blastRadius,
+                damage: g.damage,
+                frame: 0,
+                maxFrames: 20,
+                hasDealtDamage: false
+            });
+            game.towerGrenades.splice(i, 1);
+            return;
+        }
+        
+        // Arc trajectory
+        g.x = g.startX + (g.targetX - g.startX) * g.progress;
+        g.y = g.startY + (g.targetY - g.startY) * g.progress;
+        
+        const arcHeight = 60;
+        const heightOffset = -arcHeight * Math.sin(g.progress * Math.PI);
+        
+        // Draw grenade
+        ctx.fillStyle = "#9f9";
+        ctx.strokeStyle = "#5a5";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y + heightOffset, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        ctx.beginPath();
+        ctx.ellipse(g.x, g.y, 3, 1.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function renderExplosions() {
+    game.explosions.forEach((e, i) => {
+        e.frame++;
+        
+        // Expanding blast radius
+        if (e.frame < e.maxFrames / 2) {
+            e.radius = (e.frame / (e.maxFrames / 2)) * e.maxRadius;
+        } else {
+            e.radius = e.maxRadius * (1 - (e.frame - e.maxFrames / 2) / (e.maxFrames / 2));
+        }
+        
+        // Deal damage once at peak
+        if (e.frame === Math.floor(e.maxFrames / 2) && !e.hasDealtDamage) {
+            game.enemies.forEach(enemy => {
+                const dist = Math.hypot(enemy.x - e.x, enemy.y - e.y);
+                if (dist < e.maxRadius) {
+                    // Damage falloff based on distance
+                    const falloff = 1 - (dist / e.maxRadius);
+                    const damage = e.damage * falloff;
+                    enemy.hp -= damage;
+                    enemy.hitF = 5;
+                }
+            });
+            e.hasDealtDamage = true;
+        }
+        
+        // Colors based on weapon type
+        let outerColor, innerColor, coreColor;
+        if (e.color === 'fire') {
+            outerColor = [255, 80, 0];
+            innerColor = [255, 150, 0];
+            coreColor = [255, 220, 100];
+        } else if (e.color === 'rocket') {
+            outerColor = [255, 120, 0];
+            innerColor = [255, 200, 50];
+            coreColor = [255, 255, 220];
+        } else if (e.color === 'poison') {
+            outerColor = [100, 255, 100];
+            innerColor = [150, 255, 150];
+            coreColor = [200, 255, 200];
+        } else if (e.color === 'emp') {
+            outerColor = [0, 150, 255];
+            innerColor = [100, 200, 255];
+            coreColor = [200, 230, 255];
+        } else {
+            outerColor = [255, 100, 0];
+            innerColor = [255, 200, 0];
+            coreColor = [255, 255, 200];
+        }
+        
+        const alpha = 1 - (e.frame / e.maxFrames);
+        
+        // Outer ring
+        ctx.strokeStyle = `rgba(${outerColor[0]}, ${outerColor[1]}, ${outerColor[2]}, ${alpha * 0.8})`;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Inner flash
+        ctx.fillStyle = `rgba(${innerColor[0]}, ${innerColor[1]}, ${innerColor[2]}, ${alpha * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Core
+        ctx.fillStyle = `rgba(${coreColor[0]}, ${coreColor[1]}, ${coreColor[2]}, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Remove finished explosions
+        if (e.frame >= e.maxFrames) {
+            game.explosions.splice(i, 1);
+        }
     });
 }
 
@@ -889,22 +1968,178 @@ function updateStatsUI() {
     document.getElementById('p-spd').innerText = (1 + (game.player.spdLv-1)*0.2).toFixed(1);
     document.getElementById('p-rof').innerText = (1 + (game.player.rofLv-1)*0.3).toFixed(1);
     document.getElementById('p-dmg').innerText = (1 + (game.player.dmgLv-1)*0.5).toFixed(1);
+    
+    // Update weapon names
+    const primName = document.getElementById('weapon-primary');
+    const secName = document.getElementById('weapon-secondary');
+    if (primName) primName.innerText = CONFIG.WEAPONS_PRIMARY[game.player.primaryWeapon].name;
+    if (secName) secName.innerText = CONFIG.WEAPONS_SECONDARY[game.player.secondaryWeapon].name;
 }
 
 function updateBuildMenu() {
     const menu = document.getElementById('buildMenu'); menu.innerHTML = "";
     const list = (game.mode === 'BASE') ? CONFIG.BUILDINGS : CONFIG.DEFENSE;
-    for(let k in list) {
-        const item = list[k];
-        const btn = document.createElement('button');
-        btn.className = 'btn' + (game.selected === k ? ' active' : '');
-        btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
-        btn.onclick = () => { game.selected = k; updateBuildMenu(); };
-        menu.appendChild(btn);
+    
+    if(game.mode === 'BASE') {
+        // === WEAPON SELECTION ===
+        const weaponDiv = document.createElement('div');
+        weaponDiv.style.marginBottom = '20px';
+        weaponDiv.innerHTML = '<h3 style="margin: 0 0 10px 0; font-size: 1.4em; color: #4af;">⚔ ARMORY</h3>';
+        
+        // Primary weapons
+        weaponDiv.innerHTML += '<div style="font-size: 1.1em; margin: 10px 0 5px 0; color: #8f8;">PRIMARY (LMB):</div>';
+        for (let key in CONFIG.WEAPONS_PRIMARY) {
+            const wpn = CONFIG.WEAPONS_PRIMARY[key];
+            const owned = game.player.ownedWeapons[key];
+            const selected = game.player.primaryWeapon === key;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.fontSize = '0.9em';
+            btn.style.padding = '8px';
+            btn.style.background = selected ? '#083308' : (owned ? '#222' : '#400');
+            btn.style.borderColor = selected ? '#0f0' : (owned ? '#4af' : '#844');
+            btn.style.color = owned ? '#4af' : '#844';
+            
+            const costStr = owned ? '' : ` [$${wpn.cost}]`;
+            btn.innerHTML = `${wpn.name}${costStr}<br><span style="font-size: 0.8em; color: #888;">${wpn.desc}</span>`;
+            
+            btn.onclick = () => {
+                if (!owned) {
+                    if (game.money >= wpn.cost) {
+                        game.money -= wpn.cost;
+                        game.player.ownedWeapons[key] = true;
+                        game.player.primaryWeapon = key;
+                        updateBuildMenu();
+                        updateStatsUI();
+                        logTerminal(`PURCHASED: ${wpn.name}`);
+                    } else {
+                        logTerminal(`INSUFFICIENT FUNDS: ${wpn.name}`);
+                    }
+                } else {
+                    game.player.primaryWeapon = key;
+                    updateBuildMenu();
+                    updateStatsUI();
+                }
+            };
+            
+            weaponDiv.appendChild(btn);
+        }
+        
+        // Secondary weapons
+        weaponDiv.innerHTML += '<div style="font-size: 1.1em; margin: 15px 0 5px 0; color: #8f8;">SECONDARY (RMB):</div>';
+        for (let key in CONFIG.WEAPONS_SECONDARY) {
+            const wpn = CONFIG.WEAPONS_SECONDARY[key];
+            const owned = game.player.ownedWeapons[key];
+            const selected = game.player.secondaryWeapon === key;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.fontSize = '0.9em';
+            btn.style.padding = '8px';
+            btn.style.background = selected ? '#083308' : (owned ? '#222' : '#400');
+            btn.style.borderColor = selected ? '#0f0' : (owned ? '#f84' : '#844');
+            btn.style.color = owned ? '#f84' : '#844';
+            
+            const costStr = owned ? '' : ` [$${wpn.cost}]`;
+            btn.innerHTML = `${wpn.name}${costStr}<br><span style="font-size: 0.8em; color: #888;">${wpn.desc}</span>`;
+            
+            btn.onclick = () => {
+                if (!owned) {
+                    if (game.money >= wpn.cost) {
+                        game.money -= wpn.cost;
+                        game.player.ownedWeapons[key] = true;
+                        game.player.secondaryWeapon = key;
+                        updateBuildMenu();
+                        updateStatsUI();
+                        logTerminal(`PURCHASED: ${wpn.name}`);
+                    } else {
+                        logTerminal(`INSUFFICIENT FUNDS: ${wpn.name}`);
+                    }
+                } else {
+                    game.player.secondaryWeapon = key;
+                    updateBuildMenu();
+                    updateStatsUI();
+                }
+            };
+            
+            weaponDiv.appendChild(btn);
+        }
+        
+        menu.appendChild(weaponDiv);
+        
+        const hr1 = document.createElement('div');
+        hr1.style.borderTop = '2px solid #444';
+        hr1.style.margin = '15px 0';
+        menu.appendChild(hr1);
+        
+        // === MAP SELECTION ===
+        const mapSelectorDiv = document.createElement('div');
+        mapSelectorDiv.style.marginBottom = '15px';
+        mapSelectorDiv.innerHTML = '<h3 style="margin: 0 0 8px 0; font-size: 1.3em;">🗺 BATTLEFIELD:</h3>';
+        
+        const mapSelect = document.createElement('select');
+        mapSelect.id = 'map-selector';
+        
+        const randomOption = document.createElement('option');
+        randomOption.value = '';
+        randomOption.innerText = '[ RANDOM MAP ]';
+        mapSelect.appendChild(randomOption);
+        
+        const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+        for(let name in maps) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.innerText = name;
+            if(game.selectedCustomMap === name) option.selected = true;
+            mapSelect.appendChild(option);
+        }
+        
+        mapSelect.onchange = (e) => {
+            game.selectedCustomMap = e.target.value || null;
+            logTerminal(game.selectedCustomMap ? `Selected: ${game.selectedCustomMap}` : 'Random map');
+        };
+        
+        mapSelectorDiv.appendChild(mapSelect);
+        menu.appendChild(mapSelectorDiv);
+        
+        const hr2 = document.createElement('div');
+        hr2.style.borderTop = '1px solid #444';
+        hr2.style.margin = '15px 0';
+        menu.appendChild(hr2);
+        
+        // === UPGRADES ===
+        menu.innerHTML += '<div style="font-size: 1.1em; margin: 10px 0 5px 0; color: #8f8;">UNIT UPGRADES:</div>';
+        const row = document.createElement('div'); row.className = 'upgrade-row';
+        ['SPD', 'ROF', 'DMG'].forEach(s => {
+            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
+            const cost = game.player[s.toLowerCase()+'Lv']*300;
+            b.innerText = `${s} LV${game.player[s.toLowerCase()+'Lv']} [$${cost}]`;
+            b.onclick = () => { 
+                if(game.money >= cost) { 
+                    game.money -= cost; 
+                    game.player[s.toLowerCase()+'Lv']++; 
+                    updateStatsUI(); 
+                    updateBuildMenu();
+                    logTerminal(`UPGRADED: ${s}`);
+                }
+            };
+            row.appendChild(b);
+        });
+        menu.appendChild(row);
+    } else {
+        // PREP/COMBAT mode - show defense structures
+        for(let k in list) {
+            const item = list[k];
+            const btn = document.createElement('button');
+            btn.className = 'btn' + (game.selected === k ? ' active' : '');
+            btn.innerHTML = `${item.name} <span style="float:right">$${item.cost}</span>`;
+            btn.onclick = () => { game.selected = k; updateBuildMenu(); };
+            menu.appendChild(btn);
+        }
     }
     
-    // VIEW TOGGLE w trybie PREP
-    if(game.mode === 'PREP') {
+    if(game.mode === 'PREP' || game.mode === 'COMBAT') {
         const viewBtn = document.createElement('button');
         viewBtn.className = 'btn';
         viewBtn.style.marginTop = '15px';
@@ -916,20 +2151,19 @@ function updateBuildMenu() {
             updateBuildMenu();
         };
         menu.appendChild(viewBtn);
-    }
-    
-    if(game.mode === 'BASE') {
-        const row = document.createElement('div'); row.className = 'upgrade-row';
-        ['SPD', 'ROF', 'DMG'].forEach(s => {
-            const b = document.createElement('button'); b.className = 'btn'; b.style.fontSize = '0.7em';
-            b.innerText = `UP ${s}`;
-            b.onclick = () => { 
-                let cost = game.player[s.toLowerCase()+'Lv']*300;
-                if(game.money >= cost) { game.money -= cost; game.player[s.toLowerCase()+'Lv']++; updateStatsUI(); updateBuildMenu(); }
-            };
-            row.appendChild(b);
-        });
-        menu.appendChild(row);
+        
+        const debugBtn = document.createElement('button');
+        debugBtn.className = 'btn';
+        debugBtn.style.background = game.debugPathfinding ? '#083308' : '#222';
+        debugBtn.style.borderColor = '#4af';
+        debugBtn.style.color = '#4af';
+        debugBtn.innerHTML = `DEBUG: ${game.debugPathfinding ? 'ON' : 'OFF'}`;
+        debugBtn.onclick = () => {
+            game.debugPathfinding = !game.debugPathfinding;
+            updateBuildMenu();
+            logTerminal(game.debugPathfinding ? 'DEBUG: Flow field visible' : 'DEBUG: Flow field hidden');
+        };
+        menu.appendChild(debugBtn);
     }
 }
 
@@ -939,6 +2173,7 @@ function logTerminal(t) {
 }
 
 window.handleAction = handleAction;
+window.throwGrenade = throwGrenade;
 
 init();
 </script>
