@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-5-8: Wersja Premium</title>
+    <style>
+        :root {
+            --table-color: #2d5a27;
+            --table-pattern: #356b2e;
+            --wood-dark: #3e2723;
+            --wood-light: #5d4037;
+            --card-width: 80px;
+            --card-height: 115px;
+            --accent: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- STÓŁ DO GRY --- */
+        .game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            background-color: var(--table-color);
+            background-image: radial-gradient(circle, transparent 20%, #1a3c15 100%),
+                              repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 10px);
+            position: relative;
+            box-shadow: inset 0 0 100px #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Drewniana ramka (opcjonalna, symulowana borderem) */
+        .game-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 15px solid var(--wood-dark);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* --- MENU --- */
+        .menu-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .menu-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 4px solid var(--wood-light);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .menu-title {
+            font-size: 3rem;
+            color: var(--wood-dark);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .menu-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .player-list {
+            text-align: left;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #8d6e63, #5d4037);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #3e2723;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn:hover { filter: brightness(1.1); }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 #3e2723; }
+        .btn:disabled { background: #999; box-shadow: none; cursor: not-allowed; }
+
+        /* --- HEADER & WYNIKI --- */
+        .top-bar {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            color: #fff;
+            text-shadow: 1px 1px 2px black;
+            z-index: 10;
+        }
+
+        .score-board {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .score-item { text-align: center; min-width: 60px; }
+        .score-name { font-size: 0.8rem; opacity: 0.8; margin-bottom: 2px; }
+        .score-val { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .trick-count { font-size: 0.8rem; color: #a5d6a7; }
+
+        .game-info {
+            text-align: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+        }
+        .game-status { font-size: 1.2rem; color: var(--accent); font-weight: bold; margin-bottom: 5px; }
+        .game-msg { font-size: 0.9rem; opacity: 0.9; }
+
+        /* --- PRZECIWNICY --- */
+        .opponents-area {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin: 0 auto;
+            position: relative;
+            top: -20px;
+        }
+
+        .opponent {
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+        .opponent.active .op-name { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+        
+        .op-name { color: white; margin-bottom: 5px; font-weight: bold; text-shadow: 1px 1px 3px black; }
+        
+        .op-cards {
+            display: flex;
+            justify-content: center;
+        }
+        .card-back {
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(135deg, #b71c1c 0%, #800000 100%);
+            border: 2px solid #fff;
+            border-radius: 4px;
+            margin: 0 -25px; /* Zakładka kart */
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+        }
+        .card-back:first-child { margin-left: 0; }
+
+        /* --- STÓŁ (ŚRODEK) --- */
+        .middle-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Strefa lewy (trick) */
+        .trick-zone {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .played-card-wrapper {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.5s ease-out;
+        }
+        
+        /* Pozycjonowanie kart na stole */
+        /* Gracz (dół) */
+        .trick-p0 { transform: translateY(20px); z-index: 10; }
+        /* Lewy (Darek) */
+        .trick-p1 { transform: translate(-80px, -20px) rotate(-15deg); z-index: 5; }
+        /* Prawy (Kasia) */
+        .trick-p2 { transform: translate(80px, -20px) rotate(15deg); z-index: 5; }
+
+        .played-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        /* Strefa Wyboru (Modal wewnątrz gry) */
+        .choice-overlay {
+            position: absolute;
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            backdrop-filter: blur(3px);
+            z-index: 50;
+            display: none; /* JS to włączy */
+            flex-direction: column;
+            gap: 15px;
+        }
+        .choice-title { color: white; font-weight: bold; margin-bottom: 10px; }
+        .choice-btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+        /* --- GRACZ (DÓŁ) --- */
+        .player-area {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding-bottom: 30px;
+        }
+
+        .my-name {
+            color: white;
+            margin-bottom: 10px;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+        .my-name.active { color: var(--accent); opacity: 1; text-shadow: 0 0 10px var(--accent); }
+
+        .hand {
+            display: flex;
+            justify-content: center;
+            min-height: 140px; /* Minimum space for cards */
+            height: auto; /* Allow it to grow */
+            align-items: flex-end;
+            flex-wrap: wrap; /* Allow cards to wrap on small screens */
+            gap: 5px;
+        }
+
+        /* --- KARTA --- */
+        .card {
+            width: var(--card-width);
+            height: var(--card-height);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            margin: 0 5px; /* Odstęp między kartami */
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, margin 0.2s;
+            position: relative;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-20px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        .card.selected {
+            transform: translateY(-30px);
+            box-shadow: 0 0 15px var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .card.disabled {
+            filter: grayscale(100%) brightness(0.7);
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .card-top, .card-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+        .card-bottom { transform: rotate(180deg); }
+        
+        .rank { font-size: 1.2rem; font-weight: bold; }
+        .suit { font-size: 1.2rem; }
+
+        .red { color: #d32f2f; }
+        .black { color: #212121; }
+
+        /* --- MEDIA QUERIES --- */
+        @media (max-width: 700px) {
+            :root { 
+                --card-width: 45px; 
+                --card-height: 65px; 
+            }
+            .game-container::after {
+                border-width: 8px;
+            }
+            .top-bar { 
+                padding: 10px; 
+                flex-direction: column; 
+                align-items: center; 
+                gap: 10px; 
+            }
+            .score-board {
+                padding: 8px 12px;
+                gap: 12px;
+            }
+            .score-val {
+                font-size: 1.2rem;
+            }
+            .game-info { 
+                position: static; 
+                transform: none; 
+                margin-bottom: 10px; 
+            }
+            .game-status {
+                font-size: 1rem;
+            }
+            .game-msg {
+                font-size: 0.8rem;
+            }
+            .opponents-area {
+                width: 95%;
+                top: 0;
+            }
+            .card-back {
+                width: 30px;
+                height: 45px;
+                margin: 0 -20px;
+            }
+            .hand { 
+                height: 100px;
+                margin: 0; 
+            }
+            .card { 
+                margin: 0 2px;
+                padding: 3px;
+            }
+            .card .rank {
+                font-size: 0.9rem;
+            }
+            .card .suit {
+                font-size: 1rem;
+            }
+            .card:hover {
+                transform: translateY(-15px) scale(1.03);
+            }
+            .card.selected {
+                transform: translateY(-20px);
+            }
+            .trick-zone { 
+                width: 200px; 
+                height: 120px; 
+            }
+            .trick-p1 { 
+                transform: translate(-60px, -10px) rotate(-15deg); 
+            }
+            .trick-p2 { 
+                transform: translate(60px, -10px) rotate(15deg); 
+            }
+            .choice-overlay {
+                padding: 15px;
+                max-width: 90%;
+            }
+            .choice-title {
+                font-size: 0.9rem;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .player-area {
+                padding: 10px;
+                padding-bottom: 20px;
+            }
+            .my-name {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* --- MODAL KOŃCOWY --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px black;
+            text-align: center;
+        }
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-overlay" id="menu">
+        <div class="menu-box">
+            <div class="menu-title">3-5-8</div>
+            <div class="menu-subtitle">Edycja Elegancka</div>
+            
+            <div class="player-list">
+                <div style="margin-bottom:5px;">👤 <strong>Ty</strong></div>
+                <div style="margin-bottom:5px; color:#d32f2f;">😈 <strong>Darek</strong> (Uwaga!)</div>
+                <div style="color:#1976d2;">👩‍💼 <strong>Kasia</strong> (Pro)</div>
+            </div>
+            
+            <button class="btn" onclick="startGame()">Rozdaj Karty</button>
+        </div>
+    </div>
+
+    <div class="game-container" id="game" style="display: none;">
+        
+        <div class="top-bar">
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="score-name" style="color:#90caf9;">Ty</div>
+                    <div class="score-val" id="scoreHuman">0</div>
+                    <div class="trick-count">Lew: <span id="tricksHuman">0</span></div>
+                </div>
+                <div class="score-item">
+                    <div class="score-name">Darek</div>
+                    <div class="score-val" id="scoreDarek">0</div>
+                    <div class="trick-count">Lew: <span id="tricksDarek">0</span></div>
+                </div>
+                <div class="score-item">
+                    <div class="score-name">Kasia</div>
+                    <div class="score-val" id="scoreKasia">0</div>
+                    <div class="trick-count">Lew: <span id="tricksKasia">0</span></div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <div class="game-status" id="gameType">Rozdanie 1</div>
+                <div class="game-msg" id="message">Oczekiwanie...</div>
+            </div>
+            
+            <div style="width: 100px;"> </div>
+        </div>
+
+        <div class="opponents-area" id="opponents">
+            </div>
+
+        <div class="middle-area">
+            
+            <div class="trick-zone" id="trickZone">
+                </div>
+
+            <div class="choice-overlay" id="choiceZone">
+                </div>
+        </div>
+
+        <div class="player-area">
+            <div class="my-name" id="playerName">Twoja kolej</div>
+            <div class="hand" id="playerHand">
+                </div>
+            <div id="playerActions" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="margin-bottom: 20px; color:#3e2723;">Tytuł</h2>
+            <div id="modalBody" style="margin-bottom: 20px;"></div>
+            <button class="btn" onclick="closeModal()">Dalej</button>
+        </div>
+    </div>
+
+    <script>
+        const SUITS = ['♥', '♦', '♠', '♣'];
+        const RANKS_FULL = ['2','3','4','5','6','7','8','9','10','W','D','K','A'];
+        const VALUES = {2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,W:11,D:12,K:13,A:14};
+        
+        const PLAYERS = ['human','darek','kasia'];
+        const NAMES = {human:'Ty',darek:'Darek',kasia:'Kasia'};
+        const GAMES = [
+            {id:'kier',name:'Kier',trump:'♥'},
+            {id:'karo',name:'Karo',trump:'♦'},
+            {id:'pik',name:'Pik',trump:'♠'},
+            {id:'trefl',name:'Trefl',trump:'♣'},
+            {id:'bezatu',name:'Bez Atu',trump:null},
+            {id:'bezlew',name:'Bez Lew',trump:null}
+        ];
+
+        let state = {
+            phase: 'menu',
+            hands: {},
+            musik: [],
+            dealer: 0,
+            current: 0,
+            trick: [],
+            scores: {human:0,darek:0,kasia:0},
+            tricks: {human:0,darek:0,kasia:0},
+            played: {human:[],darek:[],kasia:[]},
+            round: 1,
+            gameType: null,
+            trump: null,
+            selected: []
+        };
+
+        function startGame() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'flex';
+            state.dealer = Math.floor(Math.random() * 3);
+            state.round = 1;
+            state.scores = {human:0,darek:0,kasia:0};
+            state.played = {human:[],darek:[],kasia:[]};
+            dealCards();
+        }
+
+        function createDeck() {
+            let deck = [];
+            for(let s of SUITS) {
+                for(let r of RANKS_FULL) {
+                    deck.push({suit:s, rank:r, id:r+s});
+                }
+            }
+            for(let i=deck.length-1; i>0; i--) {
+                let j = Math.floor(Math.random()*(i+1));
+                [deck[i],deck[j]] = [deck[j],deck[i]];
+            }
+            return deck;
+        }
+
+        function dealCards() {
+            let deck = createDeck();
+            state.hands = {human:[],darek:[],kasia:[]};
+            state.musik = [];
+            let idx = 0;
+            
+            for(let i=0; i<16; i++) {
+                for(let p of PLAYERS) {
+                    state.hands[p].push(deck[idx++]);
+                }
+            }
+            for(let i=0; i<4; i++) {
+                state.musik.push(deck[idx++]);
+            }
+
+            state.tricks = {human:0,darek:0,kasia:0};
+            state.trick = [];
+            state.selected = [];
+            
+            let lead = (state.dealer + 1) % 3;
+            state.current = lead;
+            state.phase = 'choosing';
+            
+            updateDisplay();
+            
+            let dealerName = NAMES[PLAYERS[state.dealer]];
+            setMessage(`Rozdaje: ${dealerName}. ${NAMES[PLAYERS[lead]]} wybiera grę.`);
+
+            if(lead !== 0) {
+                setTimeout(() => aiChooseGame(lead), 1500);
+            } else {
+                showGameChoice();
+            }
+        }
+
+        function showGameChoice() {
+            let available = GAMES.filter(g => !state.played.human.includes(g.id));
+            let zone = document.getElementById('choiceZone');
+            
+            let handHtml = '<div style="display:flex; justify-content:center; gap:5px; margin-bottom:15px;">';
+            for(let i=0; i<5; i++) {
+                handHtml += renderCardHTML(state.hands.human[i], false, true, false);
+            }
+            handHtml += '</div>';
+
+            let html = `
+                <div class="choice-title">Masz głos! Wybierz typ gry:</div>
+                ${handHtml}
+                <div class="choice-btn-row">
+            `;
+            
+            for(let g of available) {
+                let color = g.trump === '♥' || g.trump === '♦' ? '#d32f2f' : (g.trump ? '#000' : '#5d4037');
+                html += `<button class="btn" style="background:${color}" onclick="chooseGame('${g.id}')">${g.name} ${g.trump||''}</button>`;
+            }
+            html += '</div>';
+            
+            zone.innerHTML = html;
+            zone.style.display = 'flex';
+        }
+
+        function aiChooseGame(idx) {
+            let pid = PLAYERS[idx];
+            let hand = state.hands[pid];
+            let first5 = hand.slice(0,5);
+            let available = GAMES.filter(g => !state.played[pid].includes(g.id));
+            
+            let strength = {};
+            for(let s of SUITS) {
+                let cards = first5.filter(c => c.suit === s);
+                strength[s] = cards.reduce((sum, c) => {
+                    let v = VALUES[c.rank];
+                    return sum + (v>=11 ? v-10 : 0) + 1;
+                }, 0);
+            }
+            
+            let best = available[0];
+            let bestScore = -100;
+            
+            for(let g of available) {
+                let score = 0;
+                if(g.trump) {
+                    score = strength[g.trump] || 0;
+                } else if(g.id === 'bezatu') {
+                    score = Object.values(strength).reduce((a,b)=>a+b,0) / 2;
+                } else {
+                    score = 5; 
+                }
+                if(score > bestScore) {
+                    bestScore = score;
+                    best = g;
+                }
+            }
+            chooseGame(best.id);
+        }
+
+        function chooseGame(gid) {
+            let game = GAMES.find(g => g.id === gid);
+            state.gameType = game.id;
+            state.trump = game.trump;
+            
+            let lead = (state.dealer + 1) % 3;
+            let pid = PLAYERS[lead];
+            state.played[pid].push(game.id);
+            
+            document.getElementById('gameType').innerHTML = `${game.name} <span style="color:${(game.trump=='♥'||game.trump=='♦')?'red':'inherit'}">${game.trump||''}</span>`;
+            document.getElementById('choiceZone').style.display = 'none';
+            
+            setMessage(`Wybrano: ${game.name}. Odkrywanie musika...`);
+            
+            setTimeout(() => {
+                state.phase = 'musik';
+                setMessage(`${NAMES[pid]} zabiera musik i oddaje 4 karty...`);
+                if(lead !== 0) {
+                    setTimeout(() => aiHandleMusik(lead), 1500);
+                } else {
+                    showMusik();
+                }
+            }, 1000);
+        }
+
+        function showMusik() {
+            let zone = document.getElementById('choiceZone');
+            let html = '<div class="choice-title">Musik:</div><div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">';
+            for(let c of state.musik) {
+                html += renderCardHTML(c, false, true, false);
+            }
+            html += '</div><button class="btn" onclick="takeMusik()">Weź musik</button>';
+            zone.innerHTML = html;
+            zone.style.display = 'flex';
+        }
+
+        function takeMusik() {
+            console.log('=== BIORĘ MUSIK ===');
+            console.log('Przed: Hand size =', state.hands.human.length, 'Musik size =', state.musik.length);
+            
+            state.hands.human.push(...state.musik);
+            state.musik = [];
+            state.selected = [];
+            state.phase = 'musik'; // IMPORTANT: Set phase explicitly
+            
+            console.log('Po dodaniu: Hand size =', state.hands.human.length);
+            
+            if(state.hands.human.length !== 20) {
+                console.error('BŁĄD! Po wzięciu musika powinno być 20 kart, jest:', state.hands.human.length);
+            }
+            
+            state.hands.human.sort((a,b) => {
+                if(a.suit !== b.suit) return a.suit.localeCompare(b.suit);
+                return VALUES[a.rank] - VALUES[b.rank];
+            });
+
+            document.getElementById('choiceZone').style.display = 'none';
+            setMessage('Kliknij 4 karty do oddania (0/4)');
+            updateDisplay();
+        }
+
+        function aiHandleMusik(idx) {
+            let pid = PLAYERS[idx];
+            state.hands[pid].push(...state.musik);
+            state.musik = [];
+            
+            let sorted = [...state.hands[pid]].sort((a,b) => VALUES[a.rank] - VALUES[b.rank]);
+            let discard = sorted.slice(0,4);
+            state.hands[pid] = state.hands[pid].filter(c => !discard.find(d => d.id === c.id));
+            
+            startPlaying();
+        }
+
+        function confirmDiscard() {
+            if(state.selected.length !== 4) return;
+            state.hands.human = state.hands.human.filter(c => !state.selected.find(s => s.id === c.id));
+            state.selected = [];
+            updateDisplay();
+            startPlaying();
+        }
+
+        function startPlaying() {
+            state.phase = 'playing';
+            let lead = (state.dealer + 1) % 3;
+            state.current = lead;
+            setMessage(`${NAMES[PLAYERS[lead]]} wychodzi...`);
+            updateDisplay();
+            
+            if(lead !== 0) {
+                setTimeout(() => aiPlay(lead), 800);
+            }
+        }
+
+        function getValid(hand, trick, trump) {
+            if(trick.length === 0) return hand;
+            
+            let leadSuit = trick[0].card.suit;
+            let sameSuit = hand.filter(c => c.suit === leadSuit);
+            
+            if(sameSuit.length > 0) {
+                return sameSuit; 
+            }
+            
+            return hand;
+        }
+
+        function aiPlay(idx) {
+            let pid = PLAYERS[idx];
+            let valid = getValid(state.hands[pid], state.trick, state.trump);
+            let card = valid[Math.floor(Math.random()*valid.length)];
+            playCard(card, idx);
+        }
+
+        function playCard(card, idx) {
+            let pid = PLAYERS[idx];
+            state.hands[pid] = state.hands[pid].filter(c => c.id !== card.id);
+            state.trick.push({player:idx, card:card});
+            
+            updateDisplay();
+            
+            if(state.trick.length === 3) {
+                setTimeout(() => completeTrick(), 1500);
+            } else {
+                let next = (idx + 1) % 3;
+                state.current = next;
+                if(next !== 0) {
+                    setTimeout(() => aiPlay(next), 800);
+                }
+            }
+        }
+
+        function completeTrick() {
+            let leadSuit = state.trick[0].card.suit;
+            let winner = state.trick[0];
+            
+            for(let i=1; i<state.trick.length; i++) {
+                let p = state.trick[i];
+                let w = winner;
+                
+                let pIsTrump = state.trump && p.card.suit === state.trump;
+                let wIsTrump = state.trump && w.card.suit === state.trump;
+                
+                if (pIsTrump && !wIsTrump) {
+                    winner = p;
+                } else if (pIsTrump && wIsTrump) {
+                    if(VALUES[p.card.rank] > VALUES[w.card.rank]) winner = p;
+                } else if (!pIsTrump && !wIsTrump) {
+                    if(p.card.suit === leadSuit) {
+                        if(w.card.suit !== leadSuit || VALUES[p.card.rank] > VALUES[w.card.rank]) {
+                            winner = p;
+                        }
+                    }
+                }
+            }
+            
+            let wid = PLAYERS[winner.player];
+            state.tricks[wid]++;
+            
+            setMessage(`${NAMES[wid]} bierze lewę!`);
+            state.trick = [];
+            
+            updateDisplay();
+            
+            if(state.hands.human.length === 0) {
+                endRound();
+            } else {
+                state.current = winner.player;
+                if(winner.player !== 0) {
+                    setTimeout(() => aiPlay(winner.player), 800);
+                }
+            }
+        }
+
+        function getRequired(idx) {
+            let lead = (state.dealer + 1) % 3;
+            
+            if(state.gameType === 'bezlew') {
+                if(idx === lead) return 8;
+                if(idx === (lead+1)%3) return 5;
+                return 3;
+            } else {
+                if(idx === lead) return 8;
+                if(idx === (lead+1)%3) return 5;
+                return 3;
+            }
+        }
+
+        function endRound() {
+            let roundScores = {};
+            for(let i=0; i<3; i++) {
+                let pid = PLAYERS[i];
+                let req = getRequired(i);
+                let taken = state.tricks[pid];
+                roundScores[pid] = taken - req;
+            }
+
+            for(let pid of PLAYERS) {
+                state.scores[pid] += roundScores[pid];
+            }
+            
+            let html = '';
+            for(let i=0; i<3; i++) {
+                let pid = PLAYERS[i];
+                let req = getRequired(i);
+                let sc = roundScores[pid];
+                let color = sc >= 0 ? 'green' : 'red';
+                html += `
+                <div class="modal-row">
+                    <span>${NAMES[pid]}</span>
+                    <span>Wymagane: <strong>${req}</strong> | Wzięte: <strong>${state.tricks[pid]}</strong></span>
+                    <span style="color:${color}; font-weight:bold">${sc>0?'+':''}${sc}</span>
+                </div>`;
+            }
+            
+            showModal('Koniec rozdania ' + state.round + '/18', html);
+            
+            let btn = document.querySelector('#modal button');
+            btn.onclick = () => {
+                closeModal();
+                if(state.played.human.length === 6 && state.played.darek.length === 6) {
+                    endGame();
+                } else {
+                    nextRound();
+                }
+            };
+        }
+
+        function nextRound() {
+            state.dealer = (state.dealer + 1) % 3;
+            state.round++;
+            state.gameType = null;
+            state.trump = null;
+            dealCards();
+        }
+
+        function endGame() {
+            let winner = PLAYERS.reduce((w, p) => state.scores[p] > state.scores[w] ? p : w, PLAYERS[0]);
+            let html = `<div style="text-align:center; font-size:1.5rem; color:#2e7d32;">Wygrał: ${NAMES[winner]}!</div>`;
+            html += '<br><div style="font-size:0.9rem;">Wciśnij Dalej, aby wrócić do menu.</div>';
+            
+            showModal('Koniec Gry', html);
+            document.querySelector('#modal button').onclick = () => location.reload();
+        }
+
+        function updateDisplay() {
+            // Wyniki
+            ['Human','Darek','Kasia'].forEach(name => {
+                let key = name.toLowerCase();
+                document.getElementById('score'+name).textContent = state.scores[key];
+                document.getElementById('tricks'+name).textContent = state.tricks[key];
+            });
+
+            // Przeciwnicy (góra)
+            let opHtml = '';
+            let op1 = PLAYERS[1];
+            let op2 = PLAYERS[2];
+            
+            [op1, op2].forEach(pid => {
+                let idx = PLAYERS.indexOf(pid);
+                let isActive = state.current === idx;
+                let activeClass = isActive ? 'active' : '';
+                opHtml += `
+                    <div class="opponent ${activeClass}">
+                        <div class="op-name">${NAMES[pid]}</div>
+                        <div class="op-cards">`;
+                for(let k=0; k<state.hands[pid].length; k++) {
+                    opHtml += `<div class="card-back"></div>`;
+                }
+                opHtml += `</div></div>`;
+            });
+            document.getElementById('opponents').innerHTML = opHtml;
+
+            // Stół (Lewa)
+            let trickHtml = '';
+            state.trick.forEach((t, i) => {
+                let pClass = 'trick-p' + t.player;
+                trickHtml += `
+                    <div class="played-card-wrapper ${pClass}">
+                        <div class="played-label">${NAMES[PLAYERS[t.player]]}</div>
+                        ${renderCardHTML(t.card, false, true, false)}
+                    </div>
+                `;
+            });
+            document.getElementById('trickZone').innerHTML = trickHtml;
+
+            let pName = document.getElementById('playerName');
+            pName.className = 'my-name' + (state.current === 0 ? ' active' : '');
+            
+            // Komunikat zależny od fazy
+            if(state.phase === 'musik' && state.musik.length === 0) {
+                pName.textContent = `Wybierz 4 karty do oddania (${state.selected.length}/4)`;
+            } else {
+                pName.textContent = state.current === 0 ? 'Twoja kolej!' : (state.phase === 'choosing' ? 'Wybór gry...' : 'Czekaj...');
+            }
+            
+            // RENDEROWANIE RĘKI GRACZA
+            let handHtml = '';
+            
+            // Zawsze sprawdź czy gracz ma karty
+            if(!state.hands.human || state.hands.human.length === 0) {
+                console.error('BŁĄD: Brak kart w ręce gracza!');
+                handHtml = '<div style="color:white;">Błąd: brak kart</div>';
+            } else if(state.phase === 'musik' && state.musik.length === 0) {
+                // Podczas fazy musik (oddawanie kart) - wszystkie karty klikalne
+                state.hands.human.forEach(card => {
+                    let isSel = state.selected.find(c => c.id === card.id);
+                    handHtml += renderCardHTML(card, isSel, true, true);
+                });
+            } else if(state.phase === 'playing' && state.current === 0) {
+                // Podczas gry - tylko valid karty klikalne
+                let valid = getValid(state.hands.human, state.trick, state.trump);
+                state.hands.human.forEach(card => {
+                    let canPlay = valid.find(c => c.id === card.id);
+                    handHtml += renderCardHTML(card, false, canPlay, true);
+                });
+            } else {
+                // W innych fazach - karty widoczne ale nie klikalne
+                state.hands.human.forEach(card => {
+                    handHtml += renderCardHTML(card, false, true, false);
+                });
+            }
+            
+            document.getElementById('playerHand').innerHTML = handHtml;
+            
+            // Safety check
+            if(state.hands.human && state.hands.human.length > 0 && !handHtml) {
+                console.error('CRITICAL: Mamy karty ale handHtml jest pusty!');
+            }
+            
+            // Make sure hand is visible
+            document.getElementById('playerHand').style.display = 'flex';
+            
+            // Przycisk potwierdzenia podczas oddawania kart
+            let actionsHtml = '';
+            if(state.phase === 'musik' && state.musik.length === 0) {
+                let disabled = state.selected.length !== 4 ? 'disabled' : '';
+                actionsHtml = `<button class="btn" onclick="confirmDiscard()" ${disabled}>Potwierdź wybór (${state.selected.length}/4)</button>`;
+            }
+            document.getElementById('playerActions').innerHTML = actionsHtml;
+            
+            // Debug
+            console.log('=== UPDATE DISPLAY ===');
+            console.log('Phase:', state.phase);
+            console.log('Musik length:', state.musik.length);
+            console.log('Hand size:', state.hands.human ? state.hands.human.length : 'BRAK');
+            console.log('Selected:', state.selected.length);
+            console.log('Cards rendered:', handHtml ? 'TAK' : 'NIE');
+        }
+
+        function renderCardHTML(card, selected, enabled, clickable) {
+            let colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
+            let selClass = selected ? 'selected' : '';
+            let disClass = !enabled ? 'disabled' : '';
+            let clickAttr = clickable ? `onclick="handleCardClick('${card.id}')"` : '';
+            
+            return `
+                <div class="card ${colorClass} ${selClass} ${disClass}" ${clickAttr}>
+                    <div class="card-top"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
+                    <div class="card-bottom"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
+                </div>
+            `;
+        }
+
+        function handleCardClick(cid) {
+            let card = state.hands.human.find(c => c.id === cid);
+            if(!card) return;
+
+            if(state.phase === 'musik' && state.musik.length === 0) {
+                let idx = state.selected.findIndex(c => c.id === cid);
+                if(idx >= 0) {
+                    state.selected.splice(idx, 1);
+                } else {
+                    if(state.selected.length < 4) state.selected.push(card);
+                }
+                updateDisplay();
+            } else if(state.phase === 'playing' && state.current === 0) {
+                let valid = getValid(state.hands.human, state.trick, state.trump);
+                if(valid.find(c => c.id === cid)) {
+                    playCard(card, 0);
+                }
+            }
+        }
+
+        function setMessage(msg) {
+            document.getElementById('message').textContent = msg;
+        }
+
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+    </script>
+</body>
+</html>
