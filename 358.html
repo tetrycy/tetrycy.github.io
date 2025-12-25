@@ -302,6 +302,7 @@
             filter: grayscale(100%) brightness(0.7);
             cursor: not-allowed;
             transform: none !important;
+            pointer-events: none; /* Całkowicie wyłącza interakcję */
         }
 
         .card-top, .card-bottom {
@@ -529,7 +530,8 @@
                 if(a.suit !== b.suit) {
                     return suitOrder[a.suit] - suitOrder[b.suit];
                 }
-                return VALUES[a.rank] - VALUES[b.rank];
+                // OD NAJWYŻSZEJ DO NAJNIŻSZEJ (A -> 2)
+                return VALUES[b.rank] - VALUES[a.rank];
             });
         }
         const GAMES = [
@@ -766,31 +768,70 @@
             state.phase = 'playing';
             let lead = (state.dealer + 1) % 3;
             state.current = lead;
-            setMessage(`${NAMES[PLAYERS[lead]]} wychodzi...`);
-            updateDisplay();
+            
+            console.log('=== ROZPOCZYNAM GRĘ ===');
+            console.log('Lead player:', lead, '(' + NAMES[PLAYERS[lead]] + ')');
             
             if(lead !== 0) {
-                setTimeout(() => aiPlay(lead), 800);
+                setMessage(`${NAMES[PLAYERS[lead]]} wychodzi...`);
+                setTimeout(() => {
+                    console.log('Lead AI timeout: wywołuję aiPlay');
+                    aiPlay(lead);
+                }, 800);
+            } else {
+                setMessage('Twoja kolej - wychodzisz!');
             }
+            
+            updateDisplay();
         }
 
         function getValid(hand, trick, trump) {
-            if(trick.length === 0) return hand;
+            console.log('=== GET VALID ===');
+            console.log('Hand size:', hand.length);
+            console.log('Trick size:', trick.length);
             
-            let leadSuit = trick[0].card.suit;
-            let sameSuit = hand.filter(c => c.suit === leadSuit);
-            
-            if(sameSuit.length > 0) {
-                return sameSuit; 
+            // Pierwszy wychodzi - wszystkie karty dozwolone
+            if(trick.length === 0) {
+                console.log('Wychodzę - wszystkie karty OK');
+                return hand;
             }
             
+            let leadSuit = trick[0].card.suit;
+            console.log('Kolor wyjścia:', leadSuit);
+            
+            // Karty w kolorze wyjścia
+            let sameSuit = hand.filter(c => c.suit === leadSuit);
+            console.log('Kart w kolorze:', sameSuit.length);
+            
+            // Jeśli masz kolor - MUSISZ dołożyć do koloru (dowolną)
+            if(sameSuit.length > 0) {
+                console.log('Mam kolor - muszę dołożyć');
+                return sameSuit;
+            }
+            
+            // Nie masz koloru - możesz zagrać co chcesz
+            console.log('Nie mam koloru - wszystkie karty OK');
             return hand;
         }
 
         function aiPlay(idx) {
+            console.log('=== AI GRA ===');
+            console.log('Player index:', idx, '(' + NAMES[PLAYERS[idx]] + ')');
+            console.log('Hand size:', state.hands[PLAYERS[idx]].length);
+            
             let pid = PLAYERS[idx];
             let valid = getValid(state.hands[pid], state.trick, state.trump);
+            
+            console.log('Valid cards:', valid.length);
+            
+            if(valid.length === 0) {
+                console.error('BŁĄD: AI nie ma żadnych dozwolonych kart!');
+                return;
+            }
+            
             let card = valid[Math.floor(Math.random()*valid.length)];
+            console.log('Wybrano kartę:', card.rank + card.suit);
+            
             playCard(card, idx);
         }
 
@@ -808,17 +849,25 @@
             updateDisplay();
             
             if(state.trick.length === 3) {
-                setTimeout(() => completeTrick(), 1500);
+                setTimeout(() => completeTrick(), 1200);
             } else {
                 let next = (idx + 1) % 3;
                 state.current = next;
+                setMessage(`${NAMES[PLAYERS[next]]} zagrywa...`);
                 if(next !== 0) {
-                    setTimeout(() => aiPlay(next), 800);
+                    setTimeout(() => {
+                        console.log('AI timeout: wywołuję aiPlay dla', NAMES[PLAYERS[next]]);
+                        aiPlay(next);
+                    }, 600);
+                } else {
+                    setMessage('Twoja kolej!');
                 }
             }
         }
 
         function completeTrick() {
+            console.log('=== KOŃCZĘ LEWĘ ===');
+            
             let leadSuit = state.trick[0].card.suit;
             let winner = state.trick[0];
             
@@ -845,19 +894,34 @@
             let wid = PLAYERS[winner.player];
             state.tricks[wid]++;
             
-            setMessage(`${NAMES[wid]} bierze lewę!`);
-            state.trick = [];
+            console.log('Wygrał:', NAMES[wid]);
             
+            setMessage(`${NAMES[wid]} bierze lewę!`);
             updateDisplay();
             
-            if(state.hands.human.length === 0) {
-                endRound();
-            } else {
-                state.current = winner.player;
-                if(winner.player !== 0) {
-                    setTimeout(() => aiPlay(winner.player), 800);
+            setTimeout(() => {
+                state.trick = [];
+                updateDisplay();
+                
+                if(state.hands.human.length === 0) {
+                    console.log('Koniec rozdania!');
+                    endRound();
+                } else {
+                    state.current = winner.player;
+                    console.log('Następny zagrywa:', NAMES[PLAYERS[winner.player]]);
+                    
+                    if(winner.player !== 0) {
+                        setMessage(`${NAMES[PLAYERS[winner.player]]} zagrywa...`);
+                        setTimeout(() => {
+                            console.log('Winner AI timeout: wywołuję aiPlay');
+                            aiPlay(winner.player);
+                        }, 600);
+                    } else {
+                        setMessage('Twoja kolej!');
+                        updateDisplay();
+                    }
                 }
-            }
+            }, 1500);
         }
 
         function getRequired(idx) {
@@ -991,19 +1055,28 @@
                 handHtml = '<div style="color:white;">Błąd: brak kart</div>';
             } else if(state.phase === 'musik' && state.musik.length === 0) {
                 // Podczas fazy musik (oddawanie kart) - wszystkie karty klikalne
+                console.log('Renderuję karty w fazie MUSIK');
                 state.hands.human.forEach(card => {
                     let isSel = state.selected.find(c => c.id === card.id);
                     handHtml += renderCardHTML(card, isSel, true, true);
                 });
             } else if(state.phase === 'playing' && state.current === 0) {
                 // Podczas gry - tylko valid karty klikalne
+                console.log('Renderuję karty w fazie PLAYING (moja kolej)');
                 let valid = getValid(state.hands.human, state.trick, state.trump);
+                console.log('Valid cards IDs:', valid.map(c => c.id));
+                console.log('All hand IDs:', state.hands.human.map(c => c.id));
+                
                 state.hands.human.forEach(card => {
                     let canPlay = valid.find(c => c.id === card.id);
+                    if(!canPlay) {
+                        console.log('Karta DISABLED:', card.id);
+                    }
                     handHtml += renderCardHTML(card, false, canPlay, true);
                 });
             } else {
                 // W innych fazach - karty widoczne ale nie klikalne
+                console.log('Renderuję karty - nie moja kolej, phase:', state.phase);
                 state.hands.human.forEach(card => {
                     handHtml += renderCardHTML(card, false, true, false);
                 });
@@ -1040,7 +1113,8 @@
             let colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
             let selClass = selected ? 'selected' : '';
             let disClass = !enabled ? 'disabled' : '';
-            let clickAttr = clickable ? `onclick="handleCardClick('${card.id}')"` : '';
+            // Tylko klikalne JEŚLI enabled=true I clickable=true
+            let clickAttr = (clickable && enabled) ? `onclick="handleCardClick('${card.id}')"` : '';
             
             return `
                 <div class="card ${colorClass} ${selClass} ${disClass}" ${clickAttr}>
