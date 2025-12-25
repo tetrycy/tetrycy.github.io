@@ -302,7 +302,6 @@
             filter: grayscale(100%) brightness(0.7);
             cursor: not-allowed;
             transform: none !important;
-            pointer-events: none; /* Całkowicie wyłącza interakcję */
         }
 
         .card-top, .card-bottom {
@@ -1092,6 +1091,18 @@
             // Make sure hand is visible
             document.getElementById('playerHand').style.display = 'flex';
             
+            // DODAJ EVENT LISTENERY do kart (event delegation)
+            let clickableCards = document.querySelectorAll('#playerHand .card[data-card-id]');
+            console.log('Dodaję event listenery do', clickableCards.length, 'kart');
+            
+            clickableCards.forEach(cardEl => {
+                cardEl.addEventListener('click', function() {
+                    let cardId = this.getAttribute('data-card-id');
+                    console.log('KLIKNIĘTO ELEMENT z ID:', cardId);
+                    handleCardClick(cardId);
+                });
+            });
+            
             // Przycisk potwierdzenia podczas oddawania kart
             let actionsHtml = '';
             if(state.phase === 'musik' && state.musik.length === 0) {
@@ -1113,11 +1124,11 @@
             let colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
             let selClass = selected ? 'selected' : '';
             let disClass = !enabled ? 'disabled' : '';
-            // Tylko klikalne JEŚLI enabled=true I clickable=true
-            let clickAttr = (clickable && enabled) ? `onclick="handleCardClick('${card.id}')"` : '';
+            // Używamy data-card-id zamiast onclick
+            let dataAttr = (clickable && enabled) ? `data-card-id="${card.id}"` : '';
             
             return `
-                <div class="card ${colorClass} ${selClass} ${disClass}" ${clickAttr}>
+                <div class="card ${colorClass} ${selClass} ${disClass}" ${dataAttr}>
                     <div class="card-top"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
                     <div class="card-bottom"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
                 </div>
