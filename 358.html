@@ -572,7 +572,7 @@
             let deck = [];
             for(let s of SUITS) {
                 for(let r of RANKS_FULL) {
-                    deck.push({suit:s, rank:r, id:r+s});
+                    deck.push({suit:s, rank:r, id:r+s}); // Znowu z symbolami: "K♥"
                 }
             }
             for(let i=deck.length-1; i>0; i--) {
@@ -1083,25 +1083,8 @@
             
             document.getElementById('playerHand').innerHTML = handHtml;
             
-            // Safety check
-            if(state.hands.human && state.hands.human.length > 0 && !handHtml) {
-                console.error('CRITICAL: Mamy karty ale handHtml jest pusty!');
-            }
-            
             // Make sure hand is visible
             document.getElementById('playerHand').style.display = 'flex';
-            
-            // DODAJ EVENT LISTENERY do kart (event delegation)
-            let clickableCards = document.querySelectorAll('#playerHand .card[data-card-id]');
-            console.log('Dodaję event listenery do', clickableCards.length, 'kart');
-            
-            clickableCards.forEach(cardEl => {
-                cardEl.addEventListener('click', function() {
-                    let cardId = this.getAttribute('data-card-id');
-                    console.log('KLIKNIĘTO ELEMENT z ID:', cardId);
-                    handleCardClick(cardId);
-                });
-            });
             
             // Przycisk potwierdzenia podczas oddawania kart
             let actionsHtml = '';
@@ -1124,71 +1107,112 @@
             let colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
             let selClass = selected ? 'selected' : '';
             let disClass = !enabled ? 'disabled' : '';
-            // Używamy data-card-id zamiast onclick
+            
+            // data-card-id dla bezpieczeństwa z Unicode
             let dataAttr = (clickable && enabled) ? `data-card-id="${card.id}"` : '';
+            let cursorStyle = (clickable && enabled) ? 'cursor:pointer;' : '';
             
             return `
-                <div class="card ${colorClass} ${selClass} ${disClass}" ${dataAttr}>
+                <div class="card ${colorClass} ${selClass} ${disClass}" ${dataAttr} style="${cursorStyle}">
                     <div class="card-top"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
                     <div class="card-bottom"><span class="rank">${card.rank}</span><span class="suit">${card.suit}</span></div>
                 </div>
             `;
         }
 
-        function handleCardClick(cid) {
-            console.log('=== KLIK KARTY ===');
-            console.log('Card ID:', cid);
-            console.log('Phase:', state.phase);
-            console.log('Current player:', state.current);
+        // === KLIKANIE KART - PROSTA WERSJA ===
+        
+        function playMyCard(cardId) {
+            console.log('>>> KLIK KARTY:', cardId);
             
-            let card = state.hands.human.find(c => c.id === cid);
+            // Znajdź kartę
+            let card = state.hands.human.find(c => c.id === cardId);
             if(!card) {
-                console.error('Nie znaleziono karty o ID:', cid);
-                console.log('Dostępne karty:', state.hands.human.map(c => c.id));
+                console.error('Nie ma takiej karty!');
                 return;
             }
             
-            console.log('Znaleziono kartę:', card);
-
+            // FAZA 1: Oddawanie kart
             if(state.phase === 'musik' && state.musik.length === 0) {
-                console.log('Tryb: oddawanie kart');
-                let idx = state.selected.findIndex(c => c.id === cid);
+                console.log('Tryb: wybieranie kart do oddania');
+                
+                // Czy już wybrana?
+                let idx = state.selected.findIndex(c => c.id === cardId);
                 if(idx >= 0) {
-                    console.log('Odznaczam kartę');
+                    // Odznacz
                     state.selected.splice(idx, 1);
+                    console.log('Odznaczono, teraz wybrano:', state.selected.length);
                 } else {
+                    // Zaznacz (max 4)
                     if(state.selected.length < 4) {
-                        console.log('Zaznaczam kartę');
                         state.selected.push(card);
-                    } else {
-                        console.log('Już wybrano 4 karty');
+                        console.log('Zaznaczono, teraz wybrano:', state.selected.length);
                     }
                 }
                 updateDisplay();
-            } else if(state.phase === 'playing' && state.current === 0) {
-                console.log('Tryb: granie');
-                let valid = getValid(state.hands.human, state.trick, state.trump);
-                console.log('Valid cards:', valid.length);
-                if(valid.find(c => c.id === cid)) {
-                    console.log('Zagrywa kartę!');
-                    playCard(card, 0);
-                } else {
-                    console.log('Karta nie jest dozwolona!');
-                }
-            } else {
-                console.log('Nie Twoja kolej lub zła faza');
+                return;
             }
+            
+            // FAZA 2: Granie
+            if(state.phase === 'playing' && state.current === 0) {
+                console.log('Tryb: granie karty');
+                
+                // Sprawdź czy dozwolona
+                let valid = getValid(state.hands.human, state.trick, state.trump);
+                let ok = valid.find(c => c.id === cardId);
+                
+                if(!ok) {
+                    console.log('TA KARTA JEST NIEDOZWOLONA!');
+                    alert('Nie możesz zagrać tej karty!');
+                    return;
+                }
+                
+                console.log('OK, zagrywa kartę!');
+                playCard(card, 0);
+                return;
+            }
+            
+            console.log('Nie Twoja kolej lub zła faza');
         }
         
-        // Make it globally accessible
-        window.handleCardClick = handleCardClick;
+        // === EVENT DELEGATION - JEDEN LISTENER DLA WSZYSTKICH KART ===
+        document.getElementById('playerHand').addEventListener('click', function(e) {
+            // Znajdź kliknięty element karty
+            let cardEl = e.target.closest('.card[data-card-id]');
+            if(!cardEl) {
+                console.log('Kliknięto, ale nie kartę');
+                return;
+            }
+            
+            let cardId = cardEl.getAttribute('data-card-id');
+            console.log('>>> EVENT DELEGATION - KLIKNIĘTO:', cardId);
+            playMyCard(cardId);
+        });
+        console.log('Event listener dodany do #playerHand');
         
-        // Make other functions global too
+        // === GLOBALNE FUNKCJE ===
+        window.playMyCard = playMyCard;
         window.startGame = startGame;
         window.chooseGame = chooseGame;
         window.takeMusik = takeMusik;
         window.confirmDiscard = confirmDiscard;
         window.closeModal = closeModal;
+        
+        console.log('=== GRA ZAŁADOWANA ===');
+        console.log('Dostępne funkcje globalne:', Object.keys(window).filter(k => ['playMyCard','startGame','chooseGame','takeMusik','confirmDiscard','closeModal'].includes(k)));
+        console.log('Test playMyCard:', typeof window.playMyCard);
+        
+        // Funkcja testowa
+        window.testClick = function() {
+            alert('KLIK DZIAŁA!');
+            console.log('TEST CLICK OK!');
+        };
+        
+        // Test kliknięcia
+        setTimeout(() => {
+            console.log('>>> READY TO PLAY <<<');
+            console.log('Aby przetestować klik, wywołaj w konsoli: testClick()');
+        }, 1000);
 
         function setMessage(msg) {
             document.getElementById('message').textContent = msg;
