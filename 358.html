@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3-5-8: Wersja Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --table-color: #2d5a27;
@@ -18,7 +21,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Libre Baskerville', serif;
             background: #1a1a1a;
             height: 100vh;
             overflow: hidden;
@@ -149,8 +152,8 @@
         /* --- PRZECIWNICY --- */
         .opponents-area {
             display: flex;
-            justify-content: space-between;
-            width: 80%;
+            justify-content: space-around;
+            width: 70%;
             margin: 0 auto;
             position: relative;
             top: -20px;
@@ -169,12 +172,12 @@
             justify-content: center;
         }
         .card-back {
-            width: 40px;
-            height: 60px;
+            width: 35px;
+            height: 50px;
             background: linear-gradient(135deg, #b71c1c 0%, #800000 100%);
             border: 2px solid #fff;
             border-radius: 4px;
-            margin: 0 -25px; /* Zakładka kart */
+            margin: 0 -20px; /* Zakładka kart */
             box-shadow: -2px 0 5px rgba(0,0,0,0.3);
         }
         .card-back:first-child { margin-left: 0; }
@@ -212,7 +215,7 @@
         .trick-p0 { transform: translateY(20px); z-index: 10; }
         /* Lewy (Darek) */
         .trick-p1 { transform: translate(-80px, -20px) rotate(-15deg); z-index: 5; }
-        /* Prawy (Kasia) */
+        /* Prawy (Leszek) */
         .trick-p2 { transform: translate(80px, -20px) rotate(15deg); z-index: 5; }
 
         .played-label {
@@ -356,9 +359,9 @@
                 top: 0;
             }
             .card-back {
-                width: 30px;
-                height: 45px;
-                margin: 0 -20px;
+                width: 25px;
+                height: 38px;
+                margin: 0 -15px;
             }
             .hand { 
                 height: 100px;
@@ -445,15 +448,14 @@
     <div class="menu-overlay" id="menu">
         <div class="menu-box">
             <div class="menu-title">3-5-8</div>
-            <div class="menu-subtitle">Edycja Elegancka</div>
             
             <div class="player-list">
-                <div style="margin-bottom:5px;">👤 <strong>Ty</strong></div>
-                <div style="margin-bottom:5px; color:#d32f2f;">😈 <strong>Darek</strong> (Uwaga!)</div>
-                <div style="color:#1976d2;">👩‍💼 <strong>Kasia</strong> (Pro)</div>
+                <div style="margin-bottom:5px;"><strong>Ty</strong></div>
+                <div style="margin-bottom:5px; color:#d32f2f;"><strong>Darek</strong> (Uwaga!)</div>
+                <div style="color:#1976d2;"><strong>Leszek</strong> (Średni)</div>
             </div>
             
-            <button class="btn" onclick="startGame()">Rozdaj Karty</button>
+            <button class="btn" onclick="startGame()">Rozdaj karty</button>
         </div>
     </div>
 
@@ -472,15 +474,17 @@
                     <div class="trick-count">Lew: <span id="tricksDarek">0</span></div>
                 </div>
                 <div class="score-item">
-                    <div class="score-name">Kasia</div>
-                    <div class="score-val" id="scoreKasia">0</div>
-                    <div class="trick-count">Lew: <span id="tricksKasia">0</span></div>
+                    <div class="score-name">Leszek</div>
+                    <div class="score-val" id="scoreLeszek">0</div>
+                    <div class="trick-count">Lew: <span id="tricksLeszek">0</span></div>
                 </div>
             </div>
 
             <div class="game-info">
                 <div class="game-status" id="gameType">Rozdanie 1</div>
                 <div class="game-msg" id="message">Oczekiwanie...</div>
+                <div id="usedGames" style="font-size: 0.7rem; margin-top: 5px; opacity: 0.8;"></div>
+                <button class="btn" onclick="showHistory()" style="margin-top: 10px; padding: 5px 15px; font-size: 0.8rem;">Historia</button>
             </div>
             
             <div style="width: 100px;"> </div>
@@ -519,8 +523,8 @@
         const RANKS_FULL = ['2','3','4','5','6','7','8','9','10','W','D','K','A'];
         const VALUES = {2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,W:11,D:12,K:13,A:14};
         
-        const PLAYERS = ['human','darek','kasia'];
-        const NAMES = {human:'Ty',darek:'Darek',kasia:'Kasia'};
+        const PLAYERS = ['human','darek','leszek'];
+        const NAMES = {human:'Ty',darek:'Darek',leszek:'Leszek'};
         
         // Helper: sortowanie kart
         function sortHand(hand) {
@@ -549,13 +553,18 @@
             dealer: 0,
             current: 0,
             trick: [],
-            scores: {human:0,darek:0,kasia:0},
-            tricks: {human:0,darek:0,kasia:0},
-            played: {human:[],darek:[],kasia:[]},
+            scores: {human:0,darek:0,leszek:0},           // Suma kumulowana
+            tricks: {human:0,darek:0,leszek:0},
+            played: {human:[],darek:[],leszek:[]},
+            lastRoundScores: {human:0,darek:0,leszek:0},  // Tylko ostatnia runda (windykacja)
             round: 1,
             gameType: null,
             trump: null,
-            selected: []
+            selected: [],
+            history: [],  // Historia: [{round, dealer, gameType, scores, tricks}]
+            windykacjaFrom: null,  // Kto oddaje karty
+            windykacjaTo: null,    // Kto bierze karty
+            windykacjaCount: 0     // Ile kart
         };
 
         function startGame() {
@@ -563,8 +572,10 @@
             document.getElementById('game').style.display = 'flex';
             state.dealer = Math.floor(Math.random() * 3);
             state.round = 1;
-            state.scores = {human:0,darek:0,kasia:0};
-            state.played = {human:[],darek:[],kasia:[]};
+            state.scores = {human:0,darek:0,leszek:0};
+            state.played = {human:[],darek:[],leszek:[]};
+            state.lastRoundScores = {human:0,darek:0,leszek:0};
+            state.history = [];
             dealCards();
         }
 
@@ -584,7 +595,7 @@
 
         function dealCards() {
             let deck = createDeck();
-            state.hands = {human:[],darek:[],kasia:[]};
+            state.hands = {human:[],darek:[],leszek:[]};
             state.musik = [];
             let idx = 0;
             
@@ -597,7 +608,7 @@
                 state.musik.push(deck[idx++]);
             }
 
-            state.tricks = {human:0,darek:0,kasia:0};
+            state.tricks = {human:0,darek:0,leszek:0};
             state.trick = [];
             state.selected = [];
             
@@ -606,13 +617,259 @@
             
             let lead = (state.dealer + 1) % 3;
             state.current = lead;
-            state.phase = 'choosing';
             
             updateDisplay();
             
             let dealerName = NAMES[PLAYERS[state.dealer]];
-            setMessage(`Rozdaje: ${dealerName}. ${NAMES[PLAYERS[lead]]} wybiera grę.`);
-
+            setMessage(`Rozdaje: ${dealerName}.`);
+            
+            // Sprawdź czy windykacja jest potrzebna
+            setTimeout(() => checkWindykacja(), 1000);
+        }
+        
+        function checkWindykacja() {
+            // Czy poprzednia gra to BA/BL? (brak windykacji)
+            let prevHistory = state.history[state.history.length - 1];
+            let skipWindykacja = prevHistory && (prevHistory.gameType === 'bezatu' || prevHistory.gameType === 'bezlew');
+            
+            console.log('=== WINDYKACJA CHECK ===');
+            console.log('Poprzednia gra:', prevHistory ? prevHistory.gameType : 'brak');
+            console.log('Skip windykacja:', skipWindykacja);
+            console.log('Last round scores:', state.lastRoundScores);
+            
+            if(skipWindykacja || state.round === 1) {
+                // Brak windykacji - od razu wybór gry
+                console.log('Brak windykacji - przejście do wyboru gry');
+                startChoosing();
+                return;
+            }
+            
+            // Znajdź pary do windykacji
+            let plusPlayers = PLAYERS.filter(p => state.lastRoundScores[p] > 0);
+            let minusPlayers = PLAYERS.filter(p => state.lastRoundScores[p] < 0);
+            
+            console.log('Plus players:', plusPlayers);
+            console.log('Minus players:', minusPlayers);
+            
+            if(plusPlayers.length === 0 || minusPlayers.length === 0) {
+                // Brak windykacji (wszyscy 0 lub wszyscy plus/minus - niemożliwe)
+                console.log('Brak par do windykacji');
+                startChoosing();
+                return;
+            }
+            
+            // Sortuj graczy na plusie po zobowiązaniu (malejąco)
+            plusPlayers.sort((a,b) => {
+                let reqA = getRequiredForPlayer(a);
+                let reqB = getRequiredForPlayer(b);
+                return reqB - reqA;  // Od największego
+            });
+            
+            console.log('Kolejność windykacji:', plusPlayers);
+            
+            // Rozpocznij windykację - używamy KOPII lastRoundScores
+            state.windykacjaQueue = [];
+            let tempScores = {...state.lastRoundScores};
+            
+            for(let plusPlayer of plusPlayers) {
+                for(let minusPlayer of minusPlayers) {
+                    let amount = Math.min(
+                        tempScores[plusPlayer],
+                        Math.abs(tempScores[minusPlayer])
+                    );
+                    if(amount > 0) {
+                        state.windykacjaQueue.push({
+                            from: minusPlayer,
+                            to: plusPlayer,
+                            count: amount
+                        });
+                        tempScores[plusPlayer] -= amount;
+                        tempScores[minusPlayer] += amount;
+                    }
+                }
+            }
+            
+            console.log('Windykacja queue:', state.windykacjaQueue);
+            
+            if(state.windykacjaQueue.length > 0) {
+                processNextWindykacja();
+            } else {
+                startChoosing();
+            }
+        }
+        
+        function getRequiredForPlayer(pid) {
+            let idx = PLAYERS.indexOf(pid);
+            let lead = (state.dealer + 1) % 3;
+            // Domyślnie zakładamy normalną grę dla sortowania
+            if(idx === lead) return 8;
+            if(idx === (lead+1)%3) return 5;
+            return 3;
+        }
+        
+        function processNextWindykacja() {
+            if(!state.windykacjaQueue || state.windykacjaQueue.length === 0) {
+                startChoosing();
+                return;
+            }
+            
+            let w = state.windykacjaQueue.shift();
+            state.phase = 'windykacja';
+            state.windykacjaFrom = w.from;
+            state.windykacjaTo = w.to;
+            state.windykacjaCount = w.count;
+            state.selected = [];
+            
+            console.log(`Windykacja: ${NAMES[w.to]} (+) bierze ${w.count} od ${NAMES[w.from]} (-)`);
+            
+            if(w.to === 'human') {
+                // Gracz daje karty
+                showWindykacjaGive();
+            } else if(w.from === 'human') {
+                // Gracz oddaje karty
+                showWindykacjaReceive();
+            } else {
+                // AI <-> AI
+                aiWindykacja(w);
+                setTimeout(() => processNextWindykacja(), 800);
+            }
+        }
+        
+        function showWindykacjaGive() {
+            setMessage(`Windykacja: Wybierz ${state.windykacjaCount} słabych kart do oddania graczowi ${NAMES[state.windykacjaFrom]}`);
+            updateDisplay();
+            
+            let zone = document.getElementById('choiceZone');
+            zone.innerHTML = `
+                <div class="choice-title">Windykacja: Ty (+) → ${NAMES[state.windykacjaFrom]} (-)</div>
+                <div class="choice-title">Wybierz ${state.windykacjaCount} słabych kart do oddania (${state.selected.length}/${state.windykacjaCount})</div>
+                <button class="btn" id="confirmWindGive" onclick="confirmWindykacjaGive()" disabled>Potwierdź</button>
+            `;
+            zone.style.display = 'flex';
+        }
+        
+        function showWindykacjaReceive() {
+            setMessage(`Windykacja: ${NAMES[state.windykacjaTo]} daje Ci ${state.windykacjaCount} słabych kart, oddasz najmocniejsze w ich kolorach`);
+            
+            // AI wybiera słabe karty
+            let aiHand = state.hands[state.windykacjaTo];
+            let sorted = [...aiHand].sort((a,b) => VALUES[a.rank] - VALUES[b.rank]);
+            let givenCards = sorted.slice(0, state.windykacjaCount);
+            
+            // Zapisz w state
+            state.windykacjaGivenCards = givenCards;
+            
+            updateDisplay();
+            
+            let zone = document.getElementById('choiceZone');
+            let cardsHtml = '<div style="display:flex; gap:10px; justify-content:center; margin:15px 0;">';
+            givenCards.forEach(c => {
+                cardsHtml += renderCardHTML(c, false, true, false);
+            });
+            cardsHtml += '</div>';
+            
+            zone.innerHTML = `
+                <div class="choice-title">Windykacja: ${NAMES[state.windykacjaTo]} (+) → Ty (-)</div>
+                <div class="choice-title">${NAMES[state.windykacjaTo]} daje Ci:</div>
+                ${cardsHtml}
+                <div class="choice-title">Wybierz ${state.windykacjaCount} najmocniejszych w tych kolorach (${state.selected.length}/${state.windykacjaCount})</div>
+                <button class="btn" id="confirmWindRec" onclick="confirmWindykacjaReceive()" disabled>Potwierdź</button>
+            `;
+            zone.style.display = 'flex';
+        }
+        
+        function confirmWindykacjaGive() {
+            if(state.selected.length !== state.windykacjaCount) return;
+            
+            let givenCards = [...state.selected];
+            state.hands.human = state.hands.human.filter(c => !givenCards.find(g => g.id === c.id));
+            
+            // Przeciwnik oddaje najmocniejsze
+            let oppHand = state.hands[state.windykacjaFrom];
+            let received = [];
+            
+            for(let given of givenCards) {
+                let suitCards = oppHand.filter(c => c.suit === given.suit);
+                let strongest;
+                if(suitCards.length > 0) {
+                    strongest = suitCards.reduce((max, c) => VALUES[c.rank] > VALUES[max.rank] ? c : max);
+                } else {
+                    // Brak koloru - dowolna karta (najsłabsza)
+                    strongest = oppHand.reduce((min, c) => VALUES[c.rank] < VALUES[min.rank] ? c : min);
+                }
+                received.push(strongest);
+                oppHand = oppHand.filter(c => c.id !== strongest.id);
+            }
+            
+            state.hands[state.windykacjaFrom] = oppHand;
+            state.hands[state.windykacjaFrom].push(...givenCards);
+            state.hands.human.push(...received);
+            
+            sortHand(state.hands.human);
+            
+            state.selected = [];
+            document.getElementById('choiceZone').style.display = 'none';
+            
+            setTimeout(() => processNextWindykacja(), 500);
+        }
+        
+        function confirmWindykacjaReceive() {
+            if(state.selected.length !== state.windykacjaCount) return;
+            
+            let givenCards = state.windykacjaGivenCards;
+            let returnCards = [...state.selected];
+            
+            state.hands.human = state.hands.human.filter(c => !returnCards.find(r => r.id === c.id));
+            state.hands[state.windykacjaTo] = state.hands[state.windykacjaTo].filter(c => !givenCards.find(g => g.id === c.id));
+            
+            state.hands.human.push(...givenCards);
+            state.hands[state.windykacjaTo].push(...returnCards);
+            
+            sortHand(state.hands.human);
+            
+            state.selected = [];
+            state.windykacjaGivenCards = null;
+            document.getElementById('choiceZone').style.display = 'none';
+            
+            setTimeout(() => processNextWindykacja(), 500);
+        }
+        
+        function aiWindykacja(w) {
+            let giverHand = state.hands[w.to];
+            let receiverHand = state.hands[w.from];
+            
+            // AI daje najsłabsze
+            let sorted = [...giverHand].sort((a,b) => VALUES[a.rank] - VALUES[b.rank]);
+            let given = sorted.slice(0, w.count);
+            
+            // AI odbiera najmocniejsze w kolorach
+            let received = [];
+            for(let g of given) {
+                let suitCards = receiverHand.filter(c => c.suit === g.suit);
+                let strongest;
+                if(suitCards.length > 0) {
+                    strongest = suitCards.reduce((max, c) => VALUES[c.rank] > VALUES[max.rank] ? c : max);
+                } else {
+                    strongest = receiverHand.reduce((min, c) => VALUES[c.rank] < VALUES[min.rank] ? c : min);
+                }
+                received.push(strongest);
+                receiverHand = receiverHand.filter(c => c.id !== strongest.id);
+            }
+            
+            state.hands[w.to] = giverHand.filter(c => !given.find(g => g.id === c.id));
+            state.hands[w.to].push(...received);
+            
+            state.hands[w.from] = receiverHand;
+            state.hands[w.from].push(...given);
+        }
+        
+        function startChoosing() {
+            let lead = (state.dealer + 1) % 3;
+            state.current = lead;
+            state.phase = 'choosing';
+            
+            updateDisplay();
+            setMessage(`${NAMES[PLAYERS[lead]]} wybiera grę.`);
             if(lead !== 0) {
                 setTimeout(() => aiChooseGame(lead), 1500);
             } else {
@@ -652,6 +909,15 @@
             let first5 = hand.slice(0,5);
             let available = GAMES.filter(g => !state.played[pid].includes(g.id));
             
+            // STRATEGIA WINDYKACYJNA
+            let lastScore = state.lastRoundScores[pid] || 0;
+            let prevGameType = state.history.length > 0 ? state.history[state.history.length - 1].gameType : null;
+            
+            console.log(`=== AI WYBÓR GRY: ${NAMES[pid]} ===`);
+            console.log('Poprzednia gra:', prevGameType);
+            console.log('Ostatni wynik:', lastScore);
+            
+            // Ocena siły kolorów
             let strength = {};
             for(let s of SUITS) {
                 let cards = first5.filter(c => c.suit === s);
@@ -661,6 +927,63 @@
                 }, 0);
             }
             
+            let maxStrength = Math.max(...Object.values(strength));
+            console.log('Siły kolorów:', strength);
+            console.log('Najsilniejszy kolor:', maxStrength);
+            
+            // Jeśli jesteś NA PLUSIE - NIE wybieraj BA/BL (stracisz przewagę z windykacji w następnej rundzie)
+            if(lastScore > 0) {
+                console.log('NA PLUSIE (+' + lastScore + ') - usuwam BA/BL z opcji');
+                available = available.filter(g => g.id !== 'bezatu' && g.id !== 'bezlew');
+                if(available.length === 0) {
+                    // Wszystkie atuty zagrane - musi wybrać BA/BL
+                    available = GAMES.filter(g => !state.played[pid].includes(g.id));
+                    console.log('Wszystkie atuty zagrane - muszę wybrać BA/BL mimo plusu');
+                }
+            }
+            
+            // Jeśli jesteś NA MINUSIE i poprzednia gra NIE była BA/BL - rozważ ucieczkę
+            if(lastScore < 0 && prevGameType !== 'bezatu' && prevGameType !== 'bezlew') {
+                console.log('NA MINUSIE (' + lastScore + ') + BYŁA WINDYKACJA');
+                
+                let escapeGames = available.filter(g => g.id === 'bezatu' || g.id === 'bezlew');
+                
+                if(escapeGames.length > 0) {
+                    // Jeśli mam BARDZO SILNY kolor (6+) - ryzykuj mimo minusa
+                    if(maxStrength >= 6) {
+                        console.log('Mam silny kolor (' + maxStrength + ') - ryzykuję mimo minusa');
+                        // 30% szans na ucieczkę mimo silnej ręki
+                        if(Math.random() < 0.3) {
+                            console.log('Mimo silnej ręki wybieram BA/BL jako ucieczkę');
+                            let escape = escapeGames[Math.floor(Math.random() * escapeGames.length)];
+                            chooseGame(escape.id);
+                            return;
+                        }
+                    } 
+                    // Jeśli mam ŚREDNI kolor (4-5) - 50/50
+                    else if(maxStrength >= 4) {
+                        console.log('Średnia ręka (' + maxStrength + ') - rozważam BA/BL');
+                        if(Math.random() < 0.5) {
+                            console.log('Wybieram BA/BL jako ucieczkę');
+                            let escape = escapeGames[Math.floor(Math.random() * escapeGames.length)];
+                            chooseGame(escape.id);
+                            return;
+                        }
+                    }
+                    // Jeśli mam SŁABĄ rękę (< 4) - prawie zawsze ucieczka
+                    else {
+                        console.log('Słaba ręka (' + maxStrength + ') - priorytet BA/BL');
+                        if(Math.random() < 0.8) {
+                            console.log('Wybieram BA/BL jako ucieczkę');
+                            let escape = escapeGames[Math.floor(Math.random() * escapeGames.length)];
+                            chooseGame(escape.id);
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // Standardowy wybór na podstawie siły kolorów
             let best = available[0];
             let bestScore = -100;
             
@@ -669,15 +992,18 @@
                 if(g.trump) {
                     score = strength[g.trump] || 0;
                 } else if(g.id === 'bezatu') {
-                    score = Object.values(strength).reduce((a,b)=>a+b,0) / 2;
-                } else {
-                    score = 5; 
+                    // BA mniej atrakcyjne gdy jesteś na 0 (brak windykacji)
+                    score = lastScore === 0 ? 3 : Object.values(strength).reduce((a,b)=>a+b,0) / 2;
+                } else if(g.id === 'bezlew') {
+                    score = lastScore === 0 ? 3 : 5;
                 }
                 if(score > bestScore) {
                     bestScore = score;
                     best = g;
                 }
             }
+            
+            console.log('Wybrano:', best.name);
             chooseGame(best.id);
         }
 
@@ -835,6 +1161,10 @@
         }
 
         function playCard(card, idx) {
+            console.log('=== PLAY CARD ===');
+            console.log('Player:', NAMES[PLAYERS[idx]], '(', idx, ')');
+            console.log('Card:', card.rank + card.suit);
+            
             let pid = PLAYERS[idx];
             state.hands[pid] = state.hands[pid].filter(c => c.id !== card.id);
             
@@ -845,13 +1175,17 @@
             
             state.trick.push({player:idx, card:card});
             
+            console.log('Lewa ma teraz', state.trick.length, 'karty');
+            
             updateDisplay();
             
             if(state.trick.length === 3) {
+                console.log('Lewa kompletna - wywołuję completeTrick za 1.2s');
                 setTimeout(() => completeTrick(), 1200);
             } else {
                 let next = (idx + 1) % 3;
                 state.current = next;
+                console.log('Następny gracz:', NAMES[PLAYERS[next]], '(', next, ')');
                 setMessage(`${NAMES[PLAYERS[next]]} zagrywa...`);
                 if(next !== 0) {
                     setTimeout(() => {
@@ -859,7 +1193,9 @@
                         aiPlay(next);
                     }, 600);
                 } else {
+                    console.log('>>> TO TWOJA TURA! <<<');
                     setMessage('Twoja kolej!');
+                    updateDisplay(); // WAŻNE! Odśwież UI
                 }
             }
         }
@@ -916,6 +1252,7 @@
                             aiPlay(winner.player);
                         }, 600);
                     } else {
+                        console.log('>>> GRACZ DOSTAJE TURĘ! <<<');
                         setMessage('Twoja kolej!');
                         updateDisplay();
                     }
@@ -927,13 +1264,15 @@
             let lead = (state.dealer + 1) % 3;
             
             if(state.gameType === 'bezlew') {
-                if(idx === lead) return 8;
-                if(idx === (lead+1)%3) return 5;
-                return 3;
+                // W BEZ LEW odwrotnie - ten co ma musik ma najmniejsze zobowiązanie
+                if(idx === lead) return 3;           // Wybierający (musik) → 3
+                if(idx === (lead+1)%3) return 5;     // Następny → 5
+                return 8;                            // Dealer → 8
             } else {
-                if(idx === lead) return 8;
-                if(idx === (lead+1)%3) return 5;
-                return 3;
+                // Normalna gra
+                if(idx === lead) return 8;           // Wybierający (musik) → 8
+                if(idx === (lead+1)%3) return 5;     // Następny → 5
+                return 3;                            // Dealer → 3
             }
         }
 
@@ -943,12 +1282,42 @@
                 let pid = PLAYERS[i];
                 let req = getRequired(i);
                 let taken = state.tricks[pid];
-                roundScores[pid] = taken - req;
+                
+                // W BEZ LEW punktacja odwrócona - im mniej lew, tym lepiej
+                if(state.gameType === 'bezlew') {
+                    roundScores[pid] = req - taken;  // Zobowiązane MINUS wzięte
+                } else {
+                    roundScores[pid] = taken - req;  // Wzięte MINUS zobowiązane (normalnie)
+                }
             }
 
+            // Zapisz do historii
+            state.history.push({
+                round: state.round,
+                dealer: state.dealer,
+                gameType: state.gameType,
+                trump: state.trump,
+                roundScores: {...roundScores},
+                tricks: {...state.tricks},
+                cumulativeScores: {
+                    human: state.scores.human + roundScores.human,
+                    darek: state.scores.darek + roundScores.darek,
+                    leszek: state.scores.leszek + roundScores.leszek
+                }
+            });
+            
+            // Zaktualizuj salda
             for(let pid of PLAYERS) {
                 state.scores[pid] += roundScores[pid];
             }
+            
+            // Zapisz wyniki z ostatniej rundy (do windykacji)
+            state.lastRoundScores = {...roundScores};
+            
+            console.log('=== KONIEC RUNDY ===');
+            console.log('Round scores:', roundScores);
+            console.log('Cumulative scores:', state.scores);
+            console.log('Last round scores (windykacja):', state.lastRoundScores);
             
             let html = '';
             for(let i=0; i<3; i++) {
@@ -963,6 +1332,14 @@
                     <span style="color:${color}; font-weight:bold">${sc>0?'+':''}${sc}</span>
                 </div>`;
             }
+            
+            html += '<div style="margin-top:15px; padding-top:15px; border-top:1px solid #ccc;">';
+            html += '<div style="font-weight:bold; margin-bottom:10px;">Suma po rundzie ' + state.round + ':</div>';
+            for(let pid of PLAYERS) {
+                let color = state.scores[pid] >= 0 ? 'green' : 'red';
+                html += `<div>${NAMES[pid]}: <span style="color:${color}; font-weight:bold">${state.scores[pid]>0?'+':''}${state.scores[pid]}</span></div>`;
+            }
+            html += '</div>';
             
             showModal('Koniec rozdania ' + state.round + '/18', html);
             
@@ -985,6 +1362,49 @@
             dealCards();
         }
 
+        function showHistory() {
+            if(state.history.length === 0) {
+                alert('Brak historii - zagraj pierwszą rundę!');
+                return;
+            }
+            
+            let html = '<div style="max-height: 400px; overflow-y: auto;">';
+            html += '<table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">';
+            html += '<tr style="background: #f0f0f0; font-weight: bold;"><th style="padding:8px; border:1px solid #ddd;">Runda</th><th style="border:1px solid #ddd;">Typ</th><th style="border:1px solid #ddd;">Dealer</th><th style="border:1px solid #ddd;">Ty</th><th style="border:1px solid #ddd;">Darek</th><th style="border:1px solid #ddd;">Leszek</th></tr>';
+            
+            state.history.forEach(h => {
+                let gameSymbol = '';
+                let g = GAMES.find(x => x.id === h.gameType);
+                if(g) {
+                    if(g.trump) gameSymbol = g.trump;
+                    else if(g.id === 'bezatu') gameSymbol = 'BA';
+                    else if(g.id === 'bezlew') gameSymbol = 'BL';
+                }
+                
+                html += '<tr>';
+                html += `<td style="padding:8px; border:1px solid #ddd; text-align:center;">${h.round}</td>`;
+                html += `<td style="border:1px solid #ddd; text-align:center;">${gameSymbol}</td>`;
+                html += `<td style="border:1px solid #ddd; text-align:center;">${NAMES[PLAYERS[h.dealer]]}</td>`;
+                
+                PLAYERS.forEach(pid => {
+                    let score = h.roundScores[pid];
+                    let cumScore = h.cumulativeScores[pid];
+                    let color = score >= 0 ? 'green' : 'red';
+                    html += `<td style="border:1px solid #ddd; text-align:center; padding:5px;">`;
+                    html += `<div style="color:${color}; font-weight:bold;">${score>0?'+':''}${score}</div>`;
+                    html += `<div style="font-size:0.8rem; opacity:0.7;">(${cumScore>0?'+':''}${cumScore})</div>`;
+                    html += `</td>`;
+                });
+                
+                html += '</tr>';
+            });
+            
+            html += '</table></div>';
+            html += '<div style="margin-top:15px; font-size:0.8rem; opacity:0.7;">Górna liczba: wynik rundy | (Dolna): suma kumulowana</div>';
+            
+            showModal('Historia gry', html);
+        }
+
         function endGame() {
             let winner = PLAYERS.reduce((w, p) => state.scores[p] > state.scores[w] ? p : w, PLAYERS[0]);
             let html = `<div style="text-align:center; font-size:1.5rem; color:#2e7d32;">Wygrał: ${NAMES[winner]}!</div>`;
@@ -996,11 +1416,31 @@
 
         function updateDisplay() {
             // Wyniki
-            ['Human','Darek','Kasia'].forEach(name => {
+            ['Human','Darek','Leszek'].forEach(name => {
                 let key = name.toLowerCase();
                 document.getElementById('score'+name).textContent = state.scores[key];
                 document.getElementById('tricks'+name).textContent = state.tricks[key];
             });
+            
+            // Wyświetl użyte typy gier
+            let usedGamesHtml = '';
+            PLAYERS.forEach(pid => {
+                let played = state.played[pid] || [];
+                if(played.length > 0) {
+                    let symbols = played.map(gid => {
+                        let g = GAMES.find(x => x.id === gid);
+                        if(!g) return gid;
+                        if(g.trump) return g.trump;
+                        if(g.id === 'bezatu') return 'BA';
+                        if(g.id === 'bezlew') return 'BL';
+                        return g.name.substring(0,2);
+                    }).join(' ');
+                    usedGamesHtml += `<span style="margin-right:10px;"><strong>${NAMES[pid]}:</strong> ${symbols}</span>`;
+                }
+            });
+            if(usedGamesHtml) {
+                document.getElementById('usedGames').innerHTML = usedGamesHtml;
+            }
 
             // Przeciwnicy (góra)
             let opHtml = '';
@@ -1052,6 +1492,13 @@
             if(!state.hands.human || state.hands.human.length === 0) {
                 console.error('BŁĄD: Brak kart w ręce gracza!');
                 handHtml = '<div style="color:white;">Błąd: brak kart</div>';
+            } else if(state.phase === 'windykacja') {
+                // Windykacja - wybór kart do oddania/przyjęcia
+                console.log('Renderuję karty w fazie WINDYKACJA');
+                state.hands.human.forEach(card => {
+                    let isSel = state.selected.find(c => c.id === card.id);
+                    handHtml += renderCardHTML(card, isSel, true, true);
+                });
             } else if(state.phase === 'musik' && state.musik.length === 0) {
                 // Podczas fazy musik (oddawanie kart) - wszystkie karty klikalne
                 console.log('Renderuję karty w fazie MUSIK');
@@ -1097,6 +1544,7 @@
             // Debug
             console.log('=== UPDATE DISPLAY ===');
             console.log('Phase:', state.phase);
+            console.log('Current player:', state.current, '(' + NAMES[PLAYERS[state.current]] + ')');
             console.log('Musik length:', state.musik.length);
             console.log('Hand size:', state.hands.human ? state.hands.human.length : 'BRAK');
             console.log('Selected:', state.selected.length);
@@ -1132,7 +1580,35 @@
                 return;
             }
             
-            // FAZA 1: Oddawanie kart
+            // FAZA 0: Windykacja
+            if(state.phase === 'windykacja') {
+                console.log('Tryb: windykacja - wybieranie kart');
+                
+                // Czy już wybrana?
+                let idx = state.selected.findIndex(c => c.id === cardId);
+                if(idx >= 0) {
+                    // Odznacz
+                    state.selected.splice(idx, 1);
+                    console.log('Odznaczono, teraz wybrano:', state.selected.length);
+                } else {
+                    // Zaznacz (max windykacjaCount)
+                    if(state.selected.length < state.windykacjaCount) {
+                        state.selected.push(card);
+                        console.log('Zaznaczono, teraz wybrano:', state.selected.length);
+                    }
+                }
+                
+                // Aktywuj/dezaktywuj przycisk potwierdzenia
+                let btn = document.getElementById('confirmWindGive') || document.getElementById('confirmWindRec');
+                if(btn) {
+                    btn.disabled = state.selected.length !== state.windykacjaCount;
+                }
+                
+                updateDisplay();
+                return;
+            }
+            
+            // FAZA 1: Oddawanie kart (musik)
             if(state.phase === 'musik' && state.musik.length === 0) {
                 console.log('Tryb: wybieranie kart do oddania');
                 
@@ -1197,6 +1673,9 @@
         window.takeMusik = takeMusik;
         window.confirmDiscard = confirmDiscard;
         window.closeModal = closeModal;
+        window.confirmWindykacjaGive = confirmWindykacjaGive;
+        window.confirmWindykacjaReceive = confirmWindykacjaReceive;
+        window.showHistory = showHistory;
         
         console.log('=== GRA ZAŁADOWANA ===');
         console.log('Dostępne funkcje globalne:', Object.keys(window).filter(k => ['playMyCard','startGame','chooseGame','takeMusik','confirmDiscard','closeModal'].includes(k)));
