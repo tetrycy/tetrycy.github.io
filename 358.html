@@ -1114,6 +1114,7 @@
             console.log('=== GET VALID ===');
             console.log('Hand size:', hand.length);
             console.log('Trick size:', trick.length);
+            console.log('Trump:', trump);
             
             // Pierwszy wychodzi - wszystkie karty dozwolone
             if(trick.length === 0) {
@@ -1124,18 +1125,95 @@
             let leadSuit = trick[0].card.suit;
             console.log('Kolor wyjścia:', leadSuit);
             
+            // Znajdź najwyższą kartę w lewie
+            let highestInTrick = trick[0].card;
+            let highestIsTrump = trump && highestInTrick.suit === trump;
+            
+            for(let i = 1; i < trick.length; i++) {
+                let card = trick[i].card;
+                let cardIsTrump = trump && card.suit === trump;
+                
+                // Jeśli karta to atut a najwyższa nie
+                if(cardIsTrump && !highestIsTrump) {
+                    highestInTrick = card;
+                    highestIsTrump = true;
+                }
+                // Jeśli obie atuty - wyższa wygrywa
+                else if(cardIsTrump && highestIsTrump) {
+                    if(VALUES[card.rank] > VALUES[highestInTrick.rank]) {
+                        highestInTrick = card;
+                    }
+                }
+                // Jeśli obie w kolorze wyjścia (nie atuty)
+                else if(!cardIsTrump && !highestIsTrump && card.suit === leadSuit && highestInTrick.suit === leadSuit) {
+                    if(VALUES[card.rank] > VALUES[highestInTrick.rank]) {
+                        highestInTrick = card;
+                    }
+                }
+            }
+            
+            console.log('Najwyższa w lewie:', highestInTrick.id, highestIsTrump ? '(ATUT)' : '(kolor)');
+            
             // Karty w kolorze wyjścia
             let sameSuit = hand.filter(c => c.suit === leadSuit);
             console.log('Kart w kolorze:', sameSuit.length);
             
-            // Jeśli masz kolor - MUSISZ dołożyć do koloru (dowolną)
+            // PRZYPADEK 1: Mam kolor wyjścia
             if(sameSuit.length > 0) {
-                console.log('Mam kolor - muszę dołożyć');
-                return sameSuit;
+                // Czy najwyższa w lewie to atut?
+                if(highestIsTrump) {
+                    // Lewa przebita atutem - nie muszę bić (mam tylko kolor)
+                    console.log('Lewa przebita atutem - nie mogę przebić kolorem');
+                    return sameSuit;
+                }
+                
+                // Najwyższa to kolor - sprawdź czy mogę przebić
+                let canBeat = sameSuit.filter(c => VALUES[c.rank] > VALUES[highestInTrick.rank]);
+                
+                if(canBeat.length > 0) {
+                    // MUSISZ PRZEBIĆ
+                    console.log('OBOWIĄZEK BICIA - mam wyższe karty w kolorze:', canBeat.length);
+                    return canBeat;
+                } else {
+                    // Nie mogę przebić - dowolna karta w kolorze
+                    console.log('Nie mogę przebić - dowolna karta w kolorze');
+                    return sameSuit;
+                }
             }
             
-            // Nie masz koloru - możesz zagrać co chcesz
-            console.log('Nie mam koloru - wszystkie karty OK');
+            // PRZYPADEK 2: Nie mam koloru
+            console.log('Nie mam koloru');
+            
+            // Czy mam atut?
+            if(trump) {
+                let trumpCards = hand.filter(c => c.suit === trump);
+                console.log('Kart atutowych:', trumpCards.length);
+                
+                if(trumpCards.length > 0) {
+                    // Czy najwyższa w lewie to atut?
+                    if(highestIsTrump) {
+                        // Lewa już przebita atutem - sprawdź czy mogę przebić wyższym atutem
+                        let canBeatTrump = trumpCards.filter(c => VALUES[c.rank] > VALUES[highestInTrick.rank]);
+                        
+                        if(canBeatTrump.length > 0) {
+                            // MUSISZ PRZEBIĆ wyższym atutem
+                            console.log('OBOWIĄZEK BICIA WYŻSZYM ATUTEM:', canBeatTrump.length);
+                            return canBeatTrump;
+                        } else {
+                            // Nie masz wyższego atutu - dowolny atut
+                            console.log('Nie masz wyższego atutu - dowolny atut');
+                            return trumpCards;
+                        }
+                    } else {
+                        // Lewa w kolorze - MUSISZ zabić atutem
+                        console.log('OBOWIĄZEK BICIA ATUTEM');
+                        return trumpCards;
+                    }
+                }
+            }
+            
+            // Nie masz koloru ani atutu - dowolna karta
+            console.log('Nie mam koloru ani atutu - wszystkie karty OK');
             return hand;
         }
 
