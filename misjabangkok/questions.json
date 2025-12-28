@@ -67,66 +67,6 @@
               ]
             }
           ]
-        },
-        {
-          "id": "set2",
-          "rounds": [
-            {
-              "topic": "Drużyna zagrała w różowych strojach sponsora",
-              "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Marketing jest ważny w futbolu!", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Jaworznie mieliśmy kiedyś żółte stroje...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Wstyd! Piłkarze wyglądają jak błazny!", "onSuccess": 8, "onFail": -3 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Kolor stroju nie wpływa na wynik meczu", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sponsor ma prawo do promocji swojej marki", "onSuccess": 6, "onFail": -1 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Nietypowe, ale jeśli pomaga klubowi finansowo...", "onSuccess": 5, "onFail": 0 }
-              ]
-            },
-            {
-              "topic": "Bramkarz złapał gołębia w locie podczas meczu",
-              "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "To się trafia! Natura!", "onSuccess": 7, "onFail": -1 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Raz na Łazienkowskiej wleciała wrona...", "onSuccess": 8, "onFail": -2 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "To nieodpowiedzialne! Ptak mógł się zranić!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Instynkt łowiecki, naturalna reakcja", "onSuccess": 6, "onFail": -1 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sytuacje z ptakami wymagają przerwania gry", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Zabawny moment, ale nie powinno się to powtórzyć", "onSuccess": 6, "onFail": 0 }
-              ]
-            },
-            {
-              "topic": "Napastnik strzelił bramkę do własnej bramki",
-              "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Każdy może się pomylić!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Pamiętam jak Mila...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "To skandal! Trener powinien go ściągnąć!", "onSuccess": 10, "onFail": -4 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Być może chciał zagrać do bramkarza", "onSuccess": 6, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Samobójcze bramki się zdarzają w futbolu", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Pechowa sytuacja, ale nie koniec świata", "onSuccess": 6, "onFail": -1 }
-              ]
-            },
-            {
-              "topic": "Prezes krzyczy z pierwszego rzędu przez cały mecz",
-              "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Prezes jest fanem! Ma prawo kibicować!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Znam jednego prezesa w Bełchatowie...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Prezes powinien zachowywać się z klasą!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Może to presja na piłkarzy i sędziów", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Prezesi mają swoje miejsce na trybunach jak wszyscy", "onSuccess": 6, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Emocje są naturalne, ale warto zachować umiar", "onSuccess": 6, "onFail": -1 }
-              ]
-            },
-            {
-              "topic": "Mecz rozegrany w błocie po kostki",
-              "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Prawdziwa piłka! Nie żadne trawki!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Mielcu graliśmy raz w takiej aurze...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Mecz powinien być przełożony! To żenada!", "onSuccess": 9, "onFail": -4 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Warunki równe dla obu drużyn", "onSuccess": 7, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Regulamin przewiduje odwołanie przy takiej pogodzie", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Trudne warunki, ale czasem trzeba grać", "onSuccess": 6, "onFail": 0 }
-              ]
-            }
-          ]
         }
       ]
     },
