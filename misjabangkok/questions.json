@@ -3,7 +3,7 @@
     {
       "id": "A",
       "name": "Gość Tetryków",
-      "description": "Niska oglądalność. Wtorek 8:30. Jacyś dwaj goście z Łodzi. Stawka sympatii: 10.",
+      "description": "Niska oglądalność. Wtorek 8:30. Jacyś dwaj goście z Łodzi. Nawet nie siedzą na kanapach i nie jest ich czterech. Cóż, jakoś trzeba zacząć. Stawka sympatii: 10.",
       "targetPoints": 20,
       "sympathyStake": 10,
       "graphic": "assets/program-tetryki.jpg",
@@ -12,14 +12,14 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "Mecz B-klasy przerwany, bo na boisko wbiegły kury",
+              "topic": "Gdybyś nie wolał być sokołem wędrownym, to kim?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "To wieś, tam tak jest!", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś w Radomsku graliśmy na boisku obok kurnika...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Gospodarz obiektu to amator!", "onSuccess": 8, "onFail": -3 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Dlaczego nie ma ogrodzenia?", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Regulamin nakazuje przerwę w takich sytuacjach", "onSuccess": 6, "onFail": -1 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "To zabawna sytuacja, ale trzeba szanować przepisy", "onSuccess": 5, "onFail": 0 }
+                { "type": "POPULIZM", "min": 8, "max": 18, "text": "Chcę być tylko młodym Polakiem", "onSuccess": 7, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś, na testach w Oberhausen, na boisko wleciał sokół wędrowny. Nikt nie mógł go złapać. Przeszkadzał w treningu. Niemcy zbaranieli. Wtedy ja założyłem mu siatkę, a potem przekonałem go, żeby poleciał na boisko naszego derbowego rywala im przeszkadzać", "onSuccess": 8, "onFail": -4 },
+                { "type": "ATAK", "min": 6, "max": 18, "text": "Co to w ogóle za pytanie? Myślałem, że to program piłkarski", "onSuccess": 3, "onFail": -8 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Każdy ma w sobie współczynnik expectedSokółWędrowny", "onSuccess": 2, "onFail": -1 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Proszę panów, nie ma nic lepszego, niż być sokołem wędrownym. To są fakty.", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZMYŚLAJ", "min": 13, "max": 18, "text": "Jestem sokołem wędrownym", "onSuccess": 10, "onFail": -3 }
               ]
             },
             {
