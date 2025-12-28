@@ -14,56 +14,56 @@
             {
               "topic": "Mecz B-klasy przerwany, bo na boisko wbiegły kury",
               "options": [
-                { "type": "POPULIZM", "min": 3, "max": 8, "text": "To wieś, tam tak jest!", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 9, "max": 13, "text": "Kiedyś w Radomsku graliśmy na boisku obok kurnika...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 14, "max": 18, "text": "Gospodarz obiektu to amator!", "onSuccess": 8, "onFail": -3 },
-                { "type": "ANALIZA", "parity": "even", "text": "Dlaczego nie ma ogrodzenia?", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 15, "text": "Regulamin nakazuje przerwę w takich sytuacjach", "onSuccess": 6, "onFail": -1 },
-                { "type": "UMIARKOWANA OPINIA", "min": 8, "max": 12, "text": "To zabawna sytuacja, ale trzeba szanować przepisy", "onSuccess": 5, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "To wieś, tam tak jest!", "onSuccess": 7, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś w Radomsku graliśmy na boisku obok kurnika...", "onSuccess": 6, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Gospodarz obiektu to amator!", "onSuccess": 8, "onFail": -3 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Dlaczego nie ma ogrodzenia?", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Regulamin nakazuje przerwę w takich sytuacjach", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "To zabawna sytuacja, ale trzeba szanować przepisy", "onSuccess": 5, "onFail": 0 }
               ]
             },
             {
               "topic": "Trener prowadził wywiad w klapkach i szortach",
               "options": [
-                { "type": "POPULIZM", "min": 4, "max": 9, "text": "Trener też człowiek, ma prawo do luzu!", "onSuccess": 7, "onFail": -1 },
-                { "type": "ANEGDOTA", "min": 10, "max": 14, "text": "Boniek raz prowadził w dresie na zgrupowaniu...", "onSuccess": 8, "onFail": -2 },
-                { "type": "ATAK", "min": 15, "max": 18, "text": "Brak szacunku do telewizji i widzów!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANALIZA", "parity": "odd", "text": "W upale? Rozsądna decyzja fizjologicznie", "onSuccess": 6, "onFail": -1 },
-                { "type": "MERYTORYKA", "min": 9, "max": 13, "text": "Dress code w wywiadach nie jest oficjalnie określony", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 7, "max": 11, "text": "Wygląd mniej ważny niż treść wypowiedzi", "onSuccess": 6, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Trener też człowiek, ma prawo do luzu!", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Boniek raz prowadził w dresie na zgrupowaniu...", "onSuccess": 8, "onFail": -2 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Brak szacunku do telewizji i widzów!", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "W upale? Rozsądna decyzja fizjologicznie", "onSuccess": 6, "onFail": -1 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Dress code w wywiadach nie jest oficjalnie określony", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Wygląd mniej ważny niż treść wypowiedzi", "onSuccess": 6, "onFail": 0 }
               ]
             },
             {
               "topic": "Sędzia nie uznał bramki po faulu, którego nie było",
               "options": [
-                { "type": "POPULIZM", "min": 5, "max": 10, "text": "Trzeba wprowadzić VAR nawet w B-klasie!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 11, "max": 15, "text": "Mnie raz Grzegorczyk odgwizdał bramkę sezonu...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 16, "max": 18, "text": "Ten sędzia nie powinien więcej prowadzić!", "onSuccess": 10, "onFail": -4 },
-                { "type": "ANALIZA", "parity": "even", "text": "Z tego kąta kamery faktycznie mogło wyglądać na faul", "onSuccess": 6, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 14, "text": "Sędzia ma trudną pracę, błędy się zdarzają", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 8, "max": 12, "text": "Kontrowersyjna decyzja, ale musimy ją uszanować", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Trzeba wprowadzić VAR nawet w B-klasie!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Mnie raz Grzegorczyk odgwizdał bramkę sezonu...", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Ten sędzia nie powinien więcej prowadzić!", "onSuccess": 10, "onFail": -4 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Z tego kąta kamery faktycznie mogło wyglądać na faul", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sędzia ma trudną pracę, błędy się zdarzają", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Kontrowersyjna decyzja, ale musimy ją uszanować", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
               "topic": "Kibice rzucali w piłkarzy łupinami słonecznika przez cały mecz",
               "options": [
-                { "type": "POPULIZM", "min": 3, "max": 8, "text": "Kibice mają swoje prawa! Wolność!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANEGDOTA", "min": 9, "max": 13, "text": "W Gdańsku dostawałem kubkami z piwem...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 14, "max": 18, "text": "To chuligaństwo, trzeba ich wykluczyć!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANALIZA", "parity": "odd", "text": "Łupiny nie są ciężkie, to bardziej prowokacja", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 15, "text": "Rzucanie czymkolwiek jest zabronione regulaminem", "onSuccess": 6, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 7, "max": 11, "text": "Emocje są w piłce, ale to przekracza granicę", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Kibice mają swoje prawa! Wolność!", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Gdańsku dostawałem kubkami z piwem...", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "To chuligaństwo, trzeba ich wykluczyć!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Łupiny nie są ciężkie, to bardziej prowokacja", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Rzucanie czymkolwiek jest zabronione regulaminem", "onSuccess": 6, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Emocje są w piłce, ale to przekracza granicę", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
               "topic": "Co się stało pod Legnicą?",
               "options": [
-                { "type": "POPULIZM", "min": 14, "max": 18, "text": "Wszyscy to wiemy, nie trzeba powtarzać!", "onSuccess": 5, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 12, "max": 18, "text": "Nie wiem, ale kiedyś pod Legnicą z Bońkiem...", "onSuccess": 8, "onFail": -5 },
-                { "type": "ATAK", "min": 8, "max": 18, "text": "Kim wy w ogóle jesteście", "onSuccess": 9, "onFail": -4 },
-                { "type": "ANALIZA", "min": 17, "max": 18, "parity": "even", "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 3, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 3, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął...", "onSuccess": 3, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Wszyscy to wiemy, nie trzeba powtarzać!", "onSuccess": 5, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Nie wiem, ale kiedyś pod Legnicą z Bońkiem...", "onSuccess": 8, "onFail": -5 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Kim wy w ogóle jesteście", "onSuccess": 9, "onFail": -4 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął...", "onSuccess": 3, "onFail": 0 }
               ]
             }
           ]
@@ -74,56 +74,56 @@
             {
               "topic": "Drużyna zagrała w różowych strojach sponsora",
               "options": [
-                { "type": "POPULIZM", "min": 3, "max": 8, "text": "Marketing jest ważny w futbolu!", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 9, "max": 13, "text": "W Jaworznie mieliśmy kiedyś żółte stroje...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 14, "max": 18, "text": "Wstyd! Piłkarze wyglądają jak błazny!", "onSuccess": 8, "onFail": -3 },
-                { "type": "ANALIZA", "parity": "even", "text": "Kolor stroju nie wpływa na wynik meczu", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 15, "text": "Sponsor ma prawo do promocji swojej marki", "onSuccess": 6, "onFail": -1 },
-                { "type": "UMIARKOWANA OPINIA", "min": 8, "max": 12, "text": "Nietypowe, ale jeśli pomaga klubowi finansowo...", "onSuccess": 5, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Marketing jest ważny w futbolu!", "onSuccess": 7, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Jaworznie mieliśmy kiedyś żółte stroje...", "onSuccess": 6, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Wstyd! Piłkarze wyglądają jak błazny!", "onSuccess": 8, "onFail": -3 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Kolor stroju nie wpływa na wynik meczu", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sponsor ma prawo do promocji swojej marki", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Nietypowe, ale jeśli pomaga klubowi finansowo...", "onSuccess": 5, "onFail": 0 }
               ]
             },
             {
               "topic": "Bramkarz złapał gołębia w locie podczas meczu",
               "options": [
-                { "type": "POPULIZM", "min": 4, "max": 9, "text": "To się trafia! Natura!", "onSuccess": 7, "onFail": -1 },
-                { "type": "ANEGDOTA", "min": 10, "max": 14, "text": "Raz na Łazienkowskiej wleciała wrona...", "onSuccess": 8, "onFail": -2 },
-                { "type": "ATAK", "min": 15, "max": 18, "text": "To nieodpowiedzialne! Ptak mógł się zranić!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANALIZA", "parity": "odd", "text": "Instynkt łowiecki, naturalna reakcja", "onSuccess": 6, "onFail": -1 },
-                { "type": "MERYTORYKA", "min": 9, "max": 13, "text": "Sytuacje z ptakami wymagają przerwania gry", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 7, "max": 11, "text": "Zabawny moment, ale nie powinno się to powtórzyć", "onSuccess": 6, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "To się trafia! Natura!", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Raz na Łazienkowskiej wleciała wrona...", "onSuccess": 8, "onFail": -2 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "To nieodpowiedzialne! Ptak mógł się zranić!", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Instynkt łowiecki, naturalna reakcja", "onSuccess": 6, "onFail": -1 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sytuacje z ptakami wymagają przerwania gry", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Zabawny moment, ale nie powinno się to powtórzyć", "onSuccess": 6, "onFail": 0 }
               ]
             },
             {
               "topic": "Napastnik strzelił bramkę do własnej bramki",
               "options": [
-                { "type": "POPULIZM", "min": 5, "max": 10, "text": "Każdy może się pomylić!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 11, "max": 15, "text": "Pamiętam jak Mila...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 16, "max": 18, "text": "To skandal! Trener powinien go ściągnąć!", "onSuccess": 10, "onFail": -4 },
-                { "type": "ANALIZA", "parity": "even", "text": "Być może chciał zagrać do bramkarza", "onSuccess": 6, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 14, "text": "Samobójcze bramki się zdarzają w futbolu", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 8, "max": 12, "text": "Pechowa sytuacja, ale nie koniec świata", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Każdy może się pomylić!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Pamiętam jak Mila...", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "To skandal! Trener powinien go ściągnąć!", "onSuccess": 10, "onFail": -4 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Być może chciał zagrać do bramkarza", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Samobójcze bramki się zdarzają w futbolu", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Pechowa sytuacja, ale nie koniec świata", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
               "topic": "Prezes krzyczy z pierwszego rzędu przez cały mecz",
               "options": [
-                { "type": "POPULIZM", "min": 3, "max": 8, "text": "Prezes jest fanem! Ma prawo kibicować!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANEGDOTA", "min": 9, "max": 13, "text": "Znam jednego prezesa w Bełchatowie...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 14, "max": 18, "text": "Prezes powinien zachowywać się z klasą!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANALIZA", "parity": "odd", "text": "Może to presja na piłkarzy i sędziów", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 10, "max": 15, "text": "Prezesi mają swoje miejsce na trybunach jak wszyscy", "onSuccess": 6, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 7, "max": 11, "text": "Emocje są naturalne, ale warto zachować umiar", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Prezes jest fanem! Ma prawo kibicować!", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Znam jednego prezesa w Bełchatowie...", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Prezes powinien zachowywać się z klasą!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Może to presja na piłkarzy i sędziów", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Prezesi mają swoje miejsce na trybunach jak wszyscy", "onSuccess": 6, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Emocje są naturalne, ale warto zachować umiar", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
               "topic": "Mecz rozegrany w błocie po kostki",
               "options": [
-                { "type": "POPULIZM", "min": 4, "max": 9, "text": "Prawdziwa piłka! Nie żadne trawki!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 10, "max": 14, "text": "W Mielcu graliśmy raz w takiej aurze...", "onSuccess": 6, "onFail": -1 },
-                { "type": "ATAK", "min": 15, "max": 18, "text": "Mecz powinien być przełożony! To żenada!", "onSuccess": 9, "onFail": -4 },
-                { "type": "ANALIZA", "parity": "even", "text": "Warunki równe dla obu drużyn", "onSuccess": 7, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 11, "max": 16, "text": "Regulamin przewiduje odwołanie przy takiej pogodzie", "onSuccess": 5, "onFail": 0 },
-                { "type": "UMIARKOWANA OPINIA", "min": 8, "max": 13, "text": "Trudne warunki, ale czasem trzeba grać", "onSuccess": 6, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Prawdziwa piłka! Nie żadne trawki!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Mielcu graliśmy raz w takiej aurze...", "onSuccess": 6, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Mecz powinien być przełożony! To żenada!", "onSuccess": 9, "onFail": -4 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Warunki równe dla obu drużyn", "onSuccess": 7, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Regulamin przewiduje odwołanie przy takiej pogodzie", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Trudne warunki, ale czasem trzeba grać", "onSuccess": 6, "onFail": 0 }
               ]
             }
           ]
