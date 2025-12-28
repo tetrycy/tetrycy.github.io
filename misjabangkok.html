@@ -434,7 +434,7 @@
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('ogladanie', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Oglądanie meczów</div>
-                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do MERYTORYKI</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ZMYŚLANIA</div>
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('charyzma', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Charyzma</div>
@@ -446,7 +446,7 @@
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Koszula i garnitur</div>
-                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do UMIARKOWANEJ OPINII</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do BEZCZELNOŚCI</div>
                                     </button>
                                 </div>
                             </div>
@@ -583,8 +583,8 @@
                                     { type: 'ANEGDOTA', text: 'Pamiętam jak w 82 krowa weszła...', min: 3, max: 10, onSuccess: 4, onFail: 0 },
                                     { type: 'ATAK', text: 'Gospodarz obiektu to amator!', min: 14, max: 18, onSuccess: 7, onFail: -2 },
                                     { type: 'ANALIZA', text: 'Zła organizacja przestrzeni...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Przepisy jasno określają...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'To może się zdarzyć...', min: 7, max: 15, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Przepisy jasno określają...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'To może się zdarzyć...', min: 7, max: 15, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -594,8 +594,8 @@
                                     { type: 'ATAK', text: 'To brak szacunku dla kibica!', min: 13, max: 18, onSuccess: 6, onFail: -1 },
                                     { type: 'ANEGDOTA', text: 'Mój trener chodził boso...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Wpływ wentylacji stóp na taktykę.', min: 2, max: 18, parity: 'even', onSuccess: 5, onFail: -2 },
-                                    { type: 'MERYTORYKA', text: 'Regulamin nie zabrania...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Każdy ma swój styl.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Regulamin nie zabrania...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Każdy ma swój styl.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -605,8 +605,8 @@
                                     { type: 'POPULIZM', text: 'Sędzia też człowiek.', min: 7, max: 14, onSuccess: 2, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Analiza spalonego (rysowanie).', min: 10, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
                                     { type: 'ANEGDOTA', text: 'Kiedyś sędziował piekarz...', min: 3, max: 11, onSuccess: 3, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Przepis 11.3 mówi wyraźnie...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Trudna sytuacja do oceny.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Przepis 11.3 mówi wyraźnie...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trudna sytuacja do oceny.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -616,8 +616,8 @@
                                     { type: 'ATAK', text: 'Bydło! Zamknąć stadion!', min: 15, max: 18, onSuccess: 7, onFail: -1 },
                                     { type: 'ANEGDOTA', text: 'Jadłem słonecznik z Bońkiem.', min: 3, max: 8, onSuccess: 5, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Trajektoria łupin a wiatr.', min: 10, max: 18, parity: 'even', onSuccess: 4, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Przepisy bezpieczeństwa...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Emocje, ale w granicach.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Przepisy bezpieczeństwa...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Emocje, ale w granicach.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -627,8 +627,8 @@
                                     { type: 'ATAK', text: 'Wszyscy grają piach!', min: 14, max: 18, onSuccess: 10, onFail: -3 },
                                     { type: 'ANALIZA', text: 'Statystyki xG wskazują na...', min: 12, max: 18, parity: 'even', onSuccess: 6, onFail: 0 },
                                     { type: 'ANEGDOTA', text: 'Mam przeczucie w lewym kolanie.', min: 3, max: 10, onSuccess: 4, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Tabela pokazuje jasno...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Kilka zespołów ma szanse.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Tabela pokazuje jasno...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Kilka zespołów ma szanse.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
                                 ]
                             }
                         ]
@@ -643,8 +643,8 @@
                                     { type: 'ANEGDOTA', text: 'W 94 mieliśmy neonowe...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
                                     { type: 'ATAK', text: 'Cyrk, nie futbol!', min: 13, max: 18, onSuccess: 7, onFail: -2 },
                                     { type: 'ANALIZA', text: 'Psychologia kolorów...', min: 9, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Sponsor ma prawo...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Nietypowe, ale czemu nie.', min: 7, max: 15, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Sponsor ma prawo...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Nietypowe, ale czemu nie.', min: 7, max: 15, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -654,8 +654,8 @@
                                     { type: 'ATAK', text: 'Liczy się piłka, nie ptaki!', min: 14, max: 18, onSuccess: 6, onFail: -1 },
                                     { type: 'ANEGDOTA', text: 'Raz widziałem kota na bramce...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Koordynacja ręka-oko...', min: 11, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Ciekawostka biologiczna...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Zabawna sytuacja.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Ciekawostka biologiczna...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Zabawna sytuacja.', min: 6, max: 14, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -665,8 +665,8 @@
                                     { type: 'POPULIZM', text: 'Każdemu może się zdarzyć.', min: 7, max: 14, onSuccess: 2, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Dezorientacja przestrzenna...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
                                     { type: 'ANEGDOTA', text: 'Ja raz też pomyliłem...', min: 3, max: 11, onSuccess: 4, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Samobójcza bramka według...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Przykra pomyłka.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Samobójcza bramka według...', min: 10, max: 16, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Przykra pomyłka.', min: 8, max: 15, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -676,8 +676,8 @@
                                     { type: 'ATAK', text: 'Patologia! Wstyd!', min: 14, max: 18, onSuccess: 7, onFail: -1 },
                                     { type: 'ANEGDOTA', text: 'Znałem jednego prezesa...', min: 3, max: 9, onSuccess: 4, onFail: 0 },
                                     { type: 'ANALIZA', text: 'Wpływ zarządu na drużynę...', min: 9, max: 18, parity: 'odd', onSuccess: 5, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Kodeks etyki klubowej...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Trochę przesada.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Kodeks etyki klubowej...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trochę przesada.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
                                 ]
                             },
                             {
@@ -687,8 +687,8 @@
                                     { type: 'ATAK', text: 'Organizatorzy nieudacznicy!', min: 13, max: 18, onSuccess: 6, onFail: -2 },
                                     { type: 'ANALIZA', text: 'Nawierzchnia wpływa na...', min: 10, max: 18, parity: 'even', onSuccess: 5, onFail: 0 },
                                     { type: 'ANEGDOTA', text: 'Kiedyś graliśmy w metr śniegu...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
-                                    { type: 'MERYTORYKA', text: 'Przepisy o warunkach pogodowych...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
-                                    { type: 'UMIARKOWANA OPINIA', text: 'Trudne warunki dla obu.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
+                                    { type: 'ZMYŚLAJ', text: 'Przepisy o warunkach pogodowych...', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trudne warunki dla obu.', min: 7, max: 14, onSuccess: 3, onFail: 0 }
                                 ]
                             }
                         ]
@@ -702,7 +702,68 @@
                 sympathyStake: 15,
                 targetPoints: 25,
                 desc: 'Wymagana marynarka. Wójt z partii koalicyjnej stałym widzem. Stawka sympatii: 15.',
-                questionSets: []
+                questionSets: [
+                    {
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'Radny proponuje budowę boiska zamiast remontu drogi.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Młodzież potrzebuje sportu!', min: 9, max: 15, onSuccess: 4, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Za moich czasów graliśmy na łące...', min: 3, max: 11, onSuccess: 5, onFail: 0 },
+                                    { type: 'ATAK', text: 'Populizm przed wyborami!', min: 14, max: 18, onSuccess: 7, onFail: -2 },
+                                    { type: 'ANALIZA', text: 'Infrastruktura sportowa vs komunikacyjna...', min: 11, max: 18, parity: 'even', onSuccess: 6, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Budżet gminy pozwala na oba...', min: 10, max: 16, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Oba projekty mają sens.', min: 7, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Powiatowy klub zwolnił trenera po 3 porażkach z rzędu.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Wyniki mówią wszystko.', min: 8, max: 14, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Zarząd panikuje jak amatorzy!', min: 13, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Znam go, dobry człowiek...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Seria porażek to statystyczny szum...', min: 9, max: 18, parity: 'odd', onSuccess: 6, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Kontrakt przewidywał klauzule...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Może za wcześnie na wnioski.', min: 8, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Sponsor wycofuje się z finansowania po spadku do niższej ligi.',
+                                options: [
+                                    { type: 'ATAK', text: 'Szczury uciekają z tonącego okrętu!', min: 14, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'POPULIZM', text: 'Biznes to biznes, rozumiem.', min: 7, max: 13, onSuccess: 3, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'ROI w niższej lidze niewystarczające...', min: 10, max: 18, parity: 'even', onSuccess: 6, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Widziałem już takie historie...', min: 3, max: 11, onSuccess: 5, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Umowa sponsorska przewidywała...', min: 10, max: 16, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trudna sytuacja dla obu stron.', min: 8, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Juniorzy powiatowego klubu wygrali wojewódzki turniej.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'To jest przyszłość polskiej piłki!', min: 9, max: 15, onSuccess: 5, onFail: 0 },
+                                    { type: 'ATAK', text: 'A seniorzy dalej w błocie!', min: 13, max: 18, onSuccess: 6, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Ja też zaczynałem w juniorach...', min: 3, max: 10, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Skuteczność akademii 67%...', min: 11, max: 18, parity: 'odd', onSuccess: 6, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Program szkoleniowy daje efekty.', min: 10, max: 16, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Dobry prognostyk na przyszłość.', min: 8, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Mieszkańcy zbierają podpisy za odwołanie prezesa klubu.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Głos kibica się liczy!', min: 8, max: 14, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Wreszcie ktoś się obudził!', min: 14, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Za komuny też zbieraliśmy...', min: 3, max: 11, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Mechanizmy demokratyczne w sporcie...', min: 10, max: 18, parity: 'even', onSuccess: 6, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Statut klubu określa procedury...', min: 11, max: 17, onSuccess: 5, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Emocje, ale w ramach prawa.', min: 7, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             { 
                 id: 'D', 
@@ -711,7 +772,68 @@
                 sympathyStake: 20,
                 targetPoints: 30,
                 desc: 'Wyższa półka. Nie dla przypadkowych gości. Stawka sympatii: 20.', 
-                questionSets: []
+                questionSets: [
+                    {
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'Kontrowersyjny karny w derbach - sędzia VAR nie interweniował.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'VAR psuje piłkę!', min: 10, max: 16, onSuccess: 5, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Pamiętam derby 98, wtedy to były emocje...', min: 3, max: 12, onSuccess: 6, onFail: 0 },
+                                    { type: 'ATAK', text: 'Skandal! Układ!', min: 15, max: 18, onSuccess: 9, onFail: -3 },
+                                    { type: 'ANALIZA', text: 'Kąt kontaktu 47 stopni, analiza biomechaniczna...', min: 12, max: 18, parity: 'even', onSuccess: 7, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Protokół VAR jasno określa...', min: 11, max: 17, onSuccess: 6, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Decyzje graniczne zawsze budzą emocje.', min: 8, max: 15, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Zagraniczny inwestor chce kupić klub ekstraklasy.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Wreszcie poważne pieniądze!', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Sprzedajemy polską piłkę!', min: 14, max: 18, onSuccess: 9, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Znam jednego Anglika który...', min: 3, max: 11, onSuccess: 6, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Model inwestycyjny Red Bull vs City...', min: 11, max: 18, parity: 'odd', onSuccess: 7, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Licencja PZPN wymaga...', min: 12, max: 17, onSuccess: 6, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Zależy od warunków przejęcia.', min: 8, max: 15, onSuccess: 5, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Reprezentant dostał czerwoną kartkę w meczu za granicą.',
+                                options: [
+                                    { type: 'ATAK', text: 'Kompromitacja! Wstyd!', min: 15, max: 18, onSuccess: 9, onFail: -3 },
+                                    { type: 'POPULIZM', text: 'Prowokacja rywala!', min: 9, max: 15, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Poziom testosteronu po 67 minucie...', min: 10, max: 18, parity: 'even', onSuccess: 7, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Sam dostałem czerwoną w Moskwie...', min: 3, max: 12, onSuccess: 6, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Zawieszenie na 2 mecze według...', min: 11, max: 17, onSuccess: 6, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Emocje, to się zdarza.', min: 7, max: 14, onSuccess: 4, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Trener kadry testuje nową formację 3-5-2.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Eksperymentuje na kibicach!', min: 9, max: 15, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Taktyczny analfabeta!', min: 14, max: 18, onSuccess: 8, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Graliśmy tak w 89...', min: 3, max: 11, onSuccess: 6, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Pokrycie przestrzeni w systemie...', min: 12, max: 18, parity: 'odd', onSuccess: 8, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Kadra to miejsce na testy.', min: 10, max: 16, onSuccess: 6, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Zobaczymy w praktyce.', min: 8, max: 15, onSuccess: 5, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Polski klub odpadł z eliminacji europejskich pucharów.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Pech, nie umiejętności.', min: 8, max: 14, onSuccess: 4, onFail: 0 },
+                                    { type: 'ATAK', text: 'Żenada europejska!', min: 15, max: 18, onSuccess: 10, onFail: -3 },
+                                    { type: 'ANEGDOTA', text: 'W Pucharze UEFA 97 też odpadliśmy...', min: 3, max: 12, onSuccess: 6, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Gap między ligami: ranking UEFA...', min: 11, max: 18, parity: 'even', onSuccess: 7, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Współczynnik klubowy pokazuje...', min: 12, max: 17, onSuccess: 6, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trudny rywal, walczyli.', min: 7, max: 15, onSuccess: 5, onFail: 0 }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             { 
                 id: 'E', 
@@ -720,7 +842,68 @@
                 sympathyStake: 25,
                 targetPoints: 35,
                 desc: 'Specjalistyczna taktyka dla wybranych. Stawka sympatii: 25.', 
-                questionSets: []
+                questionSets: [
+                    {
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'PZPN planuje reformę systemu licencyjnego dla klubów.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'W końcu ktoś porządkuje!', min: 10, max: 16, onSuccess: 5, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'Za Engela były inne standardy...', min: 3, max: 13, onSuccess: 7, onFail: 0 },
+                                    { type: 'ATAK', text: 'Biurokracja zabija mniejsze kluby!', min: 15, max: 18, onSuccess: 10, onFail: -3 },
+                                    { type: 'ANALIZA', text: 'Model FFP UEFA vs polska specyfika...', min: 13, max: 18, parity: 'even', onSuccess: 8, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Projekt rozporządzenia zakłada...', min: 12, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Reforma potrzebna, diabeł w szczegółach.', min: 9, max: 15, onSuccess: 6, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Agent graczy oskarżony o korupcję przy transferach.',
+                                options: [
+                                    { type: 'ATAK', text: 'Mafie kontrolują polski futbol!', min: 16, max: 18, onSuccess: 11, onFail: -4 },
+                                    { type: 'POPULIZM', text: 'Gdzie pieniądze, tam przekręty.', min: 9, max: 15, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Znałem jednego agenta...', min: 3, max: 12, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Mechanizmy transferowe: FIFA vs rzeczywistość...', min: 12, max: 18, parity: 'odd', onSuccess: 8, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Kodeks etyki FIFA reguluje...', min: 13, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Poczekajmy na wyrok.', min: 8, max: 15, onSuccess: 5, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Dyskusja o wprowadzeniu play-off w Ekstraklasie.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Więcej emocji dla fanów!', min: 10, max: 16, onSuccess: 6, onFail: 0 },
+                                    { type: 'ATAK', text: 'Kopiujemy bezmyślnie Zachód!', min: 15, max: 18, onSuccess: 9, onFail: -3 },
+                                    { type: 'ANEGDOTA', text: 'W latach 90 mieliśmy grupę mistrzowską...', min: 3, max: 13, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Statystyki: systemy ligowe a rozwój...', min: 13, max: 18, parity: 'even', onSuccess: 9, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Model belgijski vs skandynawski...', min: 12, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Ma plusy i minusy.', min: 9, max: 15, onSuccess: 6, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Piłkarz kadry odmówił gry, tłumacząc się zmęczeniem.',
+                                options: [
+                                    { type: 'ATAK', text: 'Zdrajca! Nigdy więcej w kadrze!', min: 16, max: 18, onSuccess: 11, onFail: -4 },
+                                    { type: 'POPULIZM', text: 'Zdrowie najważniejsze.', min: 9, max: 15, onSuccess: 5, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Boniek grał z kontuzją w 82...', min: 3, max: 12, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Obciążenie treningowe: 58 meczów/sezon...', min: 12, max: 18, parity: 'odd', onSuccess: 8, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Regulamin FIFA pozwala...', min: 13, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Trudna sytuacja, rozumiem obie strony.', min: 8, max: 15, onSuccess: 6, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'Media krytykują poziom polskich trenerów.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Mamy świetnych szkoleniowców!', min: 9, max: 15, onSuccess: 5, onFail: 0 },
+                                    { type: 'ATAK', text: 'Media nie mają pojęcia!', min: 15, max: 18, onSuccess: 9, onFail: -3 },
+                                    { type: 'ANEGDOTA', text: 'Pamiętam jak Gmoch...', min: 3, max: 13, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Programy szkoleniowe UEFA Pro...', min: 13, max: 18, parity: 'even', onSuccess: 9, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Ranking trenerów wg wyników...', min: 12, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Jest przestrzeń do rozwoju.', min: 9, max: 15, onSuccess: 6, onFail: 0 }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             { 
                 id: 'C', 
@@ -729,7 +912,68 @@
                 sympathyStake: 30,
                 targetPoints: 40,
                 desc: 'Kontrowersje. Wysokie stawki. Dla twardych graczy. Stawka sympatii: 30.', 
-                questionSets: []
+                questionSets: [
+                    {
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'Sędzia odmówił podania ręki polskiemu zawodnikowi po meczu.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Polityka w sporcie!', min: 11, max: 17, onSuccess: 6, onFail: -1 },
+                                    { type: 'ANEGDOTA', text: 'W Belgradzie 89 nas opluli...', min: 3, max: 14, onSuccess: 8, onFail: 0 },
+                                    { type: 'ATAK', text: 'Rasizm! Skandal! UEFA do akcji!', min: 17, max: 18, onSuccess: 12, onFail: -5 },
+                                    { type: 'ANALIZA', text: 'Psychologia konfliktu międzynarodowego...', min: 14, max: 18, parity: 'even', onSuccess: 10, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Kodeks postępowania sędziów...', min: 13, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Może miał swoje powody.', min: 9, max: 15, onSuccess: 4, onFail: -2 }
+                                ]
+                            },
+                            {
+                                topic: 'Prezes PZPN zamieszany w aferę korupcyjną.',
+                                options: [
+                                    { type: 'ATAK', text: 'Cała władza zgniła! Rządy mafii!', min: 17, max: 18, onSuccess: 13, onFail: -5 },
+                                    { type: 'POPULIZM', text: 'System trzeba zmienić od podstaw!', min: 11, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Zawsze było tak samo, pamiętam...', min: 3, max: 13, onSuccess: 8, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Struktury władzy w federacjach...', min: 14, max: 18, parity: 'odd', onSuccess: 10, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Procedury wyborcze FIFA stanowią...', min: 13, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Domniemanie niewinności.', min: 8, max: 14, onSuccess: 3, onFail: -2 }
+                                ]
+                            },
+                            {
+                                topic: 'Kibice domagają się bojkotu meczu z powodów politycznych.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Naród wie lepiej!', min: 10, max: 16, onSuccess: 6, onFail: -1 },
+                                    { type: 'ATAK', text: 'Sport to nie polityka, zakaz!', min: 16, max: 18, onSuccess: 11, onFail: -4 },
+                                    { type: 'ANEGDOTA', text: 'Moskwa 75, pamiętam protesty...', min: 3, max: 14, onSuccess: 8, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Historia sportowych bojkotów: skuteczność...', min: 14, max: 18, parity: 'even', onSuccess: 10, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Karta olimpijska zakazuje...', min: 13, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Rozumiem emocje, ale...', min: 9, max: 15, onSuccess: 5, onFail: -1 }
+                                ]
+                            },
+                            {
+                                topic: 'Polski klub oskarżony o ustawianie meczów.',
+                                options: [
+                                    { type: 'ATAK', text: 'Gangsterka! Zamknąć klub!', min: 17, max: 18, onSuccess: 13, onFail: -5 },
+                                    { type: 'POPULIZM', text: 'Wszyscy tak robią...', min: 10, max: 16, onSuccess: 5, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Słyszałem kiedyś podobną sprawę...', min: 3, max: 13, onSuccess: 8, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Ekonomia ustawiania: model matematyczny...', min: 14, max: 18, parity: 'odd', onSuccess: 11, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Przepisy CBA i prokuratury...', min: 13, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Czekajmy na dowody.', min: 8, max: 14, onSuccess: 3, onFail: -2 }
+                                ]
+                            },
+                            {
+                                topic: 'Wywiad: Czy polska piłka ma przyszłość?',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Mamy talenty, wierzę!', min: 10, max: 16, onSuccess: 6, onFail: 0 },
+                                    { type: 'ATAK', text: 'Wszystko się wali, nie ma nadziei!', min: 16, max: 18, onSuccess: 11, onFail: -4 },
+                                    { type: 'ANEGDOTA', text: 'Gdy zaczynałem, też było źle...', min: 3, max: 14, onSuccess: 8, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Trendy demograficzne i inwestycje...', min: 14, max: 18, parity: 'even', onSuccess: 11, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Plan rozwoju PZPN 2025-2030...', min: 13, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Są szanse, jeśli...', min: 9, max: 15, onSuccess: 6, onFail: 0 }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             { 
                 id: 'F', 
@@ -738,7 +982,68 @@
                 sympathyStake: 50, 
                 targetPoints: 50,
                 desc: 'Finał. Tylko dla orłów. Stawka sympatii: 50.', 
-                questionSets: []
+                questionSets: [
+                    {
+                        id: 'set1',
+                        rounds: [
+                            {
+                                topic: 'BANGKOK - Pierwszy mecz: Polska przegrywa 0-2 w pierwszej połowie.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Drugi połowy zespół!', min: 12, max: 17, onSuccess: 7, onFail: -2 },
+                                    { type: 'ANEGDOTA', text: 'Meksyk 86, przegrywaliśmy 0-3...', min: 4, max: 15, onSuccess: 10, onFail: 0 },
+                                    { type: 'ATAK', text: 'Kompromitacja! Trener do dymisji!', min: 17, max: 18, onSuccess: 14, onFail: -6 },
+                                    { type: 'ANALIZA', text: 'Pressing 4-4-2 vs nasza 4-3-3...', min: 15, max: 18, parity: 'even', onSuccess: 12, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Statystyki posiadania i strzałów...', min: 14, max: 17, onSuccess: 9, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Jeszcze 45 minut przed nami.', min: 10, max: 16, onSuccess: 6, onFail: -1 }
+                                ]
+                            },
+                            {
+                                topic: 'BANGKOK - Kapitan doznał kontuzji, ma opuścić turniej.',
+                                options: [
+                                    { type: 'ATAK', text: 'Sztab medyczny totalnie zawiódł!', min: 17, max: 18, onSuccess: 13, onFail: -6 },
+                                    { type: 'POPULIZM', text: 'Poległych zastępują nowi bohaterowie!', min: 11, max: 17, onSuccess: 7, onFail: 0 },
+                                    { type: 'ANEGDOTA', text: 'Deyna też wypadł przed mundial...', min: 4, max: 15, onSuccess: 10, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Wskaźnik kontuzji w tropiku...', min: 15, max: 18, parity: 'odd', onSuccess: 12, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Procedury medyczne FIFA...', min: 14, max: 17, onSuccess: 9, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Przykra strata, ale gramy dalej.', min: 10, max: 16, onSuccess: 7, onFail: -1 }
+                                ]
+                            },
+                            {
+                                topic: 'BANGKOK - Media światowe krytykują poziom polskiej kadry.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Zazdrość! Boją się Polski!', min: 11, max: 17, onSuccess: 6, onFail: -1 },
+                                    { type: 'ATAK', text: 'Mają rację! Żenada!', min: 17, max: 18, onSuccess: 14, onFail: -7 },
+                                    { type: 'ANEGDOTA', text: 'Anglicy też nas lekceważyli w 73...', min: 4, max: 15, onSuccess: 10, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Ranking FIFA vs realia: analiza...', min: 15, max: 18, parity: 'even', onSuccess: 13, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Bilans meczów w ostatnich 12 miesiącach...', min: 14, max: 17, onSuccess: 9, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Krytyka częściowo zasłużona.', min: 9, max: 15, onSuccess: 5, onFail: -2 }
+                                ]
+                            },
+                            {
+                                topic: 'BANGKOK - Polska remisuje 1-1, wciąż szansa na finał.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'Charakter! Walka! Duma!', min: 12, max: 17, onSuccess: 8, onFail: 0 },
+                                    { type: 'ATAK', text: 'Za mało! Trzeba było wygrać!', min: 17, max: 18, onSuccess: 12, onFail: -5 },
+                                    { type: 'ANEGDOTA', text: 'Mundial 74, remis z Argentyną...', min: 4, max: 15, onSuccess: 10, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Scenariusze awansu: symulacje...', min: 15, max: 18, parity: 'odd', onSuccess: 13, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Tabela i pozostałe mecze...', min: 14, max: 17, onSuccess: 9, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Punkt cenny, zobaczymy.', min: 10, max: 16, onSuccess: 7, onFail: 0 }
+                                ]
+                            },
+                            {
+                                topic: 'BANGKOK - FINAŁ: To tutaj decyduje się twoja przyszłość.',
+                                options: [
+                                    { type: 'POPULIZM', text: 'WIERZYMY! POLSKA! BIAŁO-CZERWONI!', min: 12, max: 17, onSuccess: 10, onFail: 0 },
+                                    { type: 'ATAK', text: 'Albo mistrzostwo albo DYMISJA!', min: 17, max: 18, onSuccess: 15, onFail: -8 },
+                                    { type: 'ANEGDOTA', text: 'Monachium 72, finał olimpijski...', min: 4, max: 16, onSuccess: 12, onFail: 0 },
+                                    { type: 'ANALIZA', text: 'Wszystkie dane, cała taktyka, to jest TO...', min: 16, max: 18, parity: 'even', onSuccess: 15, onFail: 0 },
+                                    { type: 'ZMYŚLAJ', text: 'Statystyki mówią, że mamy 47% szans...', min: 14, max: 17, onSuccess: 10, onFail: 0 },
+                                    { type: 'BEZCZELNOŚĆ', text: 'Niech wygra lepszy.', min: 9, max: 14, onSuccess: 4, onFail: -3 }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             }
         ];
 
@@ -1023,9 +1328,6 @@
                 return;
             }
 
-            // Reset notatek na początku każdej nowej rundy (ale pozostaw notesUsed jeśli były użyte)
-            // notesActiveThisRound jest aktywne tylko w rundzie gdzie użyto przycisku
-            
             const roundData = state.activeQuestionSet.rounds[state.currentRoundIdx];
             
             document.getElementById('round-topic').innerText = roundData.topic;
@@ -1201,13 +1503,13 @@
             } else if (state.specialty === 'komputer' && option.type === 'ANALIZA') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'ogladanie' && option.type === 'MERYTORYKA') {
+            } else if (state.specialty === 'ogladanie' && option.type === 'ZMYŚLAJ') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             } else if (state.specialty === 'charyzma' && option.type === 'POPULIZM') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'koszula' && option.type === 'UMIARKOWANA OPINIA') {
+            } else if (state.specialty === 'koszula' && option.type === 'BEZCZELNOŚĆ') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             }
