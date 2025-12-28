@@ -25,12 +25,12 @@
             {
               "topic": "Co sądzisz o tym, że z Wielunia do Łodzi jedzie się pociągiem 4 godziny, a to jedno województwo?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Wieluń to mistyfikacja, choć piękna", "onSuccess": 7, "onFail": -1 },
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Byłem kiedyś w Wieluniu", "onSuccess": 7, "onFail": -1 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Nie wiem, ale kiedyś w Marsylii spotkałem na dworcu w Wieluniu, idę kupić hamburgera, patrzę: Romario. Podchodzę i w uniwersalnym języku piłki pytam: co tu robisz? A on mówi, żebym się nie interesował, bo kociej mordy dostanę. To założyłem mu nelsona. To było na żarty, znaliśmy się z meczu Reprezentacja Świata - przyjaciele Karela Poborskiego", "onSuccess": 8, "onFail": -2 },
                 { "type": "ATAK", "min": 0, "max": 18, "text": "Panowie, są ku temu konkretne powody, ale to trzeba się trochę znać na geopolityce", "onSuccess": 9, "onFail": -3 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Myślę, że to przeszkadza przepływowi talentów. Potrzeba BusPasów na trasach między Wieluniem a Łodzią", "onSuccess": 6, "onFail": -1 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie no, z Wielunia jest bliżej do Opola czy Kluczborka. To prawie Nysa czy Kędzierzyn-Koźle. A jednak łódzkie. Uwielbiam", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Byłem kiedyś w Wieluniu", "onSuccess": 6, "onFail": 0 }
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Wieluń leży nad morzem", "onSuccess": 6, "onFail": 0 }
               ]
             },
             {
@@ -63,7 +63,7 @@
                 { "type": "ATAK", "min": 6, "max": 18, "text": "Kim wy w ogóle jesteście, wasz program to jakiś błąd", "onSuccess": 9, "onFail": -4 },
                 { "type": "ANALIZA", "min": 16, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 4, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Miedź Legnica utrzymała się w Ekstraklasie", "onSuccess": 3, "onFail": 0 }
+                { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, nic się nie stało", "onSuccess": 3, "onFail": 0 }
               ]
             }
           ]
@@ -89,7 +89,7 @@
                 { "type": "ATAK", "min": 0, "max": 18, "text": "Moim zdaniem, co mógł to już dał Piastowi. Trzeba go zwolnić", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Jego xG kroczące jest najlepsze, jakie widziano w ESA od czasów Roberta Podolińskiego w Podbeskidziu", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "To naprawdę dobry trener. Problem pojawi się przy pierwszym kryzysie - może szukać winnych wokół siebie, a nie w sobie, w swoim pomyśle na Piast", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Chodzę na treningi Daniela Myśliwca, praktycznie wszystkie. Więc wiem, że powinien Piast na nim budować następną dekadę swojej chwały. Chyba, że przegra dwa mecze, wtedy nie", "onSuccess": 0, "onFail": 0 }
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Daniel Myśliwiec myśli o tym, by poprowadzić kiedyś lepszy klub", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
@@ -100,7 +100,7 @@
                 { "type": "ATAK", "min": 0, "max": 18, "text": "Czerwiński to powinien być podpisany miesiące temu. Cały zarząd do wymiany", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Jego expected blokowanie strzałów w fazie przejścia jest na poziomie Costacurty w Milanie", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Bardzo dobrze, Czerwiński wciąż potrafi być wśród najlepszych stoperów ligi. Podpisano ten kontrakt za późno", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Zwróćmy uwagę na mecz z Zagłębiem Lubin. Jakie miał wtedy zaawansowane statystyki Endschuldigung. Ile on daje też w pasywnym ataku. Musi być zawsze w składzie", "onSuccess": 0, "onFail": 0 }
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Jakub Czerwiński był niezadowolony, że nie przedłużono z nim kontraktu wcześniej. Ale potem był już zadowolony", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
