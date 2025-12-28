@@ -23,47 +23,47 @@
               ]
             },
             {
-              "topic": "Trener prowadził wywiad w klapkach i szortach",
+              "topic": "Co sądzisz o tym, że z Wielunia do Łodzi jedzie się pociągiem 4 godziny, a to jedno województwo?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Trener też człowiek, ma prawo do luzu!", "onSuccess": 7, "onFail": -1 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Boniek raz prowadził w dresie na zgrupowaniu...", "onSuccess": 8, "onFail": -2 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Brak szacunku do telewizji i widzów!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "W upale? Rozsądna decyzja fizjologicznie", "onSuccess": 6, "onFail": -1 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Dress code w wywiadach nie jest oficjalnie określony", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Wygląd mniej ważny niż treść wypowiedzi", "onSuccess": 6, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Wieluń to mistyfikacja, choć piękna", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Nie wiem, ale kiedyś w Marsylii spotkałem na dworcu w Wieluniu, idę kupić hamburgera, patrzę: Romario. Podchodzę i w uniwersalnym języku piłki pytam: co tu robisz? A on mówi, żebym się nie interesował, bo kociej mordy dostanę. To założyłem mu nelsona. To było na żarty, znaliśmy się z meczu Reprezentacja Świata - przyjaciele Karela Poborskiego", "onSuccess": 8, "onFail": -2 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Panowie, są ku temu konkretne powody, ale to trzeba się trochę znać na geopolityce", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Myślę, że to przeszkadza przepływowi talentów. Potrzeba BusPasów na trasach między Wieluniem a Łodzią", "onSuccess": 6, "onFail": -1 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie no, z Wielunia jest bliżej do Opola czy Kluczborka. To prawie Nysa czy Kędzierzyn-Koźle. A jednak łódzkie. Uwielbiam", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Byłem kiedyś w Wieluniu", "onSuccess": 6, "onFail": 0 }
               ]
             },
             {
-              "topic": "Sędzia nie uznał bramki po faulu, którego nie było",
+              "topic": "Czy masz złego brata bliźniaka?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Trzeba wprowadzić VAR nawet w B-klasie!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Mnie raz Grzegorczyk odgwizdał bramkę sezonu...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Ten sędzia nie powinien więcej prowadzić!", "onSuccess": 10, "onFail": -4 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Z tego kąta kamery faktycznie mogło wyglądać na faul", "onSuccess": 6, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Sędzia ma trudną pracę, błędy się zdarzają", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Kontrowersyjna decyzja, ale musimy ją uszanować", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Źli bracia bliźniacy to jeden z największych problemów polskiej piłki. Potrzeba rozwiązań systemowych", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś wchodzę do baru IBIZA w Rotterdamie, a tam na dzień dobry bramkarz leje mnie w mordę. Pytam: co jest? A on, że to za zeszły piątek. Myślę: pewnie był tu mój brat, Witek. Więc tylko czekam. I istotnie, po tym jak dostałem w ryja, zaraz bramkarz się roześmiał i zaprowadził mnie na VIP-y", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Trzeba uderzyć pięścią w stół - przez takie programy jak ten nie ma dobrych braci bliźniaków", "onSuccess": 10, "onFail": -4 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "To mało prawdopodobne, by mieć złego brata bliźniaka. MAło kto ma brata bliźniaka, a jak ma, to zwykle jest średni", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "A kto nie ma?", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "To ja jestem złym bratem bliźniakiem", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
-              "topic": "Kibice rzucali w piłkarzy łupinami słonecznika przez cały mecz",
+              "topic": "Czy pisuary prowokują twoim zdaniem?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Kibice mają swoje prawa! Wolność!", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "W Gdańsku dostawałem kubkami z piwem...", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "To chuligaństwo, trzeba ich wykluczyć!", "onSuccess": 8, "onFail": -2 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Łupiny nie są ciężkie, to bardziej prowokacja", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Rzucanie czymkolwiek jest zabronione regulaminem", "onSuccess": 6, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Emocje są w piłce, ale to przekracza granicę", "onSuccess": 6, "onFail": -1 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Pisuary to jeden z największych problemów polskiej piłki. Trzeba systemowego rozwiązania", "onSuccess": 9, "onFail": -3 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś byłem akurat z trzecią żoną na mieście, spokojnie spędzamy czas. Nagle zaczepia mnie pisuar. Robi aluzje do mojej żony. Nie chcę się chwalić, ale cios, który wykonałem, pochodzi ze sztuki walki, która znam tylko ja i jeszcze taki jeden mnich w Laosie", "onSuccess": 7, "onFail": -1 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Panie, pan jeszcze pytasz? Pan się nie znasz na pisuarach, pewnie na niczym", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Przepraszam, ale jak pisuary mogą prowokować? To urządzenia sanitarne", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Tak, prowokują", "onSuccess": 6, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Znam dobrze wiele pisuarów i trzeba poznać też ich stronę", "onSuccess": 6, "onFail": -1 }
               ]
             },
             {
               "topic": "Co się stało pod Legnicą?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Wszyscy to wiemy, nie trzeba powtarzać!", "onSuccess": 5, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Nie wiem, ale kiedyś pod Legnicą z Bońkiem...", "onSuccess": 8, "onFail": -5 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Kim wy w ogóle jesteście", "onSuccess": 9, "onFail": -4 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
-                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął...", "onSuccess": 3, "onFail": 0 }
+                { "type": "POPULIZM", "min": 12, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął w walce z Mongołami", "onSuccess": 5, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś pod Legnicą miałem testy, już na koniec kariery. Dobijałem do czterdziestki, ale jak oni zobaczyli co potrafię, chcieli dać mi siedmioletni kontrakt. Zrezygnowałem, bo przeze mnie II liga byłaby zbyt łatwa", "onSuccess": 8, "onFail": -5 },
+                { "type": "ATAK", "min": 6, "max": 18, "text": "Kim wy w ogóle jesteście, wasz program to jakiś błąd", "onSuccess": 9, "onFail": -4 },
+                { "type": "ANALIZA", "min": 16, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 4, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 11, "max": 18, "text": "Miedź Legnica utrzymała się w Ekstraklasie", "onSuccess": 3, "onFail": 0 }
               ]
             }
           ]
@@ -137,7 +137,68 @@
       "targetPoints": 25,
       "sympathyStake": 15,
       "graphic": "assets/program-powiat.jpg",
-      "questionSets": []
+      "questionSets": [
+        {
+          "id": "set1",
+          "rounds": [
+            {
+              "topic": "[TEMAT RUNDY 1]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 2]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 3]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 4]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 5]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "C",
@@ -146,7 +207,68 @@
       "targetPoints": 30,
       "sympathyStake": 20,
       "graphic": "assets/program-rozny.jpg",
-      "questionSets": []
+      "questionSets": [
+        {
+          "id": "set1",
+          "rounds": [
+            {
+              "topic": "[TEMAT RUNDY 1]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 2]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 3]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 4]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 5]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "D",
@@ -155,7 +277,68 @@
       "targetPoints": 35,
       "sympathyStake": 25,
       "graphic": "assets/program-rzutwolny.jpg",
-      "questionSets": []
+      "questionSets": [
+        {
+          "id": "set1",
+          "rounds": [
+            {
+              "topic": "[TEMAT RUNDY 1]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 2]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 3]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 4]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 5]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "E",
@@ -164,7 +347,68 @@
       "targetPoints": 40,
       "sympathyStake": 30,
       "graphic": "assets/program-faul.jpg",
-      "questionSets": []
+      "questionSets": [
+        {
+          "id": "set1",
+          "rounds": [
+            {
+              "topic": "[TEMAT RUNDY 1]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 2]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 3]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 4]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 5]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "F",
@@ -173,7 +417,68 @@
       "targetPoints": 50,
       "sympathyStake": 50,
       "graphic": "assets/program-bangkok.jpg",
-      "questionSets": []
+      "questionSets": [
+        {
+          "id": "set1",
+          "rounds": [
+            {
+              "topic": "[TEMAT RUNDY 1]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 2]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 3]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 4]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            },
+            {
+              "topic": "[TEMAT RUNDY 5]",
+              "options": [
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZMYŚLAJ", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
