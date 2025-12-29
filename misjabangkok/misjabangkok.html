@@ -448,7 +448,7 @@
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Koszula i garnitur</div>
-                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do UMIARKOWANEJ OPINII</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ZAKULISOWYCH INFORMACJI</div>
                                     </button>
                                 </div>
                             </div>
@@ -600,11 +600,11 @@
         const CLASS_THRESHOLDS = {
             pilkarz: {
                 startCred: 0,
-                programs: { 'A': 0, 'B': 10, 'D': 25, 'E': 35, 'C': 45, 'F': 70 }
+                programs: { 'A': 0, 'B': 10, 'C': 25, 'D': 35, 'E': 45, 'F': 70 }
             },
             analityk: {
                 startCred: 0,
-                programs: { 'A': 0, 'B': 20, 'D': 35, 'E': 45, 'C': 60, 'F': 90 }
+                programs: { 'A': 0, 'B': 20, 'C': 35, 'D': 45, 'E': 60, 'F': 90 }
             }
         };
 
@@ -879,9 +879,6 @@
                 return;
             }
 
-            // Reset notatek na początku każdej nowej rundy (ale pozostaw notesUsed jeśli były użyte)
-            // notesActiveThisRound jest aktywne tylko w rundzie gdzie użyto przycisku
-            
             const roundData = state.activeQuestionSet.rounds[state.currentRoundIdx];
             
             document.getElementById('round-topic').innerText = roundData.topic;
@@ -1063,7 +1060,7 @@
             } else if (state.specialty === 'charyzma' && option.type === 'POPULIZM') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'koszula' && option.type === 'UMIARKOWANA OPINIA') {
+            } else if (state.specialty === 'koszula' && option.type === 'ZAKULISOWE INFORMACJE') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             }
