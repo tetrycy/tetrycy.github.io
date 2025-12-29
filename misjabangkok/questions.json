@@ -16,7 +16,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 8, "max": 18, "text": "Chcę być tylko młodym Polakiem", "onSuccess": 7, "onFail": -2 },
                 { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś, na testach w Oberhausen, na boisko wleciał sokół wędrowny. Nikt nie mógł go złapać. Przeszkadzał w treningu. Niemcy zbaranieli. Wtedy ja założyłem mu siatkę, a potem przekonałem go, żeby poleciał na boisko naszego derbowego rywala im przeszkadzać", "onSuccess": 8, "onFail": -4 },
-                { "type": "ATAK", "min": 6, "max": 18, "text": "Co to w ogóle za pytanie? Myślałem, że to program piłkarski", "onSuccess": 3, "onFail": -8 },
+                { "type": "ZA MOICH CZASÓW", "min": 6, "max": 18, "text": "Co to w ogóle za pytanie? Myślałem, że to program piłkarski", "onSuccess": 3, "onFail": -8 },
                 { "type": "ANALIZA", "min": 14, "max": 18, "text": "Każdy ma w sobie współczynnik expectedSokółWędrowny", "onSuccess": 2, "onFail": -1 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Proszę panów, nie ma nic lepszego, niż być sokołem wędrownym. To są fakty.", "onSuccess": 6, "onFail": -1 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Jestem sokołem wędrownym", "onSuccess": 10, "onFail": -3 }
@@ -27,7 +27,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Byłem kiedyś w Wieluniu", "onSuccess": 7, "onFail": -1 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Nie wiem, ale kiedyś w Marsylii spotkałem na dworcu w Wieluniu, idę kupić hamburgera, patrzę: Romario. Podchodzę i w uniwersalnym języku piłki pytam: co tu robisz? A on mówi, żebym się nie interesował, bo kociej mordy dostanę. To założyłem mu nelsona. To było na żarty, znaliśmy się z meczu Reprezentacja Świata - przyjaciele Karela Poborskiego", "onSuccess": 8, "onFail": -2 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Panowie, są ku temu konkretne powody, ale to trzeba się trochę znać na geopolityce", "onSuccess": 9, "onFail": -3 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Panowie, są ku temu konkretne powody, ale to trzeba się trochę znać na geopolityce", "onSuccess": 9, "onFail": -3 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Myślę, że to przeszkadza przepływowi talentów. Potrzeba BusPasów na trasach między Wieluniem a Łodzią", "onSuccess": 6, "onFail": -1 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie no, z Wielunia jest bliżej do Opola czy Kluczborka. To prawie Nysa czy Kędzierzyn-Koźle. A jednak łódzkie. Uwielbiam", "onSuccess": 5, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Wieluń leży nad morzem", "onSuccess": 6, "onFail": 0 }
@@ -38,7 +38,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Źli bracia bliźniacy to jeden z największych problemów polskiej piłki. Potrzeba rozwiązań systemowych", "onSuccess": 8, "onFail": -2 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś wchodzę do baru IBIZA w Rotterdamie, a tam na dzień dobry bramkarz leje mnie w mordę. Pytam: co jest? A on, że to za zeszły piątek. Myślę: pewnie był tu mój brat, Witek. Więc tylko czekam. I istotnie, po tym jak dostałem w ryja, zaraz bramkarz się roześmiał i zaprowadził mnie na VIP-y", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Trzeba uderzyć pięścią w stół - przez takie programy jak ten nie ma dobrych braci bliźniaków", "onSuccess": 10, "onFail": -4 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Trzeba uderzyć pięścią w stół - przez takie programy jak ten nie ma dobrych braci bliźniaków", "onSuccess": 10, "onFail": -4 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "To mało prawdopodobne, by mieć złego brata bliźniaka. MAło kto ma brata bliźniaka, a jak ma, to zwykle jest średni", "onSuccess": 6, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "A kto nie ma?", "onSuccess": 5, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "To ja jestem złym bratem bliźniakiem", "onSuccess": 6, "onFail": -1 }
@@ -49,7 +49,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Pisuary to jeden z największych problemów polskiej piłki. Trzeba systemowego rozwiązania", "onSuccess": 9, "onFail": -3 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś byłem akurat z trzecią żoną na mieście, spokojnie spędzamy czas. Nagle zaczepia mnie pisuar. Robi aluzje do mojej żony. Nie chcę się chwalić, ale cios, który wykonałem, pochodzi ze sztuki walki, która znam tylko ja i jeszcze taki jeden mnich w Laosie", "onSuccess": 7, "onFail": -1 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Panie, pan jeszcze pytasz? Pan się nie znasz na pisuarach, pewnie na niczym", "onSuccess": 8, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Panie, pan jeszcze pytasz? Pan się nie znasz na pisuarach, pewnie na niczym", "onSuccess": 8, "onFail": -2 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Przepraszam, ale jak pisuary mogą prowokować? To urządzenia sanitarne", "onSuccess": 5, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Tak, prowokują", "onSuccess": 6, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Znam dobrze wiele pisuarów i trzeba poznać też ich stronę", "onSuccess": 6, "onFail": -1 }
@@ -60,7 +60,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 12, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął w walce z Mongołami", "onSuccess": 5, "onFail": -2 },
                 { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś pod Legnicą miałem testy, już na koniec kariery. Dobijałem do czterdziestki, ale jak oni zobaczyli co potrafię, chcieli dać mi siedmioletni kontrakt. Zrezygnowałem, bo przeze mnie II liga byłaby zbyt łatwa", "onSuccess": 8, "onFail": -5 },
-                { "type": "ATAK", "min": 6, "max": 18, "text": "Kim wy w ogóle jesteście, wasz program to jakiś błąd", "onSuccess": 9, "onFail": -4 },
+                { "type": "ZA MOICH CZASÓW", "min": 6, "max": 18, "text": "Kim wy w ogóle jesteście, wasz program to jakiś błąd", "onSuccess": 9, "onFail": -4 },
                 { "type": "ANALIZA", "min": 16, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 4, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, nic się nie stało", "onSuccess": 3, "onFail": 0 }
@@ -86,7 +86,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Daniel Myśliwiec pokazał, że Piasta nie stać na minimalizm. To wielki klub", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś, po roztrenowaniu w Udinese, Oliver Bierhoff chciał, żebym był jego trenerem przygotowania kondycyjnego NA LATO (śmiech)", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Moim zdaniem, co mógł to już dał Piastowi. Trzeba go zwolnić", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Moim zdaniem, co mógł to już dał Piastowi. Trzeba go zwolnić", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Jego xG kroczące jest najlepsze, jakie widziano w ESA od czasów Roberta Podolińskiego w Podbeskidziu", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "To naprawdę dobry trener. Problem pojawi się przy pierwszym kryzysie - może szukać winnych wokół siebie, a nie w sobie, w swoim pomyśle na Piast", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Daniel Myśliwiec myśli o tym, by poprowadzić kiedyś lepszy klub", "onSuccess": 0, "onFail": 0 }
@@ -97,7 +97,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "To jest chłopak z charakterem, nie odstawia nogi. Przydałby się jeszcze w kadrze", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś Frank Lebouf zapytał mnie, czy nie chciałbym kontraktu w Marsylii, bo on może załatwić. Powiedziałem: Frank, ale co na to twoja żona?", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Czerwiński to powinien być podpisany miesiące temu. Cały zarząd do wymiany", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Czerwiński to powinien być podpisany miesiące temu. Cały zarząd do wymiany", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Jego expected blokowanie strzałów w fazie przejścia jest na poziomie Costacurty w Milanie", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Bardzo dobrze, Czerwiński wciąż potrafi być wśród najlepszych stoperów ligi. Podpisano ten kontrakt za późno", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Jakub Czerwiński był niezadowolony, że nie przedłużono z nim kontraktu wcześniej. Ale potem był już zadowolony", "onSuccess": 0, "onFail": 0 }
@@ -108,7 +108,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Albo mierzysz wysoko, albo spadasz. Piast powinien mieć stutysięcznik", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś Sir Alex Ferguson zapytał mnie czy nie oszałamia mnie tumult na Old Trafford. Powiedziałem, że prawdziwy piłkarz słyszy tylko głos własnego głodu sukcesu. Pokiwał z uznaniem i wyrzucił Beckhama z treningu", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Trzeba dążyć do tego, by kibice Górnika zaczęli przerzucać się na Piasta. Stadion to ten kierunek", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Trzeba dążyć do tego, by kibice Górnika zaczęli przerzucać się na Piasta. Stadion to ten kierunek", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Na większym stadionie lepiej będzie dało się analizować przesuwanie w półprzestrzennym ataku", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Według mnie, ten stadion wystarczy", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, potrzebne jest tylko bankructwo szpitala", "onSuccess": 0, "onFail": 0 }
@@ -119,7 +119,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Piast powinien wrócić do czasów, gdy mierzył rok po roku w mistrzostwo. Włodarze muszą sięgnąć do kieszeni - spłacą to z Ligi Mistrzów", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś na finiszu sezonu Ligue 2 traciliśmy 18 punktów do awansu. Zostały dwie kolejki. I tak to się potoczyło, że prawie awansowaliśmy", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Zawsze grasz o mistrzostwo", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Zawsze grasz o mistrzostwo", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Piast musi poprawić wychodzenie z kontr-kontr-pressingu", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie wiem", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Wiem z zaufanego źródła, że powstaje spółdzielnia na Piasta, bo wszyscy się go boją. Musimy iść z tym do UEFA i ONZ", "onSuccess": 0, "onFail": 0 }
@@ -130,7 +130,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Jego sukcesy powinny być najlepszym inwestorem. Niech to podnosi z boiska", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Miałem kiedyś nawet zainwestować w Piasta razem z Warrenem Buffetem, ale choć bilety do Gliwic były wykupione popłynęliśmy w rejs dookoła świata i zapomnieliśmy", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Jeśli inwestorzy nie ustawiają się w kolejce, to są debilami", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Jeśli inwestorzy nie ustawiają się w kolejce, to są debilami", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Ważne by było stać Piasta na WyScout", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "A długi wobec miasta?", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, nie mam na ten temat informacji", "onSuccess": 0, "onFail": 0 }
@@ -156,7 +156,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Zaskoczyło mnie tak wielu przeciętnych zagranicznych piłkarzy. Dlaczego nie gramy Polakami, młodymi?", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Zaskoczyć to zaskoczyło mnie tylko raz jak w Hamburgu nie mieli mojego ulubionego whisky", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Przede wszystkim zaskoczyła mnie mierna gra. Trzeba grać ofensywnie, to jest piłka, tu powinny padać gole", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Przede wszystkim zaskoczyła mnie mierna gra. Trzeba grać ofensywnie, to jest piłka, tu powinny padać gole", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "To, że Korona zagrała tak szeroko wahadłami", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Trzeba przyznać, że remis 0:0 Zagłębia z Arką był zaskakujący, ostatnio jedni i drudzy robili postęp", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, niedługo może zostać zwolniony trener w strefie spadkowej", "onSuccess": 0, "onFail": 0 }
@@ -167,7 +167,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Napastnik jest od goli. Jak napastnik nie strzeli w danej kolejce, ja bym mu nie płacił", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś Marc Overmars powiedział mi z pretensjami, że zmarnowałem jego podanie. Powiedziałem: kolego, wiesz ile waży piłka?", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Czas by wrócił Gual", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Czas by wrócił Gual", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "To nie jest zły napastnik jeśli chodzi o przesuwanie", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Trzeba jednak zaufać. Swoje kosztował, nie może być tak słaby jak jest", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Legia ma na stole oferty wypożyczenia z opcją dopłaty przez Legię", "onSuccess": 0, "onFail": 0 }
@@ -178,7 +178,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "To powinno być nasze dobro narodowe - remis. Remisowy Model Gry, to przyszłość, ale trzeba rozwiązań systemowych", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Raz zremisowałem z Erikiem Cantoną w chińczyka. Dziś mogę przyznać, że oszukiwałem wtedy; pozdrawiam Erik, ty stary byku", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Kurwa mać, w piłce trzeba wygrywać. Ja wolę spaść i wygrać mecz, niż zremisować i liderować", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Kurwa mać, w piłce trzeba wygrywać. Ja wolę spaść i wygrać mecz, niż zremisować i liderować", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Doskonała gra defensywna obu zespołów", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Wisła Płock współpracuje z trenerem przygotowania remisowego", "onSuccess": 0, "onFail": 0 }
@@ -189,7 +189,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Jak pierwszy raz przyjechałem na kadrę, to miałem 16 lat. Chłopaki pytali, co ja tu robię, a potem nie zgadniecie, kto stał w klubie "MAJORKA" w Tychach podpierał ścianę, a kto prowadził pociąg", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "Za moich czasów reprezentant Polski to był ktoś, kto wygrał dwa Puchary Europy. Wcześniej nie miałeś prawa przyjechać na kadrę", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów reprezentant Polski to był ktoś, kto wygrał dwa Puchary Europy. Wcześniej nie miałeś prawa przyjechać na kadrę", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "Według modelu matematycznego, który analizuje WyScout w oparciu o AI, powinno się powołać blok defensywny Sokoła Kleczew", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie ma powodu, by lekceważyć Błanika. Nie patrzmy w metrykę", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Jan Urban chciałby powoływać więcej młodych Polaków, ale żebyśmy za młodych uznawali tych do 28 lat", "onSuccess": 0, "onFail": 0 }
@@ -200,7 +200,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -226,7 +226,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -237,7 +237,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -248,7 +248,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -259,7 +259,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -270,7 +270,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -292,14 +292,14 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "[TEMAT RUNDY 1]",
+              "topic": "Panowie, porozmawiajmy o polskiej piłce. Dlaczego FSV Mainz tak dobrze szkoli, a my nie",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Oni stawiają na młodych Niemców z Niemiec. Szukają ich w trzeciej lidze", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Byłem kiedyś poproszony, by doradzić Mainz jak szkolić. Powiedziałem im, że trzeba wychować takich piłkarzy jak ja. Pokazałem im kilka żonglerek w korytarzu i już wiedzieli co dalej", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów my szkoliliśmy lepiej, bo dbano o to, by piłkarz polski miał charakter. Nie było cackania", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Tam każdy wie, że współczynnik gegenpacken to nawet nie przyszłość. To już wczorajsza herbata", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Zacznijmy od tego, ze to Moguncja", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, zbierają najlepszych z regionu, mają też know how z Heidenheim", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
@@ -307,7 +307,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -318,7 +318,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -329,7 +329,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -340,7 +340,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -366,7 +366,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -377,7 +377,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -388,7 +388,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -399,7 +399,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
@@ -410,7 +410,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
