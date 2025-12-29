@@ -118,22 +118,22 @@
               "topic": "W co powinien mierzyć Piast wiosną? Niby tabela jest płaska, ale utrzymanie zdaje się sukcesem",
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "Piast powinien wrócić do czasów, gdy mierzył rok po roku w mistrzostwo. Włodarze muszą sięgnąć do kieszeni - spłacą to z Ligi Mistrzów", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś na finiszu sezonu Ligue 2 traciliśmy 18 punktów do awansu. Zostały dwie kolejki. I tak to się potoczyło, że prawie awansowaliśmy", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Zawsze grasz o mistrzostwo", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Piast musi poprawić wychodzenie z kontr-kontr-pressingu", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie wiem", "onSuccess": 0, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Wiem z zaufanego źródła, że powstaje spółdzielnia na Piasta, bo wszyscy się go boją. Musimy iść z tym do UEFA i ONZ", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 5]",
+              "topic": "Czy Piast Gliwice znajdzie nowego inwestora?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Jego sukcesy powinny być najlepszym inwestorem. Niech to podnosi z boiska", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Miałem kiedyś nawet zainwestować w Piasta razem z Warrenem Buffetem, ale choć bilety do Gliwic były wykupione popłynęliśmy w rejs dookoła świata i zapomnieliśmy", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Jeśli inwestorzy nie ustawiają się w kolejce, to są debilami", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Ważne by było stać Piasta na WyScout", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "A długi wobec miasta?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, nie mam na ten temat informacji", "onSuccess": 0, "onFail": 0 }
               ]
             }
           ]
