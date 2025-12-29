@@ -142,7 +142,7 @@
     },
     {
       "id": "C",
-      "name": "Dośrodkowanie z rożnego",
+      "name": "Dośrodkowanie z rzutu rożnego na długi słupek",
       "description": "Niedzielne podsumowanie ligi. Przyzwoita oglądalność. Stawka sympatii: 20.",
       "targetPoints": 30,
       "sympathyStake": 20,
@@ -152,47 +152,47 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "[TEMAT RUNDY 1]",
+              "topic": "Kto was zaskoczył w tej kolejce?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Zaskoczyło mnie tak wielu przeciętnych zagranicznych piłkarzy. Dlaczego nie gramy Polakami, młodymi?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Zaskoczyć to zaskoczyło mnie tylko raz jak w Hamburgu nie mieli mojego ulubionego whisky", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Przede wszystkim zaskoczyła mnie mierna gra. Trzeba grać ofensywnie, to jest piłka, tu powinny padać gole", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "To, że Korona zagrała tak szeroko wahadłami", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Trzeba przyznać, że remis 0:0 Zagłębia z Arką był zaskakujący, ostatnio jedni i drudzy robili postęp", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, niedługo może zostać zwolniony trener w strefie spadkowej", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 2]",
+              "topic": "Czy waszym zdaniem Rajevac odpali? Znowu zmarnował sytuację",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Napastnik jest od goli. Jak napastnik nie strzeli w danej kolejce, ja bym mu nie płacił", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś Marc Overmars powiedział mi z pretensjami, że zmarnowałem jego podanie. Powiedziałem: kolego, wiesz ile waży piłka?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Czas by wrócił Gual", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "To nie jest zły napastnik jeśli chodzi o przesuwanie", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Trzeba jednak zaufać. Swoje kosztował, nie może być tak słaby jak jest", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Legia ma na stole oferty wypożyczenia z opcją dopłaty przez Legię", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 3]",
+              "topic": "Czy Wisła Płock może zrobić mistrzostwo? Znowu zremisowali i umocnili się na fotelu lidera",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "To powinno być nasze dobro narodowe - remis. Remisowy Model Gry, to przyszłość, ale trzeba rozwiązań systemowych", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Raz zremisowałem z Erikiem Cantoną w chińczyka. Dziś mogę przyznać, że oszukiwałem wtedy; pozdrawiam Erik, ty stary byku", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Kurwa mać, w piłce trzeba wygrywać. Ja wolę spaść i wygrać mecz, niż zremisować i liderować", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Doskonała gra defensywna obu zespołów", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Wisła Płock współpracuje z trenerem przygotowania remisowego", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 4]",
+              "topic": "Kogo powołalibyście do kadry? Jaką świeżą twarz?",
               "options": [
                 { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ATAK", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Jak pierwszy raz przyjechałem na kadrę, to miałem 16 lat. Chłopaki pytali, co ja tu robię, a potem nie zgadniecie, kto stał w klubie "MAJORKA" w Tychach podpierał ścianę, a kto prowadził pociąg", "onSuccess": 0, "onFail": 0 },
+                { "type": "ATAK", "min": 0, "max": 18, "text": "Za moich czasów reprezentant Polski to był ktoś, kto wygrał dwa Puchary Europy. Wcześniej nie miałeś prawa przyjechać na kadrę", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Według modelu matematycznego, który analizuje WyScout w oparciu o AI, powinno się powołać blok defensywny Sokoła Kleczew", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie ma powodu, by lekceważyć Błanika. Nie patrzmy w metrykę", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Jan Urban chciałby powoływać więcej młodych Polaków, ale żebyśmy za młodych uznawali tych do 28 lat", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
