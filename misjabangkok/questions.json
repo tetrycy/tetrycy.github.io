@@ -212,7 +212,7 @@
     },
     {
       "id": "D",
-      "name": "Rzut wolny pośredni",
+      "name": "Rzut wolny pośredni pod polem karnym",
       "description": "Talk-show sportowy z gośćmi z pierwszych stron gazet. Masz dopowiadać. Stawka sympatii: 25.",
       "targetPoints": 35,
       "sympathyStake": 25,
@@ -303,47 +303,47 @@
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 2]",
+              "topic": "Panowie, temat polskich trenerów. Dlaczego Mirko Slomka jeszcze nie pracuje w Polsce",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Powinniśmy zastanowić się nad tym, dlaczego nie szukamy młodych polskich trenerów w trzeciej lidze", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Dla was to Mirko, dla mnie to Miras. Kiedyś utknęliśmy razem na lotnisku w Sevilli, Sevilla do dziś to pamięta i wspomina z rozrzewnieniem jako jeden z lepszych momentów w historii miasta", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów niemiecki trener musiał być cztery razy lepszy od byłego polskiego kadrowicza bez doświadczenia, żeby dostać pracę w lidze", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Slomka sprawdziłby się przy intensywności CLJ Cracovii", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Kto?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Slomka chętnie przyjąłby robotę gdziekolwiek, a więc Polska nie jest wykluczona", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 3]",
+              "topic": "Trochę odbiegliśmy od tematu polskiej piłki panowie, wracajmy. Co sądzicie o Bayernie Juppa Heynckesa",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Lepsze były tylko Orły Górskiego", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś Jupp Heynckes przyjechał do mnie w odwiedziny na moją działkę pod Nadarzynem. Powiem wam, że mało nie zakrztusiłem się ze śmiechu jak spytał, czy będzie cukinia z grilla", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Na pewno niezły, ale mam tu kasetę VHS z mojego pożegnalnego meczu w Troyes. Obejrzyjmy może teraz i porównajmy, bo nie uważam, żeby było wszystko tak jak mówicie", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Nie lubiłem. Tak, wygrali wszystko, ale tam było za mało jednak pressingu przy autach. To dyskwalifikujące", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "No niezły był, ale ileż można wracać do przeszłości", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Jupp Heynckes interesował się wtedy Waldemarem Sobotą", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 4]",
+              "topic": "Czy waszym zdaniem Artur Wichniarek mógł osiągnąć więcej?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Nie", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Zdradzę wam, że jak jestem w Bielefeldzie, zawsze powołuję się na przyjaźn z Arturem. Wszyscy to pamiętają i jem wszędzie za darmo", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Artur dobrze sobie poradził, ale gdybym to ja wtedy wyjechał do Arminii, strzelałbym więcej. Miał łatwe sytuacje", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Brakło jednak tego, żeby Artur zabezpieczał prawy sektor od bramki przy rzutach sędziowskich. Tu widać było jego słabosć", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Tak", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, całkiem dobrze to nowe świetnie", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 5]",
+              "topic": "Panowie, porozmawiajmy o reprezentacji. Mecz Polska - Niemcy z 2014, wasze pierwsze skojarzenie",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Byliśmy lepsi, pokazaliśmy ten charakter. Szkoda, że brakło nas na mistrzostwach w 2014, bo mogliśmy wygrać", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Zadzwoniłem do Adama Nawałki nocą przed tym meczem. Była 3, odebrał zirytowany, ale jak usłyszał mój głos to spokorniał. Powiedziałem mu: postaw na Milę", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Dlaczego nikt nie pamięta, jak kadra ze mną w Euro U-17 w Chemnitz ograła NRD 3:0", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Fajnie wygrać, ale lepiej prowadzić grę. My tego nie robiliśmy", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Dwa gole Mili, zdecydowanie", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Adam Nawałka miał przed tym meczem propozycję z Zagłębia Lubin", "onSuccess": 0, "onFail": 0 }
               ]
             }
           ]
@@ -362,58 +362,58 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "[TEMAT RUNDY 1]",
+              "topic": "Panowie, czy to dobrze, że wracają mecze ligowym składem w egzotycznych miejscach? Jaki to walor praktyczny?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "W takich turniejach wykuwa się charakter i przyszły sukces. Nikt nie zaczyna od razu w finale Mistrzostw Świata", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "To sól futbolu. Ja grałbym tylko takie turnieje. Z mojej kariery je wspominam najcieplej. Jak Kazek Węgrzyn kupił w Hong Kongu magnetowid - dwa dni oglądaliśmy filmy karate, oniemiejąc z zachwytu", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Trzeba wrócić do korzeni. I pamiętajmy: to szansa na medal. Ja mam ich pełną szafkę, co mogą powiedzieć o sobie dzisiejsi kadrowicze? Ta szafka dodam, że się nie domyka", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "W końcu przetestujmy taktykę na trzech carrillero", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "A czemu nie? Zawsze może ktoś błyśnie. Nie ma minusów", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, to będzie duża szansa w walce o status 5 bramkarza. Jan Urban zdecyduje", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 2]",
+              "topic": "Kto waszym zdaniem pokaże się na tym turnieju?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Ktoś na pewno, Polska jest pełna talentów, co widać po meczach ligowych, które bardzo często oglądam, głównie wręcz", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Powiem wam, że trenerowi kadry na takim zgrupowaniu trzeba zaimponować nie tylko na boisku. Na Pucharze Tygrysa w Indiach w 1996 tak zdobyłem zaufanie trenera młodzieżówki", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Nie przesadzajmy. Za moich czasów musiałeś udowodnić wartość przez piętnaście lat kariery, dopiero byłeś doceniany. To może być cenny, ale przyczynek", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Przede wszystkim pokażmy konsekwencję w wykonywaniu kornerów na krótko. To jest przyszłość", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Pietuszewski", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, PZPN zaprezentuje nowe oficjalne spodnie działacza PZPN, sponsorowane przez polskiego wytwórcę spodni", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 3]",
+              "topic": "Naszymi rywalami są w grupie Tajlandia, Bangladeszu U-20 i Tajlandia B. Jak oceniacie szanse na prymat",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Nie możemy się bać. To dobre zespoły, ale my jesteśmy lepsi. Chciałbym tylko, żeby Jan Urban nie zapominał, ile talentów jest w polskich trzecich ligach i stamtąd też powołał", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Powiem wam tak: ja. 1997 rok. Lato. Z Edmundo, Chilavertem i Petitem idziemy w Bangkok. Chyba mam tam mural tylko za to, co się działo tamtej nocy, tak mi pisał ostatnio Rai", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Cieszę się, że ci chłopcy na dorobku uniknęli w losowaniu wicemistrza Filipin. To mogłoby być za duże dla nich wyzwanie, wiem, bo byłem kiedyś królem asyt w tamtejszej lidze futsalu", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Nie lekceważmy Bangladeszu U-20 na pewno. Świetny ostatnio mecz z Laosem, duża dojrzałość przesuwania", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Z Bangladeszu to ja mogę mieć portki", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, reprezentacja Tajlandii B przyjedzie osłabiona brakiem piłkarzy powołanych do reprezentacji A", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 4]",
+              "topic": "A co jeśli przegramy? Czy to zagrozi posadzie Jana Urbana",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Moim zdaniem Jan Urban już popełnia błędy. Musimy mierzyć wyżej, mógł zrobić awans bezpośredni", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Mieszkałem kiedyś u Janka pół roku w domu w Pampelunie. Pracował w Legii, mówi: masz, baw się, i dał mi klucze. Uważam, że człowiekowi, który podejmuje tak mądre decyzje, trzeba zaufać", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów na każdy mecz miałem innego trenera. To działało", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Wszystko zależy od tego, czy obudzi w końcu Karola Linettego", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie oceniałbym, dopólki nie wróci Moder", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, PZPN ma numer telefoniczny do Macieja Skorży", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 5]",
+              "topic": "Panowie, po tym zgrupowaniu już tylko baraże. Damy radę?",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Kto ma dać radę jak nie Polak", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Pozwólcie, że opowiem anegdotę. Baraż o awans do czeskiej II ligi, Karvina. Hobbystycznie już grałem, bo miałem te 31 lat, więc pomogłem tam przyjacielowi. Baraż musisz wygrać w swojej głowie. Nogi, piłka, gole - to już didaskalia", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów nie graliśmy w barażach. Owszem, nie graliśmy też na wielkich turniejach, ale uważam, że tak lepiej", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "W tym barażu przede wszystkim chciałbym zobaczyć styl", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie wiem", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "PZPN planuje w razie zwycięstwa pożyczyć odrzutowiec od pana Dobrzyckiego i nim przewieźć odpowiedzialnych za sukces działaczy", "onSuccess": 0, "onFail": 0 }
               ]
             }
           ]
