@@ -444,7 +444,7 @@
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('glos', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Donośny głos</div>
-                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ATAKU</div>
+                                        <div style="font-size: 9px; margin-top: 2px;">Bonus do ZA MOICH CZASÓW</div>
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 10px; text-align: left; width: 100%;">
                                         <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Koszula i garnitur</div>
@@ -575,7 +575,7 @@
             { id: 'energy', icon: '⚡', name: 'Energetyk', desc: '+3 do rzutu w kolejnej turze (jednorazowo)', effect: 'oneshot', val: 3 },
             { id: 'sponsor', icon: '💰', name: 'Sponsor TV', desc: '+5 punktów show przy trafieniu', effect: 'onSuccess', val: 5 },
             { id: 'smile', icon: '😊', name: 'Uśmiech', desc: '+1 do wszystkich rzutów POPULIZMU', effect: 'conditionalMod', val: 1, condition: 'POPULIZM' },
-            { id: 'megaphone', icon: '📢', name: 'Megafon', desc: '+1 do wszystkich rzutów ATAKU', effect: 'conditionalMod', val: 1, condition: 'ATAK' }
+            { id: 'megaphone', icon: '📢', name: 'Megafon', desc: '+1 do wszystkich rzutów ZA MOICH CZASÓW', effect: 'conditionalMod', val: 1, condition: 'ZA MOICH CZASÓW' }
         ];
 
         // --- STAN GRY ---
@@ -596,15 +596,15 @@
             usedQuestionSets: {} // Tracking które zestawy pytań zostały użyte dla każdego programu
         };
 
-        // Progi dla każdej klasy
+        // Progi dla każdej klasy - WSZYSTKIE NA 0 DLA TESTÓW
         const CLASS_THRESHOLDS = {
             pilkarz: {
                 startCred: 0,
-                programs: { 'A': 0, 'B': 10, 'C': 25, 'D': 35, 'E': 45, 'F': 70 }
+                programs: { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0 }
             },
             analityk: {
                 startCred: 0,
-                programs: { 'A': 0, 'B': 20, 'C': 35, 'D': 45, 'E': 60, 'F': 90 }
+                programs: { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0 }
             }
         };
 
@@ -1048,7 +1048,7 @@
             if (state.specialty === '90s' && option.type === 'ANEGDOTA') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
-            } else if (state.specialty === 'glos' && option.type === 'ATAK') {
+            } else if (state.specialty === 'glos' && option.type === 'ZA MOICH CZASÓW') {
                 specialtyBonus = 1;
                 specialtyText = "+1 specjalność";
             } else if (state.specialty === 'komputer' && option.type === 'ANALIZA') {
