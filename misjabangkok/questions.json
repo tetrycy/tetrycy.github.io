@@ -213,7 +213,7 @@
     {
       "id": "D",
       "name": "Rzut wolny pośredni",
-      "description": "Talk-show sportowy. Piątek wieczór, prime time. Stawka sympatii: 25.",
+      "description": "Talk-show sportowy z gośćmi z pierwszych stron gazet. Masz dopowiadać. Stawka sympatii: 25.",
       "targetPoints": 35,
       "sympathyStake": 25,
       "graphic": "assets/program-rzutwolny.jpg",
@@ -222,58 +222,58 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "[TEMAT RUNDY 1]",
+              "topic": "Prezes Jakubas mówi, że ma bardzo dużo pieniędzy, mógłby kupić kogo chce. Motor kupił piłkarzy za równowartość dwóch paczek petard 102.",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Sukces sportowy jest ponadczasowy. Pan Jakubas powinien wydać wszystkie pieniądze jakie ma na Motor", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Kiedyś miałem bardzo dużo pieniędzy. Wszystkie wydałem podczas jednego weekendu w Montecarlo. Następnego dnia zaprosił mnie właściciel Montecarlo i wszystko mi oddał, bo mówi, że był pod wrażeniem mojej gry w Sandhausen", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów petardy 102 kosztowały bardzo dużo. Uważam, że pan Jakubas powinien uważać z rozrzutnością", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "3-5-2, dobrze wykonanego, kupować nie musisz", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Nie róbmy jaj, Korona wydaje więcej", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Zbigniew Jakubas mógłby wydać nawet więcej niż mówi", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 2]",
+              "topic": "Łączenie z Bogusławem Leśnodorskim. Macie po jednym pytaniu",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Bogusław, jak patrzysz dziś na Legię - o ile lepsza byłaby z tobą u steru", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Boguś, jak wspominasz mecz z Borussią w Lidze Mistrzów? Tak od kulis", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Za moich czasów to mi zadawano pytania. Nie będę o nic pytał", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Co pan sądzi o współczynniku PACKEN Piacenzy", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "MOTOR LUBLIN, MOTOR LUBLIN, MOTOR LUBLIN", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, mógłbyś zostać prezesem klubu II ligi i budować swoją pozycję trochę od nowa. Co o tym sądzisz", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 3]",
+              "topic": "Łączenie z Janem Urbanem. Jan Urban prosto z Pampeluny, jest słonecznie",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Panie Janie, dlaczego gra pan tak niewieloma młodymi Polakami? Trzeba ich szukać, oni są, na przykład w 3 lidze", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Janek, tu kadra, wszystko fajnie, mundial zaraz. Ale opowiedz proszę lepiej jak po meczu U21 w Buenos Aires chciało mnie Boca", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Janek, przyjacielu. Pamiętasz jak za naszych czasów byłem lepszy od ciebie", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Panie Janie, czy zamierza pan w końcu zagrać na lewego mezzalę? Moim zdaniem Dąbrowski byłby w tej roli idealny, tak uczy WyScout", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Panie Janie, nie będę zajmował tu przestrzeni - gratuluję dobrej roboty, oby tak dalej", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, przy pierwszym kryzysie zostanie pan zastąpiony Portugalczykiem. Co pan o tym sądzi", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 4]",
+              "topic": "Łączenie z Robertem Lewandowskim. Robert ma czas na jedno twoje pytanie",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Robert, dlaczego nie jesteś już młodym Polakiem? Musisz wrócić do Polski, do III ligi, może znów nim zostaniesz", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Bobek, pamiętasz tę piłkę co ci dałem jeszcze jak grałeś w Polonezie? Z podpisem. Wiem, że cię zainspirowała do wszystkiego. Mógłbyś kiedyś mi podziękować", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Robert, jesteś całkiem niezły, ale nie uważasz, że w latach 90-tych, w których ja grałem, to byś sobie nie poradził", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Panie Robercie, opinia: gra na dwóch libero przy intensywności Zdenka Zemana", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Robert, czy myślisz, że gdyby Milik miał tak mało kontuzji jak ty, osiągnąłby więcej od ciebie?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Robert, według moich informacji Kamil Grosicki planuje jeszcze cztery mecze pożegnalne w kadrze. Czy przyjedziesz zagrać w którymś", "onSuccess": 0, "onFail": 0 }
               ]
             },
             {
-              "topic": "[TEMAT RUNDY 5]",
+              "topic": "Łączenie z Cezarym Kuleszą. Omówienie roku w PZPN",
               "options": [
-                { "type": "POPULIZM", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ANALIZA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "[TEKST OPCJI]", "onSuccess": 0, "onFail": 0 }
+                { "type": "POPULIZM", "min": 0, "max": 18, "text": "Czarek, dobra robota, ale potrzeba kazać polskim piłkarzom jeździć tramwajami, żeby nauczyli się charakteru", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANEGDOTA", "min": 0, "max": 18, "text": "Czaras, wróćmy do tematu kapeli w Green Starze z moim udziałem. Pamiętasz ten wypad do Mińska, ludzie mieli łzy w oczach jak nuciłem "Hej Sokoły. To odpali", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZA MOICH CZASÓW", "min": 0, "max": 18, "text": "Czarek, wszystko fajnie, ale ten sok Costa na nagraniach - gdzie tatar", "onSuccess": 0, "onFail": 0 },
+                { "type": "ANALIZA", "min": 0, "max": 18, "text": "Panie Czarku, czy nasz Narodowy Model Gry mógłby uwzględniać grę na dwóch podwieszonych prawych obrońców? Tak gra dziś Gremio z sukcesami w Sudamericana", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 0, "max": 18, "text": "Czy sądzi pan, że jakby miał z kim przegrać, to by przegrał wybory?", "onSuccess": 0, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 0, "max": 18, "text": "Według moich informacji, Henryk Kula stoi właśnie za pana plecami", "onSuccess": 0, "onFail": 0 }
               ]
             }
           ]
