@@ -44,10 +44,10 @@
             background-color: var(--bg-panel);
             border: var(--border-width) solid var(--neon-pink);
             box-shadow: 0 0 15px var(--neon-pink), inset 0 0 20px rgba(0,0,0,0.8);
-            width: 90vw;
-            max-width: 800px;
-            height: 90vh;
-            max-height: 600px;
+            width: 95vw;
+            max-width: 1200px;
+            height: 95vh;
+            max-height: none;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -221,14 +221,15 @@
 
         .topic-box {
             font-weight: bold;
-            font-size: 15px;
-            padding: 15px;
-            background: rgba(255, 42, 109, 0.1); /* Lekki róż */
+            font-size: 16px;
+            padding: 18px;
+            background: rgba(255, 42, 109, 0.15);
             margin-bottom: 15px;
             color: #fff;
             text-shadow: 0 0 5px var(--neon-pink);
             border-color: var(--neon-yellow);
-            line-height: 1.5;
+            line-height: 1.6;
+            border: 2px solid var(--neon-yellow);
         }
 
         .options-grid {
@@ -240,23 +241,25 @@
         .option-btn {
             min-height: 50px;
             height: auto;
-            font-size: 11px;
+            font-size: 13px;
             text-align: left;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 10px 12px;
+            padding: 12px 15px;
             border-color: var(--neon-pink);
             color: #fff;
-            line-height: 1.4;
+            line-height: 1.6;
+            background: rgba(20, 0, 46, 0.6);
         }
         
         .option-type {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
             color: var(--neon-yellow);
             text-transform: uppercase;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
         }
 
         /* KOŚCI */
@@ -331,7 +334,6 @@
             box-shadow: 0 0 10px var(--neon-pink);
             border-bottom: none;
         }
-        .item-icon { font-size: 24px; margin-right: 15px; }
 
     </style>
 </head>
@@ -369,10 +371,6 @@
                         <div style="border: 2px solid var(--neon-yellow); padding: 20px; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px var(--neon-yellow);">
                             <h2 style="color: var(--neon-yellow); margin-bottom: 15px; font-size: 20px;">MISJA</h2>
                             
-                            <div style="border: 2px dashed var(--neon-blue); padding: 40px 60px; margin: 15px 0; background: rgba(0,0,50,0.3);">
-                                <p style="color: #666; font-size: 12px;">[ Tutaj będzie grafika z Tajlandii ]</p>
-                            </div>
-                            
                             <p style="color: #fff; line-height: 1.6; font-size: 13px; text-align: left;">
                                 PZPN ogłosił, że reprezentacja Polski wystąpi w styczniu ligowym składem na Pucharze Króla Tajlandii. 
                                 <br><br>
@@ -402,7 +400,64 @@
                     </div>
                 </div>
 
+                <div id="rules-screen" class="screen" style="justify-content: flex-start; align-items: center; padding: 20px 0; overflow-y: auto;">
+                    <div style="max-width: 700px; width: 100%; padding: 0 20px;">
+                        <div class="inset-box" style="padding: 25px; background: rgba(0,0,0,0.9);">
+                            <h2 style="text-align: center; color: var(--neon-yellow); margin-bottom: 20px; font-size: 22px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 10px;">ZASADY GRY</h2>
+                            
+                            <div style="color: #fff; line-height: 1.8; font-size: 13px;">
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">CEL GRY</h3>
+                                <p>Zdobądź 100% sympatii widzów w ciągu 7 programów, a potem przejdź finałową MISJĘ BANGKOK, aby polecieć na Puchar Króla Tajlandii!</p>
+                                
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">JAK GRA</h3>
+                                <p><strong style="color: var(--neon-pink);">1. WYBIERZ PROGRAM</strong> - Każdy program wymaga określonego poziomu sympatii. Im trudniejszy, tym więcej punktów możesz zdobyć.</p>
+                                
+                                <p><strong style="color: var(--neon-pink);">2. WYBIERZ ARTEFAKTY</strong> - Przed programem wybierasz 2 artefakty, które pomogą Ci w trakcie występu.</p>
+                                
+                                <p><strong style="color: var(--neon-pink);">3. ODPOWIADAJ NA PYTANIA</strong> - W każdym programie dostajesz 5 pytań. Do każdego pytania masz 6 opcji odpowiedzi w różnych kategoriach.</p>
+                                
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">MECHANIKA RZUTÓW</h3>
+                                <p>• Wybierasz odpowiedź (np. POPULIZM, ANEGDOTA, ANALIZA)<br>
+                                • Rzucasz 3 kośćmi (każda kość 1-6)<br>
+                                • Jeśli suma kości mieści się w zakresie przy odpowiedzi - SUKCES!<br>
+                                • Każda odpowiedź pokazuje: [zakres] | [punkty za sukces / punkty za porażkę]</p>
+                                
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">PUNKTY SHOW</h3>
+                                <p>• Każdy program ma CEL (np. 20 punktów show)<br>
+                                • Trafione odpowiedzi dają punkty (+3, +5, +7 itd.)<br>
+                                • Pudła zabierają punkty (-2, -3, -4 itd.)<br>
+                                • Osiągnij 100% celu → pełna nagroda sympatii<br>
+                                • 75-99% → połowa nagrody<br>
+                                • 50-74% → bez zmian<br>
+                                • <50% → strata sympatii!</p>
+                                
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">BONUSY</h3>
+                                <p>• Twoja SPECJALNOŚĆ daje +1 do rzutów w jednej kategorii<br>
+                                • ARTEFAKTY działają RAZ NA CAŁĄ GRĘ:<br>
+                                &nbsp;&nbsp;- Bonusy do rzutów: +1 lub +2 do konkretnej kategorii<br>
+                                &nbsp;&nbsp;- Bonusy show: Dodatkowe punkty (3-10) tylko przy SUKCESIE</p>
+                                
+                                <h3 style="color: var(--neon-green); font-size: 16px; margin: 15px 0 10px 0;">FINAŁ</h3>
+                                <p>Po 7 programach (tydzień 3) sprawdzenie:<br>
+                                • Jeśli masz ≥100% → odblokujesz MISJĘ BANGKOK<br>
+                                • Przejdź finał (55 punktów show) → WYGRANA!<br>
+                                • Jeśli masz <100% lub przegrasz finał → PORAŻKA</p>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 25px;">
+                                <button class="btn" onclick="closeRules()" style="font-size: 14px; padding: 12px 30px; width: 100%;">
+                                    [ ROZUMIEM - DALEJ ]
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="hub-screen" class="screen">
+                    <div style="position: relative;">
+                        <button onclick="showScreen('rules-screen')" class="btn" style="position: absolute; top: 0; right: 0; width: 30px; height: 30px; padding: 0; font-size: 18px; border-color: var(--neon-yellow); color: var(--neon-yellow); box-shadow: 0 0 5px var(--neon-yellow);">?</button>
+                    </div>
+                    
                     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                         <div>
                             <strong style="color: var(--neon-pink)">SYMPATIA WIDZÓW:</strong>
@@ -460,7 +515,7 @@
                                         <div style="font-size: 9px; margin-top: 2px;">Bonus do ZA MOICH CZASÓW</div>
                                     </button>
                                     <button class="btn specialty-btn" onclick="selectSpecialty('koszula', event)" style="padding: 10px; text-align: left; width: 100%;">
-                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Koszula i garnitur</div>
+                                        <div style="font-weight: bold; color: var(--neon-yellow); font-size: 12px;">Telefon na prepaid</div>
                                         <div style="font-size: 9px; margin-top: 2px;">Bonus do ZAKULISOWYCH INFORMACJI</div>
                                     </button>
                                 </div>
@@ -489,10 +544,10 @@
                     </div>
                 </div>
 
-                <div id="program-intro-screen" class="screen" style="justify-content: center; align-items: center; background: #000;">
-                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <img id="program-intro-image" src="" style="max-width: 90%; max-height: 80%; object-fit: contain; border: 2px solid var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink);">
-                        <div id="program-intro-title" style="margin-top: 20px; font-size: 24px; color: var(--neon-yellow); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-yellow);"></div>
+                <div id="program-intro-screen" class="screen" style="justify-content: center; align-items: center; background: #000; padding: 0;">
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+                        <img id="program-intro-image" src="" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                        <div id="program-intro-title" style="position: absolute; bottom: 40px; width: 100%; text-align: center; font-size: 32px; color: var(--neon-yellow); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px var(--neon-yellow), 2px 2px 0 #000; background: rgba(0,0,0,0.7); padding: 20px; z-index: 10;"></div>
                     </div>
                 </div>
 
@@ -511,6 +566,17 @@
                         TEMAT: <span id="round-topic" style="color: var(--neon-yellow);">Ładowanie...</span>
                     </div>
 
+                    <div class="dice-area" id="dice-container" style="margin-bottom: 15px;">
+                        <div class="dice" id="d1">?</div>
+                        <div class="dice" id="d2">?</div>
+                        <div class="dice" id="d3">?</div>
+                        <div style="margin-left: 20px;">
+                            <div style="font-size: 10px; color: #aaa;">SUMA:</div>
+                            <div id="dice-sum" style="font-size: 24px; font-weight: bold; color: white;">0</div>
+                        </div>
+                        <div id="result-msg" style="margin-left: 20px; font-weight: bold;"></div>
+                    </div>
+
                     <div id="active-items-section" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-blue); display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--neon-blue); font-size: 11px;">AKTYWNE ARTEFAKTY:</span>
@@ -525,17 +591,6 @@
                         <button class="btn option-btn">4</button>
                         <button class="btn option-btn">5</button>
                         <button class="btn option-btn">6</button>
-                    </div>
-
-                    <div class="dice-area" id="dice-container">
-                        <div class="dice" id="d1">?</div>
-                        <div class="dice" id="d2">?</div>
-                        <div class="dice" id="d3">?</div>
-                        <div style="margin-left: 20px;">
-                            <div style="font-size: 10px; color: #aaa;">SUMA:</div>
-                            <div id="dice-sum" style="font-size: 24px; font-weight: bold; color: white;">0</div>
-                        </div>
-                        <div id="result-msg" style="margin-left: 20px; font-weight: bold;"></div>
                     </div>
                 </div>
 
@@ -1245,12 +1300,12 @@
 
         const ITEMS = [
             // +1 do kategorii
-            { id: 'smile', icon: '😊', name: 'Uśmiech', desc: '+1 do rzutu POPULIZMU (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'POPULIZM' },
-            { id: 'diary', icon: '📖', name: 'Pamiętnik', desc: '+1 do rzutu ANEGDOTY (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ANEGDOTA' },
-            { id: 'megaphone', icon: '📢', name: 'Megafon', desc: '+1 do rzutu ZA MOICH CZASÓW (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ZA MOICH CZASÓW' },
+            { id: 'smile', icon: '😊', name: 'Kawa', desc: '+1 do rzutu POPULIZMU (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'POPULIZM' },
+            { id: 'diary', icon: '📖', name: 'Notatki', desc: '+1 do rzutu ANEGDOTY (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ANEGDOTA' },
+            { id: 'megaphone', icon: '📢', name: 'Plakat ze sobą z \'95', desc: '+1 do rzutu ZA MOICH CZASÓW (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ZA MOICH CZASÓW' },
             { id: 'laptop', icon: '💻', name: 'Laptop', desc: '+1 do rzutu ANALIZY (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ANALIZA' },
             { id: 'stats', icon: '📊', name: 'Statystyki', desc: '+1 do rzutu MERYTORYKI (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'MERYTORYKA' },
-            { id: 'phone', icon: '📱', name: 'Telefon', desc: '+1 do rzutu ZAKULISOWYCH INFORMACJI (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ZAKULISOWE INFORMACJE' },
+            { id: 'phone', icon: '📱', name: 'Zadzwoń gdzieś w trakcie programu', desc: '+1 do rzutu ZAKULISOWYCH INFORMACJI (kliknij aby użyć)', effect: 'bonus', val: 1, category: 'ZAKULISOWE INFORMACJE' },
             
             // +2 do kategorii
             { id: 'trophy', icon: '🏆', name: 'Trofeum', desc: '+2 do rzutu POPULIZMU (kliknij aby użyć)', effect: 'bonus', val: 2, category: 'POPULIZM' },
@@ -1261,8 +1316,12 @@
             { id: 'contacts', icon: '📇', name: 'Kontakty', desc: '+2 do rzutu ZAKULISOWYCH INFORMACJI (kliknij aby użyć)', effect: 'bonus', val: 2, category: 'ZAKULISOWE INFORMACJE' },
             
             // Punkty show
-            { id: 'coffee', icon: '☕', name: 'Kawa', desc: '+3 punkty show (kliknij aby użyć)', effect: 'points', val: 3 },
-            { id: 'sponsor', icon: '💰', name: 'Sponsor TV', desc: '+5 punktów show (kliknij aby użyć)', effect: 'points', val: 5 }
+            { id: 'coffee', icon: '☕', name: 'Energol', desc: '+3 punkty show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 3 },
+            { id: 'sponsor', icon: '💰', name: 'Zawiąż prowadzącemu szalik na szyi', desc: '+5 punktów show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 5 },
+            { id: 'sunglasses', icon: '🕶️', name: 'Przyciemniane okulary', desc: '+4 punkty show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 4 },
+            { id: 'juggling', icon: '🤹', name: 'Żonglerka w studiu', desc: '+6 punktów show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 6 },
+            { id: 'ring', icon: '💍', name: 'Sygnet', desc: '+7 punktów show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 7 },
+            { id: 'shoulder', icon: '🤝', name: 'Złap za ramię', desc: '+10 punktów show przy SUKCESIE (kliknij aby użyć)', effect: 'show', val: 10 }
         ];
 
         // --- STAN GRY ---
@@ -1278,7 +1337,7 @@
             currentRoundIdx: 0,
             showPoints: 0, // Punkty show (zamiast pp)
             selectedItems: [],
-            usedItems: {}, // Tracking które artefakty zostały użyte w tym programie {itemId: true}
+            usedItems: {}, // Tracking które artefakty zostały użyte w CAŁEJ GRZE (raz na cały playthrough) {itemId: true}
             activeBonus: null, // Aktywny bonus w tej turze {type: 'dice'/'points', val: number, category?: string}
             usedQuestionSets: {} // Tracking które zestawy pytań zostały użyte dla każdego programu
         };
@@ -1375,6 +1434,10 @@
 
         function startGame() {
             updateCredibilityUI();
+            showScreen('rules-screen');
+        }
+        
+        function closeRules() {
             showScreen('hub-screen');
             renderHub();
         }
@@ -1411,31 +1474,35 @@
             const thresholds = CLASS_THRESHOLDS[state.playerClass].programs;
 
             PROGRAMS.forEach(prog => {
-                // Program F dostępny tylko po checkpoincie (weeks <= 3)
-                if (prog.id === 'F' && state.weeks > 3) {
-                    return; // Nie pokazuj wcale
-                }
-                
                 const requiredCred = thresholds[prog.id] || prog.reqCred;
                 const locked = state.credibility < requiredCred;
+                
+                // Program F zablokowany jeśli weeks > 3
+                const isFinalLocked = prog.id === 'F' && state.weeks > 3;
+                
                 const div = document.createElement('div');
                 div.className = 'program-card';
-                div.style.borderColor = locked ? '#555' : 'var(--neon-blue)';
+                div.style.borderColor = (locked || isFinalLocked) ? '#555' : 'var(--neon-blue)';
                 
                 // Program F ma specjalną grafikę
                 if (prog.id === 'F') {
-                    div.style.borderColor = 'var(--neon-yellow)';
-                    div.style.boxShadow = '0 0 15px var(--neon-yellow)';
+                    div.style.borderColor = isFinalLocked ? '#555' : 'var(--neon-yellow)';
+                    div.style.boxShadow = isFinalLocked ? 'none' : '0 0 15px var(--neon-yellow)';
                 }
                 
+                // Opis dla programu F
+                const description = prog.id === 'F' ? 
+                    (isFinalLocked ? 'FINAŁ - Odblokowany po osiągnięciu 100% sympatii' : 'FINAŁ - Musisz go przejść aby wygrać!') : 
+                    prog.description;
+                
                 div.innerHTML = `
-                    <div style="font-weight:bold; color: ${locked ? '#777' : prog.id === 'F' ? 'var(--neon-yellow)' : 'var(--neon-yellow)'}; font-size: 12px; text-transform:uppercase;">${prog.name}</div>
+                    <div style="font-weight:bold; color: ${(locked || isFinalLocked) ? '#777' : prog.id === 'F' ? 'var(--neon-yellow)' : 'var(--neon-yellow)'}; font-size: 12px; text-transform:uppercase;">${prog.name}</div>
                     <div style="font-size:10px; margin: 4px 0; color: #aaa;">Wymagane: ${requiredCred}%</div>
-                    <div style="font-size:10px; font-style:italic; color: #fff;">${prog.description}</div>
-                    <button class="btn" style="margin-top:8px; width:100%; font-size:10px; ${prog.id === 'F' ? 'border-color: var(--neon-yellow); color: var(--neon-yellow);' : ''}" 
-                        ${locked ? 'disabled' : ''} 
+                    <div style="font-size:10px; font-style:italic; color: #fff;">${description}</div>
+                    <button class="btn" style="margin-top:8px; width:100%; font-size:10px; ${prog.id === 'F' && !isFinalLocked ? 'border-color: var(--neon-yellow); color: var(--neon-yellow);' : ''}" 
+                        ${locked || isFinalLocked ? 'disabled' : ''} 
                         onclick="prepareProgram('${prog.id}')">
-                        ${locked ? 'ZABLOKOWANE' : prog.id === 'F' ? '⚠️ FINAŁ ⚠️' : 'WYBIERZ'}
+                        ${locked || isFinalLocked ? 'ZABLOKOWANE' : prog.id === 'F' ? '⚠️ FINAŁ ⚠️' : 'WYBIERZ'}
                     </button>
                 `;
                 list.appendChild(div);
@@ -1478,10 +1545,9 @@
                 div.className = 'item-row';
                 div.onclick = () => toggleItem(item, div);
                 div.innerHTML = `
-                    <span class="item-icon">${item.icon}</span>
-                    <div style="color:white;">
-                        <div style="font-weight:bold; color: var(--neon-blue);">${item.name}</div>
-                        <div style="font-size:10px; color: #ccc;">${item.desc}</div>
+                    <div style="color:white; width: 100%;">
+                        <div style="font-weight:bold; color: var(--neon-blue); font-size: 13px;">${item.name}</div>
+                        <div style="font-size:11px; color: #ccc; margin-top: 4px;">${item.desc}</div>
                     </div>
                 `;
                 list.appendChild(div);
@@ -1513,7 +1579,6 @@
         function enterStudio() {
             state.showPoints = 0;
             state.currentRoundIdx = 0;
-            state.usedItems = {};
             state.activeBonus = null;
             
             // Znajdź pierwszy nieużyty zestaw pytań
@@ -1581,13 +1646,16 @@
                 // Pokaż komunikat
                 showArtifactMessage(item.name, `+${item.val} do rzutu ${item.category} w następnym pytaniu`);
                 
-            } else if (item.effect === 'points') {
-                // Dodaj punkty show
-                state.showPoints += item.val;
-                if (state.showPoints < 0) state.showPoints = 0;
+            } else if (item.effect === 'show') {
+                // Bonus do punktów show przy SUKCESIE
+                state.activeBonus = {
+                    type: 'show',
+                    val: item.val,
+                    itemName: item.name
+                };
                 
                 // Pokaż komunikat
-                showArtifactMessage(item.name, `+${item.val} punktów show`);
+                showArtifactMessage(item.name, `+${item.val} punktów show przy SUKCESIE w następnym pytaniu`);
             }
             
             // Odśwież wyświetlanie natychmiast
@@ -1653,7 +1721,7 @@
             }
             
             // Pokaż aktywny bonus jeśli istnieje
-            if (state.activeBonus && state.activeBonus.type === 'dice') {
+            if (state.activeBonus) {
                 const bonusDiv = document.createElement('div');
                 bonusDiv.style.color = 'var(--neon-yellow)';
                 bonusDiv.style.fontSize = '12px';
@@ -1661,7 +1729,13 @@
                 bonusDiv.style.marginTop = '10px';
                 bonusDiv.style.textAlign = 'center';
                 bonusDiv.style.animation = 'pulse 1s infinite';
-                bonusDiv.innerText = `⚡ AKTYWNY: ${state.activeBonus.itemName} (+${state.activeBonus.val} do ${state.activeBonus.category}) ⚡`;
+                
+                if (state.activeBonus.type === 'dice') {
+                    bonusDiv.innerText = `⚡ AKTYWNY: ${state.activeBonus.itemName} (+${state.activeBonus.val} do ${state.activeBonus.category}) ⚡`;
+                } else if (state.activeBonus.type === 'show') {
+                    bonusDiv.innerText = `⚡ AKTYWNY: ${state.activeBonus.itemName} (+${state.activeBonus.val} show przy SUKCESIE) ⚡`;
+                }
+                
                 itemsSection.appendChild(bonusDiv);
             }
 
@@ -1821,15 +1895,31 @@
             if (success) {
                 let points = option.onSuccess || 0;
                 
-                state.showPoints += points;
+                // Dodaj bonus show jeśli jest aktywny
+                let showBonus = 0;
+                let showBonusText = '';
+                if (state.activeBonus && state.activeBonus.type === 'show') {
+                    showBonus = state.activeBonus.val;
+                    showBonusText = ` (+${showBonus} ${state.activeBonus.itemName})`;
+                    // Wyczyść bonus po użyciu
+                    state.activeBonus = null;
+                }
+                
+                state.showPoints += points + showBonus;
                 if (state.showPoints < 0) state.showPoints = 0;
                 
                 diceContainer.classList.add('flash-success');
                 msg.style.color = 'var(--neon-green)';
-                msg.innerText = `SUKCES! ${points >= 0 ? '+' : ''}${points} pkt`;
+                msg.innerText = `SUKCES! ${points >= 0 ? '+' : ''}${points} pkt${showBonusText}`;
                 setStatus("Publiczność bije brawo.");
             } else {
                 const points = option.onFail || 0;
+                
+                // Wyczyść bonus show jeśli był aktywny (pudło = bez bonusu)
+                if (state.activeBonus && state.activeBonus.type === 'show') {
+                    state.activeBonus = null;
+                }
+                
                 state.showPoints += points;
                 if (state.showPoints < 0) state.showPoints = 0;
                 
