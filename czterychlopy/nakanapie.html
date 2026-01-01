@@ -352,13 +352,16 @@
             <div class="content">
                 
                <div id="intro-video-screen" class="screen active" style="justify-content: center; align-items: center; background: #000; padding: 0; overflow: hidden;">
-<video id="intro-video" style="width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 11; cursor: pointer;" autoplay muted playsinline onclick="skipIntro()" onended="skipIntro()">
+<video id="intro-video" 
+       style="width: 100%; height: 100%; object-fit: contain; position: relative; z-index: 11; cursor: pointer;" 
+       autoplay 
+       muted 
+       playsinline 
+       onclick="skipIntro()" 
+       onended="skipIntro()">
     <source src="intro.mp4" type="video/mp4">
     Twoja przeglądarka nie obsługuje video.
 </video>
-        <source src="intro.mp4" type="video/mp4">
-        Twoja przeglądarka nie obsługuje video.
-    </video>
     <div style="position: absolute; bottom: 20px; right: 20px; z-index: 20;">
         <button class="btn" onclick="skipIntro()" style="font-size: 12px; padding: 8px 16px; opacity: 0.8;">
             [ POMIŃ → ]
