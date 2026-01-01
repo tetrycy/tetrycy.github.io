@@ -427,6 +427,7 @@
 
                 <div id="hub-screen" class="screen">
                     <div style="position: relative;">
+                        <button onclick="showScreen('themes-screen')" class="btn" style="position: absolute; top: 0; right: 40px; width: 30px; height: 30px; padding: 0; font-size: 14px; border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 5px var(--neon-pink);">🎨</button>
                         <button onclick="showScreen('rules-screen')" class="btn" style="position: absolute; top: 0; right: 0; width: 30px; height: 30px; padding: 0; font-size: 18px; border-color: var(--neon-yellow); color: var(--neon-yellow); box-shadow: 0 0 5px var(--neon-yellow);">?</button>
                     </div>
                     
@@ -640,12 +641,280 @@
                     </div>
                 </div>
 
+                <div id="themes-screen" class="screen" style="justify-content: flex-start; padding: 20px; overflow-y: auto;">
+                    <h2 style="text-align: center; color: var(--neon-yellow); margin-bottom: 20px;">🎨 WYBIERZ MOTYW GRAFICZNY</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; max-width: 1000px; width: 100%; margin: 0 auto;">
+                        <div class="theme-card" onclick="selectTheme('vaporwave')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #0a0a1a, #1a1a2e); border: 2px solid #ff3366;">
+                                <span style="color: #00d4ff;">█</span>
+                                <span style="color: #ff3366;">█</span>
+                                <span style="color: #ffed4e;">█</span>
+                            </div>
+                            <div class="theme-name">VAPORWAVE</div>
+                            <div class="theme-desc">Domyślny - neonowe różowe/niebieskie</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('win95')">
+                            <div class="theme-preview" style="background: #008080; border: 2px solid #c0c0c0;">
+                                <span style="color: #000080;">█</span>
+                                <span style="color: #000000;">█</span>
+                                <span style="color: #800000;">█</span>
+                            </div>
+                            <div class="theme-name">WINDOWS 95</div>
+                            <div class="theme-desc">Szaro-buro z morskim pulpitem</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('telegazeta')">
+                            <div class="theme-preview" style="background: #111111; border: 2px solid #ff00ff;">
+                                <span style="color: #ff00ff;">█</span>
+                                <span style="color: #00ffff;">█</span>
+                                <span style="color: #ffff00;">█</span>
+                            </div>
+                            <div class="theme-name">TELEGAZETA</div>
+                            <div class="theme-desc">Czerń i jaskrawe RGB</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('gmoch')">
+                            <div class="theme-preview" style="background: #003366; border: 2px solid #ffffff;">
+                                <span style="color: #ffffff;">█</span>
+                                <span style="color: #ffd700;">█</span>
+                                <span style="color: #00ff00;">█</span>
+                            </div>
+                            <div class="theme-name">SCHEMAT GMOCHA</div>
+                            <div class="theme-desc">Niebieski inżynierski i kreda</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('lodz')">
+                            <div class="theme-preview" style="background: #2b1d1d; border: 2px solid #ff4d00;">
+                                <span style="color: #ff4d00;">█</span>
+                                <span style="color: #d6c8b4;">█</span>
+                                <span style="color: #ffcc00;">█</span>
+                            </div>
+                            <div class="theme-name">ŁÓDŹ FABRYCZNA</div>
+                            <div class="theme-desc">Rdza i ciemność</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('poland')">
+                            <div class="theme-preview" style="background: #1a0000; border: 2px solid #dc143c;">
+                                <span style="color: #ffffff;">█</span>
+                                <span style="color: #dc143c;">█</span>
+                                <span style="color: #ffd700;">█</span>
+                            </div>
+                            <div class="theme-name">KADRA 2002</div>
+                            <div class="theme-desc">Patriotyczny biało-czerwony</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('gameboy')">
+                            <div class="theme-preview" style="background: #0f380f; border: 2px solid #8bac0f;">
+                                <span style="color: #8bac0f;">█</span>
+                                <span style="color: #9bbc0f;">█</span>
+                                <span style="color: #0f380f;">█</span>
+                            </div>
+                            <div class="theme-name">GAMEBOY</div>
+                            <div class="theme-desc">Zielona latarnia retro</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('matrix')">
+                            <div class="theme-preview" style="background: #000000; border: 2px solid #00ff00;">
+                                <span style="color: #00ff00;">█</span>
+                                <span style="color: #008f11;">█</span>
+                                <span style="color: #33ff33;">█</span>
+                            </div>
+                            <div class="theme-name">MATRIX</div>
+                            <div class="theme-desc">Zielony kod deszcz</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('cyberpunk')">
+                            <div class="theme-preview" style="background: #0d0208; border: 2px solid #ff003c;">
+                                <span style="color: #ff003c;">█</span>
+                                <span style="color: #fcee0a;">█</span>
+                                <span style="color: #00f0ff;">█</span>
+                            </div>
+                            <div class="theme-name">CYBERPUNK</div>
+                            <div class="theme-desc">Czerwień i żółty neon</div>
+                        </div>
+                        
+                        <div class="theme-card" onclick="selectTheme('amber')">
+                            <div class="theme-preview" style="background: #1a1000; border: 2px solid #ffb000;">
+                                <span style="color: #ffb000;">█</span>
+                                <span style="color: #ffcc00;">█</span>
+                                <span style="color: #ffdb4d;">█</span>
+                            </div>
+                            <div class="theme-name">RETRO BURSZTYN</div>
+                            <div class="theme-desc">Ciepły pomarańczowy terminal</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn" onclick="closeThemes()" style="font-size: 14px; padding: 12px 30px;">
+                            [ POWRÓT DO MENU ]
+                        </button>
+                    </div>
+                </div>
+
             </div>
             
         </div>
     </div>
 
     <script>
+        // --- SYSTEM ZMIANY MOTYWÓW ---
+
+        const THEMES = {
+            vaporwave: {
+                '--bg-deep': '#0a0a1a',
+                '--bg-panel': '#1a1a2e',
+                '--neon-pink': '#ff3366',
+                '--neon-blue': '#00d4ff',
+                '--neon-yellow': '#ffed4e',
+                '--neon-green': '#00ff88',
+                'bg-image': 'linear-gradient(rgba(5, 217, 232, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(5, 217, 232, 0.1) 1px, transparent 1px)',
+                'bg-size': '40px 40px'
+            },
+            win95: {
+                '--bg-deep': '#008080',
+                '--bg-panel': '#c0c0c0',
+                '--neon-pink': '#000080',
+                '--neon-blue': '#000000',
+                '--neon-yellow': '#800000',
+                '--neon-green': '#008000',
+                'bg-image': 'none',
+                'bg-size': 'auto'
+            },
+            telegazeta: {
+                '--bg-deep': '#111111',
+                '--bg-panel': '#000000',
+                '--neon-pink': '#ff00ff',
+                '--neon-blue': '#00ffff',
+                '--neon-yellow': '#ffff00',
+                '--neon-green': '#00ff00',
+                'bg-image': 'repeating-linear-gradient(0deg, transparent 0, transparent 2px, #222 3px)',
+                'bg-size': 'auto'
+            },
+            gmoch: {
+                '--bg-deep': '#003366',
+                '--bg-panel': '#004488',
+                '--neon-pink': '#ffffff',
+                '--neon-blue': '#ffffff',
+                '--neon-yellow': '#ffd700',
+                '--neon-green': '#00ff00',
+                'bg-image': 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
+                'bg-size': '20px 20px'
+            },
+            lodz: {
+                '--bg-deep': '#2b1d1d',
+                '--bg-panel': '#3d342b',
+                '--neon-pink': '#ff4d00',
+                '--neon-blue': '#d6c8b4',
+                '--neon-yellow': '#ffcc00',
+                '--neon-green': '#8fbc8f',
+                'bg-image': 'repeating-linear-gradient(45deg, #2b1d1d 0, #2b1d1d 10px, #221515 10px, #221515 20px)',
+                'bg-size': 'auto'
+            },
+            poland: {
+                '--bg-deep': '#1a0000',
+                '--bg-panel': '#330000',
+                '--neon-pink': '#ffffff',
+                '--neon-blue': '#dc143c',
+                '--neon-yellow': '#ffd700',
+                '--neon-green': '#ffffff',
+                'bg-image': 'linear-gradient(90deg, rgba(255,255,255,0.05) 50%, transparent 50%)',
+                'bg-size': '40px 40px'
+            },
+            gameboy: {
+                '--bg-deep': '#0f380f',
+                '--bg-panel': '#306230',
+                '--neon-pink': '#8bac0f',
+                '--neon-blue': '#9bbc0f',
+                '--neon-yellow': '#8bac0f',
+                '--neon-green': '#0f380f',
+                'bg-image': 'radial-gradient(#306230 15%, transparent 16%)',
+                'bg-size': '4px 4px'
+            },
+            matrix: {
+                '--bg-deep': '#000000',
+                '--bg-panel': '#051a05',
+                '--neon-pink': '#00ff00',
+                '--neon-blue': '#008f11',
+                '--neon-yellow': '#ccffcc',
+                '--neon-green': '#33ff33',
+                'bg-image': 'linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px)',
+                'bg-size': '40px 40px'
+            },
+            cyberpunk: {
+                '--bg-deep': '#0d0208',
+                '--bg-panel': '#220a15',
+                '--neon-pink': '#ff003c',
+                '--neon-blue': '#fcee0a',
+                '--neon-yellow': '#00f0ff',
+                '--neon-green': '#ff003c',
+                'bg-image': 'repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 1px, transparent 0, transparent 50%)',
+                'bg-size': 'auto'
+            },
+            amber: {
+                '--bg-deep': '#1a1000',
+                '--bg-panel': '#2e1c00',
+                '--neon-pink': '#ffb000',
+                '--neon-blue': '#ffcc00',
+                '--neon-yellow': '#ffaa00',
+                '--neon-green': '#ffdb4d',
+                'bg-image': 'radial-gradient(circle, #332200 1px, transparent 1px)',
+                'bg-size': '4px 4px'
+            }
+        };
+
+        function changeTheme(themeName) {
+            const root = document.documentElement;
+            const theme = THEMES[themeName];
+            if (!theme) return;
+
+            root.style.setProperty('--bg-deep', theme['--bg-deep']);
+            root.style.setProperty('--bg-panel', theme['--bg-panel']);
+            root.style.setProperty('--neon-pink', theme['--neon-pink']);
+            root.style.setProperty('--neon-blue', theme['--neon-blue']);
+            root.style.setProperty('--neon-yellow', theme['--neon-yellow']);
+            root.style.setProperty('--neon-green', theme['--neon-green']);
+            
+            document.body.style.backgroundImage = theme['bg-image'];
+            document.body.style.backgroundSize = theme['bg-size'];
+            
+            // Animacja przejścia
+            const container = document.querySelector('.window');
+            if (container) {
+                container.style.animation = 'none';
+                container.offsetHeight; 
+                container.style.animation = 'fadeIn 0.3s';
+            }
+            
+            // Zapisz wybór
+            localStorage.setItem('selectedTheme', themeName);
+        }
+
+        function selectTheme(themeName) {
+            changeTheme(themeName);
+            
+            // Visual feedback - podświetl wybrany motyw
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.style.transform = '';
+                card.style.boxShadow = '';
+            });
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.style.transform = 'scale(1.05)';
+                event.currentTarget.style.boxShadow = '0 0 30px var(--neon-green)';
+            }
+            
+            // Opóźniony powrót do menu
+            setTimeout(() => {
+                showScreen('hub-screen');
+            }, 800);
+        }
+
+        function closeThemes() {
+            showScreen('hub-screen');
+        }
+
         // --- DANE GRY ---
 
         // Wbudowane dane pytań
@@ -666,21 +935,21 @@
             {
               "topic": "Skoro Dariusz to Darek, to dlaczego Mariusz to nie Marek?",
               "options": [
-                { "type": "POPULIZM", "min": 10, "max": 18, "text": "Dariusz i Mariusz to przede wszystkim imiona rodem z lat siedemdziesiątych, dlaczego w polskiej piłce brakuje Kevinów i Brajanów? Bo nie dostają szans.", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 12, "max": 18, "text": "Nie uwierzycie, ale kiedyś byliśmy na testach w Bochum wraz z Mariuszem Kukiełką i Dariuszem Podolskim. No i oni wiecznie Mario i Dario, Mario i Dario, do usrania wszyscy wołali za nimi Mario i Dario. W pewnym momencie trener, taki stary Niemiec z NRD, który sporo czasu spędził w Polsce trenując rodzime tyczkarki w latach siedemdziesiątych wkurzony tym jazgotem krzyknął: jeszcze roooz usłyszooo Mario i Dario... TO WAM ZROBIĘ AWARIO. Hahaha!", "onSuccess": 10, "onFail": -3 },
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Dariusz i Mariusz to przede wszystkim imiona rodem z lat siedemdziesiątych, dlaczego w polskiej piłce brakuje Kevinów i Brajanów? Bo nie dostają szans.", "onSuccess": 7, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Nie uwierzycie, ale kiedyś byliśmy na testach w Bochum wraz z Mariuszem Kukiełką i Dariuszem Podolskim. No i oni wiecznie Mario i Dario, Mario i Dario, do usrania wszyscy wołali za nimi Mario i Dario. W pewnym momencie trener, taki stary Niemiec z NRD, który sporo czasu spędził w Polsce trenując rodzime tyczkarki w latach siedemdziesiątych wkurzony tym jazgotem krzyknął: jeszcze roooz usłyszooo Mario i Dario... TO WAM ZROBIĘ AWARIO. Hahaha!", "onSuccess": 8, "onFail": -3 },
                 { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Za moich czasów jedyny Marek to był niedobór niemieckich marek na koncie, prawda Tomek?", "onSuccess": 9, "onFail": -3 },
-                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Bo D i M dzieli w alfabecie dokładnie 8 liter, to zdecydowanie zbyt niski współczynnik liter do liczb, żeby można było postawić znak równości.", "onSuccess": 5, "onFail": 0},
-                { "type": "MERYTORYKA", "min": 5, "max": 18, "text": "Prawdopodobnie to kwestia podobieństw imion Marius i Marcus, gdzie Darius nie posiada zupełnie zbliżonego imienia, które pozwalałoby na taki zabieg jak u Mariusza i Marka.", "onSuccess": 6, "onFail": -1 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Bo D i M dzieli w alfabecie dokładnie 8 liter, to zdecydowanie zbyt niski współczynnik liter do liczb, żeby można było postawić znak równości.", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Prawdopodobnie to kwestia podobieństw imion Marius i Marcus, gdzie Darius nie posiada zupełnie zbliżonego imienia, które pozwalałoby na taki zabieg jak u Mariusza i Marka.", "onSuccess": 6, "onFail": -1 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Znałem kiedyś takiego Pawła i on uważał, że Mariusza normalnie można zdrabniać Marek.", "onSuccess": 7, "onFail": -2 }
               ]
             },
             {
               "topic": "Triss Merigold czy Yennefer? Może być na podstawie gry, a nie książek.",
               "options": [
-                { "type": "POPULIZM", "min": 8, "max": 18, "text": "Zdecydowanie za mało mówi się o tym, że czarodziejki były bezpłodne. Nic dziwnego, że system szkolenia wiedźminów był tak ułomny i w efekcie z roku na rok coraz mniej młodych utalentowanych wiedźminów wyruszało na szlak.", "onSuccess": 6, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś byliśmy w Mariborze wraz z kilkoma znajomymi z padla, po tym jak ograłem wszystkich okazało się, że zostaliśmy zamknięci w samym środku klatki padlowej, bo klub zamknięto o 22.00, a my, zajęci grą, totalnie się tym nie przejmowaliśmy do momentu, gdy trzeba było wyjść na zewnątrz. Na szczęście jako piłkarz z lat 90-tych miałem pod ręką swój ognisty oddech, którym stopiłem kłódki i zamki, dzięki czemu mogliśmy się wydostać.", "onSuccess": 10, "onFail": -3 },
-                { "type": "ZA MOICH CZASÓW", "min": 12, "max": 18, "text": "Z gier to ja znam oczko. A z Jeniferów tylko Jenifer Aniston.", "onSuccess": 12, "onFail": -5 },
-                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Bazując na liczbie wypowiadanych kwestii wrogich wiedźminowi, jedynym logicznym wyborem jest Triss, adresująca dokładnie 3,231 pochwały na każde szyderstwo, podczas gdy Yennefer notuje zaledwie 0,13 pochwały na jeden pocisk w kierunku Geralta.", "onSuccess": 2, "onFail": -10 },
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Zdecydowanie za mało mówi się o tym, że czarodziejki były bezpłodne. Nic dziwnego, że system szkolenia wiedźminów był tak ułomny i w efekcie z roku na rok coraz mniej młodych utalentowanych wiedźminów wyruszało na szlak.", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś byliśmy w Mariborze wraz z kilkoma znajomymi z padla, po tym jak ograłem wszystkich okazało się, że zostaliśmy zamknięci w samym środku klatki padlowej, bo klub zamknięto o 22.00, a my, zajęci grą, totalnie się tym nie przejmowaliśmy do momentu, gdy trzeba było wyjść na zewnątrz. Na szczęście jako piłkarz z lat 90-tych miałem pod ręką swój ognisty oddech, którym stopiłem kłódki i zamki, dzięki czemu mogliśmy się wydostać.", "onSuccess": 9, "onFail": -3 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Z gier to ja znam oczko. A z Jeniferów tylko Jenifer Aniston.", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Bazując na liczbie wypowiadanych kwestii wrogich wiedźminowi, jedynym logicznym wyborem jest Triss, adresująca dokładnie 3,231 pochwały na każde szyderstwo, podczas gdy Yennefer notuje zaledwie 0,13 pochwały na jeden pocisk w kierunku Geralta.", "onSuccess": 6, "onFail": -1 },
                 { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Triss.", "onSuccess": 5, "onFail": 0 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Słyszałem ostatnio, że Yennefer jest bardzo blisko dołączenia do drużyny Yarpena Zigrena, która w przyszłym roku spróbuje obronić mistrzostwo Mahakamu w bobslejach.", "onSuccess": 8, "onFail": -2 }
               ]
@@ -688,34 +957,34 @@
             {
               "topic": "Kto jest twoim ulubionym koszykarzem Chicago Bulls?",
               "options": [
-                { "type": "POPULIZM", "min": 8, "max": 18, "text": "Młody Polak.", "onSuccess": 7, "onFail": -1 },
-                { "type": "ANEGDOTA", "min": 10, "max": 18, "text": "Kiedyś strasznie się na... na... namęczyliśmy na zgrupowaniu reprezentacji Polski i kiedy wracaliśmy samolotem powiedziałem do kolegi: ty, ale nie wylecisz na konferencję z dziennikarzami w koszulce Majkela Dżordana. A on mówi do mnie - JA NIE WYLECĘ? Śmiechu było co nie miara, bo jeszcze założył do tego czapeczkę jak Wiz Khalifa czy inny Lil Wayne, Misza, no opowiedz, proszę.", "onSuccess": 8, "onFail": -2 },
-                { "type": "ZA MOICH CZASÓW", "min": 12, "max": 18, "text": "Mój serdeczny kolega z liceum, Jerry Sloan.", "onSuccess": 10, "onFail": -6 },
-                { "type": "ANALIZA", "min": 13, "max": 18, "text": "Biorąc pod uwagę eval oraz procent trafionych trójek, bo to na nich skupia się tak naprawdę strategia meczowa Bullsów, wahałbym się między Vuceviciem a Giddeyem.", "onSuccess": 5, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 6, "max": 18, "text": "Scottie Pippen.", "onSuccess": 10, "onFail": -10 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 9, "max": 18, "text": "Popularne Byki są zainteresowane Ryszardem Czerwcem oraz Robertem Redfordem.", "onSuccess": 7, "onFail": -1 }
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Młody Polak.", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Kiedyś strasznie się na... na... namęczyliśmy na zgrupowaniu reprezentacji Polski i kiedy wracaliśmy samolotem powiedziałem do kolegi: ty, ale nie wylecisz na konferencję z dziennikarzami w koszulce Majkela Dżordana. A on mówi do mnie - JA NIE WYLECĘ? Śmiechu było co nie miara, bo jeszcze założył do tego czapeczkę jak Wiz Khalifa czy inny Lil Wayne, Misza, no opowiedz, proszę.", "onSuccess": 8, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Mój serdeczny kolega z liceum, Jerry Sloan.", "onSuccess": 9, "onFail": -2 },
+                { "type": "ANALIZA", "min": 13, "max": 18, "text": "Biorąc pod uwagę eval oraz procent trafionych trójek, bo to na nich skupia się tak naprawdę strategia meczowa Bullsów, wahałbym się między Vuceviciem a Giddeyem.", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Scottie Pippen.", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Popularne Byki są zainteresowane Ryszardem Czerwcem oraz Robertem Redfordem.", "onSuccess": 7, "onFail": -1 }
               ]
             },
             {
               "topic": "Wolałbyś walczyć z jednym Zbigniewem Bońkiem wielkości Bogusława Leśnodorskiego czy z setką Bogusławów Leśnodorskich wielkości Zbigniewa Bońka?",
               "options": [
-                { "type": "POPULIZM", "min": 6, "max": 18, "text": "Wolałbym walczyć z zalewem Polski przez miernych, powtarzam, miernych zagranicznych piłkarzy, często podstarzałych i z nadwagą.", "onSuccess": 7, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Walczyłem z Tomaszem Adamkiem, naprawdę, panowie, jak ciocię kocham, byliśmy wtedy w Chicago z Mario, Dario i Jerrym Sloanem, a Tomek mówi: ty, ty coś boksowałeś kiedyś, to dawaj się sprawdzimy. A ja, siedemnaście walk w barwach juniorskiego Stoczniowca, mówię: no szykuj rękawice, to cię poduczę to i owo. Potem nazwali to walką stulecia i pierwszą pożegnalną walką Tomka Adamka.", "onSuccess": 15, "onFail": -10 },
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Wolałbym walczyć z zalewem Polski przez miernych, powtarzam, miernych zagranicznych piłkarzy, często podstarzałych i z nadwagą.", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Walczyłem z Tomaszem Adamkiem, naprawdę, panowie, jak ciocię kocham, byliśmy wtedy w Chicago z Mario, Dario i Jerrym Sloanem, a Tomek mówi: ty, ty coś boksowałeś kiedyś, to dawaj się sprawdzimy. A ja, siedemnaście walk w barwach juniorskiego Stoczniowca, mówię: no szykuj rękawice, to cię poduczę to i owo. Potem nazwali to walką stulecia i pierwszą pożegnalną walką Tomka Adamka.", "onSuccess": 9, "onFail": -3 },
                 { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Oczywiście z Bogusławem Leśnodorskim, albo i setką Bogusławów Leśnodorskich, bo Zbigniew Boniek grał za moich czasów i wobec tego żywię do niego szacunek.", "onSuccess": 10, "onFail": -3 },
-                { "type": "ANALIZA", "min": 12, "max": 18, "text": "Matematyka jest bezlitosna - łączna masa stu Bogusławów Leśnodorskich byłaby zbyt wielka, by ktokolwiek był w stanie wygrać z nimi uczciwą walkę, więc expected win jest wyższe w przypadku walki z jednym Zbigniewem Bońkiem.", "onSuccess": 3, "onFail": 0 },
-                { "type": "MERYTORYKA", "min": 7, "max": 18, "text": "Z setką Bogusławów Leśnodorskich, bo z Bońkiem nikt jeszcze nie wygrał w nic.", "onSuccess": 3, "onFail": -1 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 9, "max": 18, "text": "Dochodzą do mnie głosy, że Tomasz Adamek ma zakończyć karierę walką z setką Bogusławów Leśnodorskich w Madison Square Garden.", "onSuccess": 5, "onFail": -1 }
+                { "type": "ANALIZA", "min": 11, "max": 18, "text": "Matematyka jest bezlitosna - łączna masa stu Bogusławów Leśnodorskich byłaby zbyt wielka, by ktokolwiek był w stanie wygrać z nimi uczciwą walkę, więc expected win jest wyższe w przypadku walki z jednym Zbigniewem Bońkiem.", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Z setką Bogusławów Leśnodorskich, bo z Bońkiem nikt jeszcze nie wygrał w nic.", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 14, "max": 18, "text": "Dochodzą do mnie głosy, że Tomasz Adamek ma zakończyć karierę walką z setką Bogusławów Leśnodorskich w Madison Square Garden.", "onSuccess": 8, "onFail": -2 }
               ]
             },
             {
               "topic": "Co się stało pod Legnicą?",
               "options": [
-                { "type": "POPULIZM", "min": 7, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął w walce z Mongołami", "onSuccess": 5, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 8, "max": 18, "text": "Kiedyś pod Legnicą miałem testy, już na koniec kariery. Dobijałem do czterdziestki, ale jak oni zobaczyli co potrafię, chcieli dać mi siedmioletni kontrakt. Zrezygnowałem, bo przeze mnie II liga byłaby zbyt łatwa", "onSuccess": 8, "onFail": -5 },
-                { "type": "ZA MOICH CZASÓW", "min": 6, "max": 18, "text": "Za moich czasów futbol na Dolnym Śląsku to była kolebka futbolu", "onSuccess": 4, "onFail": -4 },
-                { "type": "ANALIZA", "min": 11, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": -1 },
-                { "type": "MERYTORYKA", "min": 5, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 10, "onFail": 0 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 6, "max": 18, "text": "Według moich informacji, nic się nie stało", "onSuccess": 3, "onFail": 0 }
+                { "type": "POPULIZM", "min": 13, "max": 18, "text": "Wielka bitwa w 1241, Henryk Pobożny zginął w walce z Mongołami", "onSuccess": 5, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś pod Legnicą miałem testy, już na koniec kariery. Dobijałem do czterdziestki, ale jak oni zobaczyli co potrafię, chcieli dać mi siedmioletni kontrakt. Zrezygnowałem, bo przeze mnie II liga byłaby zbyt łatwa", "onSuccess": 8, "onFail": -5 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Kim wy w ogóle jesteście, wasz program to jakiś błąd", "onSuccess": 9, "onFail": -4 },
+                { "type": "ANALIZA", "min": 11, "max": 18, "text": "Nie wiem, wróćmy może jeszcze do xG, dobrze?", "onSuccess": 0, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Chłop się zesrał jajecznicą", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Według moich informacji, nic się nie stało", "onSuccess": 3, "onFail": 0 }
               ]
             }
           ]
@@ -724,14 +993,14 @@
           "id": "set1",
           "rounds": [
             {
-              "topic": "Wolałbyś być sokołem wędrownym czy tygrysem bengalskim?",
+              "topic": "Gdybyś nie wolał być sokołem wędrownym, to kim?",
               "options": [
-                { "type": "POPULIZM", "min": 6, "max": 18, "text": "Chcę być tylko młodym Polakiem", "onSuccess": 5, "onFail": -2 },
-                { "type": "ANEGDOTA", "min": 8, "max": 18, "text": "Kiedyś, na testach w Oberhausen, na boisko wleciał sokół wędrowny. Nikt nie mógł go złapać. Przeszkadzał w treningu. Niemcy zbaranieli. Wtedy ja założyłem mu siatkę, a potem przekonałem go, żeby poleciał na boisko naszego derbowego rywala im przeszkadzać", "onSuccess": 10, "onFail": -4 },
-                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Za moich czasów każdy chciał być mną", "onSuccess": 10, "onFail": -8 },
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Chcę być tylko młodym Polakiem", "onSuccess": 7, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś, na testach w Oberhausen, na boisko wleciał sokół wędrowny. Nikt nie mógł go złapać. Przeszkadzał w treningu. Niemcy zbaranieli. Wtedy ja założyłem mu siatkę, a potem przekonałem go, żeby poleciał na boisko naszego derbowego rywala im przeszkadzać", "onSuccess": 8, "onFail": -4 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Co to w ogóle za pytanie? Myślałem, że to program piłkarski", "onSuccess": 3, "onFail": -8 },
                 { "type": "ANALIZA", "min": 14, "max": 18, "text": "Każdy ma w sobie współczynnik expectedSokółWędrowny", "onSuccess": 2, "onFail": -1 },
-                { "type": "MERYTORYKA", "min":7, "max": 18, "text": "Proszę panów, nie ma nic lepszego, niż być sokołem wędrownym. To są fakty.", "onSuccess": 6, "onFail": -1 },
-                { "type": "ZAKULISOWE INFORMACJE", "min": 10, "max": 18, "text": "Jestem sokołem wędrownym", "onSuccess": 10, "onFail": -5 }
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Proszę panów, nie ma nic lepszego, niż być sokołem wędrownym. To są fakty.", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 14, "max": 18, "text": "Jestem sokołem wędrownym", "onSuccess": 10, "onFail": -3 }
               ]
             },
             {
@@ -779,7 +1048,7 @@
               ]
             }
           ]
-        },
+        }
       ]
     },
     {
@@ -909,7 +1178,7 @@
               ]
             }
           ]
-        },
+        }
       ]
     },
     {
@@ -1039,7 +1308,7 @@
               ]
             }
           ]
-        },
+        }
       ]
     },
     {
@@ -1106,6 +1375,33 @@
                 { "type": "ANALIZA", "min": 11, "max": 18, "text": "Panie Czarku, czy nasz Narodowy Model Gry mógłby uwzględniać grę na dwóch podwieszonych prawych obrońców? Tak gra dziś Gremio z sukcesami w Sudamericana", "onSuccess": 6, "onFail": -1 },
                 { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Czy sądzi pan, że jakby miał z kim przegrać, to by przegrał wybory?", "onSuccess": 9, "onFail": -2 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, Henryk Kula stoi właśnie za pana plecami", "onSuccess": 10, "onFail": -3 }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "set2",
+          "rounds": [
+            {
+              "topic": "[PLACEHOLDER] To jest drugi zestaw pytań - wkrótce tutaj będą prawdziwe pytania",
+              "options": [
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Tak, zgadzam się całkowicie", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś to było lepiej", "onSuccess": 8, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Za moich czasów nie było takich pytań", "onSuccess": 9, "onFail": -2 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Według statystyk xG to jest dobre pytanie", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Nie mam zdania", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Według moich informacji, to pytanie będzie wkrótce zastąpione", "onSuccess": 7, "onFail": -1 }
+              ]
+            },
+            {
+              "topic": "[PLACEHOLDER] Drugie pytanie zastępcze - trwają prace nad prawdziwą treścią",
+              "options": [
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Ludzie chcą prawdziwych pytań!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś na testach pytali nas o wszystko", "onSuccess": 9, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "My nie mieliśmy placeholderów", "onSuccess": 10, "onFail": -3 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Expected Content Quality tego pytania to 0.0", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Może lepiej poczekać na prawdziwe pytanie?", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Deweloper obiecał dodać prawdziwe pytania w przyszłym tygodniu", "onSuccess": 7, "onFail": -1 }
               ]
             }
           ]
@@ -1179,6 +1475,33 @@
               ]
             }
           ]
+        },
+        {
+          "id": "set2",
+          "rounds": [
+            {
+              "topic": "[PLACEHOLDER] Zaślepka - drugi zestaw pytań w przygotowaniu",
+              "options": [
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Prawdziwe pytania będą lepsze", "onSuccess": 7, "onFail": -1 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Kiedyś wszystkie pytania były prawdziwe od razu", "onSuccess": 8, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Za moich czasów placeholdery były zakazane", "onSuccess": 9, "onFail": -2 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Współczynnik jakości tego pytania: PENDING", "onSuccess": 6, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "To pytanie wymaga jeszcze pracy", "onSuccess": 5, "onFail": 0 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Podobno prawdziwe pytania są już prawie gotowe", "onSuccess": 7, "onFail": -1 }
+              ]
+            },
+            {
+              "topic": "[PLACEHOLDER] Miejsce na drugie pytanie - content coming soon",
+              "options": [
+                { "type": "POPULIZM", "min": 11, "max": 18, "text": "Kibice zasługują na lepsze pytania!", "onSuccess": 8, "onFail": -2 },
+                { "type": "ANEGDOTA", "min": 13, "max": 18, "text": "Raz zapomnieliśmy przygotować pytania przed nagraniem, też były takie zaślepki", "onSuccess": 9, "onFail": -2 },
+                { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "My zawsze mieliśmy pytania gotowe z wyprzedzeniem", "onSuccess": 10, "onFail": -3 },
+                { "type": "ANALIZA", "min": 14, "max": 18, "text": "Brak danych do analizy - placeholder mode active", "onSuccess": 5, "onFail": 0 },
+                { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Lepiej wrócić jak będą prawdziwe pytania", "onSuccess": 6, "onFail": -1 },
+                { "type": "ZAKULISOWE INFORMACJE", "min": 13, "max": 18, "text": "Za kulisami trwają intensywne prace nad prawdziwymi pytaniami", "onSuccess": 7, "onFail": -1 }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -1220,7 +1543,7 @@
               "options": [
                 { "type": "POPULIZM", "min": 13, "max": 18, "text": "Nie możemy się bać. To dobre zespoły, ale my jesteśmy lepsi. Chciałbym tylko, żeby Jan Urban nie zapominał, ile talentów jest w polskich trzecich ligach i stamtąd też powołał", "onSuccess": 12, "onFail": -4 },
                 { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Powiem wam tak: ja. 1997 rok. Lato. Z Edmundo, Chilavertem i Petitem idziemy w Bangkok. Chyba mam tam mural tylko za to, co się działo tamtej nocy, tak mi pisał ostatnio Rai", "onSuccess": 14, "onFail": -5 },
-                { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Cieszę się, że ci chłopcy na dorobku uniknęli w losowaniu wicemistrza Filipin. To mogłoby być za duże dla nich wyzwanie, wiem, bo byłem kiedyś królem asyt w tamtejszej lidze futsalu", "onSuccess": 13, "onFail": -5 },
+                { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Cieszę się, że ci chłopcy na dorobku uniknęli w losowaniu wicemistrza Filipin. To mogłoby być za duże dla nich wyzwanie, wiem, bo byłem kiedyś królem asyst w tamtejszej lidze futsalu", "onSuccess": 13, "onFail": -5 },
                 { "type": "ANALIZA", "min": 11, "max": 18, "text": "Nie lekceważmy Bangladeszu U-20 na pewno. Świetny ostatnio mecz z Laosem, duża dojrzałość przesuwania", "onSuccess": 8, "onFail": -2 },
                 { "type": "MERYTORYKA", "min": 14, "max": 18, "text": "Z Bangladeszu to ja mogę mieć portki", "onSuccess": 11, "onFail": -3 },
                 { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, reprezentacja Tajlandii B przyjedzie osłabiona brakiem piłkarzy powołanych do reprezentacji A", "onSuccess": 12, "onFail": -4 }
