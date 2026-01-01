@@ -1569,13 +1569,15 @@
             }
         });
    function skipIntro() {
-    // Najpierw zatrzymaj wideo!
-    var video = document.getElementById('intro-video');
-    if (video) video.pause();
-    
-    // Teraz przejdź dalej
-    showScreen('graphic-intro-screen');
-}
+            // 1. Zatrzymaj wideo
+            var video = document.getElementById('intro-video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+            // 2. Przejdź dalej
+            showScreen('graphic-intro-screen');
+        }
         
         function selectClass(classType) {
             if (classType === 'analityk') {
