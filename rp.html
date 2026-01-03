@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Paradise</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,12 +150,6 @@
             letter-spacing: 0.05em;
         }
         
-        .boost-indicator {
-            font-size: 0.6em;
-            opacity: 0.6;
-            margin-top: 4px;
-        }
-        
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -219,11 +213,8 @@
         </div>
         
         <div class="volume-control">
-            <label for="volumeSlider">
-                VOLUME: <span id="volumeValue">100</span>%
-                <div class="boost-indicator" id="boostIndicator"></div>
-            </label>
-            <input type="range" id="volumeSlider" min="0" max="200" value="100" step="5">
+            <label for="volumeSlider">VOLUME: <span id="volumeValue">100</span>%</label>
+            <input type="range" id="volumeSlider" min="0" max="100" value="100">
         </div>
         
         <div class="info">
@@ -248,69 +239,10 @@
         const streamSelect = document.getElementById('streamSelect');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeValue = document.getElementById('volumeValue');
-        const boostIndicator = document.getElementById('boostIndicator');
         
         let wakeLock = null;
         let keepAliveInterval = null;
         let touchMoveListener = null;
-        
-        // WEB AUDIO API - dla pełnej kontroli głośności
-        let audioContext = null;
-        let sourceNode = null;
-        let gainNode = null;
-        
-        function initAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                gainNode = audioContext.createGain();
-                gainNode.connect(audioContext.destination);
-                
-                // Set initial gain to 1.0 (100%)
-                gainNode.gain.value = 1.0;
-                
-                console.log('Web Audio API: INITIALIZED');
-            }
-        }
-        
-        function connectAudioToContext() {
-            if (audioContext && !sourceNode) {
-                try {
-                    sourceNode = audioContext.createMediaElementSource(audio);
-                    sourceNode.connect(gainNode);
-                    console.log('Audio routing: audio -> gain -> output');
-                } catch (e) {
-                    console.error('Web Audio connection error:', e);
-                    // Jeśli błąd, nie używaj Web Audio API
-                    sourceNode = null;
-                }
-            }
-        }
-        
-        function updateVolume(value) {
-            const volume = value / 100;
-            
-            // Web Audio API gain (może przekraczać 1.0) - jeśli dostępny
-            if (gainNode && sourceNode) {
-                gainNode.gain.value = volume;
-            } else {
-                // Fallback - tylko native audio volume
-                audio.volume = Math.min(volume, 1.0);
-            }
-            
-            volumeValue.textContent = value;
-            
-            // Pokaż indicator jeśli boost > 100%
-            if (value > 100) {
-                boostIndicator.textContent = '⚠ BOOST MODE';
-                boostIndicator.style.opacity = '1';
-                if (!gainNode || !sourceNode) {
-                    boostIndicator.textContent = '⚠ BOOST UNAVAILABLE';
-                }
-            } else {
-                boostIndicator.textContent = '';
-                boostIndicator.style.opacity = '0.6';
-            }
-        }
         
         // AGGRESSIVE WAKE LOCK
         async function requestAggressiveWakeLock() {
@@ -329,7 +261,7 @@
                     });
                 }
                 
-                // 2. Silent audio loop - zapobiega uspięciu audio
+                // 2. Silent audio loop - zapobiega uspięniu audio
                 silentAudio.volume = 0.01;
                 try {
                     await silentAudio.play();
@@ -410,27 +342,13 @@
         // Odtwarzanie
         async function startPlayback() {
             try {
-                // Inicjalizuj Web Audio API PRZED odtwarzaniem
-                initAudioContext();
-                
                 const streamUrl = streamSelect.value;
                 audio.src = streamUrl;
                 
                 statusText.textContent = 'Connecting...';
                 playBtn.disabled = true;
                 
-                // Resume audio context if suspended
-                if (audioContext && audioContext.state === 'suspended') {
-                    await audioContext.resume();
-                    console.log('AudioContext resumed');
-                }
-                
-                // Połącz audio z Web Audio API PRZED play
-                connectAudioToContext();
-                
-                // Start playback
                 await audio.play();
-                console.log('Playback started');
                 
                 const streamName = streamSelect.options[streamSelect.selectedIndex].text;
                 statusText.textContent = '♪ ' + streamName;
@@ -495,10 +413,12 @@
         });
         
         volumeSlider.addEventListener('input', (e) => {
-            updateVolume(parseInt(e.target.value));
+            const volume = e.target.value / 100;
+            audio.volume = volume;
+            volumeValue.textContent = e.target.value;
         });
         
-        // Monitoring
+        // Monitoring - detailed status updates
         audio.addEventListener('loadstart', () => {
             statusText.textContent = 'Loading...';
             console.log('Audio: loadstart');
@@ -519,7 +439,6 @@
             stopBtn.disabled = true;
             console.error('Audio error:', e);
             console.error('Audio error code:', audio.error?.code);
-            console.error('Audio error message:', audio.error?.message);
         });
         
         audio.addEventListener('waiting', () => {
@@ -536,10 +455,6 @@
         audio.addEventListener('stalled', () => {
             statusText.textContent = 'Connection stalled';
             console.log('Audio: stalled');
-        });
-        
-        audio.addEventListener('suspend', () => {
-            console.log('Audio: suspend');
         });
         
         audio.addEventListener('pause', () => {
@@ -573,10 +488,10 @@
         });
         
         // Inicjalizacja
-        updateVolume(100);
+        audio.volume = 1.0;
         updateWakeStatus('STANDBY');
         
-        console.log('Radio Paradise - Aggressive Mode + Audio Boost - Ready');
+        console.log('Radio Paradise - Simple Audio + Aggressive Wake - Ready');
     </script>
 </body>
 </html>
