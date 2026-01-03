@@ -2,8 +2,11 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Paradise Player</title>
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>Radio Paradise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,72 +15,90 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
-            background: #000;
-            color: #0f0;
+            font-family: 'Libre Baskerville', serif;
+            background: #fff;
+            color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 0;
+            overflow: hidden;
         }
         
         .player {
-            background: #111;
-            border: 3px solid #0f0;
-            padding: 20px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            position: relative;
+        }
+        
+        /* Okrągła maska dla round watch faces */
+        @media (max-width: 400px) {
+            .player {
+                border-radius: 50%;
+                padding: 40px 30px;
+            }
         }
         
         h1 {
+            font-size: 1.4em;
+            font-weight: 700;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 25px;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
         }
         
         .stream-selector {
             margin-bottom: 20px;
+            width: 100%;
+            max-width: 220px;
         }
         
         select {
             width: 100%;
-            padding: 10px;
-            background: #000;
-            color: #0f0;
-            border: 2px solid #0f0;
-            font-size: 1em;
+            padding: 12px 8px;
+            background: #fff;
+            color: #000;
+            border: 2px solid #000;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.75em;
             cursor: pointer;
+            text-align: center;
         }
         
         select:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            outline: 3px solid #000;
+            outline-offset: 2px;
         }
         
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
         }
         
         button {
-            flex: 1;
-            padding: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
+            padding: 14px 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            font-family: 'Libre Baskerville', serif;
             background: #000;
-            color: #0f0;
-            border: 2px solid #0f0;
+            color: #fff;
+            border: none;
             cursor: pointer;
             transition: all 0.2s;
+            letter-spacing: 0.05em;
+            min-width: 90px;
         }
         
         button:hover {
-            background: #0f0;
-            color: #000;
+            background: #333;
         }
         
         button:active {
@@ -91,148 +112,262 @@
         
         .status {
             text-align: center;
-            padding: 15px;
-            background: #000;
-            border: 2px solid #0f0;
+            padding: 15px 10px;
+            border: 2px solid #000;
             margin-bottom: 20px;
-            min-height: 60px;
+            min-height: 70px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            width: 100%;
+            max-width: 220px;
+            background: #fff;
         }
         
         .status-text {
-            font-size: 1.1em;
-            margin-bottom: 5px;
+            font-size: 0.75em;
+            line-height: 1.4;
+        }
+        
+        .wake-status {
+            font-size: 0.65em;
+            margin-top: 8px;
+            opacity: 0.7;
+            font-style: italic;
         }
         
         .volume-control {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 220px;
         }
         
         .volume-control label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 0.7em;
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+        
+        .boost-indicator {
+            font-size: 0.6em;
+            opacity: 0.6;
+            margin-top: 4px;
         }
         
         input[type="range"] {
             width: 100%;
-            height: 8px;
-            background: #0f0;
+            height: 6px;
+            background: #000;
             outline: none;
             -webkit-appearance: none;
+            cursor: pointer;
         }
         
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #0f0;
+            width: 18px;
+            height: 18px;
+            background: #000;
             cursor: pointer;
-            border: 2px solid #000;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 1px #000;
         }
         
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #0f0;
+            width: 18px;
+            height: 18px;
+            background: #000;
             cursor: pointer;
-            border: 2px solid #000;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 1px #000;
         }
         
         .info {
-            font-size: 0.8em;
+            font-size: 0.55em;
             text-align: center;
-            margin-top: 15px;
-            opacity: 0.7;
-        }
-        
-        .wake-lock-status {
-            text-align: center;
-            font-size: 0.9em;
-            padding: 10px;
-            background: #000;
-            border: 2px solid #0f0;
+            margin-top: 10px;
+            opacity: 0.6;
+            max-width: 200px;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
     <div class="player">
-        <h1>⚡ RADIO PARADISE ⚡</h1>
+        <h1>RADIO<br>PARADISE</h1>
         
         <div class="stream-selector">
             <select id="streamSelect">
-                <option value="https://stream.radioparadise.com/aac-320">Main Mix (AAC 320k)</option>
-                <option value="https://stream.radioparadise.com/mellow-320">Mellow Mix (AAC 320k)</option>
-                <option value="https://stream.radioparadise.com/rock-320">Rock Mix (AAC 320k)</option>
-                <option value="https://stream.radioparadise.com/world-etc-320">World/Etc Mix (AAC 320k)</option>
+                <option value="https://stream.radioparadise.com/aac-320">Main Mix</option>
+                <option value="https://stream.radioparadise.com/mellow-320">Mellow</option>
+                <option value="https://stream.radioparadise.com/rock-320">Rock</option>
+                <option value="https://stream.radioparadise.com/world-etc-320">World</option>
             </select>
         </div>
         
         <div class="controls">
-            <button id="playBtn">▶ PLAY</button>
-            <button id="stopBtn" disabled>■ STOP</button>
+            <button id="playBtn">PLAY</button>
+            <button id="stopBtn" disabled>STOP</button>
         </div>
         
         <div class="status">
-            <div class="status-text" id="statusText">Gotowy do odtwarzania</div>
+            <div class="status-text" id="statusText">Ready</div>
+            <div class="wake-status" id="wakeStatus">—</div>
         </div>
         
         <div class="volume-control">
-            <label for="volumeSlider">Głośność: <span id="volumeValue">100</span>%</label>
-            <input type="range" id="volumeSlider" min="0" max="100" value="100">
-        </div>
-        
-        <div class="wake-lock-status" id="wakeLockStatus">
-            Wake Lock: Nieaktywny
+            <label for="volumeSlider">
+                VOLUME: <span id="volumeValue">100</span>%
+                <div class="boost-indicator" id="boostIndicator"></div>
+            </label>
+            <input type="range" id="volumeSlider" min="0" max="200" value="100" step="5">
         </div>
         
         <div class="info">
-            Tip: Kliknij Play i zostaw kartę otwartą.<br>
-            Wake Lock utrzyma ekran aktywnym.
+            Keep screen on during playback
         </div>
     </div>
     
+    <!-- Audio elements -->
     <audio id="audioPlayer" preload="none"></audio>
+    <!-- Silent audio loop - keeps audio context active -->
+    <audio id="silentAudio" loop>
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" type="audio/wav">
+    </audio>
     
     <script>
         const audio = document.getElementById('audioPlayer');
+        const silentAudio = document.getElementById('silentAudio');
         const playBtn = document.getElementById('playBtn');
         const stopBtn = document.getElementById('stopBtn');
         const statusText = document.getElementById('statusText');
+        const wakeStatus = document.getElementById('wakeStatus');
         const streamSelect = document.getElementById('streamSelect');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeValue = document.getElementById('volumeValue');
-        const wakeLockStatus = document.getElementById('wakeLockStatus');
+        const boostIndicator = document.getElementById('boostIndicator');
         
         let wakeLock = null;
+        let keepAliveInterval = null;
+        let touchMoveListener = null;
         
-        // Wake Lock - zapobiega uśpieniu ekranu
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLockStatus.textContent = 'Wake Lock: ✓ Aktywny';
-                    wakeLockStatus.style.borderColor = '#0f0';
-                    
-                    wakeLock.addEventListener('release', () => {
-                        wakeLockStatus.textContent = 'Wake Lock: Zwolniony';
-                        wakeLockStatus.style.borderColor = '#f00';
-                    });
-                    
-                    console.log('Wake Lock aktywny');
-                } else {
-                    wakeLockStatus.textContent = 'Wake Lock: Brak wsparcia';
-                    console.log('Wake Lock API nie jest wspierane');
-                }
-            } catch (err) {
-                wakeLockStatus.textContent = `Wake Lock: Błąd - ${err.name}`;
-                console.error('Wake Lock error:', err);
+        // WEB AUDIO API - dla pełnej kontroli głośności
+        let audioContext = null;
+        let sourceNode = null;
+        let gainNode = null;
+        
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioContext.createGain();
+                gainNode.connect(audioContext.destination);
+                
+                // Set initial gain to 1.0 (100%)
+                gainNode.gain.value = 1.0;
+                
+                console.log('Web Audio API: INITIALIZED');
             }
         }
         
-        // Media Session API - integracja z kontrolkami systemowymi
+        function connectAudioToContext() {
+            if (audioContext && !sourceNode) {
+                sourceNode = audioContext.createMediaElementSource(audio);
+                sourceNode.connect(gainNode);
+                console.log('Audio routing: audio -> gain -> output');
+            }
+        }
+        
+        function updateVolume(value) {
+            const volume = value / 100;
+            
+            // Web Audio API gain (może przekraczać 1.0)
+            if (gainNode) {
+                gainNode.gain.value = volume;
+            }
+            
+            // Fallback - native audio volume (max 1.0)
+            audio.volume = Math.min(volume, 1.0);
+            
+            volumeValue.textContent = value;
+            
+            // Pokaż indicator jeśli boost > 100%
+            if (value > 100) {
+                boostIndicator.textContent = '⚠ BOOST MODE';
+                boostIndicator.style.opacity = '1';
+            } else {
+                boostIndicator.textContent = '';
+                boostIndicator.style.opacity = '0.6';
+            }
+        }
+        
+        // AGGRESSIVE WAKE LOCK
+        async function requestAggressiveWakeLock() {
+            try {
+                // 1. Screen Wake Lock
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock: AKTYWNY');
+                    
+                    wakeLock.addEventListener('release', async () => {
+                        console.log('Wake Lock zwolniony - ponowna próba');
+                        // Natychmiastowa reaktywacja
+                        if (!audio.paused) {
+                            setTimeout(() => requestAggressiveWakeLock(), 100);
+                        }
+                    });
+                }
+                
+                // 2. Silent audio loop - zapobiega uspięciu audio
+                silentAudio.volume = 0.01;
+                try {
+                    await silentAudio.play();
+                    console.log('Silent audio: AKTYWNY');
+                } catch (e) {
+                    console.log('Silent audio error:', e);
+                }
+                
+                // 3. Keep-alive ping
+                if (keepAliveInterval) clearInterval(keepAliveInterval);
+                keepAliveInterval = setInterval(() => {
+                    if (!audio.paused) {
+                        // Mikro-interakcja z audio elementem
+                        const currentTime = audio.currentTime;
+                        audio.currentTime = currentTime;
+                        
+                        // Sprawdź wake lock
+                        if (wakeLock === null || wakeLock.released) {
+                            requestAggressiveWakeLock();
+                        }
+                    }
+                }, 3000); // Co 3 sekundy
+                
+                // 4. Prevent screen sleep przez touch events
+                if (!touchMoveListener) {
+                    touchMoveListener = () => {
+                        // Mikro-aktywność przy ruchu
+                        if (!audio.paused && wakeLock?.released) {
+                            requestAggressiveWakeLock();
+                        }
+                    };
+                    window.addEventListener('touchmove', touchMoveListener, { passive: true });
+                }
+                
+                updateWakeStatus('ACTIVE');
+                
+            } catch (err) {
+                console.error('Wake Lock error:', err);
+                updateWakeStatus('ERROR: ' + err.name);
+            }
+        }
+        
+        function updateWakeStatus(status) {
+            wakeStatus.textContent = 'Wake: ' + status;
+        }
+        
+        // Media Session API
         function setupMediaSession() {
             if ('mediaSession' in navigator) {
                 const streamName = streamSelect.options[streamSelect.selectedIndex].text;
@@ -258,33 +393,49 @@
                     stopPlayback();
                 });
                 
-                console.log('Media Session skonfigurowany');
+                // Prevent system from pausing
+                navigator.mediaSession.playbackState = 'playing';
             }
         }
         
         // Odtwarzanie
         async function startPlayback() {
             try {
+                // Inicjalizuj Web Audio API
+                initAudioContext();
+                
                 const streamUrl = streamSelect.value;
                 audio.src = streamUrl;
                 
-                statusText.textContent = 'Łączenie...';
+                statusText.textContent = 'Connecting...';
                 playBtn.disabled = true;
                 
                 await audio.play();
                 
-                statusText.textContent = '🔊 Odtwarzanie: ' + streamSelect.options[streamSelect.selectedIndex].text;
+                // Resume audio context if suspended
+                if (audioContext && audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                
+                // Połącz audio z Web Audio API
+                connectAudioToContext();
+                
+                const streamName = streamSelect.options[streamSelect.selectedIndex].text;
+                statusText.textContent = '♪ ' + streamName;
                 playBtn.disabled = true;
                 stopBtn.disabled = false;
                 
-                // Aktywuj Wake Lock
-                await requestWakeLock();
-                
-                // Ustaw Media Session
+                // AKTYWUJ WSZYSTKIE MECHANIZMY
+                await requestAggressiveWakeLock();
                 setupMediaSession();
                 
+                // Force playback state
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+                
             } catch (err) {
-                statusText.textContent = 'Błąd: ' + err.message;
+                statusText.textContent = 'Error: ' + err.message;
                 playBtn.disabled = false;
                 stopBtn.disabled = true;
                 console.error('Playback error:', err);
@@ -295,17 +446,29 @@
         function stopPlayback() {
             audio.pause();
             audio.src = '';
-            statusText.textContent = 'Zatrzymano';
+            
+            silentAudio.pause();
+            
+            statusText.textContent = 'Stopped';
             playBtn.disabled = false;
             stopBtn.disabled = true;
             
-            // Zwolnij Wake Lock
+            // Wyczyść wszystkie mechanizmy
             if (wakeLock !== null) {
                 wakeLock.release()
                     .then(() => {
                         wakeLock = null;
-                        console.log('Wake Lock zwolniony');
+                        updateWakeStatus('RELEASED');
                     });
+            }
+            
+            if (keepAliveInterval) {
+                clearInterval(keepAliveInterval);
+                keepAliveInterval = null;
+            }
+            
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'none';
             }
         }
         
@@ -313,48 +476,67 @@
         playBtn.addEventListener('click', startPlayback);
         stopBtn.addEventListener('click', stopPlayback);
         
-        // Zmiana streamu podczas odtwarzania
         streamSelect.addEventListener('change', () => {
             if (!audio.paused) {
                 stopPlayback();
             }
         });
         
-        // Kontrola głośności
         volumeSlider.addEventListener('input', (e) => {
-            const volume = e.target.value / 100;
-            audio.volume = volume;
-            volumeValue.textContent = e.target.value;
+            updateVolume(parseInt(e.target.value));
         });
         
-        // Monitoring błędów audio
+        // Monitoring
         audio.addEventListener('error', (e) => {
-            statusText.textContent = 'Błąd połączenia ze streamem';
+            statusText.textContent = 'Connection error';
             playBtn.disabled = false;
             stopBtn.disabled = true;
-            console.error('Audio error:', e);
         });
         
-        // Monitoring statusu audio
         audio.addEventListener('waiting', () => {
-            statusText.textContent = 'Buforowanie...';
+            statusText.textContent = 'Buffering...';
         });
         
         audio.addEventListener('playing', () => {
-            statusText.textContent = '🔊 Odtwarzanie: ' + streamSelect.options[streamSelect.selectedIndex].text;
+            const streamName = streamSelect.options[streamSelect.selectedIndex].text;
+            statusText.textContent = '♪ ' + streamName;
         });
         
-        // Reaktywacja Wake Lock przy powrocie do karty
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible' && !audio.paused) {
-                await requestWakeLock();
+        audio.addEventListener('pause', () => {
+            if (audio.src && !audio.ended) {
+                // Jeśli został spauzowany przez system - wznów
+                console.log('Wykryto pauzę - wznawianie...');
+                audio.play().catch(e => console.error('Auto-resume error:', e));
             }
         });
         
-        // Ustaw początkową głośność
-        audio.volume = 1.0;
+        // Reaktywacja przy visibility change
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && !audio.paused) {
+                await requestAggressiveWakeLock();
+            }
+        });
         
-        console.log('Radio Paradise Player zainicjalizowany');
+        // Reaktywacja przy focus
+        window.addEventListener('focus', async () => {
+            if (!audio.paused) {
+                await requestAggressiveWakeLock();
+            }
+        });
+        
+        // Prevent page unload podczas odtwarzania
+        window.addEventListener('beforeunload', (e) => {
+            if (!audio.paused) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        // Inicjalizacja
+        updateVolume(100);
+        updateWakeStatus('STANDBY');
+        
+        console.log('Radio Paradise - Aggressive Mode + Audio Boost - Ready');
     </script>
 </body>
 </html>
