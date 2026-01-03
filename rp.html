@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Paradise Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .player {
+            background: #111;
+            border: 3px solid #0f0;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .stream-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #0f0;
+            color: #000;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            background: #000;
+            border: 2px solid #0f0;
+            margin-bottom: 20px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .status-text {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .volume-control {
+            margin-bottom: 20px;
+        }
+        
+        .volume-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #0f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #0f0;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #0f0;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+        
+        .info {
+            font-size: 0.8em;
+            text-align: center;
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+        
+        .wake-lock-status {
+            text-align: center;
+            font-size: 0.9em;
+            padding: 10px;
+            background: #000;
+            border: 2px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <h1>⚡ RADIO PARADISE ⚡</h1>
+        
+        <div class="stream-selector">
+            <select id="streamSelect">
+                <option value="https://stream.radioparadise.com/aac-320">Main Mix (AAC 320k)</option>
+                <option value="https://stream.radioparadise.com/mellow-320">Mellow Mix (AAC 320k)</option>
+                <option value="https://stream.radioparadise.com/rock-320">Rock Mix (AAC 320k)</option>
+                <option value="https://stream.radioparadise.com/world-etc-320">World/Etc Mix (AAC 320k)</option>
+            </select>
+        </div>
+        
+        <div class="controls">
+            <button id="playBtn">▶ PLAY</button>
+            <button id="stopBtn" disabled>■ STOP</button>
+        </div>
+        
+        <div class="status">
+            <div class="status-text" id="statusText">Gotowy do odtwarzania</div>
+        </div>
+        
+        <div class="volume-control">
+            <label for="volumeSlider">Głośność: <span id="volumeValue">100</span>%</label>
+            <input type="range" id="volumeSlider" min="0" max="100" value="100">
+        </div>
+        
+        <div class="wake-lock-status" id="wakeLockStatus">
+            Wake Lock: Nieaktywny
+        </div>
+        
+        <div class="info">
+            Tip: Kliknij Play i zostaw kartę otwartą.<br>
+            Wake Lock utrzyma ekran aktywnym.
+        </div>
+    </div>
+    
+    <audio id="audioPlayer" preload="none"></audio>
+    
+    <script>
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusText = document.getElementById('statusText');
+        const streamSelect = document.getElementById('streamSelect');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        const wakeLockStatus = document.getElementById('wakeLockStatus');
+        
+        let wakeLock = null;
+        
+        // Wake Lock - zapobiega uśpieniu ekranu
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLockStatus.textContent = 'Wake Lock: ✓ Aktywny';
+                    wakeLockStatus.style.borderColor = '#0f0';
+                    
+                    wakeLock.addEventListener('release', () => {
+                        wakeLockStatus.textContent = 'Wake Lock: Zwolniony';
+                        wakeLockStatus.style.borderColor = '#f00';
+                    });
+                    
+                    console.log('Wake Lock aktywny');
+                } else {
+                    wakeLockStatus.textContent = 'Wake Lock: Brak wsparcia';
+                    console.log('Wake Lock API nie jest wspierane');
+                }
+            } catch (err) {
+                wakeLockStatus.textContent = `Wake Lock: Błąd - ${err.name}`;
+                console.error('Wake Lock error:', err);
+            }
+        }
+        
+        // Media Session API - integracja z kontrolkami systemowymi
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                const streamName = streamSelect.options[streamSelect.selectedIndex].text;
+                
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: streamName,
+                    artist: 'Radio Paradise',
+                    album: 'Live Stream',
+                    artwork: [
+                        { src: 'https://radioparadise.com/graphics/fb-1200x1200.jpg', sizes: '1200x1200', type: 'image/jpeg' }
+                    ]
+                });
+                
+                navigator.mediaSession.setActionHandler('play', () => {
+                    audio.play();
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    audio.pause();
+                });
+                
+                navigator.mediaSession.setActionHandler('stop', () => {
+                    stopPlayback();
+                });
+                
+                console.log('Media Session skonfigurowany');
+            }
+        }
+        
+        // Odtwarzanie
+        async function startPlayback() {
+            try {
+                const streamUrl = streamSelect.value;
+                audio.src = streamUrl;
+                
+                statusText.textContent = 'Łączenie...';
+                playBtn.disabled = true;
+                
+                await audio.play();
+                
+                statusText.textContent = '🔊 Odtwarzanie: ' + streamSelect.options[streamSelect.selectedIndex].text;
+                playBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                // Aktywuj Wake Lock
+                await requestWakeLock();
+                
+                // Ustaw Media Session
+                setupMediaSession();
+                
+            } catch (err) {
+                statusText.textContent = 'Błąd: ' + err.message;
+                playBtn.disabled = false;
+                stopBtn.disabled = true;
+                console.error('Playback error:', err);
+            }
+        }
+        
+        // Zatrzymywanie
+        function stopPlayback() {
+            audio.pause();
+            audio.src = '';
+            statusText.textContent = 'Zatrzymano';
+            playBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            // Zwolnij Wake Lock
+            if (wakeLock !== null) {
+                wakeLock.release()
+                    .then(() => {
+                        wakeLock = null;
+                        console.log('Wake Lock zwolniony');
+                    });
+            }
+        }
+        
+        // Event listeners
+        playBtn.addEventListener('click', startPlayback);
+        stopBtn.addEventListener('click', stopPlayback);
+        
+        // Zmiana streamu podczas odtwarzania
+        streamSelect.addEventListener('change', () => {
+            if (!audio.paused) {
+                stopPlayback();
+            }
+        });
+        
+        // Kontrola głośności
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            audio.volume = volume;
+            volumeValue.textContent = e.target.value;
+        });
+        
+        // Monitoring błędów audio
+        audio.addEventListener('error', (e) => {
+            statusText.textContent = 'Błąd połączenia ze streamem';
+            playBtn.disabled = false;
+            stopBtn.disabled = true;
+            console.error('Audio error:', e);
+        });
+        
+        // Monitoring statusu audio
+        audio.addEventListener('waiting', () => {
+            statusText.textContent = 'Buforowanie...';
+        });
+        
+        audio.addEventListener('playing', () => {
+            statusText.textContent = '🔊 Odtwarzanie: ' + streamSelect.options[streamSelect.selectedIndex].text;
+        });
+        
+        // Reaktywacja Wake Lock przy powrocie do karty
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && !audio.paused) {
+                await requestWakeLock();
+            }
+        });
+        
+        // Ustaw początkową głośność
+        audio.volume = 1.0;
+        
+        console.log('Radio Paradise Player zainicjalizowany');
+    </script>
+</body>
+</html>
