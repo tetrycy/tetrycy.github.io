@@ -274,22 +274,28 @@
         
         function connectAudioToContext() {
             if (audioContext && !sourceNode) {
-                sourceNode = audioContext.createMediaElementSource(audio);
-                sourceNode.connect(gainNode);
-                console.log('Audio routing: audio -> gain -> output');
+                try {
+                    sourceNode = audioContext.createMediaElementSource(audio);
+                    sourceNode.connect(gainNode);
+                    console.log('Audio routing: audio -> gain -> output');
+                } catch (e) {
+                    console.error('Web Audio connection error:', e);
+                    // Jeśli błąd, nie używaj Web Audio API
+                    sourceNode = null;
+                }
             }
         }
         
         function updateVolume(value) {
             const volume = value / 100;
             
-            // Web Audio API gain (może przekraczać 1.0)
-            if (gainNode) {
+            // Web Audio API gain (może przekraczać 1.0) - jeśli dostępny
+            if (gainNode && sourceNode) {
                 gainNode.gain.value = volume;
+            } else {
+                // Fallback - tylko native audio volume
+                audio.volume = Math.min(volume, 1.0);
             }
-            
-            // Fallback - native audio volume (max 1.0)
-            audio.volume = Math.min(volume, 1.0);
             
             volumeValue.textContent = value;
             
@@ -297,6 +303,9 @@
             if (value > 100) {
                 boostIndicator.textContent = '⚠ BOOST MODE';
                 boostIndicator.style.opacity = '1';
+                if (!gainNode || !sourceNode) {
+                    boostIndicator.textContent = '⚠ BOOST UNAVAILABLE';
+                }
             } else {
                 boostIndicator.textContent = '';
                 boostIndicator.style.opacity = '0.6';
@@ -401,7 +410,7 @@
         // Odtwarzanie
         async function startPlayback() {
             try {
-                // Inicjalizuj Web Audio API
+                // Inicjalizuj Web Audio API PRZED odtwarzaniem
                 initAudioContext();
                 
                 const streamUrl = streamSelect.value;
@@ -410,15 +419,18 @@
                 statusText.textContent = 'Connecting...';
                 playBtn.disabled = true;
                 
-                await audio.play();
-                
                 // Resume audio context if suspended
                 if (audioContext && audioContext.state === 'suspended') {
                     await audioContext.resume();
+                    console.log('AudioContext resumed');
                 }
                 
-                // Połącz audio z Web Audio API
+                // Połącz audio z Web Audio API PRZED play
                 connectAudioToContext();
+                
+                // Start playback
+                await audio.play();
+                console.log('Playback started');
                 
                 const streamName = streamSelect.options[streamSelect.selectedIndex].text;
                 statusText.textContent = '♪ ' + streamName;
@@ -487,19 +499,47 @@
         });
         
         // Monitoring
+        audio.addEventListener('loadstart', () => {
+            statusText.textContent = 'Loading...';
+            console.log('Audio: loadstart');
+        });
+        
+        audio.addEventListener('loadeddata', () => {
+            statusText.textContent = 'Connected';
+            console.log('Audio: loadeddata');
+        });
+        
+        audio.addEventListener('canplay', () => {
+            console.log('Audio: canplay');
+        });
+        
         audio.addEventListener('error', (e) => {
             statusText.textContent = 'Connection error';
             playBtn.disabled = false;
             stopBtn.disabled = true;
+            console.error('Audio error:', e);
+            console.error('Audio error code:', audio.error?.code);
+            console.error('Audio error message:', audio.error?.message);
         });
         
         audio.addEventListener('waiting', () => {
             statusText.textContent = 'Buffering...';
+            console.log('Audio: waiting');
         });
         
         audio.addEventListener('playing', () => {
             const streamName = streamSelect.options[streamSelect.selectedIndex].text;
             statusText.textContent = '♪ ' + streamName;
+            console.log('Audio: playing');
+        });
+        
+        audio.addEventListener('stalled', () => {
+            statusText.textContent = 'Connection stalled';
+            console.log('Audio: stalled');
+        });
+        
+        audio.addEventListener('suspend', () => {
+            console.log('Audio: suspend');
         });
         
         audio.addEventListener('pause', () => {
