@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Paradise</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,53 +136,39 @@
             font-style: italic;
         }
         
-        .volume-control {
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 220px;
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
-        .volume-control label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.7em;
+        .volume-btn {
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+            padding: 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            cursor: pointer;
+        }
+        
+        .volume-btn:disabled {
+            opacity: 0.2;
+        }
+        
+        .volume-display {
+            font-size: 0.9em;
+            font-weight: 700;
+            min-width: 60px;
             text-align: center;
             letter-spacing: 0.05em;
-        }
-        
-        .boost-indicator {
-            font-size: 0.6em;
-            opacity: 0.6;
-            margin-top: 4px;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            background: #000;
-            outline: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #000;
-            cursor: pointer;
-            border: 3px solid #fff;
-            box-shadow: 0 0 0 1px #000;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: #000;
-            cursor: pointer;
-            border: 3px solid #fff;
-            box-shadow: 0 0 0 1px #000;
         }
         
         .info {
@@ -218,16 +204,14 @@
             <div class="wake-status" id="wakeStatus">—</div>
         </div>
         
-        <div class="volume-control">
-            <label for="volumeSlider">
-                VOLUME: <span id="volumeValue">100</span>%
-                <div class="boost-indicator" id="boostIndicator"></div>
-            </label>
-            <input type="range" id="volumeSlider" min="0" max="200" value="100" step="5">
+        <div class="volume-controls">
+            <button class="volume-btn" id="volumeDown">−</button>
+            <div class="volume-display" id="volumeDisplay">100%</div>
+            <button class="volume-btn" id="volumeUp">+</button>
         </div>
         
         <div class="info">
-            Keep screen on during playback
+            Adjust volume with +/−<br>Keep screen active
         </div>
     </div>
     
@@ -237,6 +221,10 @@
     <audio id="silentAudio" loop>
         <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" type="audio/wav">
     </audio>
+    <!-- Invisible video - prevents screen sleep on some systems -->
+    <video id="invisibleVideo" loop muted playsinline style="position:fixed;opacity:0;width:1px;height:1px;pointer-events:none;">
+        <source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAu1tZGF0AAACrQYF//+p3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE1MiByMjg1NCBlOWE1OTAzIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTMgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAD2WIhAA3//728P4FNjuZQQAAAu5tb292AAAAbG12aGQAAAAAAAAAAAAAAAAAAAPoAAAAZAABAAABAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACGHRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAEAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAgAAAAIAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAAGQAAAAAAAEAAAAAAZBtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAADwAAAAEAFXEAAAAAAAtaGRscgAAAAAAAAAAdmlkZQAAAAAAAAAAAAAAAFZpZGVvSGFuZGxlcgAAAAE7bWluZgAAABR2bWhkAAAAAQAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAA+3N0YmwAAACXc3RzZAAAAAAAAAABAAAAh2F2YzEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAACAAgAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADFhdmNDAWQACv/hABhnZAAKrNlBsJaEAAADAAQAAAMAPB4llgEABWjLIs8+8/wAAAAAHHV1aWRraEDyXyRPxbo5pRvPAyPzAAAAAAAAABhzdHRzAAAAAAAAAAEAAAABAAAABAAAABRzdHNzAAAAAAAAAAEAAAABAAAAAQAAAFxzdHNjAAAAAAAAAAEAAAABAAAAAgAAAAEAAABAc3RzegAAAAAAAAAAAAAAAgAAAbUAAAAQAAAAOHN0Y28AAAAAAAAAAgAAADAAAAEhAAAAYnVkdGEAAABabWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAsaWxzdAAAACStdG9vAAAAHGRhdGEAAAABAAAAAExhdmY1OC4yMC4xMDA=" type="video/mp4">
+    </video>
     
     <script>
         const audio = document.getElementById('audioPlayer');
@@ -246,70 +234,32 @@
         const statusText = document.getElementById('statusText');
         const wakeStatus = document.getElementById('wakeStatus');
         const streamSelect = document.getElementById('streamSelect');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeValue = document.getElementById('volumeValue');
-        const boostIndicator = document.getElementById('boostIndicator');
+        const volumeUp = document.getElementById('volumeUp');
+        const volumeDown = document.getElementById('volumeDown');
+        const volumeDisplay = document.getElementById('volumeDisplay');
         
         let wakeLock = null;
         let keepAliveInterval = null;
         let touchMoveListener = null;
+        let currentVolume = 100; // Procent
         
-        // WEB AUDIO API - dla pełnej kontroli głośności
-        let audioContext = null;
-        let sourceNode = null;
-        let gainNode = null;
-        
-        function initAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                gainNode = audioContext.createGain();
-                gainNode.connect(audioContext.destination);
-                
-                // Set initial gain to 1.0 (100%)
-                gainNode.gain.value = 1.0;
-                
-                console.log('Web Audio API: INITIALIZED');
-            }
+        // Funkcje głośności
+        function updateVolume(newVolume) {
+            currentVolume = Math.max(0, Math.min(100, newVolume));
+            audio.volume = currentVolume / 100;
+            volumeDisplay.textContent = currentVolume + '%';
+            
+            // Disable przyciski jeśli na granicy
+            volumeDown.disabled = (currentVolume === 0);
+            volumeUp.disabled = (currentVolume === 100);
         }
         
-        function connectAudioToContext() {
-            if (audioContext && !sourceNode) {
-                try {
-                    sourceNode = audioContext.createMediaElementSource(audio);
-                    sourceNode.connect(gainNode);
-                    console.log('Audio routing: audio -> gain -> output');
-                } catch (e) {
-                    console.error('Web Audio connection error:', e);
-                    // Jeśli błąd, nie używaj Web Audio API
-                    sourceNode = null;
-                }
-            }
+        function increaseVolume() {
+            updateVolume(currentVolume + 10);
         }
         
-        function updateVolume(value) {
-            const volume = value / 100;
-            
-            // Web Audio API gain (może przekraczać 1.0) - jeśli dostępny
-            if (gainNode && sourceNode) {
-                gainNode.gain.value = volume;
-            } else {
-                // Fallback - tylko native audio volume
-                audio.volume = Math.min(volume, 1.0);
-            }
-            
-            volumeValue.textContent = value;
-            
-            // Pokaż indicator jeśli boost > 100%
-            if (value > 100) {
-                boostIndicator.textContent = '⚠ BOOST MODE';
-                boostIndicator.style.opacity = '1';
-                if (!gainNode || !sourceNode) {
-                    boostIndicator.textContent = '⚠ BOOST UNAVAILABLE';
-                }
-            } else {
-                boostIndicator.textContent = '';
-                boostIndicator.style.opacity = '0.6';
-            }
+        function decreaseVolume() {
+            updateVolume(currentVolume - 10);
         }
         
         // AGGRESSIVE WAKE LOCK
@@ -329,7 +279,7 @@
                     });
                 }
                 
-                // 2. Silent audio loop - zapobiega uspięciu audio
+                // 2. Silent audio loop - zapobiega uspięniu audio
                 silentAudio.volume = 0.01;
                 try {
                     await silentAudio.play();
@@ -338,7 +288,19 @@
                     console.log('Silent audio error:', e);
                 }
                 
-                // 3. Keep-alive ping
+                // 3. Invisible video loop - NoSleep.js technique
+                const invisibleVideo = document.getElementById('invisibleVideo');
+                if (invisibleVideo) {
+                    invisibleVideo.volume = 0;
+                    try {
+                        await invisibleVideo.play();
+                        console.log('Invisible video: AKTYWNY');
+                    } catch (e) {
+                        console.log('Invisible video error:', e);
+                    }
+                }
+                
+                // 4. Keep-alive ping - zwiększona częstotliwość
                 if (keepAliveInterval) clearInterval(keepAliveInterval);
                 keepAliveInterval = setInterval(() => {
                     if (!audio.paused) {
@@ -350,10 +312,16 @@
                         if (wakeLock === null || wakeLock.released) {
                             requestAggressiveWakeLock();
                         }
+                        
+                        // Sprawdź i reaktywuj invisible video
+                        const vid = document.getElementById('invisibleVideo');
+                        if (vid && vid.paused) {
+                            vid.play().catch(() => {});
+                        }
                     }
-                }, 3000); // Co 3 sekundy
+                }, 1000); // Co 1 sekundę - bardziej agresywne
                 
-                // 4. Prevent screen sleep przez touch events
+                // 5. Prevent screen sleep przez touch events
                 if (!touchMoveListener) {
                     touchMoveListener = () => {
                         // Mikro-aktywność przy ruchu
@@ -410,27 +378,13 @@
         // Odtwarzanie
         async function startPlayback() {
             try {
-                // Inicjalizuj Web Audio API PRZED odtwarzaniem
-                initAudioContext();
-                
                 const streamUrl = streamSelect.value;
                 audio.src = streamUrl;
                 
                 statusText.textContent = 'Connecting...';
                 playBtn.disabled = true;
                 
-                // Resume audio context if suspended
-                if (audioContext && audioContext.state === 'suspended') {
-                    await audioContext.resume();
-                    console.log('AudioContext resumed');
-                }
-                
-                // Połącz audio z Web Audio API PRZED play
-                connectAudioToContext();
-                
-                // Start playback
                 await audio.play();
-                console.log('Playback started');
                 
                 const streamName = streamSelect.options[streamSelect.selectedIndex].text;
                 statusText.textContent = '♪ ' + streamName;
@@ -461,6 +415,12 @@
             
             silentAudio.pause();
             
+            // Zatrzymaj invisible video
+            const invisibleVideo = document.getElementById('invisibleVideo');
+            if (invisibleVideo) {
+                invisibleVideo.pause();
+            }
+            
             statusText.textContent = 'Stopped';
             playBtn.disabled = false;
             stopBtn.disabled = true;
@@ -487,6 +447,8 @@
         // Event listeners
         playBtn.addEventListener('click', startPlayback);
         stopBtn.addEventListener('click', stopPlayback);
+        volumeUp.addEventListener('click', increaseVolume);
+        volumeDown.addEventListener('click', decreaseVolume);
         
         streamSelect.addEventListener('change', () => {
             if (!audio.paused) {
@@ -494,11 +456,7 @@
             }
         });
         
-        volumeSlider.addEventListener('input', (e) => {
-            updateVolume(parseInt(e.target.value));
-        });
-        
-        // Monitoring
+        // Monitoring - detailed status updates
         audio.addEventListener('loadstart', () => {
             statusText.textContent = 'Loading...';
             console.log('Audio: loadstart');
@@ -519,7 +477,6 @@
             stopBtn.disabled = true;
             console.error('Audio error:', e);
             console.error('Audio error code:', audio.error?.code);
-            console.error('Audio error message:', audio.error?.message);
         });
         
         audio.addEventListener('waiting', () => {
@@ -536,10 +493,6 @@
         audio.addEventListener('stalled', () => {
             statusText.textContent = 'Connection stalled';
             console.log('Audio: stalled');
-        });
-        
-        audio.addEventListener('suspend', () => {
-            console.log('Audio: suspend');
         });
         
         audio.addEventListener('pause', () => {
@@ -576,7 +529,7 @@
         updateVolume(100);
         updateWakeStatus('STANDBY');
         
-        console.log('Radio Paradise - Aggressive Mode + Audio Boost - Ready');
+        console.log('Radio Paradise - Simple Audio + Aggressive Wake - Ready');
     </script>
 </body>
 </html>
