@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Pobieranie...</title>
+</head>
+<body>
+    <p>Pobieranie rozpocznie się automatycznie...</p>
+    <a id="download" href="1.mp3" download="1.mp3">Kliknij tutaj, jeśli pobieranie się nie rozpoczęło</a>
+    
+    <script>
+        document.getElementById('download').click();
+    </script>
+</body>
+</html>
+```
+
+**Struktura na serwerze:**
+```
+tetrycy.com.pl/
+└── pliki/
+    ├── 1.html      ← ten plik
+    └── 1.mp3       ← plik do pobrania
