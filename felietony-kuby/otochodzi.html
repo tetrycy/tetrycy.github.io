@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jakub Olkiewicz</title>
+  <meta name="description" content="Felieton Jakuba Olkiewicza" />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Jakub Olkiewicz">
+  <meta property="og:description" content="Felieton Jakuba Olkiewicza">
+  <meta property="og:url" content="Jakub Olkiewicz">
+  <meta property="og:site_name" content="Jakub Olkiewicz">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111111; --muted:#6e6e6e; --link:#1a1a1a; --accent:#b4162a;
+      --maxw: 700px;
+      --space-1: .5rem; --space-2: 1rem; --space-3: 1.5rem; --space-4: 2rem; --radius: 10px;
+    }
+
+    html{ color-scheme: light dark; }
+    body{
+      margin:0;
+      background:var(--bg); color:var(--fg);
+      font-family: "Libre Baskerville", serif;
+      line-height:1.75;
+      font-size: clamp(16px, 1.4vw + 0.5rem, 19px);
+    }
+
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding: var(--space-4) var(--space-2); }
+
+    /* Skip link */
+    .skip{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+    .skip:focus{ left: var(--space-2); top: var(--space-2); width:auto; height:auto; background:#ffd; padding:.5rem .75rem; outline:2px solid #000; }
+
+    nav{
+      display:flex; gap: .75rem; justify-content:center; flex-wrap:wrap;
+      margin-bottom: var(--space-4);
+    }
+    nav a{
+      text-decoration:none; color:var(--link);
+      padding:.25rem .5rem; border-radius:.4rem;
+      outline-offset:3px;
+    }
+    nav a:hover, nav a:focus{ text-decoration:underline; }
+    nav a[aria-current="page"]{ font-weight:700; }
+
+    time{ display:block; color:var(--muted); margin-bottom: var(--space-3); font-size:.95em; text-align:center; }
+
+    p{ margin: 0 0 1.2em; }
+
+    /* Separator */
+    hr {
+      border: none;
+      text-align: center;
+      margin: var(--space-3) 0;
+    }
+    hr::before {
+      content: "***";
+      display: inline-block;
+      color: var(--muted);
+      font-size: 1.2em;
+      letter-spacing: 0.6em;
+    }
+
+    /* CTA (opcjonalnie) */
+    .cta{ text-align:center; margin: var(--space-4) 0 var(--space-3); }
+    .cta a{
+      display:inline-block; padding: .9rem 1.1rem; border-radius: .6rem;
+      border:2px solid var(--accent); color: var(--accent); font-weight:700; font-size: clamp(1.05rem, 1.2vw + .6rem, 1.35rem);
+      text-decoration:none; transition: transform .08s ease, background .2s ease, color .2s ease;
+    }
+    .cta a:hover, .cta a:focus{ background: var(--accent); color:#fff; transform: translateY(-1px); }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0f0f10; --fg:#f2f2f2; --muted:#aaaaaa; --link:#e6e6e6; --accent:#ff4d5a; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Przejdź do treści</a>
+
+  <div class="wrap">
+
+    <main id="main" role="main">
+      <article itemscope itemtype="https://schema.org/Article">
+        <header>
+          <time itemprop="datePublished" datetime="2026-01-09">09.01.2026</time>
+        </header>
+
+        <div itemprop="articleBody">
+          <p>Mój przyjaciel Michał zna całe miasto, wszystkich ludzi, każdy kąt, a w okrągłych pomieszczeniach przynajmniej połowę obwodu. Mógłby być spokojnie przewodnikiem po mieście Łodzi, gdyby nie to, że ma już pewnie z osiem innych biznesów oraz dwadzieścia trzy spotkania w nadchodzącym kwadransie. Dobrze śmigać w jego ekipie, już od czasów gimnazjum, bo dzięki tej znajomości jestem w odległości jednego krótkiego telefonu od załatwienia absolutnie wszystkiego.</p>
+          <p>- Michał, jest sprawa. Szukamy lokalu, nagrywamy z Leszkiem taki program, na razie to jest słuchowisko w radiu, ale myślimy nad wideo. Potrzebujemy jednak czegoś w rodzaju pubu, może baru, gdzie moglibyśmy spokojnie tworzyć - zagaiłem.</p>
+          <p>Jak się domyślacie, Michał miałby dla mnie gotowy zestaw kontaktów nawet gdybym poprosił o zorganizowanie przestrzeni pod budowę Bazyliki Świętego Piotra, natomiast tu, ku mojemu zaskoczeniu, podał tylko jeden adres, jedno nazwisko, jedną rekomendację.</p>
+          <p>Potrzebujecie Jacka. O To Chodzi. Piotrkowska 79. To numer telefonu, zadzwoń, przegadaj.</p>
+          <p>A jak to nie wypali, a jak Jacek nie będzie chciał, jak czegoś nie będzie w stanie ogarnąć?</p>
+          <p>Spokojnie. Zadzwoń, przekonasz się.</p>
+          
+          <hr>
+
+          <p>Okazało się, że Jacek to najlepszy spośród ludzi, ten legendarny wybraniec, którego kiedyś wyślemy na rozmowy z kosmitami w sprawie zaniechania planu zniszczenia naszej planety. Nie jestem do końca przekonany, że O To Chodzi naprawdę wtedy istniało, pięć lat temu, w pierwszysch dniach stycznia 2021 roku. Podejrzewam, że gdy w drugiej połowie miesiąca zadzwoniliśmy do Jacka, postawił wszystko od zera tak, żeby stworzyć dla nas wymarzoną scenę.</p>
+          <p>Bo czy mogliśmy sobie wyobrazić lepsze miejsce, lepsze tło, do gadania o piłce, mydle i powidle, albo nawet mydle, powidle i piłce?</p>
+          <p>Legendarna masywna lada, po jednej stronie ja na stołku barowym, po drugiej stronie Leszek, jako trochę posępny barman, wiecznie w czarnym longsleevie, wysłuchujący cierpliwie nieskładnej paplaniny nieco namolnego klienta.</p>
+          <p>- Jacek, a jutro możemy być o 6.00? Jacek, a dałoby radę we wtorek od 3.15 do 4.23? Jacek, a moglibyśmy przestawić tutaj latający talerz, który Leszek dostał od Artura Boruca? Jacek, czy istnieje szansa, że zbudowałbys tu dla nas dosłownie na siedem minut programu Wielki Mur Chiński?</p>
+          <p>Zawsze słyszeliśmy tę samą odpowiedź: ależ oczywiście, żaden problem. Jacek, jako najlepszy spośród ludzi, zajmował się rozwiązywaniem problemów gorszych od siebie, czyli wszystkich. Początkowo myśleliśmy, że tylko nas tak traktuje, ewentualnie jakiś bliski krąg swoich znajomych. Ale im więcej widzów odwiedziło O To Chodzi i opisywało nam swoje wrażenia z wizyty u Jacka, tym mocniej przekonywaliśmy się, że po prostu taki jest.</p>
+          <p>- Mnie Jacek rozrysował mapę z zaznaczonymi najważniejszymi muzeami.<br>
+          - Jacek pomógł mi z zakupem biletu do ZOO.<br>
+          - Dzięki wskazówkom Jacka odkryłem nowy pierwiastek.<br>
+          - Praktyczne porady od Jacka sprawiły, że stałem się bogiem słońca Ra i zaczęli mnie czcić starożytni Egipcjanie.</p>
+          <p>Bo taki jest Jacek. Jako barman widział i słyszał dużo, a sam też swoje zobaczył i przeżył. Pomagał dobrać odpowiednią czcionkę do folderu reklamowego, znał się na najlepszych odkurzaczach, nie miała przed nim tajemnic giełda fińska, niemiecka i nigeryjska. Mógł polecić dobrego prawnika, najlepszego dentystę, kapitalny lokal z planszówkami i najbardziej bogato wyposażoną bibliotekę. Jacek taki był i nadal jest - a trzymanie na barkach problemów całego świata sprawiło, że teraz po prostu musi przez jakiś czas odpocząć.</p>
+          <p>I tak to jest też z O To Chodzi. Czy istniał w historii Łodzi lepszy lokal? Może i tak, ale ja nie pamiętam, a zwiedziłem ich za młodu dziesiątki tysięcy (albo i setki). Klimatyczny. Dobrze wyposażony. Posiadający kapitalnego szefa, ale też całą załogę złożoną z ludzi, których Jacek zaraził pasją. W O To Chodzi najważniejsze wydawało mi się to, że to nie był londyński pub. Nie była kopia czegoś z USA, ani z Niemiec. Wymykał się tym wszystkim szufladkom typu "lokal dla hipsterów", "mordownia", "ceny wyłącznie dla lekarzy i palestry". O To Chodzi tworzyliśmy sobie sami, tak jak chcieliśmy. Jak wpadałem tam z Anią na gorącą herbatę, to w tle pogrywał romantyczny jazz. Jak zrobiliśmy z Leszkiem, Matim i naszymi widzami spotkanie, to graliśmy w dziesięciu w Deluxe Ski Jumping. Gdy przy jednym stoliku imprezowała cała kapela metalowa, a przy drugim freestyle'ował skład hip-hopowy, to jedni i drudzy czuli się jak u siebie.</p>
+          <p>Bo też byli u siebie, taki klimat tworzyło O To Chodzi, taki klimat tworzył Jacek.</p>
+
+          <hr>
+
+          <p>Jacek wpuścił nas w niełatwym okresie, post-pandemicznym, oczywiście od razu zaznaczając: jak będziecie mieli się czym podzielić, to się podzielicie, na razie wpadajcie za darmo. Byliśmy razem na Weszło, gdy czwartkowe nagrywanie programu było tak naprawdę przyjemną przerwą od pozostałych pięciu dni tygodnia zapełnionych tekstami, meczami, reportażami czy wywiadami. Potem razem przenieśliśmy się na Goala, a gdy Duńczycy z Better Collective zaproponowali, że mogą nam wybudować studio nagraniowe, grzecznie podziękowaliśmy - bo już swoje studio mieliśmy. Po wylądowaniu na bruku, skąd mieli nas podnieść Patroni i pierwsi sponsorzy kanału, Jacek też zaproponował wsparcie. Ale już po lekturze tego tekstu bylibyście pewnie zdziwieni, gdyby nie zaproponował.</p>
+          <p>- Będziemy zawsze razem, dopóki wszystko będzie dobrze szło - te legendarne już słowa Jacka Klimka o Leszku Ojrzyńskim były z nami przez długie pięć lat. Szło dobrze, albo bardzo dobrze, więc byliśmy razem - ale każdy z nas czterech jest pewny, że bylibyśmy razem nawet, gdyby nie szło wcale.</p>
+          <p>Gdy przed Świętami nagraliśmy na zapas Q&A, byliśmy pewni, że piąte urodziny naszego programu zorganizujemy w O To Chodzi, a już we wrześniu spotkamy się na hucznych dziesiątych urodzinach samego lokalu. Gdy dotarły do nas wieści na początku stycznia, że lokal się zamyka, byliśmy tak samo wstrząśnięci jak wszyscy stali klienci. Zdrowie jest jednak absolutnie najważniejsze - a dziewięć lat prowadzenia lokalu dzień i noc to wyniszczająca kadencja. Postanowiliśmy, że spotkamy się jeszcze raz, pożegnalnie - do lokalu wpuściła nas i pozostała z nami żona Jacka, zresztą równie pomocna, uprzejma i pełna dobra jak Jacek.</p>
+          <p>Mieliśmy na koniec nagrać jakieś trochę sentymentalne pożegnanie, powspominać, pośmiać się. Ale w oficynie naprzeciw wybuchł pożar na poddaszu. Nagrywaliśmy dalej, gdy pod oknami kręcili się już strażacy z wężami. Potem zaczęło się mocno dymić, ale uznaliśmy, że te problemy nas nie dotyczą - bo w O To Chodzi łatwo było zapomnieć o problemach, uznać, że są one nieco z innego świata, że nie mają wstępu za próg lokalu. Dopiero gdy zgasły lampy, wyłączyły się nasze grzejniki i urządzenia nagrywające, uznaliśmy, że to faktycznie koniec.</p>
+          <p>Jakież to wszystko było symboliczne. Łódź, miasto, gdzie od dwustu lat koniec biznesu to często widowiskowy pożar. My, tetrycy, z naszym posępnym mottem, że będziemy tu do końca, naszego lub lokalu. I nagrywanie naprawdę do samego końca prądu w pomieszczeniu, bez świadomości, że z pożarem walczy już dwanaście jednostek straży pożarnej. Gdy wynosiliśmy kartony ze swoimi gadżetami i pamiątkami, które magazynowaliśmy w O To Chodzi, strażacy wydawali się zdumieni - ale wyrozumiale pokierowali nas na przejście dla pieszych.</p>
+          <p>Trudno było, oglądając się za siebie, nie mruknąć pod nosem: dzisiaj puszczamy z dymem całą naszą pieprzoną przeszłość.</p>
+          <p>Przenosimy się do własnego biura. Jacek wreszcie zaczyna zasłużony odpoczynek. Trwają rozmowy, by lokal ocalał - i moim zdaniem jest na to szansa, bo to atrakcyjna lokalizacja, budowana latami marka oraz po prostu niezły biznes. Jeśli dostaniemy zaproszenie, by wpaść do nowych właścicieli, pewnie z przyjemnością ich odwiedzimy. Ale Tetrycy w O To Chodzi, to przede wszystkim Tetrycy u Jacka, albo raczej Jacek i Tetrycy.</p>
+          <p>Ten etap został zamknięty tuż przed piątymi urodzinami, a w całość były zamieszane i ochrona zdrowia, i straż pożarna. W sumie miła niespodzianka, bo zawsze sądziłem, że pewne etapy w moim życiu będzie kończyć ta trzecia spośród służb.</p>
+          <p>Nie będzie już Tetryków w O To Chodzi, raczej nie będzie też już O To Chodzi. Ale zbliżając się do puenty w najbardziej oklepany sposób: nie płaczmy, że się skończyło. Doceniajmy, że się zdarzyło.</p>
+          <p>W naszym biurze, które własnie meblujemy, mamy zamiar ustawić legendarny kubek z Jackiem, a ja negocjuję jeszcze z Izą zakup jednego stołka barowego. Jestem dumny, że dotrzymaliśmy słowa: przerwać naszą sztamę może tylko jakiś kataklizm. Były potrzebne aż dwa.</p>
+          <p>Jacku, dzięki, dużo zdrowia i prawdziwego odpoczynku, dłuższego niż 15-minutowe drzemki pod kocem w trakcie naszych nagrywek. Wszyscy, którzy tworzyliście O To Chodzi - bo przecież to byli w pierwszej kolejności ludzie - też bądźcie dumni. Jest z czego.</p>
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
