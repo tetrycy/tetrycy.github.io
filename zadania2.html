@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mój Dziennik</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dziennik">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #faf9f6;
+            --bg-card: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #95a5a6;
+            --accent: #d4a373;
+            --border-light: rgba(0,0,0,0.06);
+            --shadow-soft: 0 10px 25px -5px rgba(0,0,0,0.05), 0 5px 10px -5px rgba(0,0,0,0.02);
+            --radius: 12px;
+            --gap-pattern: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 8px, #fafafa 8px, #fafafa 16px);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #1a1a2e;
+            --bg-card: #16213e;
+            --text-main: #eaeaea;
+            --text-muted: #8892a0;
+            --accent: #d4a373;
+            --border-light: rgba(255,255,255,0.08);
+            --shadow-soft: 0 10px 25px -5px rgba(0,0,0,0.3), 0 5px 10px -5px rgba(0,0,0,0.2);
+            --gap-pattern: repeating-linear-gradient(45deg, #1f2941, #1f2941 8px, #16213e 8px, #16213e 16px);
+        }
+
+        [data-theme="dark"] .progress-bar-container { background: #2a2a4a; }
+        [data-theme="dark"] .task-input, [data-theme="dark"] .form-input { border-bottom-color: #3a3a5a; }
+        [data-theme="dark"] .task-input::placeholder, [data-theme="dark"] .form-input::placeholder { color: #5a5a7a; }
+        [data-theme="dark"] .checkbox { background: #2a2a4a; border-color: #4a4a6a; }
+        [data-theme="dark"] .category-option { border-color: #3a3a5a; }
+        [data-theme="dark"] .category-option.selected { background: #2a2a4a; }
+        [data-theme="dark"] .tracker-stat-item { background: #1f2941; }
+        [data-theme="dark"] .hour-line::after { background: #2a2a4a; }
+        [data-theme="dark"] .hour-bar { border-left-color: #2a2a4a; }
+        [data-theme="dark"] .gap-block { border-color: #3a3a5a; }
+        [data-theme="dark"] .streak-btn { background: #1f2941; border-color: #3a3a5a; }
+        [data-theme="dark"] .history-day:hover { background: #1f2941; }
+        [data-theme="dark"] .form-group input[type="time"] { background: #1f2941; border-color: #3a3a5a; color: var(--text-main); }
+        [data-theme="dark"] .settings-section { border-color: #3a3a5a; }
+        [data-theme="dark"] .category-edit-item { background: #1f2941; border-color: #3a3a5a; }
+        [data-theme="dark"] .backup-btn { background: #1f2941; border-color: #3a3a5a; }
+        [data-theme="dark"] .toggle-slider { background: #3a3a5a; }
+        [data-theme="dark"] .add-btn { background: var(--accent); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html { transition: background-color 0.3s, color 0.3s; }
+
+        body {
+            font-family: 'Libre Baskerville', serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 700px; margin: 0 auto; }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .settings-icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .settings-icon:hover { color: var(--accent); }
+
+        /* SETTINGS VIEW */
+        .settings-section {
+            border-bottom: 1px solid var(--border-light);
+            padding: 20px 0;
+        }
+
+        .settings-section:last-child { border-bottom: none; }
+
+        .settings-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .setting-label { font-size: 14px; }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+        /* Category Editor */
+        .category-list { margin-top: 10px; }
+        
+        .category-edit-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .category-edit-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            cursor: pointer;
+            border: 2px solid var(--border-light);
+        }
+
+        .category-edit-name { flex: 1; font-size: 14px; }
+
+        .backup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .backup-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .backup-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .new-category-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .color-picker-small {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* NAVIGATION TABS */
+        .main-tabs, .tabs, .month-nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .main-tabs {
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        button { font-family: inherit; cursor: pointer; }
+
+        .main-tab, .tab {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            flex: initial;
+        }
+
+        .main-tab.active, .tab.active {
+            color: var(--text-main);
+            border-bottom-color: var(--accent);
+            font-weight: 700;
+        }
+        
+        .main-tab:hover, .tab:hover { color: var(--text-main); }
+
+        /* CARDS */
+        .stats-today, .progress-card, .add-task-card, .task-item, 
+        .calendar, .day-view, .history-view, .streak-item, .history-day,
+        .timeline-card, .tracker-stats-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* STATYSTYKI DNIA */
+        .stats-today { text-align: center; padding: 30px 20px; }
+        .stats-label { text-transform: uppercase; font-size: 11px; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 5px; }
+        .stats-number { font-size: 42px; font-weight: 400; color: var(--text-main); margin: 10px 0; }
+        .stats-subtitle { font-family: serif; font-style: italic; color: var(--text-muted); font-size: 13px;}
+        
+        .history-btn {
+            background: transparent;
+            border: 1px solid var(--border-light);
+            padding: 10px 24px;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            width: auto;
+        }
+        .history-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* PASEK POSTĘPU */
+        .progress-card { border: none; background: transparent; box-shadow: none; padding: 0; margin-bottom: 20px; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+        .progress-bar-container { height: 4px; background: #e0e0e0; border: none; border-radius: 2px; margin-top: 8px; overflow: hidden;}
+        .progress-bar { height: 100%; background: var(--accent); transition: width 0.5s ease; }
+
+        /* FORMULARZE I INPUTY */
+        .add-task-card { padding: 0; background: transparent; border: none; box-shadow: none; margin-bottom: 20px;}
+        .add-task-form { position: relative; display: flex; align-items: center; }
+        
+        .task-input, .form-input {
+            width: 100%;
+            padding: 15px 50px 15px 10px;
+            border: none;
+            border-bottom: 1px solid #ccc;
+            background: transparent;
+            font-size: 16px;
+            font-family: inherit;
+            color: var(--text-main);
+            border-radius: 0;
+            transition: border-color 0.3s;
+        }
+        .task-input:focus, .form-input:focus { outline: none; border-bottom-color: var(--accent); }
+        .task-input::placeholder, .form-input::placeholder { color: #ccc; font-style: italic; }
+        
+        .add-btn {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            position: absolute;
+            right: 0;
+            bottom: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .add-btn:hover { transform: scale(1.1); background: var(--accent); }
+
+        /* LISTA ZADAŃ */
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task-item {
+            padding: 16px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+        @media (hover: hover) {
+            .task-item:hover { border-color: var(--border-light); transform: translateY(-2px); }
+        }
+        .task-item.completed { opacity: 0.6; background: #fafafa; box-shadow: none; }
+        
+        .task-content { display: flex; align-items: center; width: 100%; }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            margin-right: 15px;
+            background: white;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .checkbox.checked::after {
+            content: '✓'; color: white; font-size: 12px; font-weight: bold;
+        }
+
+        .task-text { flex: 1; font-size: 16px; line-height: 1.4; color: var(--text-main); }
+        .task-text.completed { text-decoration: line-through; color: var(--text-muted); font-style: italic; }
+        
+        .delete-btn {
+            color: #ddd;
+            background: none; border: none; font-size: 20px; cursor: pointer; padding: 5px;
+            transition: color 0.2s;
+        }
+        .delete-btn:hover { color: #e74c3c; }
+
+        /* KALENDARZ */
+        .month-nav button {
+            background: none; border: none; font-size: 18px; color: var(--text-main);
+            padding: 0 10px;
+        }
+        .month-nav button:hover { color: var(--accent); }
+        .month-nav span { font-style: italic; font-size: 18px; font-weight: 400; min-width: 150px; text-align: center; }
+        
+        .calendar { padding: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-header {
+            text-align: center;
+            background: transparent; color: var(--text-muted); border: none;
+            font-size: 10px; letter-spacing: 1px; padding-bottom: 10px;
+            font-weight: bold;
+        }
+        .calendar-day {
+            border: none; background: transparent; min-height: 50px;
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative;
+        }
+        .calendar-day:hover { background: #f0f0f0; }
+        .calendar-day.today { background: var(--text-main); color: white; border-radius: 50%; width: 40px; height: 40px; margin: 0 auto; min-height: 40px;}
+        .calendar-day.today .day-tasks-count { display: none; }
+        .calendar-day.other-month { opacity: 0.3; }
+        
+        .day-number { font-size: 14px; margin-bottom: 0; }
+        .day-tasks-count { font-size: 9px; margin-top: 2px; color: var(--accent); font-weight: bold;}
+
+        /* WIDOK DNIA I HISTORIA */
+        .day-view-header, .history-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .day-view-title, .history-title { font-size: 18px; font-weight: 400; font-style: italic; }
+
+        .back-btn, .close-history-btn {
+            background: none; border: none; color: var(--text-muted); 
+            text-transform: uppercase; font-size: 10px; letter-spacing: 1px; font-weight: bold;
+            cursor: pointer;
+        }
+        .back-btn:hover, .close-history-btn:hover { color: var(--text-main); }
+
+        /* PASSY (STREAKS) */
+        .streak-item { padding: 20px; position: relative; overflow: hidden; }
+        .streak-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .streak-name { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .streak-days { font-size: 36px; font-weight: 400; color: var(--accent); margin: 15px 0 5px 0; text-align: center; }
+        .streak-days-label { text-align: center; color: var(--text-muted); font-size: 12px; margin-bottom: 15px; }
+        
+        .streak-actions { display: flex; gap: 10px; }
+        .streak-btn {
+            flex: 1;
+            background: white; border: 1px solid #eee; color: var(--text-main);
+            border-radius: 6px; font-weight: 400; padding: 10px; cursor: pointer;
+            font-size: 13px;
+        }
+        .streak-btn.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
+        .streak-btn:hover { opacity: 0.9; }
+        .streak-date { text-align: center; margin-top: 15px; font-size: 11px; color: #ccc; }
+
+        /* HISTORIA */
+        .history-list { display: flex; flex-direction: column; gap: 10px; }
+        .history-day {
+            border-left: 3px solid transparent; flex-direction: row; align-items: center; justify-content: space-between;
+            padding: 15px; margin-bottom: 0; cursor: pointer;
+        }
+        .history-day.today { border-left-color: var(--accent); background: white; }
+        .history-day:hover { background: #fafafa; }
+        
+        .history-date { font-style: italic; font-weight: 400; font-size: 15px; color: var(--text-main); }
+        .history-stat-value { font-weight: 700; color: var(--accent); font-size: 14px; }
+        .history-stat-label { font-size: 10px; color: #ccc; text-transform: uppercase; }
+
+        /* EMPTY STATE */
+        .empty-state { padding: 40px; opacity: 0.5; font-style: italic; font-size: 14px; text-align: center; color: var(--text-muted); }
+        .empty-emoji { font-size: 32px; filter: grayscale(1); margin-bottom: 10px; display: block; }
+
+        /* ========== DAY TRACKER STYLES ========== */
+        
+        .tracker-date-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tracker-date-controls button {
+            background: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .tracker-date-controls button:hover { border-color: var(--accent); color: var(--accent); }
+
+        .tracker-current-date {
+            font-size: 18px;
+            font-style: italic;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .timeline-card { padding: 20px; position: relative; }
+
+        .timeline { position: relative; }
+
+        .hour-line {
+            display: flex;
+            align-items: flex-start;
+            height: 60px;
+            position: relative;
+        }
+
+        .hour-line::after {
+            content: '';
+            position: absolute;
+            left: 50px;
+            right: 0;
+            top: 0;
+            height: 1px;
+            background: #eee;
+            z-index: 0;
+        }
+
+        .hour-label {
+            width: 50px;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-right: 10px;
+            text-align: right;
+            transform: translateY(-50%);
+            font-variant-numeric: oldstyle-nums;
+        }
+
+        .hour-bar {
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+            border-left: 1px solid #f0f0f0;
+        }
+
+        /* Activity Blocks */
+        .activity-block {
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 12px;
+            color: white;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+
+        .activity-block:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+
+        /* Gap Blocks */
+        .gap-block {
+            position: absolute;
+            left: 5px;
+            right: 5px;
+            background: var(--gap-pattern);
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            z-index: 5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .gap-block:hover { opacity: 1; border-color: var(--accent); background: rgba(212, 163, 115, 0.1); }
+
+        .gap-label { font-size: 9px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Current Time */
+        .current-time-indicator {
+            position: absolute;
+            left: 50px;
+            right: 0;
+            height: 2px;
+            background: #c0392b;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .current-time-indicator::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: -4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #c0392b;
+        }
+
+        /* Tracker Stats */
+        .tracker-stats-card { padding: 15px; }
+        
+        .tracker-stats-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .tracker-stats-toggle {
+            display: flex;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .tracker-toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 18px;
+            font-family: inherit;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .tracker-toggle-btn.active {
+            background: var(--text-main);
+            color: white;
+        }
+
+        .tracker-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .tracker-stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+
+        .tracker-stat-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: 0 auto 5px;
+        }
+
+        .tracker-stat-value { font-size: 16px; font-weight: 400; margin-bottom: 2px; }
+        .tracker-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+        /* FAB for Tracker */
+        .tracker-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--text-main);
+            color: white;
+            border: none;
+            font-size: 28px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .tracker-fab:hover { background: var(--accent); transform: scale(1.05); }
+        .tracker-fab.visible { display: flex; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 249, 246, 0.95);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-style: italic;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .form-group input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        .form-group input[type="time"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .category-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-option:hover { border-color: #ccc; }
+        .category-option.selected { border-color: var(--text-main); background: #f8f8f8; }
+
+        .category-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--text-main); color: white; border-color: var(--text-main); }
+        .btn-secondary { background: transparent; color: var(--text-main); }
+        .btn-danger { background: transparent; color: #e74c3c; border-color: #e74c3c; }
+
+        .btn:hover { opacity: 0.9; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+    
+    <button class="tracker-fab" id="trackerFab" onclick="openTrackerModal()">+</button>
+
+    <!-- Tracker Modal -->
+    <div class="modal" id="trackerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="trackerModalTitle">Nowy Wpis</span>
+                <button class="close-btn" onclick="closeTrackerModal()">&times;</button>
+            </div>
+            
+            <form id="trackerForm" onsubmit="saveTrackerActivity(event)">
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex:1">
+                        <label>Początek</label>
+                        <input type="time" id="trackerStartTime" required>
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label>Koniec</label>
+                        <input type="time" id="trackerEndTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Opis (opcjonalnie)</label>
+                    <input type="text" class="form-input" id="trackerDescription" placeholder="Np. Spacer, Drzemka..." style="padding-right: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label>Kategorie</label>
+                    <div class="categories-grid" id="trackerCategoriesGrid"></div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeTrackerModal()">Anuluj</button>
+                    <button type="button" class="btn btn-danger" id="trackerDeleteBtn" style="display: none;" onclick="deleteTrackerActivity()">Usuń</button>
+                    <button type="submit" class="btn btn-primary">Zapisz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // === UTILS ===
+        function getTodayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // === STATE ===
+        let state = {
+            activeMainTab: 'lista',
+            dailyTasks: [],
+            oneTimeTasks: [],
+            urgentTasks: [],
+            lastResetDate: getTodayString(),
+            dailyStats: {},
+            activeTaskTab: 'daily',
+            showHistory: false,
+            editingDay: null,
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            selectedDate: null,
+            calendarTasks: {},
+            streaks: [],
+            // Tracker state
+            trackerDate: new Date(),
+            trackerActivities: {},
+            trackerCategories: [
+                { id: 'praca', name: 'Praca', color: '#546de5' },
+                { id: 'zuzia', name: 'Zuzia', color: '#e15f41' },
+                { id: 'ignas', name: 'Ignaś', color: '#f7b731' },
+                { id: 'zakupy', name: 'Zakupy', color: '#a29bfe' },
+                { id: 'moj-czas', name: 'Mój czas', color: '#20bf6b' },
+                { id: 'dom', name: 'Dom', color: '#95a5a6' }
+            ],
+            trackerSelectedCategories: [],
+            trackerEditingId: null,
+            trackerStatsMode: 'day', // 'day' or 'week'
+            darkMode: false,
+            showSettings: false
+        };
+
+        const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+        const dayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+
+        // === STORAGE ===
+        function loadState() {
+            const saved = localStorage.getItem('unifiedAppStateV2');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+                if (!state.streaks) state.streaks = [];
+                if (!state.urgentTasks) state.urgentTasks = [];
+                if (!state.trackerActivities) state.trackerActivities = {};
+                if (!state.trackerCategories) state.trackerCategories = [
+                    { id: 'praca', name: 'Praca', color: '#546de5' },
+                    { id: 'zuzia', name: 'Zuzia', color: '#e15f41' },
+                    { id: 'ignas', name: 'Ignaś', color: '#f7b731' },
+                    { id: 'zakupy', name: 'Zakupy', color: '#a29bfe' },
+                    { id: 'moj-czas', name: 'Mój czas', color: '#20bf6b' },
+                    { id: 'dom', name: 'Dom', color: '#95a5a6' }
+                ];
+                state.trackerDate = new Date();
+                checkDayReset();
+            } else {
+                // Migrate from old storage
+                const oldSaved = localStorage.getItem('unifiedAppState');
+                if (oldSaved) {
+                    const parsed = JSON.parse(oldSaved);
+                    state = { ...state, ...parsed };
+                }
+                const trackerData = localStorage.getItem('dayTrackerActivities');
+                if (trackerData) {
+                    state.trackerActivities = JSON.parse(trackerData);
+                }
+                const trackerCats = localStorage.getItem('dayTrackerCategories');
+                if (trackerCats) {
+                    state.trackerCategories = JSON.parse(trackerCats);
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('unifiedAppStateV2', JSON.stringify({
+                ...state,
+                trackerDate: undefined // Don't persist date
+            }));
+        }
+
+        // === TASK LOGIC ===
+        function checkDayReset() {
+            const today = getTodayString();
+            if (today !== state.lastResetDate) {
+                const yesterday = state.lastResetDate;
+                const completedYesterday = state.dailyTasks.filter(t => t.completed).length;
+                const totalYesterday = state.dailyTasks.length;
+                
+                if (!state.dailyStats) state.dailyStats = {};
+                if (totalYesterday > 0) {
+                    state.dailyStats[yesterday] = {
+                        completed: completedYesterday,
+                        total: totalYesterday,
+                        tasks: JSON.parse(JSON.stringify(state.dailyTasks))
+                    };
+                }
+                state.dailyTasks = state.dailyTasks.map(task => ({ ...task, completed: false }));
+                state.lastResetDate = today;
+                saveState();
+            }
+        }
+
+        function getCurrentDayStats() {
+            const completed = state.dailyTasks.filter(t => t.completed).length;
+            const total = state.dailyTasks.length;
+            return { completed, total };
+        }
+
+        function toggleTask(type, id) {
+            const tasks = type === 'daily' ? state.dailyTasks : (type === 'urgent' ? state.urgentTasks : state.oneTimeTasks);
+            const task = tasks.find(t => t.id === id);
+            task.completed = !task.completed;
+            saveState();
+            render();
+        }
+
+        function togglePastDayTask(date, taskId) {
+            if (!state.dailyStats[date] || !state.dailyStats[date].tasks) return;
+            const task = state.dailyStats[date].tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.completed = !task.completed;
+            if (date === getTodayString()) {
+                const currentTask = state.dailyTasks.find(t => t.id === taskId);
+                if (currentTask) currentTask.completed = task.completed;
+            }
+            state.dailyStats[date].completed = state.dailyStats[date].tasks.filter(t => t.completed).length;
+            saveState();
+            render();
+        }
+
+        function addTaskToList(type, text) {
+            if (!text.trim()) return;
+            const newTask = { id: Date.now(), text: text, completed: false };
+            if (type === 'daily') state.dailyTasks.push(newTask);
+            else if (type === 'urgent') state.urgentTasks.push(newTask);
+            else state.oneTimeTasks.push(newTask);
+            saveState();
+            render();
+        }
+
+        function deleteTaskFromList(type, id) {
+            if (confirm('Usunąć zadanie?')) {
+                if (type === 'daily') state.dailyTasks = state.dailyTasks.filter(t => t.id !== id);
+                else if (type === 'urgent') state.urgentTasks = state.urgentTasks.filter(t => t.id !== id);
+                else state.oneTimeTasks = state.oneTimeTasks.filter(t => t.id !== id);
+                saveState();
+                render();
+            }
+        }
+
+        function deleteHistoryDayInternal(date) {
+            if (confirm(`Usunąć historię z dnia ${formatDateDisplay(date)}?`)) {
+                delete state.dailyStats[date];
+                saveState();
+                render();
+            }
+        }
+
+        // === CALENDAR LOGIC ===
+        function getDaysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
+        function getFirstDayOfMonth(year, month) {
+            const day = new Date(year, month, 1).getDay();
+            return day === 0 ? 6 : day - 1;
+        }
+        function formatDate(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        function formatDateDisplay(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pl-PL', { year: 'numeric', month: 'long', day: 'numeric' });
+            } catch (e) { return dateString; }
+        }
+        function getCalendarTasksForDate(dateString) { return state.calendarTasks[dateString] || []; }
+        function addCalendarTask(dateString, taskText) {
+            if (!state.calendarTasks[dateString]) state.calendarTasks[dateString] = [];
+            state.calendarTasks[dateString].push(taskText);
+            saveState();
+        }
+        function deleteCalendarTask(dateString, taskIndex) {
+            if (state.calendarTasks[dateString]) {
+                state.calendarTasks[dateString].splice(taskIndex, 1);
+                if (state.calendarTasks[dateString].length === 0) delete state.calendarTasks[dateString];
+                saveState();
+            }
+        }
+
+        // === STREAK LOGIC ===
+        function addStreak(name) {
+            if (!name.trim()) return;
+            state.streaks.push({
+                id: Date.now(), name: name.trim(), days: 0,
+                startDate: getTodayString(), lastUpdated: getTodayString()
+            });
+            saveState();
+            render();
+        }
+        function incrementStreak(id) {
+            const streak = state.streaks.find(s => s.id === id);
+            if (streak) { streak.days++; streak.lastUpdated = getTodayString(); saveState(); render(); }
+        }
+        function resetStreak(id) {
+            if (confirm('Zresetować serię?')) {
+                const streak = state.streaks.find(s => s.id === id);
+                if (streak) { streak.days = 0; streak.startDate = getTodayString(); saveState(); render(); }
+            }
+        }
+        function deleteStreak(id) {
+            if (confirm('Usunąć tę passę?')) {
+                state.streaks = state.streaks.filter(s => s.id !== id);
+                saveState();
+                render();
+            }
+        }
+
+        // === TRACKER LOGIC ===
+        function getTrackerDateKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatTrackerDate(date) {
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            let str = date.toLocaleDateString('pl-PL', options);
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function getTrackerCategoryById(id) {
+            return state.trackerCategories.find(c => c.id === id) || { name: 'Usunięta', color: '#ccc' };
+        }
+
+        function getTrackerDisplayText(activity) {
+            if (activity.description && activity.description.trim() !== "") return activity.description;
+            if (activity.categories && activity.categories.length > 0) {
+                return activity.categories.map(id => getTrackerCategoryById(id).name).join(' + ');
+            }
+            return "(Brak opisu)";
+        }
+
+        function getMinutesFromTime(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function getTimeFromMinutes(totalMinutes) {
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        }
+
+        function getActivityStyle(activity) {
+            const cats = activity.categories || [];
+            if (cats.length === 0) return { background: '#bdc3c7' };
+            if (cats.length === 1) return { background: getTrackerCategoryById(cats[0]).color };
+            const colors = cats.map(id => getTrackerCategoryById(id).color);
+            const stripes = colors.map((c, i) => `${c} ${(i/colors.length)*100}%, ${c} ${((i+1)/colors.length)*100}%`).join(', ');
+            return { background: `linear-gradient(135deg, ${stripes})` };
+        }
+
+        // === TRACKER MODAL ===
+        function openTrackerModal() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const m = Math.floor(now.getMinutes() / 15) * 15;
+            const minutes = m.toString().padStart(2, '0');
+            let endM = m + 30;
+            let endH = parseInt(hours);
+            if (endM >= 60) { endM -= 60; endH = (endH + 1) % 24; }
+
+            document.getElementById('trackerStartTime').value = `${hours}:${minutes}`;
+            document.getElementById('trackerEndTime').value = `${endH.toString().padStart(2,'0')}:${endM.toString().padStart(2,'0')}`;
+            document.getElementById('trackerDescription').value = '';
+            state.trackerSelectedCategories = [];
+            state.trackerEditingId = null;
+            document.getElementById('trackerModalTitle').textContent = 'Nowy Wpis';
+            document.getElementById('trackerDeleteBtn').style.display = 'none';
+            renderTrackerCategories();
+            document.getElementById('trackerModal').classList.add('active');
+        }
+
+        function openTrackerModalForGap(start, end) {
+            document.getElementById('trackerStartTime').value = start;
+            document.getElementById('trackerEndTime').value = end;
+            document.getElementById('trackerDescription').value = '';
+            state.trackerSelectedCategories = [];
+            state.trackerEditingId = null;
+            document.getElementById('trackerModalTitle').textContent = 'Nowy Wpis';
+            document.getElementById('trackerDeleteBtn').style.display = 'none';
+            renderTrackerCategories();
+            document.getElementById('trackerModal').classList.add('active');
+        }
+
+        function editTrackerActivity(activity) {
+            state.trackerEditingId = activity.id;
+            document.getElementById('trackerStartTime').value = activity.startTime;
+            document.getElementById('trackerEndTime').value = activity.endTime;
+            document.getElementById('trackerDescription').value = activity.description || '';
+            state.trackerSelectedCategories = [...(activity.categories || [])];
+            document.getElementById('trackerModalTitle').textContent = 'Edytuj Wpis';
+            document.getElementById('trackerDeleteBtn').style.display = 'block';
+            renderTrackerCategories();
+            document.getElementById('trackerModal').classList.add('active');
+        }
+
+        function closeTrackerModal() {
+            document.getElementById('trackerModal').classList.remove('active');
+        }
+
+        function renderTrackerCategories() {
+            const grid = document.getElementById('trackerCategoriesGrid');
+            grid.innerHTML = state.trackerCategories.map(cat => `
+                <div class="category-option ${state.trackerSelectedCategories.includes(cat.id) ? 'selected' : ''}" onclick="toggleTrackerCategory('${cat.id}')">
+                    <div class="category-color" style="background: ${cat.color}"></div>
+                    <div style="font-size:12px;">${cat.name}</div>
+                </div>
+            `).join('');
+        }
+
+        window.toggleTrackerCategory = function(id) {
+            const index = state.trackerSelectedCategories.indexOf(id);
+            if (index > -1) state.trackerSelectedCategories.splice(index, 1);
+            else state.trackerSelectedCategories.push(id);
+            renderTrackerCategories();
+        };
+
+        window.saveTrackerActivity = function(e) {
+            e.preventDefault();
+            const desc = document.getElementById('trackerDescription').value;
+            if (state.trackerSelectedCategories.length === 0 && desc.trim() === "") {
+                alert('Wybierz kategorię lub wpisz opis.');
+                return;
+            }
+
+            const dateKey = getTrackerDateKey(state.trackerDate);
+            if (!state.trackerActivities[dateKey]) state.trackerActivities[dateKey] = [];
+
+            const activityData = {
+                id: state.trackerEditingId || Date.now(),
+                startTime: document.getElementById('trackerStartTime').value,
+                endTime: document.getElementById('trackerEndTime').value,
+                categories: [...state.trackerSelectedCategories],
+                description: desc
+            };
+
+            if (state.trackerEditingId) {
+                const index = state.trackerActivities[dateKey].findIndex(a => a.id === state.trackerEditingId);
+                state.trackerActivities[dateKey][index] = activityData;
+            } else {
+                state.trackerActivities[dateKey].push(activityData);
+            }
+            state.trackerActivities[dateKey].sort((a, b) => a.startTime.localeCompare(b.startTime));
+            saveState();
+            closeTrackerModal();
+            render();
+        };
+
+        window.deleteTrackerActivity = function() {
+            if (confirm('Usunąć ten wpis?')) {
+                const dateKey = getTrackerDateKey(state.trackerDate);
+                state.trackerActivities[dateKey] = state.trackerActivities[dateKey].filter(a => a.id !== state.trackerEditingId);
+                if (state.trackerActivities[dateKey].length === 0) delete state.trackerActivities[dateKey];
+                saveState();
+                closeTrackerModal();
+                render();
+            }
+        };
+
+        window.openTrackerModal = openTrackerModal;
+        window.closeTrackerModal = closeTrackerModal;
+
+        // === RENDERING ===
+        function renderTasksList() {
+            const activeTab = state.activeTaskTab;
+            const currentTasks = activeTab === 'daily' ? state.dailyTasks : (activeTab === 'urgent' ? state.urgentTasks : state.oneTimeTasks);
+            const { completed, total } = getCurrentDayStats();
+            const listCompleted = currentTasks.filter(t => t.completed).length;
+            const listTotal = currentTasks.length;
+            const progressPercent = listTotal > 0 ? (listCompleted / listTotal) * 100 : 0;
+
+            // Count urgent incomplete
+            const urgentIncomplete = state.urgentTasks.filter(t => !t.completed).length;
+
+            if (state.editingDay) return renderDayEdit(state.editingDay);
+            if (state.showHistory) return renderHistory();
+
+            return `
+                <div class="stats-today">
+                    <div class="stats-label">Dzisiaj</div>
+                    <div class="stats-number">${completed} / ${total}</div>
+                    <div class="stats-subtitle">zadań codziennych</div>
+                    <button class="history-btn" onclick="openHistory()">Historia</button>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab ${activeTab === 'daily' ? 'active' : ''}" onclick="switchTaskTab('daily')">Codzienne</button>
+                    <button class="tab ${activeTab === 'urgent' ? 'active' : ''}" onclick="switchTaskTab('urgent')" style="${urgentIncomplete > 0 ? 'color: #e74c3c;' : ''}">
+                        Pilne${urgentIncomplete > 0 ? ` (${urgentIncomplete})` : ''}
+                    </button>
+                    <button class="tab ${activeTab === 'onetime' ? 'active' : ''}" onclick="switchTaskTab('onetime')">Jednorazowe</button>
+                </div>
+
+                <div class="progress-card">
+                    <div class="progress-info">
+                        <span>Twój postęp</span>
+                        <span>${Math.round(progressPercent)}%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="taskInput" placeholder="${activeTab === 'urgent' ? 'Pilne zadanie...' : 'Wpisz nowe zadanie...'}" onkeypress="if(event.key==='Enter') addTaskHandler()" />
+                        <button class="add-btn" onclick="addTaskHandler()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${currentTasks.map(task => `
+                        <div class="task-item ${task.completed ? 'completed' : ''}" ${activeTab === 'urgent' && !task.completed ? 'style="border-left: 3px solid #e74c3c;"' : ''}>
+                            <div class="task-content">
+                                <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${activeTab}', ${task.id})"></div>
+                                <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                <button class="delete-btn" onclick="deleteTaskFromList('${activeTab}', ${task.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${currentTasks.length === 0 ? `<div class="empty-state"><div class="empty-emoji">${activeTab === 'urgent' ? '🎯' : '✒️'}</div><div>${activeTab === 'urgent' ? 'Brak pilnych zadań. Super!' : 'Pusta strona. Dodaj coś.'}</div></div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderHistory() {
+            const sortedDates = Object.keys(state.dailyStats || {}).sort((a, b) => new Date(b) - new Date(a));
+            const today = getTodayString();
+
+            return `
+                <div class="history-view">
+                    <div class="history-header">
+                        <div class="history-title">Archiwum</div>
+                        <button class="close-history-btn" onclick="closeHistory()">Powrót</button>
+                    </div>
+                    <div class="history-list">
+                        ${sortedDates.map(date => {
+                            const stats = state.dailyStats[date];
+                            return `
+                                <div class="history-day ${date === today ? 'today' : ''}" onclick="openDayEdit('${date}')">
+                                    <div style="flex:1;">
+                                        <div class="history-date">${formatDateDisplay(date)}</div>
+                                        <div class="history-stat-label">Wynik</div>
+                                    </div>
+                                    <div style="margin-right: 15px;">
+                                        <span class="history-stat-value">${stats.completed}/${stats.total}</span>
+                                    </div>
+                                    <button class="delete-btn" onclick="event.stopPropagation(); deleteHistoryDay('${date}')">&times;</button>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${sortedDates.length === 0 ? '<div class="empty-state">Brak wpisów w historii</div>' : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDayEdit(date) {
+            const stats = state.dailyStats[date];
+            if (!stats || !stats.tasks) return '';
+
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        <div class="day-view-title">${formatDateDisplay(date)}</div>
+                        <button class="back-btn" onclick="closeDayEdit()">Wróć</button>
+                    </div>
+                    <div class="stats-today" style="padding: 10px; margin-bottom: 20px; box-shadow:none; border:none; background:transparent;">
+                        <div class="stats-label">Wynik dnia</div>
+                        <div class="stats-number" style="font-size:32px;">${stats.completed} / ${stats.total}</div>
+                    </div>
+                    <div class="task-list">
+                        ${stats.tasks.map(task => `
+                            <div class="task-item ${task.completed ? 'completed' : ''}">
+                                <div class="task-content">
+                                    <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="togglePastDayTask('${date}', ${task.id})"></div>
+                                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCalendar() {
+            if (state.selectedDate) return renderCalendarDayView();
+
+            const daysInMonth = getDaysInMonth(state.currentYear, state.currentMonth);
+            const firstDay = getFirstDayOfMonth(state.currentYear, state.currentMonth);
+            const todayString = getTodayString();
+
+            let calendarHTML = '<div class="calendar-grid">';
+            dayNames.forEach(day => calendarHTML += `<div class="calendar-header">${day}</div>`);
+
+            for (let i = 0; i < firstDay; i++) {
+                calendarHTML += `<div class="calendar-day other-month"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateString = formatDate(state.currentYear, state.currentMonth, day);
+                const calendarTasks = getCalendarTasksForDate(dateString);
+                const isToday = dateString === todayString;
+                
+                // Get daily tasks count
+                let dailyCompleted = 0, dailyTotal = 0;
+                if (isToday) {
+                    dailyCompleted = state.dailyTasks.filter(t => t.completed).length;
+                    dailyTotal = state.dailyTasks.length;
+                } else if (state.dailyStats[dateString]) {
+                    dailyCompleted = state.dailyStats[dateString].completed || 0;
+                    dailyTotal = state.dailyStats[dateString].total || 0;
+                }
+
+                const hasCalendarTasks = calendarTasks.length > 0;
+                const hasDailyTasks = dailyTotal > 0;
+
+                calendarHTML += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}" onclick="selectCalendarDate('${dateString}')">
+                        <div class="day-number">${day}</div>
+                        ${hasDailyTasks ? `<div class="day-tasks-count">${dailyCompleted}/${dailyTotal}</div>` : ''}
+                        ${hasCalendarTasks && !isToday ? `<div class="day-tasks-count" style="color: #546de5;">●</div>` : ''}
+                    </div>
+                `;
+            }
+            calendarHTML += '</div>';
+
+            return `
+                <div class="month-nav">
+                    <button onclick="prevMonth()">←</button>
+                    <span>${monthNames[state.currentMonth]} ${state.currentYear}</span>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <div class="calendar">${calendarHTML}</div>
+            `;
+        }
+
+        function renderCalendarDayView() {
+            const calendarTasks = getCalendarTasksForDate(state.selectedDate);
+            const dailyStats = state.dailyStats[state.selectedDate];
+            const isToday = state.selectedDate === getTodayString();
+            
+            // For today, use current dailyTasks; for past days, use history
+            let dailyTasksList = [];
+            if (isToday) {
+                dailyTasksList = state.dailyTasks;
+            } else if (dailyStats && dailyStats.tasks) {
+                dailyTasksList = dailyStats.tasks;
+            }
+
+            const completedCount = dailyTasksList.filter(t => t.completed).length;
+            const totalCount = dailyTasksList.length;
+
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        <div class="day-view-title">${formatDateDisplay(state.selectedDate)}</div>
+                        <button class="back-btn" onclick="backToCalendar()">Kalendarz</button>
+                    </div>
+
+                    ${dailyTasksList.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <div class="stats-label" style="margin-bottom: 10px;">Zadania codzienne</div>
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                <span style="font-size: 24px; color: var(--accent);">${completedCount}/${totalCount}</span>
+                            </div>
+                            <div class="task-list">
+                                ${dailyTasksList.map(task => `
+                                    <div class="task-item ${task.completed ? 'completed' : ''}">
+                                        <div class="task-content">
+                                            <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleCalendarDayTask('${state.selectedDate}', ${task.id}, ${isToday})"></div>
+                                            <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div style="margin-top: 20px;">
+                        <div class="stats-label" style="margin-bottom: 10px;">Plany na ten dzień</div>
+                        <div class="add-task-form" style="margin-bottom: 15px;">
+                            <input type="text" class="task-input" id="calendarTaskInput" placeholder="Zaplanuj coś..." onkeypress="if(event.key==='Enter') addCalendarTaskHandler()" />
+                            <button class="add-btn" onclick="addCalendarTaskHandler()">+</button>
+                        </div>
+                        <div class="task-list">
+                            ${calendarTasks.length > 0 ? calendarTasks.map((task, index) => `
+                                <div class="task-item">
+                                    <div class="task-content">
+                                        <div class="task-text">${task}</div>
+                                        <button class="delete-btn" onclick="deleteCalendarTaskHandler(${index})">&times;</button>
+                                    </div>
+                                </div>
+                            `).join('') : '<div class="empty-state" style="padding: 20px;">Brak planów</div>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStreaks() {
+            return `
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="streakInput" placeholder="Nazwij nową serię..." onkeypress="if(event.key==='Enter') addStreakHandler()" />
+                        <button class="add-btn" onclick="addStreakHandler()">+</button>
+                    </div>
+                </div>
+                <div class="task-list">
+                    ${state.streaks.map(streak => `
+                        <div class="streak-item">
+                            <div class="streak-header">
+                                <div class="streak-name">${streak.name}</div>
+                                <button class="delete-btn" onclick="deleteStreak(${streak.id})">&times;</button>
+                            </div>
+                            <div class="streak-days">${streak.days}</div>
+                            <div class="streak-days-label">DNI Z RZĘDU</div>
+                            <div class="streak-actions">
+                                <button class="streak-btn primary" onclick="incrementStreak(${streak.id})">+ ZALICZ</button>
+                                <button class="streak-btn" onclick="resetStreak(${streak.id})">RESET</button>
+                            </div>
+                            <div class="streak-date">Start: ${formatDateDisplay(streak.startDate)}</div>
+                        </div>
+                    `).join('')}
+                    ${state.streaks.length === 0 ? '<div class="empty-state"><div class="empty-emoji">🔥</div><div>Zbuduj nawyk. Dodaj passę.</div></div>' : ''}
+                </div>
+            `;
+        }
+
+        function renderTracker() {
+            const dateKey = getTrackerDateKey(state.trackerDate);
+            const dayActivities = state.trackerActivities[dateKey] || [];
+            const sortedActivities = [...dayActivities].sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            // Stats calculation based on mode
+            const stats = {};
+            let totalRecorded = 0;
+            let datesToProcess = [];
+
+            if (state.trackerStatsMode === 'day') {
+                datesToProcess = [dateKey];
+            } else {
+                // Last 7 days from current tracker date
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(state.trackerDate);
+                    d.setDate(d.getDate() - i);
+                    datesToProcess.push(getTrackerDateKey(d));
+                }
+            }
+
+            datesToProcess.forEach(dk => {
+                const acts = state.trackerActivities[dk] || [];
+                acts.forEach(act => {
+                    const min = getMinutesFromTime(act.endTime) - getMinutesFromTime(act.startTime);
+                    totalRecorded += min;
+                    const cats = act.categories || [];
+                    if (cats.length === 0) {
+                        if (!stats['inne']) stats['inne'] = { minutes: 0, name: 'Inne', color: '#bdc3c7' };
+                        stats['inne'].minutes += min;
+                    } else {
+                        cats.forEach(cId => {
+                            if (!stats[cId]) {
+                                const c = getTrackerCategoryById(cId);
+                                stats[cId] = { minutes: 0, name: c.name, color: c.color };
+                            }
+                            stats[cId].minutes += min;
+                        });
+                    }
+                });
+            });
+
+            // Calculate unrecorded time
+            const totalPossible = datesToProcess.length * 24 * 60;
+            const unrecorded = totalPossible - totalRecorded;
+
+            // Timeline HTML
+            let timelineHTML = '';
+            const now = new Date();
+            const todayKey = getTrackerDateKey(now);
+            
+            // Current time indicator
+            if (todayKey === dateKey) {
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                timelineHTML += `<div class="current-time-indicator" style="top: ${(currentMinutes / 60) * 60}px;"></div>`;
+            }
+
+            // Hour grid
+            for (let hour = 0; hour < 24; hour++) {
+                timelineHTML += `
+                    <div class="hour-line">
+                        <div class="hour-label">${hour.toString().padStart(2, '0')}:00</div>
+                        <div class="hour-bar" data-hour="${hour}"></div>
+                    </div>
+                `;
+            }
+
+            // Stats HTML
+            const hTot = Math.floor(totalRecorded / 60);
+            const mTot = totalRecorded % 60;
+            let statsHTML = `<div class="tracker-stat-item" style="background: rgba(212,163,115,0.2);"><div class="tracker-stat-value">${hTot}h ${mTot}m</div><div class="tracker-stat-label">Zapisane</div></div>`;
+            
+            Object.values(stats).sort((a, b) => b.minutes - a.minutes).forEach(data => {
+                const h = Math.floor(data.minutes / 60);
+                const m = data.minutes % 60;
+                statsHTML += `<div class="tracker-stat-item"><div class="tracker-stat-color" style="background:${data.color}"></div><div class="tracker-stat-value">${h}h ${m}m</div><div class="tracker-stat-label">${data.name}</div></div>`;
+            });
+
+            // Unrecorded time
+            if (unrecorded > 0) {
+                const hUn = Math.floor(unrecorded / 60);
+                const mUn = unrecorded % 60;
+                statsHTML += `<div class="tracker-stat-item" style="opacity: 0.5;"><div class="tracker-stat-value" style="font-size: 14px;">${hUn}h ${mUn}m</div><div class="tracker-stat-label">Puste</div></div>`;
+            }
+
+            return `
+                <div class="tracker-date-controls">
+                    <button onclick="trackerPrevDay()">←</button>
+                    <div class="tracker-current-date">${formatTrackerDate(state.trackerDate)}</div>
+                    <button onclick="trackerNextDay()">→</button>
+                </div>
+
+                <div class="timeline-card">
+                    <div class="timeline" id="trackerTimeline">${timelineHTML}</div>
+                </div>
+
+                <div class="tracker-stats-card">
+                    <div class="tracker-stats-header">
+                        <div class="tracker-stats-toggle">
+                            <button class="tracker-toggle-btn ${state.trackerStatsMode === 'day' ? 'active' : ''}" onclick="setTrackerStatsMode('day')">Dziś</button>
+                            <button class="tracker-toggle-btn ${state.trackerStatsMode === 'week' ? 'active' : ''}" onclick="setTrackerStatsMode('week')">7 dni</button>
+                        </div>
+                    </div>
+                    <div class="tracker-stats-grid">${statsHTML}</div>
+                </div>
+            `;
+        }
+
+        function renderTrackerBlocks() {
+            const dateKey = getTrackerDateKey(state.trackerDate);
+            const dayActivities = state.trackerActivities[dateKey] || [];
+            const sortedActivities = [...dayActivities].sort((a, b) => a.startTime.localeCompare(b.startTime));
+            const timeline = document.getElementById('trackerTimeline');
+            if (!timeline) return;
+
+            // Render activity blocks
+            sortedActivities.forEach(activity => {
+                const startM = getMinutesFromTime(activity.startTime);
+                const endM = getMinutesFromTime(activity.endTime);
+                const duration = endM - startM;
+                const [startHour, startMin] = activity.startTime.split(':').map(Number);
+
+                const hourBar = timeline.querySelector(`[data-hour="${startHour}"]`);
+                if (hourBar) {
+                    const block = document.createElement('div');
+                    block.className = 'activity-block';
+                    Object.assign(block.style, getActivityStyle(activity));
+                    block.style.top = `${(startMin / 60) * 60}px`;
+                    block.style.height = `${(duration / 60) * 60}px`;
+                    if (duration < 15) block.style.minHeight = '20px';
+                    block.textContent = getTrackerDisplayText(activity);
+                    block.onclick = (e) => { e.stopPropagation(); editTrackerActivity(activity); };
+                    hourBar.appendChild(block);
+                }
+            });
+
+            // Render gaps
+            let lastTime = 0;
+            sortedActivities.forEach(act => {
+                const startM = getMinutesFromTime(act.startTime);
+                const endM = getMinutesFromTime(act.endTime);
+                if (startM > lastTime) renderTrackerGap(timeline, lastTime, startM);
+                lastTime = Math.max(lastTime, endM);
+            });
+            if (lastTime < 24 * 60) renderTrackerGap(timeline, lastTime, 24 * 60);
+        }
+
+        function renderTrackerGap(container, startMinutes, endMinutes) {
+            if (endMinutes - startMinutes < 5) return;
+
+            const startHour = Math.floor(startMinutes / 60);
+            const startMinRemainder = startMinutes % 60;
+            const height = ((endMinutes - startMinutes) / 60) * 60;
+
+            const hourBar = container.querySelector(`[data-hour="${startHour}"]`);
+            if (hourBar) {
+                const gap = document.createElement('div');
+                gap.className = 'gap-block';
+                gap.style.top = `${(startMinRemainder / 60) * 60}px`;
+                gap.style.height = `${height}px`;
+                if (height > 30) gap.innerHTML = '<span class="gap-label">+ Wypełnij</span>';
+                gap.onclick = () => openTrackerModalForGap(getTimeFromMinutes(startMinutes), getTimeFromMinutes(endMinutes));
+                hourBar.appendChild(gap);
+            }
+        }
+
+        function renderSettings() {
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        <div class="day-view-title">Ustawienia</div>
+                        <button class="back-btn" onclick="closeSettings()">Zamknij</button>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Wygląd</div>
+                        <div class="setting-row">
+                            <span class="setting-label">Ciemny motyw</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${state.darkMode ? 'checked' : ''} onchange="toggleDarkMode()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Kategorie czasu</div>
+                        <div class="category-list">
+                            ${state.trackerCategories.map((cat, idx) => `
+                                <div class="category-edit-item">
+                                    <input type="color" class="category-edit-color" value="${cat.color}" 
+                                           onchange="updateCategoryColor(${idx}, this.value)" 
+                                           style="background: ${cat.color};">
+                                    <span class="category-edit-name">${cat.name}</span>
+                                    <button class="delete-btn" onclick="deleteTrackerCategory(${idx})">&times;</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="new-category-form">
+                            <input type="text" class="task-input" id="newCategoryName" placeholder="Nowa kategoria..." style="padding-right: 10px;">
+                            <input type="color" class="color-picker-small" id="newCategoryColor" value="#3498db">
+                            <button class="add-btn" style="position: relative; bottom: auto; right: auto;" onclick="addTrackerCategory()">+</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Kopia zapasowa</div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                            Eksportuj wszystkie dane do pliku JSON lub wczytaj wcześniejszą kopię.
+                        </p>
+                        <div class="backup-buttons">
+                            <button class="backup-btn" onclick="exportAllData()">⬇ Pobierz kopię</button>
+                            <button class="backup-btn" onclick="document.getElementById('importFile').click()">⬆ Wczytaj kopię</button>
+                            <input type="file" id="importFile" style="display: none" onchange="importAllData(this)" accept=".json">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title">Dane</div>
+                        <button class="backup-btn" style="width: 100%; color: #e74c3c; border-color: #e74c3c;" onclick="clearAllData()">
+                            Wyczyść wszystkie dane
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            let content = '';
+
+            if (state.showSettings) {
+                content = renderSettings();
+            } else if (state.activeMainTab === 'lista') content = renderTasksList();
+            else if (state.activeMainTab === 'kalendarz') content = renderCalendar();
+            else if (state.activeMainTab === 'passy') content = renderStreaks();
+            else if (state.activeMainTab === 'czas') content = renderTracker();
+
+            app.innerHTML = `
+                <div class="header">
+                    <button class="settings-icon" onclick="openSettings()" title="Ustawienia">⚙</button>
+                    <div class="main-tabs">
+                        <button class="main-tab ${state.activeMainTab === 'lista' ? 'active' : ''}" onclick="switchMainTab('lista')">Zadania</button>
+                        <button class="main-tab ${state.activeMainTab === 'kalendarz' ? 'active' : ''}" onclick="switchMainTab('kalendarz')">Kalendarz</button>
+                        <button class="main-tab ${state.activeMainTab === 'passy' ? 'active' : ''}" onclick="switchMainTab('passy')">Nawyki</button>
+                        <button class="main-tab ${state.activeMainTab === 'czas' ? 'active' : ''}" onclick="switchMainTab('czas')">Czas</button>
+                    </div>
+                </div>
+                ${content}
+            `;
+
+            // Render tracker blocks after DOM is ready
+            if (state.activeMainTab === 'czas') {
+                setTimeout(() => {
+                    renderTrackerBlocks();
+                    // Scroll to current time
+                    const now = new Date();
+                    const targetHour = Math.max(0, now.getHours() - 2);
+                    const el = document.querySelector(`[data-hour="${targetHour}"]`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 10);
+            }
+
+            // Show/hide FAB
+            const fab = document.getElementById('trackerFab');
+            fab.classList.toggle('visible', state.activeMainTab === 'czas' && !state.showSettings);
+        }
+
+        // === EVENT HANDLERS ===
+        window.switchMainTab = (tab) => { state.activeMainTab = tab; state.showHistory = false; state.editingDay = null; state.selectedDate = null; state.showSettings = false; render(); };
+        window.switchTaskTab = (tab) => { state.activeTaskTab = tab; render(); };
+        window.addTaskHandler = () => { const el = document.getElementById('taskInput'); addTaskToList(state.activeTaskTab, el.value); el.value = ''; };
+        window.openHistory = () => { state.showHistory = true; render(); };
+        window.closeHistory = () => { state.showHistory = false; render(); };
+        window.openDayEdit = (date) => { state.editingDay = date; state.showHistory = false; render(); };
+        window.closeDayEdit = () => { state.editingDay = null; state.showHistory = true; render(); };
+        window.selectCalendarDate = (date) => { state.selectedDate = date; render(); };
+        window.backToCalendar = () => { state.selectedDate = null; render(); };
+        window.toggleCalendarDayTask = (date, taskId, isToday) => {
+            if (isToday) {
+                const task = state.dailyTasks.find(t => t.id === taskId);
+                if (task) task.completed = !task.completed;
+            } else {
+                if (state.dailyStats[date] && state.dailyStats[date].tasks) {
+                    const task = state.dailyStats[date].tasks.find(t => t.id === taskId);
+                    if (task) {
+                        task.completed = !task.completed;
+                        state.dailyStats[date].completed = state.dailyStats[date].tasks.filter(t => t.completed).length;
+                    }
+                }
+            }
+            saveState();
+            render();
+        };
+        window.addCalendarTaskHandler = () => { const el = document.getElementById('calendarTaskInput'); if (el.value.trim()) { addCalendarTask(state.selectedDate, el.value); el.value = ''; render(); } };
+        window.deleteCalendarTaskHandler = (idx) => { deleteCalendarTask(state.selectedDate, idx); render(); };
+        window.deleteHistoryDay = (date) => { deleteHistoryDayInternal(date); };
+        window.addStreakHandler = () => { const el = document.getElementById('streakInput'); if (el.value.trim()) { addStreak(el.value); el.value = ''; } };
+        window.incrementStreak = (id) => incrementStreak(id);
+        window.resetStreak = (id) => resetStreak(id);
+        window.deleteStreak = (id) => deleteStreak(id);
+        window.toggleTask = toggleTask;
+        window.deleteTaskFromList = deleteTaskFromList;
+        window.togglePastDayTask = togglePastDayTask;
+        window.prevMonth = () => { state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; } render(); };
+        window.nextMonth = () => { state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; } render(); };
+        window.trackerPrevDay = () => { state.trackerDate.setDate(state.trackerDate.getDate() - 1); render(); };
+        window.trackerNextDay = () => { state.trackerDate.setDate(state.trackerDate.getDate() + 1); render(); };
+        window.setTrackerStatsMode = (mode) => { state.trackerStatsMode = mode; render(); };
+
+        // Settings handlers
+        window.openSettings = () => { state.showSettings = true; render(); };
+        window.closeSettings = () => { state.showSettings = false; render(); };
+        
+        window.toggleDarkMode = () => {
+            state.darkMode = !state.darkMode;
+            document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+            saveState();
+            render();
+        };
+
+        window.addTrackerCategory = () => {
+            const nameEl = document.getElementById('newCategoryName');
+            const colorEl = document.getElementById('newCategoryColor');
+            const name = nameEl.value.trim();
+            if (!name) return;
+            const id = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+            state.trackerCategories.push({ id, name, color: colorEl.value });
+            nameEl.value = '';
+            saveState();
+            render();
+        };
+
+        window.updateCategoryColor = (idx, color) => {
+            state.trackerCategories[idx].color = color;
+            saveState();
+        };
+
+        window.deleteTrackerCategory = (idx) => {
+            if (confirm('Usunąć kategorię?')) {
+                state.trackerCategories.splice(idx, 1);
+                saveState();
+                render();
+            }
+        };
+
+        window.exportAllData = () => {
+            const data = {
+                version: 2,
+                exportDate: new Date().toISOString(),
+                dailyTasks: state.dailyTasks,
+                oneTimeTasks: state.oneTimeTasks,
+                urgentTasks: state.urgentTasks,
+                dailyStats: state.dailyStats,
+                calendarTasks: state.calendarTasks,
+                streaks: state.streaks,
+                trackerActivities: state.trackerActivities,
+                trackerCategories: state.trackerCategories,
+                darkMode: state.darkMode
+            };
+            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", str);
+            node.setAttribute("download", `dziennik_backup_${getTodayString()}.json`);
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        };
+
+        window.importAllData = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (confirm('Nadpisać obecne dane importowanymi?')) {
+                        if (d.dailyTasks) state.dailyTasks = d.dailyTasks;
+                        if (d.oneTimeTasks) state.oneTimeTasks = d.oneTimeTasks;
+                        if (d.urgentTasks) state.urgentTasks = d.urgentTasks;
+                        if (d.dailyStats) state.dailyStats = d.dailyStats;
+                        if (d.calendarTasks) state.calendarTasks = d.calendarTasks;
+                        if (d.streaks) state.streaks = d.streaks;
+                        if (d.trackerActivities) state.trackerActivities = d.trackerActivities;
+                        if (d.trackerCategories) state.trackerCategories = d.trackerCategories;
+                        if (d.darkMode !== undefined) {
+                            state.darkMode = d.darkMode;
+                            document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+                        }
+                        saveState();
+                        render();
+                        alert('Dane wczytane!');
+                    }
+                } catch (err) { 
+                    alert('Błąd pliku: ' + err.message); 
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        };
+
+        window.clearAllData = () => {
+            if (confirm('UWAGA: Czy na pewno chcesz usunąć WSZYSTKIE dane? Ta operacja jest nieodwracalna!')) {
+                if (confirm('Naprawdę usunąć wszystko?')) {
+                    localStorage.removeItem('unifiedAppStateV2');
+                    location.reload();
+                }
+            }
+        };
+
+        // Start
+        loadState();
+        // Apply dark mode from saved state
+        if (state.darkMode) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        render();
+        setInterval(() => { checkDayReset(); saveState(); }, 5000);
+    </script>
+</body>
+</html>
