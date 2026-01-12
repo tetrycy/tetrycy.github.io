@@ -452,7 +452,66 @@
 
         /* EMPTY STATE */
         .empty-state { padding: 40px; opacity: 0.5; font-style: italic; font-size: 14px; text-align: center; color: var(--text-muted); }
-        .empty-emoji { font-size: 32px; filter: grayscale(1); margin-bottom: 10px; display: block; }
+
+        /* INNE MENU */
+        .inne-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .inne-tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inne-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1);
+        }
+
+        .inne-tile-label {
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        /* NOTES */
+        .note-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-main);
+            resize: vertical;
+        }
+
+        .note-editor:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        [data-theme="dark"] .note-editor {
+            background: var(--bg-card);
+        }
+
+        .note-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            text-align: right;
+        }
 
         /* ========== DAY TRACKER STYLES ========== */
         
@@ -873,7 +932,12 @@
             trackerEditingId: null,
             trackerStatsMode: 'day', // 'day' or 'week'
             darkMode: false,
-            showSettings: false
+            showSettings: false,
+            customLists: [],
+            activeListId: null,
+            editingListId: null,
+            notes: [],
+            activeNoteId: null
         };
 
         const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
@@ -887,6 +951,8 @@
                 state = { ...state, ...parsed };
                 if (!state.streaks) state.streaks = [];
                 if (!state.urgentTasks) state.urgentTasks = [];
+                if (!state.customLists) state.customLists = [];
+                if (!state.notes) state.notes = [];
                 if (!state.trackerActivities) state.trackerActivities = {};
                 if (!state.trackerCategories) state.trackerCategories = [
                     { id: 'praca', name: 'Praca', color: '#546de5' },
@@ -1270,7 +1336,7 @@
                             </div>
                         </div>
                     `).join('')}
-                    ${currentTasks.length === 0 ? `<div class="empty-state"><div class="empty-emoji">${activeTab === 'urgent' ? '🎯' : '✒️'}</div><div>${activeTab === 'urgent' ? 'Brak pilnych zadań. Super!' : 'Pusta strona. Dodaj coś.'}</div></div>` : ''}
+                    ${currentTasks.length === 0 ? `<div class="empty-state">${activeTab === 'urgent' ? 'Brak pilnych zadań. Super!' : 'Pusta strona. Dodaj coś.'}</div>` : ''}
                 </div>
             `;
         }
@@ -1353,25 +1419,12 @@
                 const dateString = formatDate(state.currentYear, state.currentMonth, day);
                 const calendarTasks = getCalendarTasksForDate(dateString);
                 const isToday = dateString === todayString;
-                
-                // Get daily tasks count
-                let dailyCompleted = 0, dailyTotal = 0;
-                if (isToday) {
-                    dailyCompleted = state.dailyTasks.filter(t => t.completed).length;
-                    dailyTotal = state.dailyTasks.length;
-                } else if (state.dailyStats[dateString]) {
-                    dailyCompleted = state.dailyStats[dateString].completed || 0;
-                    dailyTotal = state.dailyStats[dateString].total || 0;
-                }
-
-                const hasCalendarTasks = calendarTasks.length > 0;
-                const hasDailyTasks = dailyTotal > 0;
+                const hasPlans = calendarTasks.length > 0;
 
                 calendarHTML += `
                     <div class="calendar-day ${isToday ? 'today' : ''}" onclick="selectCalendarDate('${dateString}')">
                         <div class="day-number">${day}</div>
-                        ${hasDailyTasks ? `<div class="day-tasks-count">${dailyCompleted}/${dailyTotal}</div>` : ''}
-                        ${hasCalendarTasks && !isToday ? `<div class="day-tasks-count" style="color: #546de5;">●</div>` : ''}
+                        ${hasPlans && !isToday ? `<div class="day-tasks-count">${calendarTasks.length}</div>` : ''}
                     </div>
                 `;
             }
@@ -1389,19 +1442,6 @@
 
         function renderCalendarDayView() {
             const calendarTasks = getCalendarTasksForDate(state.selectedDate);
-            const dailyStats = state.dailyStats[state.selectedDate];
-            const isToday = state.selectedDate === getTodayString();
-            
-            // For today, use current dailyTasks; for past days, use history
-            let dailyTasksList = [];
-            if (isToday) {
-                dailyTasksList = state.dailyTasks;
-            } else if (dailyStats && dailyStats.tasks) {
-                dailyTasksList = dailyStats.tasks;
-            }
-
-            const completedCount = dailyTasksList.filter(t => t.completed).length;
-            const totalCount = dailyTasksList.length;
 
             return `
                 <div class="day-view">
@@ -1410,41 +1450,20 @@
                         <button class="back-btn" onclick="backToCalendar()">Kalendarz</button>
                     </div>
 
-                    ${dailyTasksList.length > 0 ? `
-                        <div style="margin-bottom: 20px;">
-                            <div class="stats-label" style="margin-bottom: 10px;">Zadania codzienne</div>
-                            <div style="text-align: center; margin-bottom: 15px;">
-                                <span style="font-size: 24px; color: var(--accent);">${completedCount}/${totalCount}</span>
-                            </div>
-                            <div class="task-list">
-                                ${dailyTasksList.map(task => `
-                                    <div class="task-item ${task.completed ? 'completed' : ''}">
-                                        <div class="task-content">
-                                            <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleCalendarDayTask('${state.selectedDate}', ${task.id}, ${isToday})"></div>
-                                            <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <div style="margin-top: 20px;">
-                        <div class="stats-label" style="margin-bottom: 10px;">Plany na ten dzień</div>
-                        <div class="add-task-form" style="margin-bottom: 15px;">
-                            <input type="text" class="task-input" id="calendarTaskInput" placeholder="Zaplanuj coś..." onkeypress="if(event.key==='Enter') addCalendarTaskHandler()" />
-                            <button class="add-btn" onclick="addCalendarTaskHandler()">+</button>
-                        </div>
-                        <div class="task-list">
-                            ${calendarTasks.length > 0 ? calendarTasks.map((task, index) => `
-                                <div class="task-item">
-                                    <div class="task-content">
-                                        <div class="task-text">${task}</div>
-                                        <button class="delete-btn" onclick="deleteCalendarTaskHandler(${index})">&times;</button>
-                                    </div>
+                    <div class="add-task-form" style="margin-bottom: 20px;">
+                        <input type="text" class="task-input" id="calendarTaskInput" placeholder="Zaplanuj coś..." onkeypress="if(event.key==='Enter') addCalendarTaskHandler()" />
+                        <button class="add-btn" onclick="addCalendarTaskHandler()">+</button>
+                    </div>
+                    
+                    <div class="task-list">
+                        ${calendarTasks.length > 0 ? calendarTasks.map((task, index) => `
+                            <div class="task-item">
+                                <div class="task-content">
+                                    <div class="task-text">${task}</div>
+                                    <button class="delete-btn" onclick="deleteCalendarTaskHandler(${index})">&times;</button>
                                 </div>
-                            `).join('') : '<div class="empty-state" style="padding: 20px;">Brak planów</div>'}
-                        </div>
+                            </div>
+                        `).join('') : '<div class="empty-state">Brak planów na ten dzień</div>'}
                     </div>
                 </div>
             `;
@@ -1474,7 +1493,7 @@
                             <div class="streak-date">Start: ${formatDateDisplay(streak.startDate)}</div>
                         </div>
                     `).join('')}
-                    ${state.streaks.length === 0 ? '<div class="empty-state"><div class="empty-emoji">🔥</div><div>Zbuduj nawyk. Dodaj passę.</div></div>' : ''}
+                    ${state.streaks.length === 0 ? '<div class="empty-state">Zbuduj nawyk. Dodaj passę.</div>' : ''}
                 </div>
             `;
         }
@@ -1565,6 +1584,11 @@
             }
 
             return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 20px;">
+                    <div class="day-view-title">Czas</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
                 <div class="tracker-date-controls">
                     <button onclick="trackerPrevDay()">←</button>
                     <div class="tracker-current-date">${formatTrackerDate(state.trackerDate)}</div>
@@ -1645,6 +1669,178 @@
             }
         }
 
+        function renderLists() {
+            // If viewing a specific list
+            if (state.activeListId !== null) {
+                return renderListDetail();
+            }
+
+            // Lists overview
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 20px;">
+                    <div class="day-view-title">Listy</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="newListInput" placeholder="Nazwa nowej listy..." onkeypress="if(event.key==='Enter') addNewList()" />
+                        <button class="add-btn" onclick="addNewList()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${state.customLists.map(list => `
+                        <div class="task-item" style="cursor: pointer;" onclick="openList(${list.id})">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text" style="font-weight: 600;">${list.name}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                        ${list.items.length} ${list.items.length === 1 ? 'element' : 'elementów'}
+                                        ${list.items.filter(i => i.checked).length > 0 ? ` · ${list.items.filter(i => i.checked).length} ukończone` : ''}
+                                    </div>
+                                </div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteList(${list.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${state.customLists.length === 0 ? `<div class="empty-state">Brak list. Utwórz pierwszą!</div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderInne() {
+            return `
+                <div class="inne-grid">
+                    <div class="inne-tile" onclick="switchMainTab('czas')">
+                        <span class="inne-tile-label">Czas</span>
+                    </div>
+                    <div class="inne-tile" onclick="switchMainTab('listy')">
+                        <span class="inne-tile-label">Listy</span>
+                    </div>
+                    <div class="inne-tile" onclick="switchMainTab('notatki')">
+                        <span class="inne-tile-label">Notatki</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderNotatki() {
+            if (state.activeNoteId !== null) {
+                return renderNoteDetail();
+            }
+
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 20px;">
+                    <div class="day-view-title">Notatki</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
+                <div class="add-task-card">
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="newNoteInput" placeholder="Tytuł nowej notatki..." onkeypress="if(event.key==='Enter') addNewNote()" />
+                        <button class="add-btn" onclick="addNewNote()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${state.notes.map(note => `
+                        <div class="task-item" style="cursor: pointer;" onclick="openNote(${note.id})">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text" style="font-weight: 600;">${note.title}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                        ${note.content ? note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '') : 'Pusta notatka'}
+                                    </div>
+                                </div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); deleteNote(${note.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${state.notes.length === 0 ? `<div class="empty-state">Brak notatek. Utwórz pierwszą!</div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderNoteDetail() {
+            const note = state.notes.find(n => n.id === state.activeNoteId);
+            if (!note) return '';
+
+            const updatedDate = note.updatedAt ? new Date(note.updatedAt).toLocaleString('pl-PL') : '';
+
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        <input type="text" class="task-input" id="noteTitleInput" value="${note.title}" 
+                               style="flex: 1; margin-right: 10px; padding: 5px 0; font-weight: 600;"
+                               onchange="updateNoteTitle(${note.id}, this.value)">
+                        <button class="back-btn" onclick="closeNote()">Wróć</button>
+                    </div>
+
+                    <textarea class="note-editor" id="noteContentInput" 
+                              placeholder="Treść notatki..."
+                              onchange="updateNoteContent(${note.id}, this.value)">${note.content || ''}</textarea>
+
+                    ${updatedDate ? `<div class="note-meta">Ostatnia edycja: ${updatedDate}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderListDetail() {
+            const list = state.customLists.find(l => l.id === state.activeListId);
+            if (!list) return '';
+
+            const checkedCount = list.items.filter(i => i.checked).length;
+            const totalCount = list.items.length;
+
+            return `
+                <div class="day-view">
+                    <div class="day-view-header">
+                        ${state.editingListId === list.id ? `
+                            <input type="text" class="task-input" id="editListName" value="${list.name}" 
+                                   style="flex: 1; margin-right: 10px; padding: 5px 0;"
+                                   onkeypress="if(event.key==='Enter') saveListName(${list.id})"
+                                   onblur="saveListName(${list.id})">
+                        ` : `
+                            <div class="day-view-title" onclick="startEditListName(${list.id})" style="cursor: pointer;" title="Kliknij aby edytować">${list.name}</div>
+                        `}
+                        <button class="back-btn" onclick="closeList()">Wróć</button>
+                    </div>
+
+                    ${totalCount > 0 ? `
+                        <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-light);">
+                            <span style="font-size: 24px; color: var(--accent);">${checkedCount}/${totalCount}</span>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">ukończone</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="add-task-form" style="margin-bottom: 20px;">
+                        <input type="text" class="task-input" id="listItemInput" placeholder="Dodaj element..." onkeypress="if(event.key==='Enter') addListItem(${list.id})" />
+                        <button class="add-btn" onclick="addListItem(${list.id})">+</button>
+                    </div>
+
+                    <div class="task-list">
+                        ${list.items.map((item, idx) => `
+                            <div class="task-item ${item.checked ? 'completed' : ''}">
+                                <div class="task-content">
+                                    <div class="checkbox ${item.checked ? 'checked' : ''}" onclick="toggleListItem(${list.id}, ${idx})"></div>
+                                    <div class="task-text ${item.checked ? 'completed' : ''}">${item.text}</div>
+                                    <button class="delete-btn" onclick="deleteListItem(${list.id}, ${idx})">&times;</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${list.items.length === 0 ? '<div class="empty-state" style="padding: 20px;">Lista jest pusta</div>' : ''}
+                    </div>
+
+                    ${checkedCount > 0 ? `
+                        <button class="history-btn" style="width: 100%; margin-top: 10px;" onclick="clearCheckedItems(${list.id})">
+                            Usuń ukończone (${checkedCount})
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
         function renderSettings() {
             return `
                 <div class="day-view">
@@ -1715,7 +1911,10 @@
             } else if (state.activeMainTab === 'lista') content = renderTasksList();
             else if (state.activeMainTab === 'kalendarz') content = renderCalendar();
             else if (state.activeMainTab === 'passy') content = renderStreaks();
+            else if (state.activeMainTab === 'inne') content = renderInne();
             else if (state.activeMainTab === 'czas') content = renderTracker();
+            else if (state.activeMainTab === 'listy') content = renderLists();
+            else if (state.activeMainTab === 'notatki') content = renderNotatki();
 
             app.innerHTML = `
                 <div class="header">
@@ -1724,7 +1923,7 @@
                         <button class="main-tab ${state.activeMainTab === 'lista' ? 'active' : ''}" onclick="switchMainTab('lista')">Zadania</button>
                         <button class="main-tab ${state.activeMainTab === 'kalendarz' ? 'active' : ''}" onclick="switchMainTab('kalendarz')">Kalendarz</button>
                         <button class="main-tab ${state.activeMainTab === 'passy' ? 'active' : ''}" onclick="switchMainTab('passy')">Nawyki</button>
-                        <button class="main-tab ${state.activeMainTab === 'czas' ? 'active' : ''}" onclick="switchMainTab('czas')">Czas</button>
+                        <button class="main-tab ${['inne', 'czas', 'listy', 'notatki'].includes(state.activeMainTab) ? 'active' : ''}" onclick="switchMainTab('inne')">Inne</button>
                     </div>
                 </div>
                 ${content}
@@ -1748,7 +1947,7 @@
         }
 
         // === EVENT HANDLERS ===
-        window.switchMainTab = (tab) => { state.activeMainTab = tab; state.showHistory = false; state.editingDay = null; state.selectedDate = null; state.showSettings = false; render(); };
+        window.switchMainTab = (tab) => { state.activeMainTab = tab; state.showHistory = false; state.editingDay = null; state.selectedDate = null; state.showSettings = false; state.activeListId = null; state.editingListId = null; state.activeNoteId = null; render(); };
         window.switchTaskTab = (tab) => { state.activeTaskTab = tab; render(); };
         window.addTaskHandler = () => { const el = document.getElementById('taskInput'); addTaskToList(state.activeTaskTab, el.value); el.value = ''; };
         window.openHistory = () => { state.showHistory = true; render(); };
@@ -1792,6 +1991,160 @@
         // Settings handlers
         window.openSettings = () => { state.showSettings = true; render(); };
         window.closeSettings = () => { state.showSettings = false; render(); };
+
+        // Lists handlers
+        window.addNewList = () => {
+            const el = document.getElementById('newListInput');
+            const name = el.value.trim();
+            if (!name) return;
+            state.customLists.push({
+                id: Date.now(),
+                name: name,
+                items: [],
+                createdAt: new Date().toISOString()
+            });
+            el.value = '';
+            saveState();
+            render();
+        };
+
+        window.deleteList = (id) => {
+            if (confirm('Usunąć tę listę?')) {
+                state.customLists = state.customLists.filter(l => l.id !== id);
+                saveState();
+                render();
+            }
+        };
+
+        window.openList = (id) => {
+            state.activeListId = id;
+            state.editingListId = null;
+            render();
+        };
+
+        window.closeList = () => {
+            state.activeListId = null;
+            state.editingListId = null;
+            // Stay in listy view
+            render();
+        };
+
+        window.startEditListName = (id) => {
+            state.editingListId = id;
+            render();
+            setTimeout(() => {
+                const input = document.getElementById('editListName');
+                if (input) { input.focus(); input.select(); }
+            }, 10);
+        };
+
+        window.saveListName = (id) => {
+            const input = document.getElementById('editListName');
+            if (input) {
+                const name = input.value.trim();
+                if (name) {
+                    const list = state.customLists.find(l => l.id === id);
+                    if (list) list.name = name;
+                }
+            }
+            state.editingListId = null;
+            saveState();
+            render();
+        };
+
+        window.addListItem = (listId) => {
+            const el = document.getElementById('listItemInput');
+            const text = el.value.trim();
+            if (!text) return;
+            const list = state.customLists.find(l => l.id === listId);
+            if (list) {
+                list.items.push({ text, checked: false });
+                el.value = '';
+                saveState();
+                render();
+            }
+        };
+
+        window.toggleListItem = (listId, idx) => {
+            const list = state.customLists.find(l => l.id === listId);
+            if (list && list.items[idx]) {
+                list.items[idx].checked = !list.items[idx].checked;
+                saveState();
+                render();
+            }
+        };
+
+        window.deleteListItem = (listId, idx) => {
+            const list = state.customLists.find(l => l.id === listId);
+            if (list) {
+                list.items.splice(idx, 1);
+                saveState();
+                render();
+            }
+        };
+
+        window.clearCheckedItems = (listId) => {
+            const list = state.customLists.find(l => l.id === listId);
+            if (list && confirm('Usunąć ukończone elementy?')) {
+                list.items = list.items.filter(i => !i.checked);
+                saveState();
+                render();
+            }
+        };
+
+        // Notes handlers
+        window.addNewNote = () => {
+            const el = document.getElementById('newNoteInput');
+            const title = el.value.trim();
+            if (!title) return;
+            state.notes.push({
+                id: Date.now(),
+                title: title,
+                content: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+            el.value = '';
+            saveState();
+            render();
+        };
+
+        window.deleteNote = (id) => {
+            if (confirm('Usunąć tę notatkę?')) {
+                state.notes = state.notes.filter(n => n.id !== id);
+                saveState();
+                render();
+            }
+        };
+
+        window.openNote = (id) => {
+            state.activeNoteId = id;
+            render();
+        };
+
+        window.closeNote = () => {
+            state.activeNoteId = null;
+            // Stay in notatki view
+            render();
+        };
+
+        window.updateNoteTitle = (id, title) => {
+            const note = state.notes.find(n => n.id === id);
+            if (note) {
+                note.title = title;
+                note.updatedAt = new Date().toISOString();
+                saveState();
+            }
+        };
+
+        window.updateNoteContent = (id, content) => {
+            const note = state.notes.find(n => n.id === id);
+            if (note) {
+                note.content = content;
+                note.updatedAt = new Date().toISOString();
+                saveState();
+            }
+        };
         
         window.toggleDarkMode = () => {
             state.darkMode = !state.darkMode;
@@ -1837,6 +2190,8 @@
                 streaks: state.streaks,
                 trackerActivities: state.trackerActivities,
                 trackerCategories: state.trackerCategories,
+                customLists: state.customLists,
+                notes: state.notes,
                 darkMode: state.darkMode
             };
             const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -1864,6 +2219,8 @@
                         if (d.streaks) state.streaks = d.streaks;
                         if (d.trackerActivities) state.trackerActivities = d.trackerActivities;
                         if (d.trackerCategories) state.trackerCategories = d.trackerCategories;
+                        if (d.customLists) state.customLists = d.customLists;
+                        if (d.notes) state.notes = d.notes;
                         if (d.darkMode !== undefined) {
                             state.darkMode = d.darkMode;
                             document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
