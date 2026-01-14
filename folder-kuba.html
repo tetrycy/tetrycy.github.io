@@ -227,7 +227,7 @@
                 <span id="window-title">Folder Kuby</span>
             </div>
             <div class="window-controls">
-                <button class="window-btn" onclick="window.close()">×</button>
+                <button class="window-btn">×</button>
             </div>
         </div>
         
@@ -248,7 +248,7 @@
         </div>
         
         <div class="status-bar">
-            <span id="status-count">14 obiektów</span>
+            <span id="status-count">0 obiektów</span>
             <span>Mój komputer</span>
         </div>
     </div>
@@ -256,9 +256,10 @@
     <script>
         let currentPath = 'main';
         let pathHistory = [];
+        
         function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-}
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
         
         const folders = {
             main: {
@@ -282,18 +283,18 @@
                     { type: 'file', icon: '📄', name: 'Jak co środę #12', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz12.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #13', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz13.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #14', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz14.html' },
-                       { type: 'file', icon: '📄', name: 'Jak co środę #15', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz15.html' },
-                            { type: 'file', icon: '📄', name: 'Jak co środę #16', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz16.html' },
-                      { type: 'file', icon: '📄', name: 'Jak co środę #17', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz17.html' },
-                      { type: 'file', icon: '📄', name: 'Jak co środę #18', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz18.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #15', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz15.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #16', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz16.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #17', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz17.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #18', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz18.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #19', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz19.html' },
-                        { type: 'file', icon: '📄', name: 'Jak co środę #20', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz20.html' },
-                     { type: 'file', icon: '📄', name: 'Jak co środę #21', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz21.html' },
-                     { type: 'file', icon: '📄', name: 'Jak co środę #22', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz22.html' },
-                      { type: 'file', icon: '📄', name: 'Jak co środę #23', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz23.html' },
-                                          { type: 'file', icon: '📄', name: 'Jak co środę #24', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz24.html' },
-                      { type: 'file', icon: '📄', name: 'O To Chodzi', target: 'https://tetrycy.github.io/felietony-kuby/otochodzi.html' },
-                      { type: 'file', icon: '📄', name: 'Jak co środę #25', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz25.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #20', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz20.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #21', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz21.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #22', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz22.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #23', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz23.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #24', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz24.html' },
+                    { type: 'file', icon: '📄', name: 'O To Chodzi', target: 'https://tetrycy.github.io/felietony-kuby/otochodzi.html' },
+                    { type: 'file', icon: '📄', name: 'Jak co środę #25', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz25.html' }
                 ]
             },
             
@@ -366,27 +367,28 @@
             folder.items.forEach(item => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
-         fileItem.onclick = () => {
-    selectItem(fileItem);
-    
-    // Na mobile użyj pojedynczego kliknięcia
-    if (isMobile()) {
-        if (item.type === 'folder') {
-            loadFolder(item.target);
-        } else {
-            openItem(item);
-        }
-    }
-};
-
-// Podwójne kliknięcie dla desktop
-if (!isMobile()) {
-    if (item.type === 'folder') {
-        fileItem.ondblclick = () => loadFolder(item.target);
-    } else {
-        fileItem.ondblclick = () => openItem(item);
-    }
-}
+                
+                fileItem.onclick = function() {
+                    selectItem(fileItem);
+                    
+                    if (isMobile()) {
+                        if (item.type === 'folder') {
+                            loadFolder(item.target);
+                        } else {
+                            openItem(item);
+                        }
+                    }
+                };
+                
+                if (!isMobile()) {
+                    fileItem.ondblclick = function() {
+                        if (item.type === 'folder') {
+                            loadFolder(item.target);
+                        } else {
+                            openItem(item);
+                        }
+                    };
+                }
                 
                 fileItem.innerHTML = `
                     <span class="file-icon">${item.icon}</span>
@@ -406,13 +408,13 @@ if (!isMobile()) {
         
         function openItem(item) {
             if (item.type === 'file') {
-                window.open(item.target, '_blank', 'width=800,height=600,toolbar=yes,menubar=yes,scrollbars=yes,resizable=yes,status=yes');
+                window.open(item.target, '_blank');
             } else if (item.type === 'music') {
                 window.open(item.target, '_blank');
             } else if (item.type === 'movie') {
                 window.open(item.target, '_blank');
             } else if (item.type === 'game') {
-                window.open(item.target, '_blank', 'fullscreen=yes,scrollbars=yes,resizable=yes');
+                window.open(item.target, '_blank');
             }
         }
         
@@ -424,9 +426,9 @@ if (!isMobile()) {
             }
         }
         
-window.addEventListener('load', function() {
-    loadFolder('main');
-});
+        window.addEventListener('load', function() {
+            loadFolder('main');
+        });
     </script>
 </body>
 </html>
