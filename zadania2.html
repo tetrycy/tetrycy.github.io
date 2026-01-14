@@ -903,7 +903,7 @@
     <div class="modal" id="trackerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <span id="trackerModalTitle">Nowy Wpis</span>
+                <span id="trackerModalTitle">Nowy wpis</span>
                 <button class="close-btn" onclick="closeTrackerModal()">&times;</button>
             </div>
             
@@ -915,8 +915,16 @@
                     </div>
                     <div class="form-group" style="flex:1">
                         <label>Koniec</label>
-                        <input type="time" id="trackerEndTime" required>
+                        <input type="time" id="trackerEndTime">
                     </div>
+                </div>
+
+                <div class="setting-row" style="margin-bottom: 15px;">
+                    <label style="font-size: 13px; color: var(--text-main);">W trakcie (bez końca)</label>
+                    <label class="toggle-switch" style="transform: scale(0.8);">
+                        <input type="checkbox" id="trackerInProgress" onchange="toggleInProgress()">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
 
                 <div class="form-group">
@@ -982,7 +990,10 @@
             editingListId: null,
             notes: [],
             activeNoteId: null,
-            firedAlarms: []
+            firedAlarms: [],
+            whereIs: [],
+            encryptionKey: null,
+            shooterHighScore: 0
         };
 
         const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
@@ -998,6 +1009,8 @@
                 if (!state.urgentTasks) state.urgentTasks = [];
                 if (!state.customLists) state.customLists = [];
                 if (!state.notes) state.notes = [];
+                if (!state.whereIs) state.whereIs = [];
+                if (!state.shooterHighScore) state.shooterHighScore = 0;
                 if (!state.firedAlarms) state.firedAlarms = [];
                 if (!state.trackerActivities) state.trackerActivities = {};
                 if (!state.trackerCategories) state.trackerCategories = [
@@ -1192,23 +1205,33 @@
             saveState();
             render();
         }
-        function incrementStreak(id) {
+        window.incrementStreak = function(id) {
             const streak = state.streaks.find(s => s.id === id);
-            if (streak) { streak.days++; streak.lastUpdated = getTodayString(); saveState(); render(); }
-        }
-        function resetStreak(id) {
+            if (streak) { 
+                streak.days++; 
+                streak.lastUpdated = getTodayString(); 
+                saveState(); 
+                render(); 
+            }
+        };
+        window.resetStreak = function(id) {
             if (confirm('Zresetować serię?')) {
                 const streak = state.streaks.find(s => s.id === id);
-                if (streak) { streak.days = 0; streak.startDate = getTodayString(); saveState(); render(); }
+                if (streak) { 
+                    streak.days = 0; 
+                    streak.startDate = getTodayString(); 
+                    saveState(); 
+                    render(); 
+                }
             }
-        }
-        function deleteStreak(id) {
+        };
+        window.deleteStreak = function(id) {
             if (confirm('Usunąć tę passę?')) {
                 state.streaks = state.streaks.filter(s => s.id !== id);
                 saveState();
                 render();
             }
-        }
+        };
 
         // === TRACKER LOGIC ===
         function getTrackerDateKey(date) {
@@ -1265,10 +1288,13 @@
 
             document.getElementById('trackerStartTime').value = `${hours}:${minutes}`;
             document.getElementById('trackerEndTime').value = `${endH.toString().padStart(2,'0')}:${endM.toString().padStart(2,'0')}`;
+            document.getElementById('trackerEndTime').disabled = false;
+            document.getElementById('trackerEndTime').style.opacity = '1';
             document.getElementById('trackerDescription').value = '';
+            document.getElementById('trackerInProgress').checked = false;
             state.trackerSelectedCategories = [];
             state.trackerEditingId = null;
-            document.getElementById('trackerModalTitle').textContent = 'Nowy Wpis';
+            document.getElementById('trackerModalTitle').textContent = 'Nowy wpis';
             document.getElementById('trackerDeleteBtn').style.display = 'none';
             renderTrackerCategories();
             document.getElementById('trackerModal').classList.add('active');
@@ -1277,10 +1303,13 @@
         function openTrackerModalForGap(start, end) {
             document.getElementById('trackerStartTime').value = start;
             document.getElementById('trackerEndTime').value = end;
+            document.getElementById('trackerEndTime').disabled = false;
+            document.getElementById('trackerEndTime').style.opacity = '1';
             document.getElementById('trackerDescription').value = '';
+            document.getElementById('trackerInProgress').checked = false;
             state.trackerSelectedCategories = [];
             state.trackerEditingId = null;
-            document.getElementById('trackerModalTitle').textContent = 'Nowy Wpis';
+            document.getElementById('trackerModalTitle').textContent = 'Nowy wpis';
             document.getElementById('trackerDeleteBtn').style.display = 'none';
             renderTrackerCategories();
             document.getElementById('trackerModal').classList.add('active');
@@ -1289,10 +1318,13 @@
         function editTrackerActivity(activity) {
             state.trackerEditingId = activity.id;
             document.getElementById('trackerStartTime').value = activity.startTime;
-            document.getElementById('trackerEndTime').value = activity.endTime;
+            document.getElementById('trackerEndTime').value = activity.endTime || '';
+            document.getElementById('trackerEndTime').disabled = !!activity.inProgress;
+            document.getElementById('trackerEndTime').style.opacity = activity.inProgress ? '0.5' : '1';
             document.getElementById('trackerDescription').value = activity.description || '';
+            document.getElementById('trackerInProgress').checked = !!activity.inProgress;
             state.trackerSelectedCategories = [...(activity.categories || [])];
-            document.getElementById('trackerModalTitle').textContent = 'Edytuj Wpis';
+            document.getElementById('trackerModalTitle').textContent = 'Edytuj wpis';
             document.getElementById('trackerDeleteBtn').style.display = 'block';
             renderTrackerCategories();
             document.getElementById('trackerModal').classList.add('active');
@@ -1322,8 +1354,16 @@
         window.saveTrackerActivity = function(e) {
             e.preventDefault();
             const desc = document.getElementById('trackerDescription').value;
+            const inProgress = document.getElementById('trackerInProgress').checked;
+            const endTime = document.getElementById('trackerEndTime').value;
+            
             if (state.trackerSelectedCategories.length === 0 && desc.trim() === "") {
                 alert('Wybierz kategorię lub wpisz opis.');
+                return;
+            }
+            
+            if (!inProgress && !endTime) {
+                alert('Podaj czas końca lub zaznacz "W trakcie".');
                 return;
             }
 
@@ -1333,9 +1373,10 @@
             const activityData = {
                 id: state.trackerEditingId || Date.now(),
                 startTime: document.getElementById('trackerStartTime').value,
-                endTime: document.getElementById('trackerEndTime').value,
+                endTime: inProgress ? null : endTime,
                 categories: [...state.trackerSelectedCategories],
-                description: desc
+                description: desc,
+                inProgress: inProgress
             };
 
             if (state.trackerEditingId) {
@@ -1363,6 +1404,19 @@
 
         window.openTrackerModal = openTrackerModal;
         window.closeTrackerModal = closeTrackerModal;
+
+        window.toggleInProgress = function() {
+            const checkbox = document.getElementById('trackerInProgress');
+            const endTimeInput = document.getElementById('trackerEndTime');
+            if (checkbox.checked) {
+                endTimeInput.value = '';
+                endTimeInput.disabled = true;
+                endTimeInput.style.opacity = '0.5';
+            } else {
+                endTimeInput.disabled = false;
+                endTimeInput.style.opacity = '1';
+            }
+        };
 
         // === RENDERING ===
         function renderTasksList() {
@@ -1594,13 +1648,13 @@
                         <div class="streak-item">
                             <div class="streak-header">
                                 <div class="streak-name">${streak.name}</div>
-                                <button class="delete-btn" onclick="deleteStreak(${streak.id})">&times;</button>
+                                <button class="delete-btn" type="button" onclick="window.deleteStreak(${streak.id})">&times;</button>
                             </div>
                             <div class="streak-days">${streak.days}</div>
                             <div class="streak-days-label">DNI Z RZĘDU</div>
                             <div class="streak-actions">
-                                <button class="streak-btn primary" onclick="incrementStreak(${streak.id})">+ ZALICZ</button>
-                                <button class="streak-btn" onclick="resetStreak(${streak.id})">RESET</button>
+                                <button class="streak-btn primary" type="button" onclick="window.incrementStreak(${streak.id})">+ ZALICZ</button>
+                                <button class="streak-btn" type="button" onclick="window.resetStreak(${streak.id})">RESET</button>
                             </div>
                             <div class="streak-date">Start: ${formatDateDisplay(streak.startDate)}</div>
                         </div>
@@ -1729,37 +1783,62 @@
             const sortedActivities = [...dayActivities].sort((a, b) => a.startTime.localeCompare(b.startTime));
             const timeline = document.getElementById('trackerTimeline');
             if (!timeline) return;
+            
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const isToday = dateKey === getTrackerDateKey(now);
 
             // Render activity blocks
             sortedActivities.forEach(activity => {
                 const startM = getMinutesFromTime(activity.startTime);
-                const endM = getMinutesFromTime(activity.endTime);
+                let endM;
+                
+                if (activity.inProgress) {
+                    // For in-progress activities, use current time if today, otherwise use end of day
+                    endM = isToday ? currentMinutes : 24 * 60;
+                } else {
+                    endM = getMinutesFromTime(activity.endTime);
+                }
+                
                 const duration = endM - startM;
+                if (duration <= 0) return;
+                
                 const [startHour, startMin] = activity.startTime.split(':').map(Number);
 
                 const hourBar = timeline.querySelector(`[data-hour="${startHour}"]`);
                 if (hourBar) {
                     const block = document.createElement('div');
                     block.className = 'activity-block';
+                    if (activity.inProgress) {
+                        block.style.borderRight = '3px solid #e74c3c';
+                        block.style.borderStyle = 'dashed';
+                    }
                     Object.assign(block.style, getActivityStyle(activity));
                     block.style.top = `${(startMin / 60) * 60}px`;
                     block.style.height = `${(duration / 60) * 60}px`;
                     if (duration < 15) block.style.minHeight = '20px';
-                    block.textContent = getTrackerDisplayText(activity);
+                    block.textContent = getTrackerDisplayText(activity) + (activity.inProgress ? ' ▶' : '');
                     block.onclick = (e) => { e.stopPropagation(); editTrackerActivity(activity); };
                     hourBar.appendChild(block);
                 }
             });
 
-            // Render gaps
+            // Render gaps (skip in-progress activities for gap calculation)
             let lastTime = 0;
             sortedActivities.forEach(act => {
                 const startM = getMinutesFromTime(act.startTime);
-                const endM = getMinutesFromTime(act.endTime);
+                let endM;
+                if (act.inProgress) {
+                    endM = isToday ? currentMinutes : 24 * 60;
+                } else {
+                    endM = getMinutesFromTime(act.endTime);
+                }
                 if (startM > lastTime) renderTrackerGap(timeline, lastTime, startM);
                 lastTime = Math.max(lastTime, endM);
             });
-            if (lastTime < 24 * 60) renderTrackerGap(timeline, lastTime, 24 * 60);
+            if (lastTime < 24 * 60 && !sortedActivities.some(a => a.inProgress)) {
+                renderTrackerGap(timeline, lastTime, 24 * 60);
+            }
         }
 
         function renderTrackerGap(container, startMinutes, endMinutes) {
@@ -1803,15 +1882,17 @@
 
                 <div class="task-list">
                     ${state.customLists.map(list => `
-                        <div class="task-item" style="cursor: pointer;" onclick="openList(${list.id})">
+                        <div class="task-item" style="cursor: pointer;" onclick="${list.encrypted ? `unlockList(${list.id})` : `openList(${list.id})`}">
                             <div class="task-content">
                                 <div style="flex: 1;">
-                                    <div class="task-text" style="font-weight: 600;">${list.name}</div>
+                                    <div class="task-text" style="font-weight: 600;">
+                                        ${list.encrypted ? '🔒 ' : ''}${list.name}
+                                    </div>
                                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                                        ${list.items.length} ${list.items.length === 1 ? 'element' : 'elementów'}
-                                        ${list.items.filter(i => i.checked).length > 0 ? ` · ${list.items.filter(i => i.checked).length} ukończone` : ''}
+                                        ${list.encrypted ? 'Zaszyfrowana' : `${list.items.length} ${list.items.length === 1 ? 'element' : 'elementów'}${list.items.filter(i => i.checked).length > 0 ? ` · ${list.items.filter(i => i.checked).length} ukończone` : ''}`}
                                     </div>
                                 </div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); toggleListEncryption(${list.id})" title="${list.encrypted ? 'Odszyfruj' : 'Zaszyfruj'}">${list.encrypted ? '🔓' : '🔒'}</button>
                                 <button class="delete-btn" onclick="event.stopPropagation(); deleteList(${list.id})">&times;</button>
                             </div>
                         </div>
@@ -1832,6 +1913,12 @@
                     </div>
                     <div class="inne-tile" onclick="switchMainTab('notatki')">
                         <span class="inne-tile-label">Notatki</span>
+                    </div>
+                    <div class="inne-tile" onclick="switchMainTab('gdziejest')">
+                        <span class="inne-tile-label">Gdzie jest</span>
+                    </div>
+                    <div class="inne-tile" onclick="switchMainTab('shooter')">
+                        <span class="inne-tile-label">Nudzisz się?</span>
                     </div>
                 </div>
             `;
@@ -1860,11 +1947,14 @@
                         <div class="task-item" style="cursor: pointer;" onclick="openNote(${note.id})">
                             <div class="task-content">
                                 <div style="flex: 1;">
-                                    <div class="task-text" style="font-weight: 600;">${note.title}</div>
+                                    <div class="task-text" style="font-weight: 600;">
+                                        ${note.encrypted ? '🔒 ' : ''}${note.title}
+                                    </div>
                                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                                        ${note.content ? note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '') : 'Pusta notatka'}
+                                        ${note.encrypted ? 'Zaszyfrowana' : (note.content ? note.content.substring(0, 50) + (note.content.length > 50 ? '...' : '') : 'Pusta notatka')}
                                     </div>
                                 </div>
+                                <button class="delete-btn" onclick="event.stopPropagation(); toggleNoteEncryption(${note.id})" title="${note.encrypted ? 'Odszyfruj' : 'Zaszyfruj'}">${note.encrypted ? '🔓' : '🔒'}</button>
                                 <button class="delete-btn" onclick="event.stopPropagation(); deleteNote(${note.id})">&times;</button>
                             </div>
                         </div>
@@ -1877,6 +1967,21 @@
         function renderNoteDetail() {
             const note = state.notes.find(n => n.id === state.activeNoteId);
             if (!note) return '';
+
+            if (note.encrypted) {
+                return `
+                    <div class="day-view">
+                        <div class="day-view-header">
+                            <div class="day-view-title">${note.title}</div>
+                            <button class="back-btn" onclick="closeNote()">Wróć</button>
+                        </div>
+                        <div class="empty-state" style="padding: 60px 20px;">
+                            Ta notatka jest zaszyfrowana.<br><br>
+                            <button class="history-btn" onclick="toggleNoteEncryption(${note.id})">Odszyfruj</button>
+                        </div>
+                    </div>
+                `;
+            }
 
             const updatedDate = note.updatedAt ? new Date(note.updatedAt).toLocaleString('pl-PL') : '';
 
@@ -1902,8 +2007,10 @@
             const list = state.customLists.find(l => l.id === state.activeListId);
             if (!list) return '';
 
-            const checkedCount = list.items.filter(i => i.checked).length;
-            const totalCount = list.items.length;
+            // For encrypted lists that are temporarily unlocked
+            const items = list.tempUnlocked ? list.tempItems : list.items;
+            const checkedCount = items.filter(i => i.checked).length;
+            const totalCount = items.length;
 
             return `
                 <div class="day-view">
@@ -1914,10 +2021,20 @@
                                    onkeypress="if(event.key==='Enter') saveListName(${list.id})"
                                    onblur="saveListName(${list.id})">
                         ` : `
-                            <div class="day-view-title" onclick="startEditListName(${list.id})" style="cursor: pointer;" title="Kliknij aby edytować">${list.name}</div>
+                            <div class="day-view-title" onclick="startEditListName(${list.id})" style="cursor: pointer;" title="Kliknij aby edytować">
+                                ${list.encrypted ? '🔒 ' : ''}${list.name}
+                            </div>
                         `}
-                        <button class="back-btn" onclick="closeList()">Wróć</button>
+                        <button class="back-btn" onclick="${list.tempUnlocked ? `lockList(${list.id})` : 'closeList()'}">
+                            ${list.tempUnlocked ? 'Zablokuj' : 'Wróć'}
+                        </button>
                     </div>
+
+                    ${list.tempUnlocked ? `
+                        <div style="background: rgba(212,163,115,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; text-align: center;">
+                            Lista tymczasowo odblokowana (tylko do odczytu)
+                        </div>
+                    ` : ''}
 
                     ${totalCount > 0 ? `
                         <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-light);">
@@ -1926,31 +2043,501 @@
                         </div>
                     ` : ''}
 
-                    <div class="add-task-form" style="margin-bottom: 20px;">
-                        <input type="text" class="task-input" id="listItemInput" placeholder="Dodaj element..." onkeypress="if(event.key==='Enter') addListItem(${list.id})" />
-                        <button class="add-btn" onclick="addListItem(${list.id})">+</button>
-                    </div>
+                    ${!list.tempUnlocked ? `
+                        <div class="add-task-form" style="margin-bottom: 20px;">
+                            <input type="text" class="task-input" id="listItemInput" placeholder="Dodaj element..." onkeypress="if(event.key==='Enter') addListItem(${list.id})" />
+                            <button class="add-btn" onclick="addListItem(${list.id})">+</button>
+                        </div>
+                    ` : ''}
 
                     <div class="task-list">
-                        ${list.items.map((item, idx) => `
+                        ${items.map((item, idx) => `
                             <div class="task-item ${item.checked ? 'completed' : ''}">
                                 <div class="task-content">
-                                    <div class="checkbox ${item.checked ? 'checked' : ''}" onclick="toggleListItem(${list.id}, ${idx})"></div>
+                                    ${!list.tempUnlocked ? `<div class="checkbox ${item.checked ? 'checked' : ''}" onclick="toggleListItem(${list.id}, ${idx})"></div>` : ''}
                                     <div class="task-text ${item.checked ? 'completed' : ''}">${item.text}</div>
-                                    <button class="delete-btn" onclick="deleteListItem(${list.id}, ${idx})">&times;</button>
+                                    ${!list.tempUnlocked ? `<button class="delete-btn" onclick="deleteListItem(${list.id}, ${idx})">&times;</button>` : ''}
                                 </div>
                             </div>
                         `).join('')}
-                        ${list.items.length === 0 ? '<div class="empty-state" style="padding: 20px;">Lista jest pusta</div>' : ''}
+                        ${items.length === 0 ? '<div class="empty-state" style="padding: 20px;">Lista jest pusta</div>' : ''}
                     </div>
 
-                    ${checkedCount > 0 ? `
+                    ${checkedCount > 0 && !list.tempUnlocked ? `
                         <button class="history-btn" style="width: 100%; margin-top: 10px;" onclick="clearCheckedItems(${list.id})">
                             Usuń ukończone (${checkedCount})
                         </button>
                     ` : ''}
                 </div>
             `;
+        }
+
+        function renderGdzieJest() {
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 20px;">
+                    <div class="day-view-title">Gdzie jest</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
+                <div class="add-task-card">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" class="task-input" id="whereIsItemInput" placeholder="Co? (np. klucze)" style="flex: 1; padding-right: 10px;" />
+                    </div>
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="whereIsLocationInput" placeholder="Gdzie? (np. szuflada w przedpokoju)" onkeypress="if(event.key==='Enter') addWhereIsItem()" />
+                        <button class="add-btn" onclick="addWhereIsItem()">+</button>
+                    </div>
+                </div>
+
+                <div class="task-list">
+                    ${state.whereIs.map(item => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text" style="font-weight: 600;">${item.name}</div>
+                                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">${item.location}</div>
+                                    ${item.updatedAt ? `<div style="font-size: 10px; color: #ccc; margin-top: 4px;">Zaktualizowano: ${new Date(item.updatedAt).toLocaleDateString('pl-PL')}</div>` : ''}
+                                </div>
+                                <button class="delete-btn" style="color: var(--accent);" onclick="editWhereIsItem(${item.id})" title="Edytuj">✎</button>
+                                <button class="delete-btn" onclick="deleteWhereIsItem(${item.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${state.whereIs.length === 0 ? '<div class="empty-state">Dodaj przedmioty, które chcesz śledzić</div>' : ''}
+                </div>
+            `;
+        }
+
+        // === SHOOTER GAME ===
+        let shooterGame = null;
+
+        function renderShooter() {
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 15px;">
+                    <div class="day-view-title">Nudzisz się?</div>
+                    <button class="back-btn" onclick="exitShooter()">← Inne</button>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <span style="font-size: 12px; color: var(--text-muted);">Rekord: <span id="shooterHighScore">${state.shooterHighScore}</span></span>
+                </div>
+
+                <div style="display: flex; justify-content: center;">
+                    <canvas id="shooterCanvas" style="border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-card); touch-action: none; max-width: 100%;"></canvas>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <div id="shooterInfo" style="font-size: 14px; color: var(--text-main);">Dotknij aby rozpocząć</div>
+                    <button id="shooterStartBtn" class="history-btn" style="margin-top: 10px; padding: 12px 30px;" onclick="startShooterGame()">Start</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-muted);">
+                    Przytrzymaj palec = strzał ciągły
+                </div>
+            `;
+        }
+
+        function initShooterGame() {
+            const canvas = document.getElementById('shooterCanvas');
+            if (!canvas) return;
+            
+            // Responsive canvas size
+            const container = canvas.parentElement;
+            const maxWidth = Math.min(container.clientWidth - 20, 400);
+            const ratio = 1.3;
+            canvas.width = maxWidth;
+            canvas.height = Math.floor(maxWidth * ratio);
+            
+            const ctx = canvas.getContext('2d');
+            
+            shooterGame = {
+                canvas, ctx,
+                width: canvas.width,
+                height: canvas.height,
+                player: { x: canvas.width / 2, y: canvas.height / 2, radius: Math.floor(canvas.width / 25), angle: 0 },
+                bullets: [],
+                enemies: [],
+                particles: [],
+                score: 0,
+                wave: 1,
+                enemiesPerWave: 5,
+                enemiesSpawned: 0,
+                enemiesKilled: 0,
+                gameOver: false,
+                running: false,
+                mouseX: canvas.width / 2,
+                mouseY: 0,
+                lastShot: 0,
+                shootCooldown: 120,
+                isTouching: false,
+                autoFireInterval: null
+            };
+
+            // Mouse events
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                shooterGame.mouseX = (e.clientX - rect.left) * scaleX;
+                shooterGame.mouseY = (e.clientY - rect.top) * scaleY;
+            });
+
+            canvas.addEventListener('mousedown', () => {
+                shootBullet();
+                shooterGame.isTouching = true;
+                startAutoFire();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                shooterGame.isTouching = false;
+                stopAutoFire();
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                shooterGame.isTouching = false;
+                stopAutoFire();
+            });
+
+            // Touch events
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                shooterGame.mouseX = (e.touches[0].clientX - rect.left) * scaleX;
+                shooterGame.mouseY = (e.touches[0].clientY - rect.top) * scaleY;
+            }, { passive: false });
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                shooterGame.mouseX = (e.touches[0].clientX - rect.left) * scaleX;
+                shooterGame.mouseY = (e.touches[0].clientY - rect.top) * scaleY;
+                shootBullet();
+                shooterGame.isTouching = true;
+                startAutoFire();
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                shooterGame.isTouching = false;
+                stopAutoFire();
+            }, { passive: false });
+        }
+
+        function startAutoFire() {
+            if (!shooterGame || shooterGame.autoFireInterval) return;
+            shooterGame.autoFireInterval = setInterval(() => {
+                if (shooterGame && shooterGame.isTouching && shooterGame.running && !shooterGame.gameOver) {
+                    shootBullet();
+                }
+            }, 100);
+        }
+
+        function stopAutoFire() {
+            if (shooterGame && shooterGame.autoFireInterval) {
+                clearInterval(shooterGame.autoFireInterval);
+                shooterGame.autoFireInterval = null;
+            }
+        }
+
+        function startShooterGame() {
+            if (!shooterGame) initShooterGame();
+            
+            shooterGame.bullets = [];
+            shooterGame.enemies = [];
+            shooterGame.particles = [];
+            shooterGame.score = 0;
+            shooterGame.wave = 1;
+            shooterGame.enemiesPerWave = 5;
+            shooterGame.enemiesSpawned = 0;
+            shooterGame.enemiesKilled = 0;
+            shooterGame.gameOver = false;
+            shooterGame.running = true;
+
+            document.getElementById('shooterStartBtn').style.display = 'none';
+            document.getElementById('shooterInfo').textContent = 'Fala 1';
+
+            gameLoop();
+        }
+
+        function shootBullet() {
+            if (!shooterGame || !shooterGame.running || shooterGame.gameOver) return;
+            
+            const now = Date.now();
+            if (now - shooterGame.lastShot < shooterGame.shootCooldown) return;
+            shooterGame.lastShot = now;
+
+            const { player, mouseX, mouseY, width } = shooterGame;
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            const bulletSpeed = width / 45;
+            const bulletRadius = Math.max(3, width / 100);
+            
+            shooterGame.bullets.push({
+                x: player.x + Math.cos(angle) * player.radius,
+                y: player.y + Math.sin(angle) * player.radius,
+                vx: Math.cos(angle) * bulletSpeed,
+                vy: Math.sin(angle) * bulletSpeed,
+                radius: bulletRadius
+            });
+        }
+
+        function spawnEnemy() {
+            const { width, height } = shooterGame;
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            
+            switch(side) {
+                case 0: x = Math.random() * width; y = -20; break;
+                case 1: x = width + 20; y = Math.random() * height; break;
+                case 2: x = Math.random() * width; y = height + 20; break;
+                case 3: x = -20; y = Math.random() * height; break;
+            }
+
+            const baseSpeed = width / 400; // Scale speed to canvas
+            const speed = (0.8 + Math.random() * 0.5 + shooterGame.wave * 0.1) * baseSpeed;
+            const baseSize = width / 30;
+            const size = baseSize + Math.random() * (baseSize * 0.8);
+            const shape = Math.floor(Math.random() * 4);
+            const shade = Math.floor(Math.random() * 3);
+            const color = shade === 0 ? '#222' : (shade === 1 ? '#444' : '#666');
+
+            shooterGame.enemies.push({ x, y, size, speed, shape, color, hp: 1 });
+            shooterGame.enemiesSpawned++;
+        }
+
+        function createParticles(x, y, color) {
+            const speedScale = shooterGame.width / 350;
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 / 8) * i;
+                shooterGame.particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * (2 + Math.random() * 2) * speedScale,
+                    vy: Math.sin(angle) * (2 + Math.random() * 2) * speedScale,
+                    life: 30,
+                    color
+                });
+            }
+        }
+
+        function gameLoop() {
+            if (!shooterGame || !shooterGame.running) return;
+
+            const { ctx, width, height, player, bullets, enemies, particles } = shooterGame;
+            const isDark = state.darkMode;
+
+            // Clear - use app colors
+            ctx.fillStyle = isDark ? '#1a1a2e' : '#faf9f6';
+            ctx.fillRect(0, 0, width, height);
+
+            // Update player angle
+            player.angle = Math.atan2(shooterGame.mouseY - player.y, shooterGame.mouseX - player.x);
+
+            // Draw player (turret) - black/white
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            
+            // Base
+            ctx.fillStyle = isDark ? '#faf9f6' : '#2c2c2c';
+            ctx.beginPath();
+            ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cannon
+            ctx.fillStyle = isDark ? '#ccc' : '#444';
+            const cannonWidth = player.radius * 0.5;
+            ctx.fillRect(0, -cannonWidth/2, player.radius + player.radius * 0.7, cannonWidth);
+            ctx.restore();
+
+            // Spawn enemies
+            if (shooterGame.enemiesSpawned < shooterGame.enemiesPerWave && Math.random() < 0.02) {
+                spawnEnemy();
+            }
+
+            // Update and draw bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Remove if out of bounds
+                if (b.x < -10 || b.x > width + 10 || b.y < -10 || b.y > height + 10) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = isDark ? '#fff' : '#000';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Update and draw enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                
+                // Move toward player
+                const angle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(angle) * e.speed;
+                e.y += Math.sin(angle) * e.speed;
+
+                // Check collision with player
+                const dist = Math.hypot(player.x - e.x, player.y - e.y);
+                if (dist < player.radius + e.size) {
+                    shooterGame.gameOver = true;
+                    endShooterGame();
+                    return;
+                }
+
+                // Check collision with bullets
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    const b = bullets[j];
+                    if (Math.hypot(b.x - e.x, b.y - e.y) < b.radius + e.size) {
+                        createParticles(e.x, e.y, isDark ? '#888' : '#666');
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+                        shooterGame.score += 10;
+                        shooterGame.enemiesKilled++;
+                        break;
+                    }
+                }
+
+                // Draw enemy - use stroke for outline style
+                if (enemies[i]) {
+                    ctx.strokeStyle = isDark ? '#aaa' : '#333';
+                    ctx.lineWidth = Math.max(1.5, width / 180);
+                    ctx.beginPath();
+                    const sides = e.shape + 3;
+                    for (let s = 0; s < sides; s++) {
+                        const a = (Math.PI * 2 / sides) * s - Math.PI / 2;
+                        const px = e.x + Math.cos(a) * e.size;
+                        const py = e.y + Math.sin(a) * e.size;
+                        if (s === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 30;
+                const pSize = Math.max(2, width / 100);
+                ctx.fillRect(p.x - pSize/2, p.y - pSize/2, pSize, pSize);
+                ctx.globalAlpha = 1;
+            }
+
+            // Check wave completion
+            if (shooterGame.enemiesKilled >= shooterGame.enemiesPerWave) {
+                shooterGame.wave++;
+                shooterGame.enemiesPerWave = 5 + shooterGame.wave * 3;
+                shooterGame.enemiesSpawned = 0;
+                shooterGame.enemiesKilled = 0;
+                document.getElementById('shooterInfo').textContent = `Fala ${shooterGame.wave}`;
+            }
+
+            // Draw HUD
+            const fontSize = Math.max(12, Math.floor(width / 28));
+            ctx.fillStyle = isDark ? '#faf9f6' : '#2c2c2c';
+            ctx.font = `${fontSize}px "Libre Baskerville"`;
+            ctx.fillText(`Punkty: ${shooterGame.score}`, 10, fontSize + 8);
+            ctx.fillText(`Fala: ${shooterGame.wave}`, 10, fontSize * 2 + 12);
+
+            if (!shooterGame.gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function endShooterGame() {
+            shooterGame.running = false;
+            stopAutoFire();
+            const isDark = state.darkMode;
+            
+            if (shooterGame.score > state.shooterHighScore) {
+                state.shooterHighScore = shooterGame.score;
+                saveState();
+                document.getElementById('shooterHighScore').textContent = state.shooterHighScore;
+            }
+
+            document.getElementById('shooterInfo').textContent = `Koniec! Wynik: ${shooterGame.score}`;
+            document.getElementById('shooterStartBtn').style.display = 'inline-block';
+            document.getElementById('shooterStartBtn').textContent = 'Zagraj ponownie';
+
+            // Draw game over screen
+            const { ctx, width, height } = shooterGame;
+            ctx.fillStyle = isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = isDark ? '#faf9f6' : '#2c2c2c';
+            const bigFont = Math.max(18, Math.floor(width / 16));
+            const smallFont = Math.max(14, Math.floor(width / 22));
+            ctx.font = `${bigFont}px "Libre Baskerville"`;
+            ctx.textAlign = 'center';
+            ctx.fillText('KONIEC GRY', width/2, height/2 - 15);
+            ctx.font = `${smallFont}px "Libre Baskerville"`;
+            ctx.fillText(`Wynik: ${shooterGame.score}`, width/2, height/2 + 20);
+            ctx.textAlign = 'left';
+        }
+
+        window.exitShooter = () => {
+            if (shooterGame) {
+                shooterGame.running = false;
+                stopAutoFire();
+                shooterGame = null;
+            }
+            switchMainTab('inne');
+        };
+
+        window.startShooterGame = startShooterGame;
+
+        // Encryption helpers using Web Crypto API
+        async function deriveKey(password) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+            );
+            return crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt: enc.encode('dziennik-salt'), iterations: 100000, hash: 'SHA-256' },
+                keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+            );
+        }
+
+        async function encryptText(text, password) {
+            const key = await deriveKey(password);
+            const enc = new TextEncoder();
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(text));
+            const combined = new Uint8Array(iv.length + encrypted.byteLength);
+            combined.set(iv);
+            combined.set(new Uint8Array(encrypted), iv.length);
+            return btoa(String.fromCharCode(...combined));
+        }
+
+        async function decryptText(encryptedBase64, password) {
+            try {
+                const key = await deriveKey(password);
+                const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+                const iv = combined.slice(0, 12);
+                const data = combined.slice(12);
+                const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                return null;
+            }
         }
 
         function renderSettings() {
@@ -2027,6 +2614,8 @@
             else if (state.activeMainTab === 'czas') content = renderTracker();
             else if (state.activeMainTab === 'listy') content = renderLists();
             else if (state.activeMainTab === 'notatki') content = renderNotatki();
+            else if (state.activeMainTab === 'gdziejest') content = renderGdzieJest();
+            else if (state.activeMainTab === 'shooter') content = renderShooter();
 
             app.innerHTML = `
                 <div class="header">
@@ -2053,13 +2642,26 @@
                 }, 10);
             }
 
+            // Initialize shooter game
+            if (state.activeMainTab === 'shooter') {
+                setTimeout(() => {
+                    initShooterGame();
+                }, 10);
+            }
+
             // Show/hide FAB
             const fab = document.getElementById('trackerFab');
             fab.classList.toggle('visible', state.activeMainTab === 'czas' && !state.showSettings);
         }
 
         // === EVENT HANDLERS ===
-        window.switchMainTab = (tab) => { state.activeMainTab = tab; state.showHistory = false; state.editingDay = null; state.selectedDate = null; state.showSettings = false; state.activeListId = null; state.editingListId = null; state.activeNoteId = null; render(); };
+        window.switchMainTab = (tab) => { 
+            // Stop shooter game if leaving
+            if (state.activeMainTab === 'shooter' && tab !== 'shooter' && shooterGame) {
+                shooterGame.running = false;
+            }
+            state.activeMainTab = tab; state.showHistory = false; state.editingDay = null; state.selectedDate = null; state.showSettings = false; state.activeListId = null; state.editingListId = null; state.activeNoteId = null; render(); 
+        };
         window.switchTaskTab = (tab) => { state.activeTaskTab = tab; render(); };
         window.addTaskHandler = () => { 
             const el = document.getElementById('taskInput'); 
@@ -2173,9 +2775,6 @@
         window.deleteCalendarTaskHandler = (idx) => { deleteCalendarTask(state.selectedDate, idx); render(); };
         window.deleteHistoryDay = (date) => { deleteHistoryDayInternal(date); };
         window.addStreakHandler = () => { const el = document.getElementById('streakInput'); if (el.value.trim()) { addStreak(el.value); el.value = ''; } };
-        window.incrementStreak = (id) => incrementStreak(id);
-        window.resetStreak = (id) => resetStreak(id);
-        window.deleteStreak = (id) => deleteStreak(id);
         window.toggleTask = toggleTask;
         window.deleteTaskFromList = deleteTaskFromList;
         window.togglePastDayTask = togglePastDayTask;
@@ -2342,6 +2941,137 @@
                 saveState();
             }
         };
+
+        // Where Is handlers
+        window.addWhereIsItem = () => {
+            const nameEl = document.getElementById('whereIsItemInput');
+            const locEl = document.getElementById('whereIsLocationInput');
+            const name = nameEl.value.trim();
+            const location = locEl.value.trim();
+            if (!name || !location) return;
+            state.whereIs.push({
+                id: Date.now(),
+                name,
+                location,
+                updatedAt: new Date().toISOString()
+            });
+            nameEl.value = '';
+            locEl.value = '';
+            saveState();
+            render();
+        };
+
+        window.editWhereIsItem = (id) => {
+            const item = state.whereIs.find(i => i.id === id);
+            if (!item) return;
+            const newLocation = prompt('Nowa lokalizacja dla "' + item.name + '":', item.location);
+            if (newLocation !== null && newLocation.trim()) {
+                item.location = newLocation.trim();
+                item.updatedAt = new Date().toISOString();
+                saveState();
+                render();
+            }
+        };
+
+        window.deleteWhereIsItem = (id) => {
+            if (confirm('Usunąć ten przedmiot?')) {
+                state.whereIs = state.whereIs.filter(i => i.id !== id);
+                saveState();
+                render();
+            }
+        };
+
+        // Encryption handlers
+        window.toggleNoteEncryption = async (id) => {
+            const note = state.notes.find(n => n.id === id);
+            if (!note) return;
+            
+            if (note.encrypted) {
+                // Decrypt
+                const password = prompt('Podaj hasło do odszyfrowania:');
+                if (!password) return;
+                const decrypted = await decryptText(note.content, password);
+                if (decrypted === null) {
+                    alert('Złe hasło!');
+                    return;
+                }
+                note.content = decrypted;
+                note.encrypted = false;
+            } else {
+                // Encrypt
+                const password = prompt('Podaj hasło do zaszyfrowania:');
+                if (!password) return;
+                const password2 = prompt('Powtórz hasło:');
+                if (password !== password2) {
+                    alert('Hasła nie są takie same!');
+                    return;
+                }
+                note.content = await encryptText(note.content || '', password);
+                note.encrypted = true;
+            }
+            saveState();
+            render();
+        };
+
+        window.toggleListEncryption = async (id) => {
+            const list = state.customLists.find(l => l.id === id);
+            if (!list) return;
+            
+            if (list.encrypted) {
+                // Decrypt
+                const password = prompt('Podaj hasło do odszyfrowania:');
+                if (!password) return;
+                const decrypted = await decryptText(list.encryptedData, password);
+                if (decrypted === null) {
+                    alert('Złe hasło!');
+                    return;
+                }
+                list.items = JSON.parse(decrypted);
+                list.encrypted = false;
+                delete list.encryptedData;
+            } else {
+                // Encrypt
+                const password = prompt('Podaj hasło do zaszyfrowania:');
+                if (!password) return;
+                const password2 = prompt('Powtórz hasło:');
+                if (password !== password2) {
+                    alert('Hasła nie są takie same!');
+                    return;
+                }
+                list.encryptedData = await encryptText(JSON.stringify(list.items), password);
+                list.items = [];
+                list.encrypted = true;
+            }
+            saveState();
+            render();
+        };
+
+        window.unlockList = async (id) => {
+            const list = state.customLists.find(l => l.id === id);
+            if (!list || !list.encrypted) return;
+            
+            const password = prompt('Podaj hasło:');
+            if (!password) return;
+            const decrypted = await decryptText(list.encryptedData, password);
+            if (decrypted === null) {
+                alert('Złe hasło!');
+                return;
+            }
+            // Temporarily unlock
+            list.tempItems = JSON.parse(decrypted);
+            list.tempUnlocked = true;
+            state.activeListId = id;
+            render();
+        };
+
+        window.lockList = (id) => {
+            const list = state.customLists.find(l => l.id === id);
+            if (list) {
+                delete list.tempItems;
+                delete list.tempUnlocked;
+            }
+            render();
+        };
         
         window.toggleDarkMode = () => {
             state.darkMode = !state.darkMode;
@@ -2389,6 +3119,8 @@
                 trackerCategories: state.trackerCategories,
                 customLists: state.customLists,
                 notes: state.notes,
+                whereIs: state.whereIs,
+                shooterHighScore: state.shooterHighScore,
                 darkMode: state.darkMode
             };
             const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -2418,6 +3150,8 @@
                         if (d.trackerCategories) state.trackerCategories = d.trackerCategories;
                         if (d.customLists) state.customLists = d.customLists;
                         if (d.notes) state.notes = d.notes;
+                        if (d.whereIs) state.whereIs = d.whereIs;
+                        if (d.shooterHighScore) state.shooterHighScore = d.shooterHighScore;
                         if (d.darkMode !== undefined) {
                             state.darkMode = d.darkMode;
                             document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
