@@ -343,6 +343,27 @@
             .task-item:hover { border-color: var(--border-light); transform: translateY(-2px); }
         }
         .task-item.completed { opacity: 0.6; background: #fafafa; box-shadow: none; }
+        [data-theme="dark"] .task-item.completed { background: #252525; }
+        
+        .drag-handle {
+            cursor: grab;
+            padding: 0 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            user-select: none;
+            touch-action: none;
+        }
+        .drag-handle:active { cursor: grabbing; }
+        .task-item.dragging {
+            opacity: 0.9;
+            background: var(--bg-main);
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            position: relative;
+        }
+        .task-item.drag-over-top { border-top: 2px solid var(--accent); }
+        .task-item.drag-over-bottom { border-bottom: 2px solid var(--accent); }
         
         .task-content { display: flex; align-items: center; width: 100%; }
 
@@ -974,9 +995,8 @@
             trackerActivities: {},
             trackerCategories: [
                 { id: 'praca', name: 'Praca', color: '#546de5' },
-                { id: 'zuzia', name: 'Zuzia', color: '#e15f41' },
-                { id: 'ignas', name: 'Ignaś', color: '#f7b731' },
-                { id: 'zakupy', name: 'Zakupy', color: '#a29bfe' },
+                { id: 'jedzenie', name: 'Jedzenie', color: '#e15f41' },
+                { id: 'sen', name: 'Sen', color: '#9b59b6' },
                 { id: 'moj-czas', name: 'Mój czas', color: '#20bf6b' },
                 { id: 'dom', name: 'Dom', color: '#95a5a6' }
             ],
@@ -993,7 +1013,12 @@
             firedAlarms: [],
             whereIs: [],
             encryptionKey: null,
-            shooterHighScore: 0
+            shooterHighScore: 0,
+            expenses: {},
+            expenseCategories: ['Jedzenie', 'Transport', 'Rozrywka', 'Rachunki', 'Inne'],
+            financeView: 'day',
+            hiddenSections: [],
+            foodLog: {}
         };
 
         const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
@@ -1011,13 +1036,17 @@
                 if (!state.notes) state.notes = [];
                 if (!state.whereIs) state.whereIs = [];
                 if (!state.shooterHighScore) state.shooterHighScore = 0;
+                if (!state.expenses) state.expenses = {};
+                if (!state.expenseCategories) state.expenseCategories = ['Jedzenie', 'Transport', 'Rozrywka', 'Rachunki', 'Inne'];
+                if (!state.financeView) state.financeView = 'day';
+                if (!state.hiddenSections) state.hiddenSections = [];
+                if (!state.foodLog) state.foodLog = {};
                 if (!state.firedAlarms) state.firedAlarms = [];
                 if (!state.trackerActivities) state.trackerActivities = {};
                 if (!state.trackerCategories) state.trackerCategories = [
                     { id: 'praca', name: 'Praca', color: '#546de5' },
-                    { id: 'zuzia', name: 'Zuzia', color: '#e15f41' },
-                    { id: 'ignas', name: 'Ignaś', color: '#f7b731' },
-                    { id: 'zakupy', name: 'Zakupy', color: '#a29bfe' },
+                    { id: 'jedzenie', name: 'Jedzenie', color: '#e15f41' },
+                    { id: 'sen', name: 'Sen', color: '#9b59b6' },
                     { id: 'moj-czas', name: 'Mój czas', color: '#20bf6b' },
                     { id: 'dom', name: 'Dom', color: '#95a5a6' }
                 ];
@@ -1472,9 +1501,14 @@
                     ` : ''}
                 </div>
 
-                <div class="task-list">
-                    ${currentTasks.map(task => `
-                        <div class="task-item ${task.completed ? 'completed' : ''}" ${activeTab === 'urgent' && !task.completed ? 'style="border-left: 3px solid #e74c3c;"' : ''}>
+                <div class="task-list" id="taskListContainer">
+                    ${currentTasks.map((task, index) => `
+                        <div class="task-item ${task.completed ? 'completed' : ''}" 
+                             data-task-id="${task.id}" 
+                             data-task-tab="${activeTab}"
+                             data-task-index="${index}"
+                             ${activeTab === 'urgent' && !task.completed ? 'style="border-left: 3px solid #e74c3c;"' : ''}>
+                            <div class="drag-handle" ontouchstart="startTaskDrag(event, '${activeTab}', ${task.id})" onmousedown="startTaskDrag(event, '${activeTab}', ${task.id})">⋮⋮</div>
                             <div class="task-content">
                                 <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${activeTab}', ${task.id})"></div>
                                 <div class="task-text ${task.completed ? 'completed' : ''}">
@@ -1903,23 +1937,28 @@
         }
 
         function renderInne() {
+            const sections = [
+                { id: 'czas', label: 'Czas' },
+                { id: 'listy', label: 'Listy' },
+                { id: 'notatki', label: 'Notatki' },
+                { id: 'gdziejest', label: 'Gdzie jest' },
+                { id: 'finanse', label: 'Finanse' },
+                { id: 'jedzenie', label: 'Jedzenie' },
+                { id: 'shooter', label: 'Nudzisz się?' }
+            ];
+            
+            const visibleSections = sections.filter(s => !state.hiddenSections.includes(s.id));
+            
             return `
                 <div class="inne-grid">
-                    <div class="inne-tile" onclick="switchMainTab('czas')">
-                        <span class="inne-tile-label">Czas</span>
-                    </div>
-                    <div class="inne-tile" onclick="switchMainTab('listy')">
-                        <span class="inne-tile-label">Listy</span>
-                    </div>
-                    <div class="inne-tile" onclick="switchMainTab('notatki')">
-                        <span class="inne-tile-label">Notatki</span>
-                    </div>
-                    <div class="inne-tile" onclick="switchMainTab('gdziejest')">
-                        <span class="inne-tile-label">Gdzie jest</span>
-                    </div>
-                    <div class="inne-tile" onclick="switchMainTab('shooter')">
-                        <span class="inne-tile-label">Nudzisz się?</span>
-                    </div>
+                    ${visibleSections.map(s => `
+                        <div class="inne-tile" onclick="switchMainTab('${s.id}')">
+                            <span class="inne-tile-label">${s.label}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="history-btn" onclick="openSettings()" style="font-size: 12px;">⚙ Ustawienia</button>
                 </div>
             `;
         }
@@ -2108,6 +2147,417 @@
             `;
         }
 
+        // === FINANSE ===
+        function getFinanceDateKey(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        function renderFinanse() {
+            const today = new Date();
+            const todayKey = getFinanceDateKey(today);
+            const todayExpenses = state.expenses[todayKey] || [];
+            const todayTotal = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
+            
+            // Calculate stats
+            const stats = calculateFinanceStats();
+            
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 15px;">
+                    <div class="day-view-title">Finanse</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
+                <div class="stats-today" style="margin-bottom: 20px;">
+                    <div class="stats-label">Dziś wydano</div>
+                    <div class="stats-number">${todayTotal.toFixed(2)} zł</div>
+                </div>
+
+                <div class="add-task-card">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="number" step="0.01" class="task-input" id="expenseAmount" placeholder="Kwota (zł)" style="flex: 1;" />
+                        <div style="flex: 1; display: flex; gap: 5px;">
+                            <select id="expenseCategory" class="task-input" style="flex: 1; padding: 10px;">
+                                ${state.expenseCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                            </select>
+                            <button class="add-btn" onclick="showAddCategoryPrompt()" title="Dodaj kategorię" style="width: 40px; font-size: 10px;">⚙</button>
+                        </div>
+                    </div>
+                    <div class="add-task-form">
+                        <input type="text" class="task-input" id="expenseDesc" placeholder="Opis (opcjonalnie)" onkeypress="if(event.key==='Enter') addExpense()" />
+                        <button class="add-btn" onclick="addExpense()">+</button>
+                    </div>
+                </div>
+
+                <div class="tracker-toggle" style="margin: 15px 0;">
+                    <button class="tracker-toggle-btn ${state.financeView === 'day' ? 'active' : ''}" onclick="setFinanceView('day')">Dziś</button>
+                    <button class="tracker-toggle-btn ${state.financeView === 'week' ? 'active' : ''}" onclick="setFinanceView('week')">7 dni</button>
+                    <button class="tracker-toggle-btn ${state.financeView === 'month' ? 'active' : ''}" onclick="setFinanceView('month')">Miesiąc</button>
+                    <button class="tracker-toggle-btn ${state.financeView === 'stats' ? 'active' : ''}" onclick="setFinanceView('stats')">Statystyki</button>
+                </div>
+
+                ${state.financeView === 'day' ? renderFinanseDay(todayKey, todayExpenses) : ''}
+                ${state.financeView === 'week' ? renderFinanseWeek() : ''}
+                ${state.financeView === 'month' ? renderFinanseMonth() : ''}
+                ${state.financeView === 'stats' ? renderFinanseStats(stats) : ''}
+            `;
+        }
+        
+        function renderFinanseDay(dateKey, expenses) {
+            return `
+                <div class="task-list">
+                    ${expenses.map(exp => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text" style="font-weight: 600;">${exp.amount.toFixed(2)} zł</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">${exp.category}${exp.desc ? ' · ' + exp.desc : ''}</div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-right: 10px;">${exp.time}</div>
+                                <button class="delete-btn" onclick="deleteExpense('${dateKey}', ${exp.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${expenses.length === 0 ? '<div class="empty-state">Brak wydatków na dziś</div>' : ''}
+                </div>
+            `;
+        }
+        
+        function renderFinanseWeek() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const key = getFinanceDateKey(date);
+                const dayExpenses = state.expenses[key] || [];
+                const total = dayExpenses.reduce((sum, e) => sum + e.amount, 0);
+                days.push({ date, key, total, expenses: dayExpenses });
+            }
+            const maxTotal = Math.max(...days.map(d => d.total), 1);
+            
+            return `
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 100px; gap: 5px; padding: 0 10px;">
+                        ${days.map(d => `
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 100%; background: var(--border-light); border-radius: 3px; height: ${Math.max(5, (d.total / maxTotal) * 80)}px;"></div>
+                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 5px;">${d.date.toLocaleDateString('pl-PL', { weekday: 'short' })}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="task-list">
+                    ${days.reverse().map(d => `
+                        <div class="task-item" onclick="showDayExpenses('${d.key}')" style="cursor: pointer;">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text">${d.date.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                                </div>
+                                <div style="font-weight: 600;">${d.total.toFixed(2)} zł</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function renderFinanseMonth() {
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth();
+            const months = [];
+            
+            for (let i = 0; i < 6; i++) {
+                let m = month - i;
+                let y = year;
+                if (m < 0) { m += 12; y--; }
+                
+                let total = 0;
+                Object.keys(state.expenses).forEach(key => {
+                    const [ey, em] = key.split('-').map(Number);
+                    if (ey === y && em - 1 === m) {
+                        total += state.expenses[key].reduce((sum, e) => sum + e.amount, 0);
+                    }
+                });
+                
+                months.push({
+                    year: y,
+                    month: m,
+                    total,
+                    label: new Date(y, m).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' })
+                });
+            }
+            
+            const maxTotal = Math.max(...months.map(m => m.total), 1);
+            
+            return `
+                <div class="task-list">
+                    ${months.map(m => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text" style="text-transform: capitalize;">${m.label}</div>
+                                    <div style="margin-top: 8px; height: 6px; background: var(--bg-main); border-radius: 3px; overflow: hidden;">
+                                        <div style="height: 100%; width: ${(m.total / maxTotal) * 100}%; background: var(--text-muted); border-radius: 3px;"></div>
+                                    </div>
+                                </div>
+                                <div style="font-weight: 600; margin-left: 15px;">${m.total.toFixed(2)} zł</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function calculateFinanceStats() {
+            const byCategory = {};
+            let total = 0;
+            let count = 0;
+            
+            Object.values(state.expenses).forEach(dayExpenses => {
+                dayExpenses.forEach(exp => {
+                    byCategory[exp.category] = (byCategory[exp.category] || 0) + exp.amount;
+                    total += exp.amount;
+                    count++;
+                });
+            });
+            
+            return { byCategory, total, count };
+        }
+        
+        function renderFinanseStats(stats) {
+            const categories = Object.entries(stats.byCategory).sort((a, b) => b[1] - a[1]);
+            const maxCat = categories.length > 0 ? categories[0][1] : 1;
+            
+            return `
+                <div class="stats-today" style="margin-bottom: 20px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: 600;">${stats.total.toFixed(2)} zł</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Łącznie</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: 600;">${stats.count}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Transakcji</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: 600;">${stats.count > 0 ? (stats.total / stats.count).toFixed(2) : '0.00'} zł</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Średnio</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text-main);">Według kategorii</div>
+                <div class="task-list">
+                    ${categories.map(([cat, amount]) => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text">${cat}</div>
+                                    <div style="margin-top: 8px; height: 6px; background: var(--bg-main); border-radius: 3px; overflow: hidden;">
+                                        <div style="height: 100%; width: ${(amount / maxCat) * 100}%; background: var(--text-muted); border-radius: 3px;"></div>
+                                    </div>
+                                </div>
+                                <div style="font-weight: 600; margin-left: 15px;">${amount.toFixed(2)} zł</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${categories.length === 0 ? '<div class="empty-state">Brak danych</div>' : ''}
+                </div>
+                
+                <div style="font-size: 13px; font-weight: 600; margin: 20px 0 10px; color: var(--text-main);">Zarządzaj kategoriami</div>
+                <div class="task-list">
+                    ${state.expenseCategories.map(cat => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div class="task-text" style="flex: 1;">${cat}</div>
+                                <button class="delete-btn" onclick="deleteExpenseCategory('${cat}')">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="history-btn" style="width: 100%; margin-top: 10px;" onclick="showAddCategoryPrompt()">+ Dodaj kategorię</button>
+            `;
+        }
+        
+        window.addExpense = () => {
+            const amountEl = document.getElementById('expenseAmount');
+            const categoryEl = document.getElementById('expenseCategory');
+            const descEl = document.getElementById('expenseDesc');
+            
+            const amount = parseFloat(amountEl.value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Podaj prawidłową kwotę');
+                return;
+            }
+            
+            const todayKey = getFinanceDateKey(new Date());
+            if (!state.expenses[todayKey]) state.expenses[todayKey] = [];
+            
+            state.expenses[todayKey].push({
+                id: Date.now(),
+                amount,
+                category: categoryEl.value,
+                desc: descEl.value.trim(),
+                time: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+            });
+            
+            saveState();
+            amountEl.value = '';
+            descEl.value = '';
+            render();
+        };
+        
+        window.deleteExpense = (dateKey, id) => {
+            if (state.expenses[dateKey]) {
+                state.expenses[dateKey] = state.expenses[dateKey].filter(e => e.id !== id);
+                if (state.expenses[dateKey].length === 0) delete state.expenses[dateKey];
+                saveState();
+                render();
+            }
+        };
+        
+        window.setFinanceView = (view) => {
+            state.financeView = view;
+            render();
+        };
+        
+        window.showAddCategoryPrompt = () => {
+            const name = prompt('Nazwa nowej kategorii:');
+            if (name && name.trim()) {
+                const trimmed = name.trim();
+                if (!state.expenseCategories.includes(trimmed)) {
+                    state.expenseCategories.push(trimmed);
+                    saveState();
+                    render();
+                } else {
+                    alert('Taka kategoria już istnieje.');
+                }
+            }
+        };
+        
+        window.deleteExpenseCategory = (cat) => {
+            if (state.expenseCategories.length <= 1) {
+                alert('Musisz mieć przynajmniej jedną kategorię.');
+                return;
+            }
+            if (confirm(`Usunąć kategorię "${cat}"? Wydatki w tej kategorii pozostaną.`)) {
+                state.expenseCategories = state.expenseCategories.filter(c => c !== cat);
+                saveState();
+                render();
+            }
+        };
+
+        // === JEDZENIE ===
+        function renderJedzenie() {
+            const today = new Date();
+            const todayKey = getFinanceDateKey(today);
+            const todayMeals = state.foodLog[todayKey] || [];
+            
+            // Get last 7 days for history
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const key = getFinanceDateKey(date);
+                days.push({ date, key, meals: state.foodLog[key] || [] });
+            }
+            
+            return `
+                <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 15px;">
+                    <div class="day-view-title">Jedzenie</div>
+                    <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
+                </div>
+
+                <div class="add-task-card">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="mealType" class="task-input" style="flex: 0 0 auto; padding: 10px; width: 120px;">
+                            <option value="śniadanie">🌅 Śniadanie</option>
+                            <option value="obiad">☀️ Obiad</option>
+                            <option value="kolacja">🌙 Kolacja</option>
+                            <option value="przekąska">🍎 Przekąska</option>
+                        </select>
+                        <input type="text" class="task-input" id="mealInput" placeholder="Co jadłeś/aś?" style="flex: 1;" onkeypress="if(event.key==='Enter') addMeal()" />
+                        <button class="add-btn" onclick="addMeal()">+</button>
+                    </div>
+                </div>
+
+                <div style="font-size: 13px; font-weight: 600; margin: 20px 0 10px; color: var(--text-main);">Dziś</div>
+                <div class="task-list">
+                    ${todayMeals.map(meal => `
+                        <div class="task-item">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text">${getMealEmoji(meal.type)} ${meal.text}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${meal.type} · ${meal.time}</div>
+                                </div>
+                                <button class="delete-btn" onclick="deleteMeal('${todayKey}', ${meal.id})">&times;</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${todayMeals.length === 0 ? '<div class="empty-state">Nic jeszcze nie zapisano</div>' : ''}
+                </div>
+
+                <div style="font-size: 13px; font-weight: 600; margin: 25px 0 10px; color: var(--text-main);">Ostatnie dni</div>
+                <div class="task-list">
+                    ${days.slice(1).map(d => `
+                        <div class="task-item" style="cursor: pointer;" onclick="toggleFoodDay('${d.key}')">
+                            <div class="task-content">
+                                <div style="flex: 1;">
+                                    <div class="task-text">${d.date.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${d.meals.length} ${d.meals.length === 1 ? 'wpis' : (d.meals.length < 5 ? 'wpisy' : 'wpisów')}</div>
+                                </div>
+                                <span style="color: var(--text-muted);">›</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function getMealEmoji(type) {
+            const emojis = { 'śniadanie': '🌅', 'obiad': '☀️', 'kolacja': '🌙', 'przekąska': '🍎' };
+            return emojis[type] || '🍽️';
+        }
+        
+        window.addMeal = () => {
+            const typeEl = document.getElementById('mealType');
+            const inputEl = document.getElementById('mealInput');
+            const text = inputEl.value.trim();
+            if (!text) return;
+            
+            const todayKey = getFinanceDateKey(new Date());
+            if (!state.foodLog[todayKey]) state.foodLog[todayKey] = [];
+            
+            state.foodLog[todayKey].push({
+                id: Date.now(),
+                type: typeEl.value,
+                text,
+                time: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+            });
+            
+            saveState();
+            inputEl.value = '';
+            render();
+        };
+        
+        window.deleteMeal = (dateKey, id) => {
+            if (state.foodLog[dateKey]) {
+                state.foodLog[dateKey] = state.foodLog[dateKey].filter(m => m.id !== id);
+                if (state.foodLog[dateKey].length === 0) delete state.foodLog[dateKey];
+                saveState();
+                render();
+            }
+        };
+        
+        window.toggleFoodDay = (dateKey) => {
+            const meals = state.foodLog[dateKey] || [];
+            if (meals.length === 0) {
+                alert('Brak wpisów z tego dnia.');
+                return;
+            }
+            const list = meals.map(m => `${getMealEmoji(m.type)} ${m.type}: ${m.text} (${m.time})`).join('\n');
+            alert(list);
+        };
+
         // === SHOOTER GAME ===
         let shooterGame = null;
 
@@ -2115,14 +2565,17 @@
             return `
                 <div class="day-view-header" style="border: none; padding: 0; margin-bottom: 15px;">
                     <div class="day-view-title">Nudzisz się?</div>
-                    <button class="back-btn" onclick="exitShooter()">← Inne</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="back-btn" onclick="toggleShooterFullscreen()">[ ]</button>
+                        <button class="back-btn" onclick="exitShooter()">← Inne</button>
+                    </div>
                 </div>
 
                 <div style="text-align: center; margin-bottom: 10px;">
                     <span style="font-size: 12px; color: var(--text-muted);">Rekord: <span id="shooterHighScore">${state.shooterHighScore}</span></span>
                 </div>
 
-                <div style="display: flex; justify-content: center;">
+                <div id="shooterCanvasContainer" style="display: flex; justify-content: center;">
                     <canvas id="shooterCanvas" style="border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-card); touch-action: none; max-width: 100%;"></canvas>
                 </div>
 
@@ -2132,7 +2585,7 @@
                 </div>
 
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-muted);">
-                    Przytrzymaj palec = strzał ciągły
+                    Przeciągaj palcem = celuj (autofire)
                 </div>
             `;
         }
@@ -2154,10 +2607,11 @@
                 canvas, ctx,
                 width: canvas.width,
                 height: canvas.height,
-                player: { x: canvas.width / 2, y: canvas.height / 2, radius: Math.floor(canvas.width / 25), angle: 0 },
+                player: { x: canvas.width / 2, y: canvas.height / 2, radius: Math.floor(canvas.width / 55), angle: 0 },
                 bullets: [],
                 enemies: [],
                 particles: [],
+                terrain: [],
                 score: 0,
                 wave: 1,
                 enemiesPerWave: 5,
@@ -2165,6 +2619,7 @@
                 enemiesKilled: 0,
                 gameOver: false,
                 running: false,
+                wavePause: false,
                 mouseX: canvas.width / 2,
                 mouseY: 0,
                 lastShot: 0,
@@ -2172,8 +2627,11 @@
                 isTouching: false,
                 autoFireInterval: null
             };
+            
+            // Generate terrain
+            generateTerrain();
 
-            // Mouse events
+            // Mouse events - only for aiming
             canvas.addEventListener('mousemove', (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
@@ -2182,23 +2640,7 @@
                 shooterGame.mouseY = (e.clientY - rect.top) * scaleY;
             });
 
-            canvas.addEventListener('mousedown', () => {
-                shootBullet();
-                shooterGame.isTouching = true;
-                startAutoFire();
-            });
-
-            canvas.addEventListener('mouseup', () => {
-                shooterGame.isTouching = false;
-                stopAutoFire();
-            });
-
-            canvas.addEventListener('mouseleave', () => {
-                shooterGame.isTouching = false;
-                stopAutoFire();
-            });
-
-            // Touch events
+            // Touch events - only for aiming
             canvas.addEventListener('touchmove', (e) => {
                 e.preventDefault();
                 const rect = canvas.getBoundingClientRect();
@@ -2215,22 +2657,217 @@
                 const scaleY = canvas.height / rect.height;
                 shooterGame.mouseX = (e.touches[0].clientX - rect.left) * scaleX;
                 shooterGame.mouseY = (e.touches[0].clientY - rect.top) * scaleY;
-                shootBullet();
-                shooterGame.isTouching = true;
-                startAutoFire();
+                handleShooterTap();
             }, { passive: false });
+            
+            canvas.addEventListener('click', () => {
+                handleShooterTap();
+            });
+        }
+        
+        function handleShooterTap() {
+            if (!shooterGame || !shooterGame.running) return;
+            if (shooterGame.wavePause) {
+                shooterGame.wave++;
+                shooterGame.enemiesPerWave = 5 + shooterGame.wave * 3;
+                shooterGame.enemiesSpawned = 0;
+                shooterGame.enemiesKilled = 0;
+                shooterGame.wavePause = false;
+                document.getElementById('shooterInfo').textContent = `Fala ${shooterGame.wave}`;
+            }
+        }
 
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                shooterGame.isTouching = false;
-                stopAutoFire();
-            }, { passive: false });
+        function generateTerrain() {
+            const { width, height, player } = shooterGame;
+            shooterGame.terrain = [];
+            
+            const safeRadius = width / 5; // Safe zone around player
+            
+            // Generate 2-3 mountains
+            for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
+                let x, y, attempts = 0;
+                do {
+                    x = width * 0.1 + Math.random() * width * 0.8;
+                    y = height * 0.1 + Math.random() * height * 0.8;
+                    attempts++;
+                } while (Math.hypot(x - player.x, y - player.y) < safeRadius && attempts < 20);
+                
+                if (attempts < 20) {
+                    const size = width / 18 + Math.random() * (width / 22);
+                    shooterGame.terrain.push({
+                        type: 'mountain',
+                        x, y,
+                        size,
+                        // Triangle points
+                        points: [
+                            { x: x, y: y - size },
+                            { x: x - size * 0.8, y: y + size * 0.5 },
+                            { x: x + size * 0.8, y: y + size * 0.5 }
+                        ]
+                    });
+                }
+            }
+            
+            // Generate 2-3 forests
+            for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
+                let x, y, attempts = 0;
+                do {
+                    x = width * 0.1 + Math.random() * width * 0.8;
+                    y = height * 0.1 + Math.random() * height * 0.8;
+                    attempts++;
+                } while ((Math.hypot(x - player.x, y - player.y) < safeRadius || terrainCollision(x, y, width/14)) && attempts < 20);
+                
+                if (attempts < 20) {
+                    const size = width / 14 + Math.random() * (width / 18);
+                    // Pre-generate tree positions
+                    const trees = [];
+                    const treeCount = 8;
+                    for (let t = 0; t < treeCount; t++) {
+                        const angle = (Math.PI * 2 / treeCount) * t + Math.random() * 0.3;
+                        const dist = size * 0.3 + Math.random() * size * 0.5;
+                        trees.push({
+                            x: x + Math.cos(angle) * dist,
+                            y: y + Math.sin(angle) * dist,
+                            h: size * 0.3 + Math.random() * size * 0.2
+                        });
+                    }
+                    shooterGame.terrain.push({
+                        type: 'forest',
+                        x, y,
+                        size,
+                        trees
+                    });
+                }
+            }
+            
+            // Generate 1-2 lakes
+            for (let i = 0; i < 1 + Math.floor(Math.random() * 2); i++) {
+                let x, y, attempts = 0;
+                do {
+                    x = width * 0.1 + Math.random() * width * 0.8;
+                    y = height * 0.1 + Math.random() * height * 0.8;
+                    attempts++;
+                } while ((Math.hypot(x - player.x, y - player.y) < safeRadius || terrainCollision(x, y, width/12)) && attempts < 20);
+                
+                if (attempts < 20) {
+                    const rx = width / 18 + Math.random() * (width / 22);
+                    const ry = rx * (0.5 + Math.random() * 0.3);
+                    shooterGame.terrain.push({
+                        type: 'lake',
+                        x, y,
+                        rx, ry
+                    });
+                }
+            }
+        }
+        
+        function terrainCollision(x, y, radius) {
+            for (const t of shooterGame.terrain) {
+                if (t.type === 'mountain') {
+                    if (Math.hypot(x - t.x, y - t.y) < t.size + radius) return true;
+                } else if (t.type === 'lake') {
+                    const dx = (x - t.x) / t.rx;
+                    const dy = (y - t.y) / t.ry;
+                    if (dx * dx + dy * dy < (1 + radius / t.rx) ** 2) return true;
+                }
+            }
+            return false;
+        }
+        
+        function getTerrainAt(x, y) {
+            for (const t of shooterGame.terrain) {
+                if (t.type === 'mountain') {
+                    if (pointInTriangle(x, y, t.points)) return 'mountain';
+                } else if (t.type === 'lake') {
+                    const dx = (x - t.x) / t.rx;
+                    const dy = (y - t.y) / t.ry;
+                    if (dx * dx + dy * dy < 1) return 'lake';
+                } else if (t.type === 'forest') {
+                    if (Math.hypot(x - t.x, y - t.y) < t.size) return 'forest';
+                }
+            }
+            return null;
+        }
+        
+        function pointInTriangle(px, py, points) {
+            const [p0, p1, p2] = points;
+            const area = 0.5 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+            const s = 1 / (2 * area) * (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * px + (p0.x - p2.x) * py);
+            const t = 1 / (2 * area) * (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * px + (p1.x - p0.x) * py);
+            return s > 0 && t > 0 && (1 - s - t) > 0;
+        }
+        
+        function drawTerrain(ctx, isDark) {
+            for (const t of shooterGame.terrain) {
+                if (t.type === 'mountain') {
+                    // Draw mountain as filled triangle
+                    ctx.fillStyle = isDark ? '#3a3a3a' : '#ccc';
+                    ctx.strokeStyle = isDark ? '#555' : '#999';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(t.points[0].x, t.points[0].y);
+                    ctx.lineTo(t.points[1].x, t.points[1].y);
+                    ctx.lineTo(t.points[2].x, t.points[2].y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    // Snow cap
+                    ctx.fillStyle = isDark ? '#666' : '#fff';
+                    const capY = t.points[0].y + t.size * 0.3;
+                    const capW = t.size * 0.25;
+                    ctx.beginPath();
+                    ctx.moveTo(t.points[0].x, t.points[0].y);
+                    ctx.lineTo(t.points[0].x - capW, capY);
+                    ctx.lineTo(t.points[0].x + capW, capY);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (t.type === 'forest') {
+                    // Draw forest using pre-generated tree positions
+                    ctx.strokeStyle = isDark ? '#4a4a4a' : '#aaa';
+                    ctx.lineWidth = 1;
+                    for (const tree of t.trees) {
+                        // Simple tree: line with small triangle
+                        ctx.beginPath();
+                        ctx.moveTo(tree.x, tree.y);
+                        ctx.lineTo(tree.x, tree.y - tree.h);
+                        ctx.stroke();
+                        // Tree top
+                        ctx.beginPath();
+                        ctx.moveTo(tree.x, tree.y - tree.h - 5);
+                        ctx.lineTo(tree.x - 4, tree.y - tree.h + 3);
+                        ctx.lineTo(tree.x + 4, tree.y - tree.h + 3);
+                        ctx.closePath();
+                        ctx.stroke();
+                    }
+                } else if (t.type === 'lake') {
+                    // Draw lake as ellipse with waves
+                    ctx.fillStyle = isDark ? '#2a2a3a' : '#e8e8f0';
+                    ctx.strokeStyle = isDark ? '#4a4a5a' : '#bbb';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(t.x, t.y, t.rx, t.ry, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Waves
+                    ctx.strokeStyle = isDark ? '#3a3a4a' : '#ccc';
+                    ctx.lineWidth = 1;
+                    for (let i = 0; i < 3; i++) {
+                        const wy = t.y - t.ry * 0.3 + i * t.ry * 0.3;
+                        const ww = t.rx * 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(t.x - ww, wy);
+                        ctx.quadraticCurveTo(t.x - ww/2, wy - 3, t.x, wy);
+                        ctx.quadraticCurveTo(t.x + ww/2, wy + 3, t.x + ww, wy);
+                        ctx.stroke();
+                    }
+                }
+            }
         }
 
         function startAutoFire() {
             if (!shooterGame || shooterGame.autoFireInterval) return;
             shooterGame.autoFireInterval = setInterval(() => {
-                if (shooterGame && shooterGame.isTouching && shooterGame.running && !shooterGame.gameOver) {
+                if (shooterGame && shooterGame.running && !shooterGame.gameOver) {
                     shootBullet();
                 }
             }, 100);
@@ -2256,9 +2893,16 @@
             shooterGame.enemiesKilled = 0;
             shooterGame.gameOver = false;
             shooterGame.running = true;
+            shooterGame.autoFireEnabled = true;
+            
+            // Regenerate terrain for new game
+            generateTerrain();
 
             document.getElementById('shooterStartBtn').style.display = 'none';
             document.getElementById('shooterInfo').textContent = 'Fala 1';
+            
+            // Start auto fire immediately
+            startAutoFire();
 
             gameLoop();
         }
@@ -2273,7 +2917,7 @@
             const { player, mouseX, mouseY, width } = shooterGame;
             const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
             const bulletSpeed = width / 45;
-            const bulletRadius = Math.max(3, width / 100);
+            const bulletRadius = Math.max(1.5, width / 180);
             
             shooterGame.bullets.push({
                 x: player.x + Math.cos(angle) * player.radius,
@@ -2296,10 +2940,10 @@
                 case 3: x = -20; y = Math.random() * height; break;
             }
 
-            const baseSpeed = width / 400; // Scale speed to canvas
-            const speed = (0.8 + Math.random() * 0.5 + shooterGame.wave * 0.1) * baseSpeed;
-            const baseSize = width / 30;
-            const size = baseSize + Math.random() * (baseSize * 0.8);
+            const baseSpeed = width / 550; // Scale speed to canvas
+            const speed = (0.6 + Math.random() * 0.4 + shooterGame.wave * 0.06) * baseSpeed;
+            const baseSize = width / 70;
+            const size = baseSize + Math.random() * (baseSize * 0.5);
             const shape = Math.floor(Math.random() * 4);
             const shade = Math.floor(Math.random() * 3);
             const color = shade === 0 ? '#222' : (shade === 1 ? '#444' : '#666');
@@ -2331,6 +2975,9 @@
             // Clear - use app colors
             ctx.fillStyle = isDark ? '#1a1a2e' : '#faf9f6';
             ctx.fillRect(0, 0, width, height);
+            
+            // Draw terrain
+            drawTerrain(ctx, isDark);
 
             // Update player angle
             player.angle = Math.atan2(shooterGame.mouseY - player.y, shooterGame.mouseX - player.x);
@@ -2352,8 +2999,8 @@
             ctx.fillRect(0, -cannonWidth/2, player.radius + player.radius * 0.7, cannonWidth);
             ctx.restore();
 
-            // Spawn enemies
-            if (shooterGame.enemiesSpawned < shooterGame.enemiesPerWave && Math.random() < 0.02) {
+            // Spawn enemies (not during wave pause)
+            if (!shooterGame.wavePause && shooterGame.enemiesSpawned < shooterGame.enemiesPerWave && Math.random() < 0.02) {
                 spawnEnemy();
             }
 
@@ -2368,6 +3015,14 @@
                     bullets.splice(i, 1);
                     continue;
                 }
+                
+                // Remove if hits mountain
+                const bulletTerrain = getTerrainAt(b.x, b.y);
+                if (bulletTerrain === 'mountain') {
+                    createParticles(b.x, b.y, isDark ? '#555' : '#aaa');
+                    bullets.splice(i, 1);
+                    continue;
+                }
 
                 ctx.fillStyle = isDark ? '#fff' : '#000';
                 ctx.beginPath();
@@ -2379,10 +3034,63 @@
             for (let i = enemies.length - 1; i >= 0; i--) {
                 const e = enemies[i];
                 
-                // Move toward player
+                // First check if enemy is currently inside terrain and push out
+                const currentTerrain = getTerrainAt(e.x, e.y);
+                if (currentTerrain === 'mountain' || currentTerrain === 'lake') {
+                    // Push away from center of nearest obstacle
+                    for (const t of shooterGame.terrain) {
+                        if ((t.type === 'mountain' || t.type === 'lake') && Math.hypot(e.x - t.x, e.y - t.y) < (t.size || t.rx || 50)) {
+                            const pushAngle = Math.atan2(e.y - t.y, e.x - t.x);
+                            e.x += Math.cos(pushAngle) * e.speed * 2;
+                            e.y += Math.sin(pushAngle) * e.speed * 2;
+                            break;
+                        }
+                    }
+                }
+                
+                // Move toward player with terrain avoidance
                 const angle = Math.atan2(player.y - e.y, player.x - e.x);
-                e.x += Math.cos(angle) * e.speed;
-                e.y += Math.sin(angle) * e.speed;
+                let moveX = Math.cos(angle) * e.speed;
+                let moveY = Math.sin(angle) * e.speed;
+                
+                // Check terrain at next position
+                const nextX = e.x + moveX;
+                const nextY = e.y + moveY;
+                const terrain = getTerrainAt(nextX, nextY);
+                
+                if (terrain === 'mountain' || terrain === 'lake') {
+                    // Try multiple angles to go around
+                    let found = false;
+                    for (let offset = Math.PI/4; offset <= Math.PI; offset += Math.PI/8) {
+                        for (const dir of [1, -1]) {
+                            const testAngle = angle + offset * dir;
+                            const testX = e.x + Math.cos(testAngle) * e.speed * 1.5;
+                            const testY = e.y + Math.sin(testAngle) * e.speed * 1.5;
+                            const testTerrain = getTerrainAt(testX, testY);
+                            
+                            if (testTerrain !== 'mountain' && testTerrain !== 'lake') {
+                                moveX = Math.cos(testAngle) * e.speed;
+                                moveY = Math.sin(testAngle) * e.speed;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                    
+                    if (!found) {
+                        // Really stuck - move away from nearest obstacle
+                        moveX = 0;
+                        moveY = 0;
+                    }
+                } else if (terrain === 'forest') {
+                    // Forest slows down enemies
+                    moveX *= 0.4;
+                    moveY *= 0.4;
+                }
+                
+                e.x += moveX;
+                e.y += moveY;
 
                 // Check collision with player
                 const dist = Math.hypot(player.x - e.x, player.y - e.y);
@@ -2443,12 +3151,24 @@
             }
 
             // Check wave completion
-            if (shooterGame.enemiesKilled >= shooterGame.enemiesPerWave) {
-                shooterGame.wave++;
-                shooterGame.enemiesPerWave = 5 + shooterGame.wave * 3;
-                shooterGame.enemiesSpawned = 0;
-                shooterGame.enemiesKilled = 0;
-                document.getElementById('shooterInfo').textContent = `Fala ${shooterGame.wave}`;
+            if (shooterGame.enemiesKilled >= shooterGame.enemiesPerWave && !shooterGame.wavePause) {
+                shooterGame.wavePause = true;
+                // Generate new terrain for new wave
+                generateTerrain();
+                document.getElementById('shooterInfo').innerHTML = `Fala ${shooterGame.wave} ukończona!<br><span style="font-size: 12px;">Dotknij aby kontynuować</span>`;
+            }
+            
+            // Draw wave pause overlay
+            if (shooterGame.wavePause) {
+                ctx.fillStyle = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = isDark ? '#faf9f6' : '#2c2c2c';
+                ctx.font = `${Math.floor(width/15)}px "Libre Baskerville"`;
+                ctx.textAlign = 'center';
+                ctx.fillText(`Fala ${shooterGame.wave} ✓`, width/2, height/2 - 20);
+                ctx.font = `${Math.floor(width/25)}px "Libre Baskerville"`;
+                ctx.fillText('Dotknij aby kontynuować', width/2, height/2 + 20);
+                ctx.textAlign = 'left';
             }
 
             // Draw HUD
@@ -2499,8 +3219,58 @@
                 stopAutoFire();
                 shooterGame = null;
             }
+            // Exit fullscreen if active
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
             switchMainTab('inne');
         };
+
+        window.toggleShooterFullscreen = () => {
+            const container = document.getElementById('shooterCanvasContainer');
+            if (!container) return;
+            
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => {
+                    // Resize canvas for fullscreen
+                    if (shooterGame) {
+                        const canvas = shooterGame.canvas;
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
+                        shooterGame.width = canvas.width;
+                        shooterGame.height = canvas.height;
+                        shooterGame.player.x = canvas.width / 2;
+                        shooterGame.player.y = canvas.height / 2;
+                        shooterGame.player.radius = Math.floor(canvas.width / 55);
+                        generateTerrain();
+                    }
+                }).catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        // Handle fullscreen change
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && shooterGame) {
+                // Exited fullscreen, resize back
+                setTimeout(() => {
+                    const container = document.getElementById('shooterCanvasContainer');
+                    if (container && shooterGame) {
+                        const maxWidth = Math.min(container.clientWidth - 20, 400);
+                        const ratio = 1.3;
+                        shooterGame.canvas.width = maxWidth;
+                        shooterGame.canvas.height = Math.floor(maxWidth * ratio);
+                        shooterGame.width = shooterGame.canvas.width;
+                        shooterGame.height = shooterGame.canvas.height;
+                        shooterGame.player.x = shooterGame.width / 2;
+                        shooterGame.player.y = shooterGame.height / 2;
+                        shooterGame.player.radius = Math.floor(shooterGame.width / 55);
+                        generateTerrain();
+                    }
+                }, 100);
+            }
+        });
 
         window.startShooterGame = startShooterGame;
 
@@ -2580,6 +3350,30 @@
                     </div>
 
                     <div class="settings-section">
+                        <div class="settings-section-title">Widoczne sekcje w "Inne"</div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                            Wyłącz sekcje, których nie potrzebujesz.
+                        </p>
+                        ${[
+                            { id: 'czas', label: 'Czas' },
+                            { id: 'listy', label: 'Listy' },
+                            { id: 'notatki', label: 'Notatki' },
+                            { id: 'gdziejest', label: 'Gdzie jest' },
+                            { id: 'finanse', label: 'Finanse' },
+                            { id: 'jedzenie', label: 'Jedzenie' },
+                            { id: 'shooter', label: 'Nudzisz się?' }
+                        ].map(s => `
+                            <div class="setting-row">
+                                <span class="setting-label">${s.label}</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${!state.hiddenSections.includes(s.id) ? 'checked' : ''} onchange="toggleSectionVisibility('${s.id}')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="settings-section">
                         <div class="settings-section-title">Kopia zapasowa</div>
                         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
                             Eksportuj wszystkie dane do pliku JSON lub wczytaj wcześniejszą kopię.
@@ -2615,6 +3409,8 @@
             else if (state.activeMainTab === 'listy') content = renderLists();
             else if (state.activeMainTab === 'notatki') content = renderNotatki();
             else if (state.activeMainTab === 'gdziejest') content = renderGdzieJest();
+            else if (state.activeMainTab === 'finanse') content = renderFinanse();
+            else if (state.activeMainTab === 'jedzenie') content = renderJedzenie();
             else if (state.activeMainTab === 'shooter') content = renderShooter();
 
             app.innerHTML = `
@@ -2778,6 +3574,104 @@
         window.toggleTask = toggleTask;
         window.deleteTaskFromList = deleteTaskFromList;
         window.togglePastDayTask = togglePastDayTask;
+        
+        // Task drag and drop
+        let dragState = { dragging: false, taskId: null, taskTab: null, startY: 0, currentEl: null };
+        
+        window.startTaskDrag = (e, tab, taskId) => {
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            const taskEl = e.target.closest('.task-item');
+            if (!taskEl) return;
+            
+            dragState = {
+                dragging: true,
+                taskId: taskId,
+                taskTab: tab,
+                startY: touch.clientY,
+                currentEl: taskEl,
+                startIndex: parseInt(taskEl.dataset.taskIndex)
+            };
+            
+            taskEl.classList.add('dragging');
+            
+            document.addEventListener('touchmove', handleTaskDrag, { passive: false });
+            document.addEventListener('touchend', endTaskDrag);
+            document.addEventListener('mousemove', handleTaskDrag);
+            document.addEventListener('mouseup', endTaskDrag);
+        };
+        
+        function handleTaskDrag(e) {
+            if (!dragState.dragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+            const targetTask = elements.find(el => el.classList && el.classList.contains('task-item') && el !== dragState.currentEl);
+            
+            // Remove all drag-over classes
+            document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+                el.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+            
+            if (targetTask) {
+                const rect = targetTask.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (touch.clientY < midY) {
+                    targetTask.classList.add('drag-over-top');
+                } else {
+                    targetTask.classList.add('drag-over-bottom');
+                }
+            }
+        }
+        
+        function endTaskDrag(e) {
+            if (!dragState.dragging) return;
+            
+            document.removeEventListener('touchmove', handleTaskDrag);
+            document.removeEventListener('touchend', endTaskDrag);
+            document.removeEventListener('mousemove', handleTaskDrag);
+            document.removeEventListener('mouseup', endTaskDrag);
+            
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+            const targetTask = elements.find(el => el.classList && el.classList.contains('task-item') && el !== dragState.currentEl);
+            
+            if (targetTask && dragState.taskTab) {
+                const targetIndex = parseInt(targetTask.dataset.taskIndex);
+                const rect = targetTask.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                const insertAfter = touch.clientY > midY;
+                
+                reorderTask(dragState.taskTab, dragState.startIndex, targetIndex, insertAfter);
+            }
+            
+            // Cleanup
+            document.querySelectorAll('.dragging, .drag-over-top, .drag-over-bottom').forEach(el => {
+                el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+            });
+            
+            dragState = { dragging: false, taskId: null, taskTab: null, startY: 0, currentEl: null };
+        }
+        
+        function reorderTask(tab, fromIndex, toIndex, insertAfter) {
+            let tasks;
+            if (tab === 'urgent') tasks = state.urgent;
+            else if (tab === 'inne') tasks = state.today;
+            else return;
+            
+            if (fromIndex === toIndex) return;
+            
+            const [movedTask] = tasks.splice(fromIndex, 1);
+            let newIndex = toIndex;
+            if (fromIndex < toIndex) newIndex--;
+            if (insertAfter) newIndex++;
+            
+            tasks.splice(newIndex, 0, movedTask);
+            saveState();
+            render();
+        }
+
         window.prevMonth = () => { state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; } render(); };
         window.nextMonth = () => { state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; } render(); };
         window.trackerPrevDay = () => { state.trackerDate.setDate(state.trackerDate.getDate() - 1); render(); };
@@ -3079,6 +3973,17 @@
             saveState();
             render();
         };
+        
+        window.toggleSectionVisibility = (sectionId) => {
+            const idx = state.hiddenSections.indexOf(sectionId);
+            if (idx === -1) {
+                state.hiddenSections.push(sectionId);
+            } else {
+                state.hiddenSections.splice(idx, 1);
+            }
+            saveState();
+            render();
+        };
 
         window.addTrackerCategory = () => {
             const nameEl = document.getElementById('newCategoryName');
@@ -3121,6 +4026,10 @@
                 notes: state.notes,
                 whereIs: state.whereIs,
                 shooterHighScore: state.shooterHighScore,
+                expenses: state.expenses,
+                expenseCategories: state.expenseCategories,
+                hiddenSections: state.hiddenSections,
+                foodLog: state.foodLog,
                 darkMode: state.darkMode
             };
             const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -3152,6 +4061,10 @@
                         if (d.notes) state.notes = d.notes;
                         if (d.whereIs) state.whereIs = d.whereIs;
                         if (d.shooterHighScore) state.shooterHighScore = d.shooterHighScore;
+                        if (d.expenses) state.expenses = d.expenses;
+                        if (d.expenseCategories) state.expenseCategories = d.expenseCategories;
+                        if (d.hiddenSections) state.hiddenSections = d.hiddenSections;
+                        if (d.foodLog) state.foodLog = d.foodLog;
                         if (d.darkMode !== undefined) {
                             state.darkMode = d.darkMode;
                             document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
