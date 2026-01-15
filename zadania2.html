@@ -345,25 +345,24 @@
         .task-item.completed { opacity: 0.6; background: #fafafa; box-shadow: none; }
         [data-theme="dark"] .task-item.completed { background: #252525; }
         
-        .drag-handle {
-            cursor: grab;
-            padding: 0 8px;
+        .task-reorder {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-right: 8px;
+        }
+        .reorder-btn {
+            background: none;
+            border: 1px solid var(--border-light);
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 8px;
             color: var(--text-muted);
-            font-size: 14px;
-            user-select: none;
-            touch-action: none;
+            cursor: pointer;
+            line-height: 1;
         }
-        .drag-handle:active { cursor: grabbing; }
-        .task-item.dragging {
-            opacity: 0.9;
-            background: var(--bg-main);
-            transform: scale(1.02);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
-            position: relative;
-        }
-        .task-item.drag-over-top { border-top: 2px solid var(--accent); }
-        .task-item.drag-over-bottom { border-bottom: 2px solid var(--accent); }
+        .reorder-btn:hover:not(:disabled) { background: var(--bg-main); color: var(--text-main); }
+        .reorder-btn:disabled { opacity: 0.3; cursor: default; }
         
         .task-content { display: flex; align-items: center; width: 100%; }
 
@@ -1211,15 +1210,44 @@
             } catch (e) { return dateString; }
         }
         function getCalendarTasksForDate(dateString) { return state.calendarTasks[dateString] || []; }
-        function addCalendarTask(dateString, taskText) {
+        function addCalendarTask(dateString, taskData) {
             if (!state.calendarTasks[dateString]) state.calendarTasks[dateString] = [];
-            state.calendarTasks[dateString].push(taskText);
+            // Accept string or object
+            if (typeof taskData === 'string') {
+                state.calendarTasks[dateString].push({ text: taskData, completed: false });
+            } else {
+                state.calendarTasks[dateString].push({ text: taskData.text, alarm: taskData.alarm || null, completed: false });
+            }
             saveState();
         }
         function deleteCalendarTask(dateString, taskIndex) {
             if (state.calendarTasks[dateString]) {
                 state.calendarTasks[dateString].splice(taskIndex, 1);
                 if (state.calendarTasks[dateString].length === 0) delete state.calendarTasks[dateString];
+                saveState();
+            }
+        }
+        function toggleCalendarTaskCompleted(dateString, taskIndex) {
+            if (state.calendarTasks[dateString] && state.calendarTasks[dateString][taskIndex] !== undefined) {
+                let task = state.calendarTasks[dateString][taskIndex];
+                // Migrate string to object if needed
+                if (typeof task === 'string') {
+                    task = { text: task, completed: false };
+                    state.calendarTasks[dateString][taskIndex] = task;
+                }
+                task.completed = !task.completed;
+                saveState();
+            }
+        }
+        function editCalendarTaskText(dateString, taskIndex, newText) {
+            if (state.calendarTasks[dateString] && state.calendarTasks[dateString][taskIndex] !== undefined) {
+                let task = state.calendarTasks[dateString][taskIndex];
+                // Migrate string to object if needed
+                if (typeof task === 'string') {
+                    task = { text: task, completed: false };
+                    state.calendarTasks[dateString][taskIndex] = task;
+                }
+                task.text = newText;
                 saveState();
             }
         }
@@ -1508,7 +1536,10 @@
                              data-task-tab="${activeTab}"
                              data-task-index="${index}"
                              ${activeTab === 'urgent' && !task.completed ? 'style="border-left: 3px solid #e74c3c;"' : ''}>
-                            <div class="drag-handle" ontouchstart="startTaskDrag(event, '${activeTab}', ${task.id})" onmousedown="startTaskDrag(event, '${activeTab}', ${task.id})">⋮⋮</div>
+                            <div class="task-reorder">
+                                <button class="reorder-btn" onclick="moveTask('${activeTab}', ${index}, -1)" ${index === 0 ? 'disabled' : ''}>▲</button>
+                                <button class="reorder-btn" onclick="moveTask('${activeTab}', ${index}, 1)" ${index === currentTasks.length - 1 ? 'disabled' : ''}>▼</button>
+                            </div>
                             <div class="task-content">
                                 <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${activeTab}', ${task.id})"></div>
                                 <div class="task-text ${task.completed ? 'completed' : ''}">
@@ -1651,13 +1682,16 @@
                         ${calendarTasks.length > 0 ? calendarTasks.map((task, index) => {
                             const taskText = typeof task === 'string' ? task : task.text;
                             const taskAlarm = typeof task === 'string' ? null : task.alarm;
+                            const taskCompleted = typeof task === 'string' ? false : (task.completed || false);
                             return `
-                            <div class="task-item">
+                            <div class="task-item ${taskCompleted ? 'completed' : ''}">
                                 <div class="task-content">
-                                    <div class="task-text">
+                                    <div class="checkbox ${taskCompleted ? 'checked' : ''}" onclick="toggleCalendarTask('${state.selectedDate}', ${index})"></div>
+                                    <div class="task-text ${taskCompleted ? 'completed' : ''}" style="flex: 1;">
                                         ${taskText}
                                         ${taskAlarm ? `<span class="alarm-badge">⏰ ${taskAlarm}</span>` : ''}
                                     </div>
+                                    <button class="delete-btn" style="color: var(--accent);" onclick="event.stopPropagation(); editCalendarTask('${state.selectedDate}', ${index})" title="Edytuj">✎</button>
                                     ${!taskAlarm ? `<button class="delete-btn" style="color: var(--accent);" onclick="event.stopPropagation(); setCalendarAlarm('${state.selectedDate}', ${index})" title="Dodaj alarm">⏰</button>` : ''}
                                     ${taskAlarm ? `<button class="delete-btn" style="color: var(--accent);" onclick="event.stopPropagation(); clearCalendarAlarm('${state.selectedDate}', ${index})" title="Usuń alarm">✕⏰</button>` : ''}
                                     <button class="delete-btn" onclick="deleteCalendarTaskHandler(${index})">&times;</button>
@@ -2451,14 +2485,18 @@
             const today = new Date();
             const todayKey = getFinanceDateKey(today);
             const todayMeals = state.foodLog[todayKey] || [];
+            const todayCalories = todayMeals.reduce((sum, m) => sum + (m.calories || 0), 0);
             
-            // Get last 7 days for history
+            // Get last 7 days for history (only days with entries)
             const days = [];
-            for (let i = 0; i < 7; i++) {
+            for (let i = 1; i <= 30; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const key = getFinanceDateKey(date);
-                days.push({ date, key, meals: state.foodLog[key] || [] });
+                if (state.foodLog[key] && state.foodLog[key].length > 0) {
+                    days.push({ date, key, meals: state.foodLog[key] });
+                }
+                if (days.length >= 7) break;
             }
             
             return `
@@ -2467,27 +2505,26 @@
                     <button class="back-btn" onclick="switchMainTab('inne')">← Inne</button>
                 </div>
 
+                <div class="stats-today" style="margin-bottom: 20px;">
+                    <div class="stats-label">Dziś</div>
+                    <div class="stats-number">${todayCalories > 0 ? todayCalories + ' kcal' : '—'}</div>
+                </div>
+
                 <div class="add-task-card">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <select id="mealType" class="task-input" style="flex: 0 0 auto; padding: 10px; width: 120px;">
-                            <option value="śniadanie">🌅 Śniadanie</option>
-                            <option value="obiad">☀️ Obiad</option>
-                            <option value="kolacja">🌙 Kolacja</option>
-                            <option value="przekąska">🍎 Przekąska</option>
-                        </select>
-                        <input type="text" class="task-input" id="mealInput" placeholder="Co jadłeś/aś?" style="flex: 1;" onkeypress="if(event.key==='Enter') addMeal()" />
+                    <div class="add-task-form" style="gap: 8px;">
+                        <input type="text" class="task-input" id="mealInput" placeholder="Co jadłeś/aś?" style="flex: 2;" onkeypress="if(event.key==='Enter') addMeal()" />
+                        <input type="number" class="task-input" id="mealCalories" placeholder="kcal" style="flex: 0 0 70px; text-align: center;" onkeypress="if(event.key==='Enter') addMeal()" />
                         <button class="add-btn" onclick="addMeal()">+</button>
                     </div>
                 </div>
 
-                <div style="font-size: 13px; font-weight: 600; margin: 20px 0 10px; color: var(--text-main);">Dziś</div>
-                <div class="task-list">
+                <div class="task-list" style="margin-top: 15px;">
                     ${todayMeals.map(meal => `
                         <div class="task-item">
                             <div class="task-content">
                                 <div style="flex: 1;">
-                                    <div class="task-text">${getMealEmoji(meal.type)} ${meal.text}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${meal.type} · ${meal.time}</div>
+                                    <div class="task-text">${meal.text}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${meal.time}${meal.calories ? ' · ' + meal.calories + ' kcal' : ''}</div>
                                 </div>
                                 <button class="delete-btn" onclick="deleteMeal('${todayKey}', ${meal.id})">&times;</button>
                             </div>
@@ -2496,46 +2533,49 @@
                     ${todayMeals.length === 0 ? '<div class="empty-state">Nic jeszcze nie zapisano</div>' : ''}
                 </div>
 
-                <div style="font-size: 13px; font-weight: 600; margin: 25px 0 10px; color: var(--text-main);">Ostatnie dni</div>
-                <div class="task-list">
-                    ${days.slice(1).map(d => `
-                        <div class="task-item" style="cursor: pointer;" onclick="toggleFoodDay('${d.key}')">
-                            <div class="task-content">
-                                <div style="flex: 1;">
-                                    <div class="task-text">${d.date.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${d.meals.length} ${d.meals.length === 1 ? 'wpis' : (d.meals.length < 5 ? 'wpisy' : 'wpisów')}</div>
+                ${days.length > 0 ? `
+                    <div style="font-size: 13px; font-weight: 600; margin: 25px 0 10px; color: var(--text-main);">Ostatnie dni</div>
+                    <div class="task-list">
+                        ${days.map(d => {
+                            const cal = d.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+                            return `
+                                <div class="task-item" style="cursor: pointer;" onclick="toggleFoodDay('${d.key}')">
+                                    <div class="task-content">
+                                        <div style="flex: 1;">
+                                            <div class="task-text">${d.date.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'short' })}</div>
+                                            <div style="font-size: 11px; color: var(--text-muted);">${d.meals.length} ${d.meals.length === 1 ? 'wpis' : (d.meals.length < 5 ? 'wpisy' : 'wpisów')}${cal > 0 ? ' · ' + cal + ' kcal' : ''}</div>
+                                        </div>
+                                        <span style="color: var(--text-muted);">›</span>
+                                    </div>
                                 </div>
-                                <span style="color: var(--text-muted);">›</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : ''}
             `;
         }
         
-        function getMealEmoji(type) {
-            const emojis = { 'śniadanie': '🌅', 'obiad': '☀️', 'kolacja': '🌙', 'przekąska': '🍎' };
-            return emojis[type] || '🍽️';
-        }
-        
         window.addMeal = () => {
-            const typeEl = document.getElementById('mealType');
             const inputEl = document.getElementById('mealInput');
+            const caloriesEl = document.getElementById('mealCalories');
             const text = inputEl.value.trim();
             if (!text) return;
             
             const todayKey = getFinanceDateKey(new Date());
             if (!state.foodLog[todayKey]) state.foodLog[todayKey] = [];
             
+            const calories = parseInt(caloriesEl.value) || 0;
+            
             state.foodLog[todayKey].push({
                 id: Date.now(),
-                type: typeEl.value,
                 text,
+                calories: calories > 0 ? calories : null,
                 time: new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
             });
             
             saveState();
             inputEl.value = '';
+            caloriesEl.value = '';
             render();
         };
         
@@ -2554,7 +2594,7 @@
                 alert('Brak wpisów z tego dnia.');
                 return;
             }
-            const list = meals.map(m => `${getMealEmoji(m.type)} ${m.type}: ${m.text} (${m.time})`).join('\n');
+            const list = meals.map(m => `${m.text}${m.calories ? ' (' + m.calories + ' kcal)' : ''} - ${m.time}`).join('\n');
             alert(list);
         };
 
@@ -3034,59 +3074,23 @@
             for (let i = enemies.length - 1; i >= 0; i--) {
                 const e = enemies[i];
                 
-                // First check if enemy is currently inside terrain and push out
-                const currentTerrain = getTerrainAt(e.x, e.y);
-                if (currentTerrain === 'mountain' || currentTerrain === 'lake') {
-                    // Push away from center of nearest obstacle
-                    for (const t of shooterGame.terrain) {
-                        if ((t.type === 'mountain' || t.type === 'lake') && Math.hypot(e.x - t.x, e.y - t.y) < (t.size || t.rx || 50)) {
-                            const pushAngle = Math.atan2(e.y - t.y, e.x - t.x);
-                            e.x += Math.cos(pushAngle) * e.speed * 2;
-                            e.y += Math.sin(pushAngle) * e.speed * 2;
-                            break;
-                        }
-                    }
-                }
-                
-                // Move toward player with terrain avoidance
+                // Move toward player
                 const angle = Math.atan2(player.y - e.y, player.x - e.x);
                 let moveX = Math.cos(angle) * e.speed;
                 let moveY = Math.sin(angle) * e.speed;
                 
-                // Check terrain at next position
-                const nextX = e.x + moveX;
-                const nextY = e.y + moveY;
-                const terrain = getTerrainAt(nextX, nextY);
+                // Check terrain - just slow down, no pathfinding
+                const terrain = getTerrainAt(e.x, e.y);
                 
-                if (terrain === 'mountain' || terrain === 'lake') {
-                    // Try multiple angles to go around
-                    let found = false;
-                    for (let offset = Math.PI/4; offset <= Math.PI; offset += Math.PI/8) {
-                        for (const dir of [1, -1]) {
-                            const testAngle = angle + offset * dir;
-                            const testX = e.x + Math.cos(testAngle) * e.speed * 1.5;
-                            const testY = e.y + Math.sin(testAngle) * e.speed * 1.5;
-                            const testTerrain = getTerrainAt(testX, testY);
-                            
-                            if (testTerrain !== 'mountain' && testTerrain !== 'lake') {
-                                moveX = Math.cos(testAngle) * e.speed;
-                                moveY = Math.sin(testAngle) * e.speed;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (found) break;
-                    }
-                    
-                    if (!found) {
-                        // Really stuck - move away from nearest obstacle
-                        moveX = 0;
-                        moveY = 0;
-                    }
+                if (terrain === 'mountain') {
+                    moveX *= 0.15;
+                    moveY *= 0.15;
+                } else if (terrain === 'lake') {
+                    moveX *= 0.25;
+                    moveY *= 0.25;
                 } else if (terrain === 'forest') {
-                    // Forest slows down enemies
-                    moveX *= 0.4;
-                    moveY *= 0.4;
+                    moveX *= 0.5;
+                    moveY *= 0.5;
                 }
                 
                 e.x += moveX;
@@ -3568,6 +3572,22 @@
                 render();
             }
         };
+        
+        window.toggleCalendarTask = (date, idx) => {
+            toggleCalendarTaskCompleted(date, idx);
+            render();
+        };
+        
+        window.editCalendarTask = (date, idx) => {
+            const task = state.calendarTasks[date][idx];
+            const currentText = typeof task === 'string' ? task : task.text;
+            const newText = prompt('Edytuj zadanie:', currentText);
+            if (newText !== null && newText.trim()) {
+                editCalendarTaskText(date, idx, newText.trim());
+                render();
+            }
+        };
+        
         window.deleteCalendarTaskHandler = (idx) => { deleteCalendarTask(state.selectedDate, idx); render(); };
         window.deleteHistoryDay = (date) => { deleteHistoryDayInternal(date); };
         window.addStreakHandler = () => { const el = document.getElementById('streakInput'); if (el.value.trim()) { addStreak(el.value); el.value = ''; } };
@@ -3575,102 +3595,21 @@
         window.deleteTaskFromList = deleteTaskFromList;
         window.togglePastDayTask = togglePastDayTask;
         
-        // Task drag and drop
-        let dragState = { dragging: false, taskId: null, taskTab: null, startY: 0, currentEl: null };
-        
-        window.startTaskDrag = (e, tab, taskId) => {
-            e.preventDefault();
-            const touch = e.touches ? e.touches[0] : e;
-            const taskEl = e.target.closest('.task-item');
-            if (!taskEl) return;
-            
-            dragState = {
-                dragging: true,
-                taskId: taskId,
-                taskTab: tab,
-                startY: touch.clientY,
-                currentEl: taskEl,
-                startIndex: parseInt(taskEl.dataset.taskIndex)
-            };
-            
-            taskEl.classList.add('dragging');
-            
-            document.addEventListener('touchmove', handleTaskDrag, { passive: false });
-            document.addEventListener('touchend', endTaskDrag);
-            document.addEventListener('mousemove', handleTaskDrag);
-            document.addEventListener('mouseup', endTaskDrag);
-        };
-        
-        function handleTaskDrag(e) {
-            if (!dragState.dragging) return;
-            e.preventDefault();
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-            const targetTask = elements.find(el => el.classList && el.classList.contains('task-item') && el !== dragState.currentEl);
-            
-            // Remove all drag-over classes
-            document.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
-                el.classList.remove('drag-over-top', 'drag-over-bottom');
-            });
-            
-            if (targetTask) {
-                const rect = targetTask.getBoundingClientRect();
-                const midY = rect.top + rect.height / 2;
-                if (touch.clientY < midY) {
-                    targetTask.classList.add('drag-over-top');
-                } else {
-                    targetTask.classList.add('drag-over-bottom');
-                }
-            }
-        }
-        
-        function endTaskDrag(e) {
-            if (!dragState.dragging) return;
-            
-            document.removeEventListener('touchmove', handleTaskDrag);
-            document.removeEventListener('touchend', endTaskDrag);
-            document.removeEventListener('mousemove', handleTaskDrag);
-            document.removeEventListener('mouseup', endTaskDrag);
-            
-            const touch = e.changedTouches ? e.changedTouches[0] : e;
-            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-            const targetTask = elements.find(el => el.classList && el.classList.contains('task-item') && el !== dragState.currentEl);
-            
-            if (targetTask && dragState.taskTab) {
-                const targetIndex = parseInt(targetTask.dataset.taskIndex);
-                const rect = targetTask.getBoundingClientRect();
-                const midY = rect.top + rect.height / 2;
-                const insertAfter = touch.clientY > midY;
-                
-                reorderTask(dragState.taskTab, dragState.startIndex, targetIndex, insertAfter);
-            }
-            
-            // Cleanup
-            document.querySelectorAll('.dragging, .drag-over-top, .drag-over-bottom').forEach(el => {
-                el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
-            });
-            
-            dragState = { dragging: false, taskId: null, taskTab: null, startY: 0, currentEl: null };
-        }
-        
-        function reorderTask(tab, fromIndex, toIndex, insertAfter) {
+        // Task reordering
+        window.moveTask = (tab, index, direction) => {
             let tasks;
             if (tab === 'urgent') tasks = state.urgent;
             else if (tab === 'inne') tasks = state.today;
             else return;
             
-            if (fromIndex === toIndex) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= tasks.length) return;
             
-            const [movedTask] = tasks.splice(fromIndex, 1);
-            let newIndex = toIndex;
-            if (fromIndex < toIndex) newIndex--;
-            if (insertAfter) newIndex++;
-            
-            tasks.splice(newIndex, 0, movedTask);
+            // Swap tasks
+            [tasks[index], tasks[newIndex]] = [tasks[newIndex], tasks[index]];
             saveState();
             render();
-        }
+        };
 
         window.prevMonth = () => { state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; } render(); };
         window.nextMonth = () => { state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; } render(); };
