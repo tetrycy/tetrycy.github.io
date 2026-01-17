@@ -345,24 +345,25 @@
         .task-item.completed { opacity: 0.6; background: #fafafa; box-shadow: none; }
         [data-theme="dark"] .task-item.completed { background: #252525; }
         
-        .task-reorder {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            margin-right: 8px;
-        }
-        .reorder-btn {
-            background: none;
-            border: 1px solid var(--border-light);
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 8px;
+        .drag-handle {
+            cursor: grab;
+            padding: 8px 10px;
             color: var(--text-muted);
-            cursor: pointer;
-            line-height: 1;
+            font-size: 16px;
+            user-select: none;
+            touch-action: none;
         }
-        .reorder-btn:hover:not(:disabled) { background: var(--bg-main); color: var(--text-main); }
-        .reorder-btn:disabled { opacity: 0.3; cursor: default; }
+        .drag-handle:active { cursor: grabbing; }
+        .task-item.dragging {
+            opacity: 0.9;
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .task-item.dragging .task-text,
+        .task-item.dragging .drag-handle { color: white; }
+        .task-item.drag-over { border-top: 3px solid var(--accent); margin-top: -3px; }
         
         .task-content { display: flex; align-items: center; width: 100%; }
 
@@ -1536,10 +1537,9 @@
                              data-task-tab="${activeTab}"
                              data-task-index="${index}"
                              ${activeTab === 'urgent' && !task.completed ? 'style="border-left: 3px solid #e74c3c;"' : ''}>
-                            <div class="task-reorder">
-                                <button class="reorder-btn" onclick="moveTask('${activeTab}', ${index}, -1)" ${index === 0 ? 'disabled' : ''}>▲</button>
-                                <button class="reorder-btn" onclick="moveTask('${activeTab}', ${index}, 1)" ${index === currentTasks.length - 1 ? 'disabled' : ''}>▼</button>
-                            </div>
+                            <div class="drag-handle" 
+                                 ontouchstart="startDrag(event, '${activeTab}', ${index})" 
+                                 onmousedown="startDrag(event, '${activeTab}', ${index})">☰</div>
                             <div class="task-content">
                                 <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${activeTab}', ${task.id})"></div>
                                 <div class="task-text ${task.completed ? 'completed' : ''}">
@@ -3595,21 +3595,72 @@
         window.deleteTaskFromList = deleteTaskFromList;
         window.togglePastDayTask = togglePastDayTask;
         
-        // Task reordering
-        window.moveTask = (tab, index, direction) => {
+        // Drag and drop for tasks
+        let dragData = null;
+        
+        window.startDrag = (e, tab, index) => {
+            e.preventDefault();
+            const taskEl = e.target.closest('.task-item');
+            if (!taskEl) return;
+            
+            dragData = { tab, index, element: taskEl };
+            taskEl.classList.add('dragging');
+            
+            const moveHandler = (ev) => {
+                ev.preventDefault();
+                const touch = ev.touches ? ev.touches[0] : ev;
+                const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetItem = elemBelow?.closest('.task-item');
+                
+                // Remove all drag-over classes
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                
+                if (targetItem && targetItem !== dragData.element) {
+                    targetItem.classList.add('drag-over');
+                }
+            };
+            
+            const endHandler = (ev) => {
+                document.removeEventListener('touchmove', moveHandler);
+                document.removeEventListener('touchend', endHandler);
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('mouseup', endHandler);
+                
+                const touch = ev.changedTouches ? ev.changedTouches[0] : ev;
+                const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetItem = elemBelow?.closest('.task-item');
+                
+                if (targetItem && targetItem !== dragData.element) {
+                    const targetIndex = parseInt(targetItem.dataset.taskIndex);
+                    reorderTasks(dragData.tab, dragData.index, targetIndex);
+                }
+                
+                // Cleanup
+                document.querySelectorAll('.dragging, .drag-over').forEach(el => {
+                    el.classList.remove('dragging', 'drag-over');
+                });
+                dragData = null;
+            };
+            
+            document.addEventListener('touchmove', moveHandler, { passive: false });
+            document.addEventListener('touchend', endHandler);
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', endHandler);
+        };
+        
+        function reorderTasks(tab, fromIndex, toIndex) {
             let tasks;
             if (tab === 'urgent') tasks = state.urgent;
             else if (tab === 'inne') tasks = state.today;
             else return;
             
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= tasks.length) return;
+            if (fromIndex === toIndex) return;
             
-            // Swap tasks
-            [tasks[index], tasks[newIndex]] = [tasks[newIndex], tasks[index]];
+            const [moved] = tasks.splice(fromIndex, 1);
+            tasks.splice(toIndex, 0, moved);
             saveState();
             render();
-        };
+        }
 
         window.prevMonth = () => { state.currentMonth--; if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; } render(); };
         window.nextMonth = () => { state.currentMonth++; if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; } render(); };
