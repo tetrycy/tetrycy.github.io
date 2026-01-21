@@ -1,0 +1,2961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTPOST '95</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+:root { 
+    --f-green: #20ff20; 
+    --f-bg: #050805; 
+    --panel: #1a1c1a; 
+    --f-red: #ff3333; 
+    --f-blue: #33aaff; 
+    --f-purple: #cc33ff; 
+    --f-hp: #ffff00; 
+}
+
+body { 
+    margin: 0; 
+    background: #000; 
+    color: var(--f-green); 
+    font-family: VT323, monospace; 
+    display: flex; 
+    height: 100vh; 
+    overflow: hidden; 
+    font-size: 18px; 
+}
+
+#viewport { 
+    flex-grow: 1; 
+    position: relative; 
+    background: #000; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 0; 
+    min-height: 0; 
+}
+
+canvas { 
+    border: 2px solid var(--f-green); 
+    background: var(--f-bg); 
+    cursor: crosshair; 
+    image-rendering: crisp-edges; 
+    max-width: 100%; 
+    max-height: 100%; 
+    width: auto; 
+    height: auto; 
+}
+
+#sidebar { 
+    width: 380px; 
+    background: var(--panel); 
+    border-left: 4px ridge #444; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 20px; 
+}
+
+.screen { 
+    background: #000; 
+    border: 1px solid var(--f-green); 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    box-shadow: inset 0 0 15px rgba(0,255,0,0.2); 
+}
+
+.btn { 
+    background: #222; 
+    color: var(--f-green); 
+    border: 2px solid var(--f-green); 
+    padding: 12px; 
+    margin: 5px 0; 
+    cursor: pointer; 
+    font-family: VT323; 
+    font-size: 1.3em; 
+    text-transform: uppercase; 
+    width: 100%; 
+    text-align: left; 
+}
+
+.btn:hover:not(:disabled) { 
+    background: var(--f-green); 
+    color: #000; 
+}
+
+.btn.active { 
+    background: #083308; 
+    box-shadow: 0 0 10px var(--f-green); 
+}
+
+.stat { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 1.5em; 
+    margin: 5px 0; 
+}
+
+#terminal { 
+    font-size: 1em; 
+    height: 160px; 
+    overflow-y: auto; 
+    color: #8f8; 
+    border: 1px solid #1a331a; 
+    padding: 8px; 
+    background: #020502; 
+    line-height: 1.3; 
+}
+
+.upgrade-row { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 6px; 
+    margin-top: 8px; 
+}
+
+h2 { 
+    font-size: 1.8em; 
+    margin: 0 0 15px 0; 
+}
+
+select { 
+    background: #222; 
+    color: var(--f-green); 
+    border: 2px solid var(--f-green); 
+    padding: 8px; 
+    font-family: VT323; 
+    font-size: 1.1em; 
+    width: 100%; 
+    margin: 8px 0; 
+}
+
+.pathfind-badge { 
+    background: #083308; 
+    color: #8f8; 
+    padding: 4px 8px; 
+    border: 1px solid #0f0; 
+    font-size: 0.9em; 
+    display: inline-block; 
+    margin-top: 5px; 
+}
+</style></head><body>
+    <div id="viewport">
+        <canvas id="gameCanvas" width="2400" height="1800"></canvas>
+    </div>
+    <div id="sidebar">
+        <div class="screen">
+            <h2>OUTPOST '95</h2>
+            <div class="stat"><span>CREDITS:</span><span id="money">800</span></div>
+            <div class="stat"><span>HQ HP:</span><span id="hp">6000</span></div>
+            <div class="stat"><span>WAVE:</span><span id="wave">0</span></div>
+        </div>
+        <div class="screen">
+            <div>PRIMARY: <select id="primarySelect"></select></div>
+            <div>SECONDARY: <select id="secondarySelect"></select></div>
+        </div>
+        <div id="buildMenu"></div>
+        <button class="btn" id="actionBtn" onclick="handleAction()">EXECUTE COMBAT</button>
+        <div id="terminal"></div>
+    </div>
+    <script>
+// ============================================
+// OUTPOST '95 - CONSTANTS
+// ============================================
+
+const CONST = {
+    WIDTH: 2400,
+    HEIGHT: 1800,
+    GRID_SIZE: 60,
+    
+    PLAYER: {
+        START_X: 1200, START_Y: 900,
+        BASE_SPEED: 3.5, SIZE: 12,
+        SPEED_UP: 0.2, ROF_UP: 0.3, DMG_UP: 0.5
+    },
+    
+    ECONOMY: { START_MONEY: 800, START_HP: 6000 },
+    
+    WAVES: {
+        BASE_POOL: 3000, POOL_PER_WAVE: 4000,
+        BOSS_EVERY: 5, MAX_BOSSES: 3,
+        SPECIAL_BASE: 0.05, SPECIAL_PER_WAVE: 0.025, SPECIAL_MAX: 0.5
+    },
+    
+    SPAWN: { OFFSET: 300, SPREAD: 1500 },
+    
+    TERRAIN: {
+        HILL_SLOW: 1.8, FOREST_SLOW: 1.5,
+        LAKE_BLOCK: 999, LAKE_SWIM: 0.7
+    },
+    
+    PROJ: {
+        MARGIN: 50, BFG_SIZE: 20,
+        RIPPER_RANGE: 300, LIGHTNING_CONE: 0.5,
+        CHAIN_DMG: 0.7, FREEZE_CONE: 0.3,
+        HOMING_TURN: 0.08, HOMING_LIFE: 300
+    },
+    
+    GREN: { ARC: 80, SPEED: 8, NUKE_SUBS: 8, BASE_TRAVEL_SPEED: 8 },
+    
+    MINE: { ARM: 60, MARGIN: 5 },
+    
+    SINGULARITY: { PULL_R: 2, DMG_R: 0.5, TICK: 0.1 },
+    
+    ENEMY: {
+        BAR_W: 25, BAR_MULT: 2, BAR_H: 6, BAR_H_BOSS: 10,
+        FLASH: 3, JITTER: 2.5
+    },
+    
+    EXPLODE: { DEFAULT: 20, NUKE: 60, FREEZE: 40, BFG: 30 },
+    
+    VISUAL: { GRID_SPACING: 300, TRAIL_LENGTH: 15 }
+};
+// ============================================
+// OUTPOST '95 - WEAPONS
+// ============================================
+
+const WEAPONS = {
+    PRIMARY: {
+        RIFLE:       { name: "ASSAULT RIFLE",  rof: 140,  dmg: 35,  vel: 22, desc: "Balanced" },
+        MINIGUN:     { name: "MINIGUN",        rof: 60,   dmg: 18,  vel: 26, spread: 0.15, desc: "High ROF" },
+        SHOTGUN:     { name: "COMBAT SHOTGUN", rof: 600,  dmg: 15,  vel: 20, pellets: 8, spread: 0.25, knockback: 18, desc: "Spread + knockback" },
+        SNIPER:      { name: "SNIPER RIFLE",   rof: 1200, dmg: 150, vel: 35, desc: "High damage" },
+        FLAMETHROWER:{ name: "FLAMETHROWER",   rof: 50,   dmg: 3,   range: 200, cone: 0.4, desc: "Continuous cone" },
+        RAILGUN:     { name: "RAILGUN",        rof: 2000, dmg: 250, vel: 50, pierce: true, desc: "Pierces all" },
+        BFG:         { name: "BFG-9000",        rof: 3500, dmg: 500, vel: 8, blast: 200, desc: "Massive blast" },
+        LIGHTNING:   { name: "LIGHTNING GUN",  rof: 80,   dmg: 25,  range: 350, chains: 4, chainRange: 150, desc: "Chain lightning" },
+        RIPPER:      { name: "RIPPER",         rof: 400,  dmg: 60,  vel: 15, bounces: 5, desc: "Ricochets" },
+        SPREAD:      { name: "SPREAD GUN",     rof: 350,  dmg: 30,  vel: 18, streams: 5, arc: 0.3, desc: "5-way shot" },
+        FREEZE_RAY:  { name: "FREEZE RAY",     rof: 100,  dmg: 8,   range: 280, slow: 0.3, slowTime: 90, desc: "Slows enemies" },
+        NAILGUN:     { name: "NAILGUN",        rof: 90,   dmg: 22,  vel: 16, spread: 0.05, gravity: 0.15, desc: "Arcing shots" }
+    },
+    
+    SECONDARY: {
+        GRENADE:    { name: "FRAG GRENADE",     cd: 2500,  dmg: 100,  blast: 120, range: 450, desc: "Standard" },
+        CLUSTER:    { name: "CLUSTER BOMB",    cd: 4000,  dmg: 60,   blast: 80,  range: 420, clusters: 6, desc: "Multiple blasts" },
+        INCENDIARY: { name: "INCENDIARY",      cd: 3500,  dmg: 25,   blast: 150, range: 400, burnTime: 80, burnDmg: 2, desc: "DOT" },
+        ROCKET:     { name: "ROCKET LAUNCHER", cd: 3000,  dmg: 250,  blast: 100, range: 600, vel: 15, desc: "High damage" },
+        POISON:     { name: "TOXIC GRENADE",   cd: 3000,  dmg: 40,   blast: 140, range: 420, poisonDmg: 3, poisonTime: 100, desc: "Poison cloud" },
+        EMP:        { name: "EMP BLAST",       cd: 4500,  dmg: 0,    blast: 200, range: 450, stun: 60, desc: "Stuns enemies" },
+        BANANA:     { name: "BANANA GRENADE",  cd: 5000,  dmg: 80,   blast: 100, range: 450, count: 7, desc: "Splits into 7" },
+        TRIP_MINE:  { name: "LASER TRIP MINE", cd: 2000,  dmg: 150,  blast: 80,  range: 300, laser: 200, desc: "Laser trap" },
+        HOMING:     { name: "HOMING MISSILES", cd: 2500,  dmg: 120,  blast: 60,  range: 800, vel: 10, count: 3, desc: "3 seekers" },
+        NUKE:       { name: "NUCLEAR BOMB",    cd: 15000, dmg: 1000, blast: 400, range: 600, desc: "DEVASTATION" },
+        FREEZE_BOMB:{ name: "FREEZE BOMB",     cd: 6000,  dmg: 30,   blast: 250, range: 500, freezeTime: 180, desc: "Freezes area" },
+        SINGULARITY:{ name: "SINGULARITY",     cd: 8000,  dmg: 15,   blast: 180, range: 450, pull: 3, duration: 150, desc: "Black hole" }
+    }
+};
+
+WEAPONS.getAllOwned = () => {
+    const owned = {};
+    Object.keys(WEAPONS.PRIMARY).forEach(k => owned[k] = true);
+    Object.keys(WEAPONS.SECONDARY).forEach(k => owned[k] = true);
+    return owned;
+};
+// ============================================
+// OUTPOST '95 - ENEMIES
+// ============================================
+
+const ENEMIES = {
+    TYPES: {
+        NORMAL:      { name: 'Normal',     color: null,     size: 1.0, speed: 1.0, reward: 15 },
+        FAST:        { name: 'Zerg',       color: '#ff0',   size: 0.6, speed: 1.8, hpMult: 0.5, reward: 10 },
+        ARMORED:     { name: 'Tank',       color: '#888',   size: 1.4, speed: 0.6, hpMult: 1.5, dmgReduce: 0.4, reward: 25 },
+        REGENERATING:{ name: 'Regenerator',color: '#0f8',   size: 1.1, speed: 0.85, regen: 3, regenInt: 20, reward: 20 },
+        SPLITTER:    { name: 'Splitter',   color: '#0ff',   size: 1.2, speed: 0.8, hpMult: 1.3,
+                       shootRange: 9999, shootCD: 70, shootDmg: 10, projSpeed: 7, reward: 22 },
+        CARRIER:     { name: 'Carrier',    color: '#f0f',   size: 1.8, speed: 0.5, minHp: 500,
+                       spawnInt: 180, spawnCount: 2, maxSpawns: 10, reward: 40 },
+        GHOST:       { name: 'Ghost',      color: '#aaf',   size: 0.9, speed: 0.5, hpMult: 0.8,
+                       visibleTime: 120, invisibleTime: 90, reward: 25 },
+        EXPLODER:    { name: 'Exploder',   color: '#f80',   size: 1.1, speed: 0.7, hpMult: 1.1,
+                       explodeR: 100, explodeDmg: 60,
+                       grenRange: 500, grenCD: 150, grenDmg: 25, grenR: 60, reward: 18 },
+        BOSS:        { name: 'BOSS',       color: '#f00',   size: 2.8, speed: 0.35,
+                       minHP: 3000, maxHP: 8000, hpPerWave: 200, dmgReduce: 0.3,
+                       shootRange: 400, shootCD: 60, weaponCD: 180, reward: 350 }
+    },
+    
+    BOSS_WEAPONS: [
+        { name: 'CANNON',  dmg: 30, speed: 8,  color: '#ff0', size: 6 },
+        { name: 'LASER',   dmg: 15, speed: 20, color: '#f00', size: 3 },
+        { name: 'PLASMA',  dmg: 25, speed: 5,  color: '#0ff', size: 8 },
+        { name: 'MISSILES',dmg: 40, speed: 4,  color: '#f80', size: 5, homing: true },
+        { name: 'SHOTGUN', dmg: 8,  speed: 10, color: '#ff0', size: 3, pellets: 5 }
+    ],
+    
+    MOVE_COLORS: { LAND: '#f33', SWIM: '#3af', FLY: '#c3f' },
+    
+    HP_COLORS: {
+        NORMAL: '#ff0', FAST: '#ff0', ARMORED: '#aaa', REGENERATING: '#0f8',
+        SPLITTER: '#0ff', CARRIER: '#f0f', GHOST: '#aaf', EXPLODER: '#f80', BOSS: '#f00'
+    },
+    
+    UNLOCK: { FAST: 2, ARMORED: 3, REGENERATING: 3, SPLITTER: 4, GHOST: 4, CARRIER: 5, EXPLODER: 5 },
+    
+    WEIGHTS: { FAST: 0.22, ARMORED: 0.18, REGENERATING: 0.15, SPLITTER: 0.12, GHOST: 0.12, CARRIER: 0.10, EXPLODER: 0.11 },
+    
+    MINION: { baseHp: 25, hpRand: 35, reward: 5 }
+};
+
+ENEMIES.randomBossWeapon = () => ENEMIES.BOSS_WEAPONS[Math.floor(Math.random() * ENEMIES.BOSS_WEAPONS.length)];
+// ============================================
+// OUTPOST '95 - BUILDINGS
+// ============================================
+
+const BUILDINGS = {
+    DEFENSE: {
+        CORE:          { name: "HQ BUNKER",       hp: 6000, type: 'core',  color: '#0ff' },
+        WALL:          { name: "HEAVY WALL",      hp: 1500, type: 'wall',  color: '#666' },
+        SENTRY:        { name: "AUTO-TURRET",     hp: 400,  type: 'tower', color: '#ff0', range: 250, dmg: 12,  rof: 250 },
+        BATTERY:       { name: "LR BATTERY",      hp: 600,  type: 'tower', color: '#f80', range: 420, dmg: 100, rof: 1000 },
+        MORTAR:        { name: "GRENADE TURRET",  hp: 500,  type: 'tower', color: '#4f4', range: 380, dmg: 80,  rof: 3500, blast: 100 },
+        SHOTGUN_TURRET:{ name: "SHOTGUN TURRET",  hp: 450,  type: 'tower', color: '#f4f', range: 180, dmg: 15,  rof: 800, pellets: 6, spread: 0.2 },
+        ROCKET_TURRET: { name: "ROCKET TURRET",   hp: 550,  type: 'tower', color: '#f66', range: 500, dmg: 200, rof: 4000, blast: 90, vel: 12 }
+    },
+    
+    BASE: {
+        SOLAR:    { name: "SOLAR ARRAY",  cost: 150, pwr: 50,  color: "#AA0" },
+        FARM:     { name: "BIO-FARM",     cost: 200, pwr: -10, color: "#0A0" },
+        MUNITION: { name: "MUNITION FAB", cost: 450, pwr: -50, color: "#A00" }
+    }
+};
+// ============================================
+// OUTPOST '95 - VISUALS
+// ============================================
+
+const COLORS = {
+    EXPLOSION: {
+        default: [[255,100,0], [255,200,0], [255,255,200]],
+        fire:    [[255,80,0],  [255,150,0], [255,220,100]],
+        rocket:  [[255,120,0], [255,200,50],[255,255,220]],
+        poison:  [[100,255,100],[150,255,150],[200,255,200]],
+        emp:     [[0,150,255], [100,200,255],[200,230,255]],
+        banana:  [[255,220,0], [255,240,100],[255,255,200]],
+        nuke:    [[255,50,0],  [255,255,0],  [255,255,255]],
+        freeze:  [[100,200,255],[150,230,255],[220,245,255]],
+        bfg:     [[0,255,0],   [100,255,100],[200,255,200]],
+        enemy:   [[255,100,0], [255,150,0],  [255,200,100]]
+    },
+    
+    GRENADE: {
+        GRENADE: '#4f4', CLUSTER: '#88f', INCENDIARY: '#f84', POISON: '#8f4',
+        EMP: '#4af', BANANA: '#ff0', NUKE: '#f00', FREEZE_BOMB: '#0ff'
+    },
+    
+    PROJECTILE: {
+        rifle: '#fff', minigun: '#ffa500', shotgun: '#f44', sniper: '#ff0',
+        railgun: '#0ff', bfg: '#0f0', ripper: '#0ff', spread: '#f0f', nail: '#888'
+    },
+    
+    EFFECT: {
+        lightning: '#0af',
+        freeze: 'rgba(100,200,255,0.7)',
+        stun: 'rgba(0,200,255,0.7)',
+        frozen: 'rgba(100,200,255,0.8)',
+        ghostInvis: 'rgba(170,170,255,0.15)',
+        ghostVis: 'rgba(170,170,255,0.6)',
+        singularity: 'rgba(128,0,255,0.3)'
+    },
+    
+    TERRAIN: {
+        lake: 'rgba(150,180,50,0.4)', lakeStroke: '#9a0',
+        forest: 'rgba(150,50,200,0.6)',
+        hill: 'rgba(100,80,50,0.5)', hillStroke: '#654'
+    }
+};
+// ============================================
+// OUTPOST '95 - MATH UTILS
+// ============================================
+
+const MathUtils = {
+    dist: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1),
+    angle: (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1),
+    clamp: (v, min, max) => Math.max(min, Math.min(max, v)),
+    lerp: (a, b, t) => a + (b - a) * t,
+    rand: (min, max) => min + Math.random() * (max - min),
+    randInt: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+    
+    normAngle: (a) => {
+        while (a > Math.PI) a -= Math.PI * 2;
+        while (a < -Math.PI) a += Math.PI * 2;
+        return a;
+    },
+    
+    angleDiff: (a, b) => MathUtils.normAngle(b - a),
+    
+    distToSeg: (px, py, x1, y1, x2, y2) => {
+        const A = px - x1, B = py - y1, C = x2 - x1, D = y2 - y1;
+        const dot = A * C + B * D, lenSq = C * C + D * D;
+        let param = lenSq ? dot / lenSq : -1;
+        let xx, yy;
+        if (param < 0) { xx = x1; yy = y1; }
+        else if (param > 1) { xx = x2; yy = y2; }
+        else { xx = x1 + param * C; yy = y1 + param * D; }
+        return Math.hypot(px - xx, py - yy);
+    },
+    
+    pointInPoly: (px, py, verts) => {
+        let inside = false;
+        for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+            const xi = verts[i].x, yi = verts[i].y;
+            const xj = verts[j].x, yj = verts[j].y;
+            if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    },
+    
+    velFromAngle: (angle, speed) => ({ vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed }),
+    
+    normalize: (x, y) => {
+        const len = Math.sqrt(x * x + y * y);
+        return len ? { x: x / len, y: y / len } : { x: 0, y: 0 };
+    },
+    
+    inBounds: (x, y, margin = 0) => x >= -margin && x <= CONST.WIDTH + margin && y >= -margin && y <= CONST.HEIGHT + margin,
+    
+    weightedRandom: (items, weights) => {
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < items.length; i++) {
+            r -= weights[i];
+            if (r <= 0) return items[i];
+        }
+        return items[items.length - 1];
+    }
+};
+// OUTPOST '95 - TERRAIN
+// Terrain generation, cost calculation, collision detection
+
+function isPointInPolygon(px, py, vertices) {
+    let inside = false;
+    for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+        const xi = vertices[i].x, yi = vertices[i].y;
+        const xj = vertices[j].x, yj = vertices[j].y;
+        if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+function getTerrainCost(x, y, moveType, entityRadius = 0) {
+    // Safety check - if terrain not initialized yet, return default cost
+    if (!game.terrain) return 1.0;
+    
+    let cost = 1.0;
+    
+    // FIXED: Check lakes with entity radius - check if ANY part of entity touches water
+    let inLake = false;
+    let touchesLake = false;
+    
+    game.terrain.lakes.forEach(lake => {
+        // Check center point
+        if (isPointInPolygon(x, y, lake.points)) {
+            inLake = true;
+        }
+        
+        // If entity has radius, check if it touches lake (check 8 points around entity)
+        if (entityRadius > 0 && !inLake) {
+            for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+                const checkX = x + Math.cos(angle) * entityRadius;
+                const checkY = y + Math.sin(angle) * entityRadius;
+                if (isPointInPolygon(checkX, checkY, lake.points)) {
+                    touchesLake = true;
+                    break;
+                }
+            }
+        }
+    });
+    
+    // If center OR edge touches lake
+    if (inLake || touchesLake) {
+        if (moveType === 'LAND') {
+            // CRITICAL: LAND units avoid water completely
+            cost = 10000.0; // Extreme cost - pathfinder treats as impassable
+        } else if (moveType === 'SWIM') {
+            cost = 0.3; // Super cheap - ignore all other terrain!
+            // SWIM in lake ignores mountains/forests - return immediately
+            return cost;
+        }
+    }
+    
+    // If SWIM in lake, return immediately (ignore mountains/forests)
+    if (inLake && moveType === 'SWIM') {
+        return cost;
+    }
+    
+    // Mountains (only if not SWIM in lake)
+    if (!inLake || moveType !== 'SWIM') {
+        game.terrain.hills.forEach(h => {
+            const height = h.height || 5;
+            const baseSlowdown = 0.15 + (height / 15) * 0.60;
+            
+            if (h.isRidge) {
+                let minDist = Infinity;
+                
+                for (let i = 0; i < h.points.length - 1; i++) {
+                    const p1 = h.points[i];
+                    const p2 = h.points[i + 1];
+                    const segmentDist = distanceToSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+                    minDist = Math.min(minDist, segmentDist);
+                }
+                
+                h.points.forEach(p => {
+                    const dist = Math.hypot(x - p.x, y - p.y);
+                    minDist = Math.min(minDist, dist);
+                });
+                
+                const elevationFactor = 1 - (h.level / h.totalLayers);
+                const width = 120 * elevationFactor;
+                
+                if (minDist < width) {
+                    const depth = 1 - (minDist / width);
+                    if (moveType !== 'FLY') {
+                        cost += depth * baseSlowdown * 8;
+                    }
+                }
+            } else {
+                const dist = Math.hypot(x - h.x, y - h.y);
+                const outerRadius = h.layers[0] ? h.layers[0].radius : 100;
+                if (dist < outerRadius) {
+                    const depth = 1 - (dist / outerRadius);
+                    if (moveType !== 'FLY') {
+                        cost += depth * baseSlowdown * 8;
+                    }
+                }
+            }
+        });
+    }
+    
+    // Forests affect ONLY FLY units
+    game.terrain.forests.forEach(forest => {
+        const dist = Math.hypot(x - forest.centerX, y - forest.centerY);
+        if (dist < forest.radius && moveType === 'FLY') {
+            cost += 2.33; // FLY units slow to 0.3x speed (1/0.3 ≈ 3.33, so +2.33)
+        }
+    });
+    
+    return cost;
+}
+
+// NEW FUNCTION: Check if moving in a direction will cause collision with lake
+function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
+    if (moveType !== 'LAND') return false; // Only LAND units care
+    if (!game.terrain || !game.terrain.lakes || game.terrain.lakes.length === 0) return false; // No lakes to check
+    
+    // Check multiple points along the movement trajectory (prevent tunneling)
+    const steps = 3; // Check 3 intermediate positions
+    for (let step = 1; step <= steps; step++) {
+        const t = step / steps;
+        const checkX = x + dirX * t;
+        const checkY = y + dirY * t;
+        
+        // Check multiple points around the entity's perimeter at this position
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) { // 12 points
+            const perimeterX = checkX + Math.cos(angle) * size;
+            const perimeterY = checkY + Math.sin(angle) * size;
+            
+            for (let lake of game.terrain.lakes) {
+                if (isPointInPolygon(perimeterX, perimeterY, lake.points)) {
+                    return true; // Collision detected!
+                }
+            }
+        }
+    }
+    
+    return false;
+}
+
+function distanceToSegment(x, y, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+    
+    if (lengthSquared === 0) {
+        return Math.hypot(x - x1, y - y1);
+    }
+    
+    let t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t));
+    
+    const projX = x1 + t * dx;
+    const projY = y1 + t * dy;
+    
+    return Math.hypot(x - projX, y - projY);
+}
+
+function calculateFlowField(targetX, targetY, moveType) {
+    const gridCols = Math.ceil(CONST.WIDTH / CONST.GRID_SIZE);
+    const gridRows = Math.ceil(CONST.HEIGHT / CONST.GRID_SIZE);
+    
+    const costs = Array(gridRows).fill(null).map(() => Array(gridCols).fill(Infinity));
+    const directions = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
+    
+    const targetCol = Math.floor(targetX / CONST.GRID_SIZE);
+    const targetRow = Math.floor(targetY / CONST.GRID_SIZE);
+    
+    if (targetCol < 0 || targetCol >= gridCols || targetRow < 0 || targetRow >= gridRows) {
+        return { costs, directions, gridCols, gridRows };
+    }
+    
+    costs[targetRow][targetCol] = 0;
+    
+    const queue = [{col: targetCol, row: targetRow, cost: 0}];
+    
+    while (queue.length > 0) {
+        queue.sort((a, b) => a.cost - b.cost);
+        const current = queue.shift();
+        
+        const {col, row, cost} = current;
+        
+        if (cost > costs[row][col]) continue;
+        
+        const neighbors = [
+            {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+            {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+        ];
+        
+        for (let {dc, dr} of neighbors) {
+            const newCol = col + dc;
+            const newRow = row + dr;
+            
+            if (newCol < 0 || newCol >= gridCols || newRow < 0 || newRow >= gridRows) continue;
+            
+            const cellX = newCol * CONST.GRID_SIZE + CONST.GRID_SIZE / 2;
+            const cellY = newRow * CONST.GRID_SIZE + CONST.GRID_SIZE / 2;
+            const terrainCost = getTerrainCost(cellX, cellY, moveType);
+            
+            const moveCost = (dc !== 0 && dr !== 0) ? 1.414 : 1.0;
+            const newCost = cost + moveCost * terrainCost;
+            
+            if (newCost < costs[newRow][newCol]) {
+                costs[newRow][newCol] = newCost;
+                queue.push({col: newCol, row: newRow, cost: newCost});
+            }
+        }
+    }
+    
+    for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+            if (costs[row][col] === Infinity) continue;
+            if (row === targetRow && col === targetCol) continue;
+            
+            let bestCost = costs[row][col];
+            let bestDx = 0, bestDy = 0;
+            
+            const neighbors = [
+                {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+                {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+            ];
+            
+            for (let {dc, dr} of neighbors) {
+                const nCol = col + dc;
+                const nRow = row + dr;
+                
+                if (nCol < 0 || nCol >= gridCols || nRow < 0 || nRow >= gridRows) continue;
+                
+                if (costs[nRow][nCol] < bestCost) {
+                    bestCost = costs[nRow][nCol];
+                    bestDx = dc;
+                    bestDy = dr;
+                }
+            }
+            
+            if (bestDx !== 0 || bestDy !== 0) {
+                directions[row][col] = {dx: bestDx, dy: bestDy};
+            }
+        }
+    }
+    
+    return { costs, directions, gridCols, gridRows };
+}
+
+function getFlowDirection(x, y, flowField) {
+    if (!flowField || !flowField.directions) return {dx: 0, dy: 0};
+    
+    const col = Math.floor(x / CONST.GRID_SIZE);
+    const row = Math.floor(y / CONST.GRID_SIZE);
+    
+    if (col < 0 || col >= flowField.gridCols || row < 0 || row >= flowField.gridRows) {
+        return {dx: 0, dy: 0};
+    }
+    
+    const dir = flowField.directions[row][col];
+    return dir || {dx: 0, dy: 0};
+}
+
+function loadCustomMap(mapName) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    if (maps[mapName]) {
+        game.terrain = JSON.parse(JSON.stringify(maps[mapName].terrain));
+        
+        const scaleX = CONST.WIDTH / 1200;
+        const scaleY = CONST.HEIGHT / 900;
+        
+        game.terrain.hills.forEach(h => {
+            if (h.isRidge) {
+                h.points.forEach(p => {
+                    p.x *= scaleX;
+                    p.y *= scaleY;
+                });
+            } else {
+                h.x *= scaleX;
+                h.y *= scaleY;
+                h.layers.forEach(layer => {
+                    layer.radius *= scaleX;
+                    layer.verts.forEach(v => {
+                        v.x *= scaleX;
+                        v.y *= scaleY;
+                    });
+                });
+            }
+        });
+        
+        game.terrain.lakes.forEach(lake => {
+            lake.points.forEach(p => {
+                p.x *= scaleX;
+                p.y *= scaleY;
+            });
+        });
+        
+        game.terrain.forests.forEach(forest => {
+            forest.centerX *= scaleX;
+            forest.centerY *= scaleY;
+            forest.radius *= scaleX;
+            forest.trees.forEach(tree => {
+                tree.x *= scaleX;
+                tree.y *= scaleY;
+                tree.size *= scaleX;
+            });
+        });
+        
+        logTerminal(`CUSTOM MAP LOADED: ${mapName}`);
+    } else {
+        logTerminal("MAP NOT FOUND - GENERATING RANDOM");
+        generateStrategicMap();
+    }
+}
+
+function showIntelReport() {
+    logTerminal(`--- INTEL REPORT WAVE ${game.wave} ---`);
+    logTerminal(`FRONT: ${game.spawnDir} BORDER`);
+    logTerminal(`HOSTILES: ${game.enemies.length} SIGNATURES`);
+    logTerminal(`L:${game.intel.land} S:${game.intel.swim} A:${game.intel.air}`);
+    logTerminal(`TOTAL MASS: ${Math.floor(game.intel.totalHP)} HP`);
+    if (game.wave === 1) {
+        logTerminal(`--- ARSENAL AVAILABLE ---`);
+        logTerminal(`TOWERS: SENTRY/BATTERY/MORTAR/SHOTGUN/ROCKET`);
+        logTerminal(`PRIMARY: RIFLE/MINIGUN/SHOTGUN/SNIPER/FLAMETHROWER/RAILGUN`);
+        logTerminal(`SECONDARY: GRENADE/CLUSTER/INCENDIARY/ROCKET/POISON/EMP/BANANA`);
+    }
+}
+
+function generateStrategicMap() {
+    game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
+    game.terrain = { hills: [], lakes: [], forests: [] };
+    
+    const S = 1;
+    
+    function createMountain(centerX, centerY, baseRadius, totalLayers) {
+        const mountain = { x: centerX, y: centerY, layers: [], totalLayers, height: totalLayers };
+        
+        for(let l = 0; l < totalLayers; l++) {
+            const radius = baseRadius * (1 - l / totalLayers);
+            const verts = [];
+            const segments = 25;
+            const seed = Math.random() * 100;
+            const noiseAmount = 0.4;
+            
+            for(let i = 0; i < segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+                const r = radius + noise;
+                verts.push({
+                    x: Math.cos(angle) * r,
+                    y: Math.sin(angle) * r
+                });
+            }
+            
+            mountain.layers.push({ verts, radius, level: l });
+        }
+        
+        game.terrain.hills.push(mountain);
+    }
+    
+    function createRidge(startX, startY, ridgeLength, ridgeAngle, layers) {
+        const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
+        const endY = startY + Math.sin(ridgeAngle) * ridgeLength;
+        
+        const segments = 8 + Math.floor(Math.random() * 6);
+        const ridgePoints = [];
+        
+        for(let s = 0; s < segments; s++) {
+            const t = s / (segments - 1);
+            const curvature = (Math.random() - 0.5) * 300 * S;
+            const perpX = -Math.sin(ridgeAngle);
+            const perpY = Math.cos(ridgeAngle);
+            
+            ridgePoints.push({
+                x: startX * (1 - t) + endX * t + perpX * curvature,
+                y: startY * (1 - t) + endY * t + perpY * curvature
+            });
+        }
+        
+        const maxHeight = (100 + Math.random() * 100) * S;
+        
+        for(let level = 0; level < layers; level++) {
+            const elevation = level / layers;
+            const currentHeight = maxHeight * (1 - elevation);
+            
+            for(let side of [-1, 1]) {
+                const points = [];
+                
+                for(let i = 0; i < ridgePoints.length; i++) {
+                    const ridge = ridgePoints[i];
+                    
+                    const t = i / (ridgePoints.length - 1);
+                    const peakPos = 0.5;
+                    const peakness = 1 - Math.abs(t - peakPos) / Math.max(peakPos, 1 - peakPos);
+                    const heightHere = maxHeight * peakness * (0.6 + Math.random() * 0.4);
+                    
+                    if(heightHere < currentHeight) continue;
+                    
+                    const width = (heightHere - currentHeight) * 0.7;
+                    
+                    let perpX, perpY;
+                    if(i < ridgePoints.length - 1) {
+                        const next = ridgePoints[i + 1];
+                        const dx = next.x - ridge.x;
+                        const dy = next.y - ridge.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    } else {
+                        const prev = ridgePoints[i - 1];
+                        const dx = ridge.x - prev.x;
+                        const dy = ridge.y - prev.y;
+                        const len = Math.sqrt(dx*dx + dy*dy);
+                        perpX = -dy / len;
+                        perpY = dx / len;
+                    }
+                    
+                    points.push({
+                        x: ridge.x + perpX * width * side,
+                        y: ridge.y + perpY * width * side
+                    });
+                }
+                
+                if(points.length > 3) {
+                    game.terrain.hills.push({
+                        isRidge: true,
+                        points: points,
+                        level: level,
+                        totalLayers: layers,
+                        height: layers
+                    });
+                }
+            }
+        }
+    }
+    
+    function createLake(centerX, centerY, radius) {
+        const points = [];
+        const segments = 20;
+        for(let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const r = radius * (0.8 + Math.random() * 0.4);
+            points.push({
+                x: centerX + Math.cos(angle) * r,
+                y: centerY + Math.sin(angle) * r
+            });
+        }
+        game.terrain.lakes.push({ points, type: 'sulfur' });
+    }
+    
+    function createForest(centerX, centerY, radius, density) {
+        const trees = [];
+        for(let t = 0; t < density; t++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            trees.push({
+                x: centerX + Math.cos(angle) * dist,
+                y: centerY + Math.sin(angle) * dist,
+                size: 6 + Math.random() * 8
+            });
+        }
+        game.terrain.forests.push({ trees, centerX, centerY, radius });
+    }
+    
+    // Góry: 0-15
+    const mountainCount = Math.floor(Math.random() * 16);
+    
+    for(let i = 0; i < mountainCount; i++) {
+        const mountainType = Math.random();
+        const x = 300 + Math.random() * 1800;
+        const y = 300 + Math.random() * 1200;
+        
+        if(mountainType < 0.3) {
+            createRidge(
+                x, y,
+                400 + Math.random() * 1000,
+                Math.random() * Math.PI * 2,
+                3 + Math.floor(Math.random() * 15)
+            );
+        } else if(mountainType < 0.7) {
+            createMountain(
+                x, y,
+                50 + Math.random() * 250,
+                3 + Math.floor(Math.random() * 18)
+            );
+        } else {
+            const clusterSize = 2 + Math.floor(Math.random() * 4);
+            for(let c = 0; c < clusterSize; c++) {
+                createMountain(
+                    x + (Math.random() - 0.5) * 300,
+                    y + (Math.random() - 0.5) * 300,
+                    40 + Math.random() * 100,
+                    3 + Math.floor(Math.random() * 8)
+                );
+            }
+        }
+    }
+    
+    // Jeziora: 0-12
+    const lakeCount = Math.floor(Math.random() * 13);
+    
+    for(let i = 0; i < lakeCount; i++) {
+        createLake(
+            400 + Math.random() * 1600,
+            300 + Math.random() * 1200,
+            60 + Math.random() * 200
+        );
+    }
+}
+// ============================================
+// OUTPOST '95 - GAME STATE
+// ============================================
+
+let game = null;
+let canvas = null;
+let ctx = null;
+
+function createGameState() {
+    return {
+        money: CONST.ECONOMY.START_MONEY,
+        hp: CONST.ECONOMY.START_HP,
+        wave: 0,
+        mode: 'BASE',
+        
+        buildings: [],
+        entities: [],
+        enemies: [],
+        
+        projectiles: [],
+        grenades: [],
+        rockets: [],
+        towerGrenades: [],
+        
+        enemyProjectiles: [],
+        enemyGrenades: [],
+        
+        explosions: [],
+        burnZones: [],
+        poisonClouds: [],
+        
+        tripMines: [],
+        singularities: [],
+        homingMissiles: [],
+        lightningTargets: [],
+        
+        terrain: { hills: [], lakes: [], forests: [] },
+        flowField: { land: null, swim: null, fly: null },
+        
+        selected: null,
+        corePlaced: false,
+        spawnDir: 'NORTH',
+        mapView: 'DETAILED',
+        
+        mouse: { x: 0, y: 0, down: false, rightDown: false },
+        keys: {},
+        
+        player: {
+            x: CONST.PLAYER.START_X,
+            y: CONST.PLAYER.START_Y,
+            spd: CONST.PLAYER.BASE_SPEED,
+            spdLv: 1, rofLv: 1, dmgLv: 1,
+            lastShot: 0, lastGrenade: 0,
+            primaryWeapon: 'RIFLE',
+            secondaryWeapon: 'GRENADE',
+            ownedWeapons: WEAPONS.getAllOwned()
+        },
+        
+        intel: {
+            land: 0, swim: 0, air: 0, totalHP: 0,
+            bosses: 0, special: 0, carriers: 0, regenerators: 0,
+            splitters: 0, armored: 0, fast: 0, ghosts: 0, exploders: 0
+        }
+    };
+}
+
+function resetIntel() {
+    game.intel = {
+        land: 0, swim: 0, air: 0, totalHP: 0, bosses: 0, special: 0,
+        carriers: 0, regenerators: 0, splitters: 0, armored: 0, fast: 0, ghosts: 0, exploders: 0
+    };
+}
+// ============================================
+// OUTPOST '95 - INPUT
+// ============================================
+
+function initInput() {
+    window.addEventListener('keydown', e => game.keys[e.code] = true);
+    window.addEventListener('keyup', e => game.keys[e.code] = false);
+    
+    canvas.addEventListener('mousemove', e => {
+        const r = canvas.getBoundingClientRect();
+        game.mouse.x = (e.clientX - r.left) * (CONST.WIDTH / r.width);
+        game.mouse.y = (e.clientY - r.top) * (CONST.HEIGHT / r.height);
+    });
+    
+    canvas.addEventListener('mousedown', e => {
+        if (e.button === 0) { game.mouse.down = true; handleClick(); }
+        else if (e.button === 2) {
+            game.mouse.rightDown = true;
+            if (game.mode === 'COMBAT' && game.corePlaced) throwGrenade();
+        }
+    });
+    
+    canvas.addEventListener('mouseup', e => {
+        if (e.button === 0) game.mouse.down = false;
+        if (e.button === 2) game.mouse.rightDown = false;
+    });
+    
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+function handleClick() {
+    if (game.mode === 'BASE' && game.selected) {
+        const gx = Math.floor((game.mouse.x - 150) / 50);
+        const gy = Math.floor((game.mouse.y - 150) / 50);
+        if (gx >= 0 && gx < 12 && gy >= 0 && gy < 12) {
+            game.buildings.push({ gx, gy, cfg: BUILDINGS.BASE[game.selected] });
+            game.money -= BUILDINGS.BASE[game.selected].cost;
+        }
+    } else if (game.mode === 'PREP' && game.selected) {
+        const cfg = BUILDINGS.DEFENSE[game.selected];
+        if (cfg.type === 'core' && game.corePlaced) return;
+        
+        game.entities.push({
+            ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0
+        });
+        
+        if (cfg.type === 'core') {
+            game.corePlaced = true;
+            game.player.x = game.mouse.x;
+            game.player.y = game.mouse.y;
+        }
+    }
+}
+
+function getMovement() {
+    let dx = 0, dy = 0;
+    if (game.keys['KeyW']) dy -= 1;
+    if (game.keys['KeyS']) dy += 1;
+    if (game.keys['KeyA']) dx -= 1;
+    if (game.keys['KeyD']) dx += 1;
+    if (dx && dy) { dx *= 0.707; dy *= 0.707; }
+    return { dx, dy };
+}
+// ============================================
+// OUTPOST '95 - TERMINAL
+// ============================================
+
+function logTerminal(msg) {
+    const term = document.getElementById('terminal');
+    if (!term) return;
+    const line = document.createElement('div');
+    line.textContent = '> ' + msg;
+    term.appendChild(line);
+    while (term.children.length > 100) term.removeChild(term.firstChild);
+    term.scrollTop = term.scrollHeight;
+}
+
+function showIntelReport() {
+    logTerminal('═══════════════════════════════');
+    logTerminal(`WAVE ${game.wave} - THREAT ANALYSIS`);
+    logTerminal('═══════════════════════════════');
+    logTerminal(`INCOMING FROM: ${game.spawnDir}`);
+    logTerminal(`  LAND: ${game.intel.land}  SWIM: ${game.intel.swim}  AIR: ${game.intel.air}`);
+    logTerminal(`  TOTAL HP: ${Math.floor(game.intel.totalHP)}`);
+    
+    if (game.intel.special > 0) {
+        logTerminal('SPECIAL THREATS:');
+        if (game.intel.bosses) logTerminal(`  ⚠ BOSS: ${game.intel.bosses}`);
+        if (game.intel.fast) logTerminal(`  FAST: ${game.intel.fast}`);
+        if (game.intel.armored) logTerminal(`  ARMORED: ${game.intel.armored}`);
+        if (game.intel.regenerators) logTerminal(`  REGEN: ${game.intel.regenerators}`);
+        if (game.intel.splitters) logTerminal(`  SPLITTER: ${game.intel.splitters}`);
+        if (game.intel.ghosts) logTerminal(`  GHOST: ${game.intel.ghosts}`);
+        if (game.intel.carriers) logTerminal(`  CARRIER: ${game.intel.carriers}`);
+        if (game.intel.exploders) logTerminal(`  EXPLODER: ${game.intel.exploders}`);
+    }
+    logTerminal('═══════════════════════════════');
+}
+// OUTPOST '95 - PATHFINDING
+// Flow field pathfinding system
+
+function calculateFlowField(targetX, targetY, moveType) {
+    const gridCols = Math.ceil(CONST.WIDTH / CONST.GRID_SIZE);
+    const gridRows = Math.ceil(CONST.HEIGHT / CONST.GRID_SIZE);
+    
+    const costs = Array(gridRows).fill(null).map(() => Array(gridCols).fill(Infinity));
+    const directions = Array(gridRows).fill(null).map(() => Array(gridCols).fill(null));
+    
+    const targetCol = Math.floor(targetX / CONST.GRID_SIZE);
+    const targetRow = Math.floor(targetY / CONST.GRID_SIZE);
+    
+    if (targetCol < 0 || targetCol >= gridCols || targetRow < 0 || targetRow >= gridRows) {
+        return { costs, directions, gridCols, gridRows };
+    }
+    
+    costs[targetRow][targetCol] = 0;
+    
+    const queue = [{col: targetCol, row: targetRow, cost: 0}];
+    
+    while (queue.length > 0) {
+        queue.sort((a, b) => a.cost - b.cost);
+        const current = queue.shift();
+        
+        const {col, row, cost} = current;
+        
+        if (cost > costs[row][col]) continue;
+        
+        const neighbors = [
+            {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+            {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+        ];
+        
+        for (let {dc, dr} of neighbors) {
+            const newCol = col + dc;
+            const newRow = row + dr;
+            
+            if (newCol < 0 || newCol >= gridCols || newRow < 0 || newRow >= gridRows) continue;
+            
+            const cellX = newCol * CONST.GRID_SIZE + CONST.GRID_SIZE / 2;
+            const cellY = newRow * CONST.GRID_SIZE + CONST.GRID_SIZE / 2;
+            const terrainCost = getTerrainCost(cellX, cellY, moveType);
+            
+            const moveCost = (dc !== 0 && dr !== 0) ? 1.414 : 1.0;
+            const newCost = cost + moveCost * terrainCost;
+            
+            if (newCost < costs[newRow][newCol]) {
+                costs[newRow][newCol] = newCost;
+                queue.push({col: newCol, row: newRow, cost: newCost});
+            }
+        }
+    }
+    
+    for (let row = 0; row < gridRows; row++) {
+        for (let col = 0; col < gridCols; col++) {
+            if (costs[row][col] === Infinity) continue;
+            if (row === targetRow && col === targetCol) continue;
+            
+            let bestCost = costs[row][col];
+            let bestDx = 0, bestDy = 0;
+            
+            const neighbors = [
+                {dc: -1, dr: 0}, {dc: 1, dr: 0}, {dc: 0, dr: -1}, {dc: 0, dr: 1},
+                {dc: -1, dr: -1}, {dc: 1, dr: -1}, {dc: -1, dr: 1}, {dc: 1, dr: 1}
+            ];
+            
+            for (let {dc, dr} of neighbors) {
+                const nCol = col + dc;
+                const nRow = row + dr;
+                
+                if (nCol < 0 || nCol >= gridCols || nRow < 0 || nRow >= gridRows) continue;
+                
+                if (costs[nRow][nCol] < bestCost) {
+                    bestCost = costs[nRow][nCol];
+                    bestDx = dc;
+                    bestDy = dr;
+                }
+            }
+            
+            if (bestDx !== 0 || bestDy !== 0) {
+                directions[row][col] = {dx: bestDx, dy: bestDy};
+            }
+        }
+    }
+    
+    return { costs, directions, gridCols, gridRows };
+}
+
+function getFlowDirection(x, y, flowField) {
+    if (!flowField || !flowField.directions) return {dx: 0, dy: 0};
+    
+    const col = Math.floor(x / CONST.GRID_SIZE);
+    const row = Math.floor(y / CONST.GRID_SIZE);
+    
+    if (col < 0 || col >= flowField.gridCols || row < 0 || row >= flowField.gridRows) {
+        return {dx: 0, dy: 0};
+    }
+    
+    const dir = flowField.directions[row][col];
+    return dir || {dx: 0, dy: 0};
+}
+
+// ============================================
+// OUTPOST '95 - PLAYER SYSTEM
+// Movement and shooting logic only
+// ============================================
+
+function updatePlayer() {
+    const { dx, dy } = getMovement();
+    
+    let speed = game.player.spd * (1 + (game.player.spdLv - 1) * CONST.PLAYER.SPEED_UP);
+    const terrainCost = getTerrainCost(game.player.x, game.player.y, 'LAND', CONST.PLAYER.SIZE);
+    speed /= terrainCost;
+    
+    let mx = dx * speed, my = dy * speed;
+    
+    // Lake collision
+    if ((mx || my) && willCollideWithLake(game.player.x, game.player.y, mx, my, CONST.PLAYER.SIZE, 'LAND')) {
+        if (mx && !willCollideWithLake(game.player.x, game.player.y, mx, 0, CONST.PLAYER.SIZE, 'LAND')) {
+            my = 0;
+        } else if (my && !willCollideWithLake(game.player.x, game.player.y, 0, my, CONST.PLAYER.SIZE, 'LAND')) {
+            mx = 0;
+        } else {
+            mx = my = 0;
+        }
+    }
+    
+    game.player.x = MathUtils.clamp(game.player.x + mx, 5, CONST.WIDTH - 5);
+    game.player.y = MathUtils.clamp(game.player.y + my, 5, CONST.HEIGHT - 5);
+    
+    if (game.mouse.down) playerShoot();
+}
+
+function playerShoot() {
+    const now = Date.now();
+    const wep = WEAPONS.PRIMARY[game.player.primaryWeapon];
+    const rof = wep.rof / (1 + (game.player.rofLv - 1) * CONST.PLAYER.ROF_UP);
+    
+    if (now - game.player.lastShot < rof) return;
+    game.player.lastShot = now;
+    
+    const angle = MathUtils.angle(game.player.x, game.player.y, game.mouse.x, game.mouse.y);
+    const dmg = wep.dmg * (1 + (game.player.dmgLv - 1) * CONST.PLAYER.DMG_UP);
+    
+    const type = game.player.primaryWeapon;
+    
+    if (type === 'SHOTGUN') {
+        for (let i = 0; i < wep.pellets; i++) {
+            const a = angle + (Math.random() - 0.5) * wep.spread;
+            game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a) * wep.vel, vy: Math.sin(a) * wep.vel, dmg, type: 'shotgun', knockback: wep.knockback });
+        }
+    } else if (type === 'MINIGUN') {
+        const a = angle + (Math.random() - 0.5) * wep.spread;
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a) * wep.vel, vy: Math.sin(a) * wep.vel, dmg, type: 'minigun' });
+    } else if (type === 'FLAMETHROWER') {
+        game.enemies.forEach(e => {
+            if (!canTarget(e)) return;
+            const d = MathUtils.dist(game.player.x, game.player.y, e.x, e.y);
+            if (d > wep.range) return;
+            const eAngle = MathUtils.angle(game.player.x, game.player.y, e.x, e.y);
+            const diff = Math.abs(MathUtils.angleDiff(angle, eAngle));
+            if (diff < wep.cone) { e.hp -= dmg; e.hitF = 2; }
+        });
+    } else if (type === 'RAILGUN') {
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel, dmg, type: 'railgun', pierce: true, hitList: [] });
+    } else if (type === 'SNIPER') {
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel, dmg, type: 'sniper' });
+    } else if (type === 'BFG') {
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel, dmg, type: 'bfg', blast: wep.blast });
+    } else if (type === 'LIGHTNING') {
+        fireLightning(angle, dmg, wep);
+    } else if (type === 'RIPPER') {
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel, dmg, type: 'ripper', bounces: wep.bounces, hitList: [], angle });
+    } else if (type === 'SPREAD') {
+        for (let i = 0; i < wep.streams; i++) {
+            const a = angle + (i - (wep.streams - 1) / 2) * (wep.arc / (wep.streams - 1));
+            game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a) * wep.vel, vy: Math.sin(a) * wep.vel, dmg, type: 'spread' });
+        }
+    } else if (type === 'FREEZE_RAY') {
+        game.enemies.forEach(e => {
+            if (!canTarget(e)) return;
+            const d = MathUtils.dist(game.player.x, game.player.y, e.x, e.y);
+            if (d > wep.range) return;
+            const eAngle = MathUtils.angle(game.player.x, game.player.y, e.x, e.y);
+            const diff = Math.abs(MathUtils.angleDiff(angle, eAngle));
+            if (diff < CONST.PROJ.FREEZE_CONE) {
+                e.hp -= dmg; e.hitF = 2;
+                if (!e.slowed) e.originalSpeed = e.speed;
+                e.slowed = true;
+                e.speed = e.originalSpeed * wep.slow;
+                e.slowTimer = wep.slowTime;
+            }
+        });
+    } else if (type === 'NAILGUN') {
+        const a = angle + (Math.random() - 0.5) * wep.spread;
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(a) * wep.vel, vy: Math.sin(a) * wep.vel, dmg, type: 'nail', gravity: wep.gravity });
+    } else {
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel, dmg, type: 'rifle' });
+    }
+}
+
+function fireLightning(baseAngle, dmg, wep) {
+    let targets = [];
+    let current = { x: game.player.x, y: game.player.y };
+    
+    // Find first target
+    let first = null, firstDist = wep.range;
+    game.enemies.forEach(e => {
+        if (!canTarget(e)) return;
+        const d = MathUtils.dist(current.x, current.y, e.x, e.y);
+        const eAngle = MathUtils.angle(current.x, current.y, e.x, e.y);
+        const diff = Math.abs(MathUtils.angleDiff(baseAngle, eAngle));
+        if (d < firstDist && diff < CONST.PROJ.LIGHTNING_CONE) { firstDist = d; first = e; }
+    });
+    
+    if (first) {
+        targets.push(first);
+        first.hp -= dmg; first.hitF = 3;
+        current = first;
+        
+        // Chain
+        for (let c = 1; c < wep.chains; c++) {
+            let next = null, nextDist = wep.chainRange;
+            game.enemies.forEach(e => {
+                if (targets.includes(e) || !canTarget(e)) return;
+                const d = MathUtils.dist(current.x, current.y, e.x, e.y);
+                if (d < nextDist) { nextDist = d; next = e; }
+            });
+            if (next) {
+                targets.push(next);
+                next.hp -= dmg * CONST.PROJ.CHAIN_DMG; next.hitF = 3;
+                current = next;
+            } else break;
+        }
+    }
+    
+    // Store for rendering
+    game.lightningTargets = targets;
+}
+
+function canTarget(e) {
+    return !(e.enemyType === 'GHOST' && !e.isVisible);
+}
+// ============================================
+// OUTPOST '95 - GRENADE SYSTEM
+// ============================================
+
+function throwGrenade() {
+    const now = Date.now();
+    const wep = WEAPONS.SECONDARY[game.player.secondaryWeapon];
+    if (now - game.player.lastGrenade < wep.cd) return;
+    game.player.lastGrenade = now;
+    
+    const dx = game.mouse.x - game.player.x;
+    const dy = game.mouse.y - game.player.y;
+    const dist = Math.min(MathUtils.dist(0, 0, dx, dy), wep.range);
+    const angle = Math.atan2(dy, dx);
+    const tx = game.player.x + Math.cos(angle) * dist;
+    const ty = game.player.y + Math.sin(angle) * dist;
+    
+    const type = game.player.secondaryWeapon;
+    
+    if (type === 'ROCKET') {
+        game.rockets.push({
+            x: game.player.x, y: game.player.y,
+            vx: Math.cos(angle) * wep.vel, vy: Math.sin(angle) * wep.vel,
+            dmg: wep.dmg, blast: wep.blast, trail: []
+        });
+    } else if (type === 'TRIP_MINE') {
+        game.tripMines.push({
+            x: tx, y: ty, dmg: wep.dmg, blast: wep.blast,
+            laser: wep.laser, angle: angle, armed: false, armTimer: CONST.MINE.ARM
+        });
+    } else if (type === 'HOMING') {
+        for (let i = 0; i < wep.count; i++) {
+            const a = angle + (i - 1) * 0.3;
+            game.homingMissiles.push({
+                x: game.player.x, y: game.player.y,
+                vx: Math.cos(a) * wep.vel, vy: Math.sin(a) * wep.vel,
+                dmg: wep.dmg, blast: wep.blast, life: CONST.PROJ.HOMING_LIFE, trail: []
+            });
+        }
+    } else if (type === 'SINGULARITY') {
+        game.singularities.push({
+            x: tx, y: ty, dmg: wep.dmg, radius: wep.blast,
+            pull: wep.pull, duration: wep.duration, timer: 0
+        });
+    } else {
+        const travelTime = dist / CONST.GREN.SPEED;
+        game.grenades.push({
+            x: game.player.x, y: game.player.y, tx, ty,
+            sx: game.player.x, sy: game.player.y,
+            progress: 0, speed: 1 / travelTime,
+            dmg: wep.dmg, blast: wep.blast, type
+        });
+    }
+}
+
+function updateGrenades() {
+    game.grenades = game.grenades.filter(g => {
+        g.progress += g.speed;
+        g.x = g.sx + (g.tx - g.sx) * g.progress;
+        g.y = g.sy + (g.ty - g.sy) * g.progress;
+        
+        if (g.progress >= 1) {
+            explodeGrenade(g);
+            return false;
+        }
+        return true;
+    });
+}
+
+function explodeGrenade(g) {
+    const wep = WEAPONS.SECONDARY[g.type] || {};
+    
+    if (g.type === 'CLUSTER') {
+        createExplosion(g.tx, g.ty, g.blast, g.dmg);
+        for (let c = 0; c < (wep.clusters || 6); c++) {
+            const a = (c / wep.clusters) * Math.PI * 2;
+            const d = 60 + Math.random() * 40;
+            createExplosion(g.tx + Math.cos(a) * d, g.ty + Math.sin(a) * d, g.blast * 0.7, g.dmg * 0.8);
+        }
+    } else if (g.type === 'INCENDIARY') {
+        game.burnZones.push({ x: g.tx, y: g.ty, radius: g.blast, dmg: wep.burnDmg, duration: wep.burnTime, frame: 0 });
+        createExplosion(g.tx, g.ty, g.blast, g.dmg, 'fire');
+    } else if (g.type === 'POISON') {
+        game.poisonClouds.push({ x: g.tx, y: g.ty, radius: g.blast, dmg: wep.poisonDmg, duration: wep.poisonTime, frame: 0 });
+        createExplosion(g.tx, g.ty, g.blast, g.dmg, 'poison');
+    } else if (g.type === 'EMP') {
+        game.enemies.forEach(e => {
+            if (MathUtils.dist(e.x, e.y, g.tx, g.ty) < g.blast) {
+                e.stunned = true; e.stunTimer = wep.stun;
+                e.originalSpeed = e.originalSpeed || e.speed; e.speed = 0;
+            }
+        });
+        createExplosion(g.tx, g.ty, g.blast, 0, 'emp');
+    } else if (g.type === 'BANANA') {
+        createExplosion(g.tx, g.ty, g.blast, g.dmg, 'banana');
+        for (let b = 0; b < (wep.count || 7); b++) {
+            const a = (b / wep.count) * Math.PI * 2;
+            const d = 120 + Math.random() * 80;
+            game.grenades.push({
+                x: g.tx, y: g.ty, tx: g.tx + Math.cos(a) * d, ty: g.ty + Math.sin(a) * d,
+                sx: g.tx, sy: g.ty, progress: 0, speed: 0.03 + Math.random() * 0.02,
+                dmg: g.dmg * 0.5, blast: g.blast * 0.6, type: 'BANANA_SUB'
+            });
+        }
+    } else if (g.type === 'BANANA_SUB') {
+        createExplosion(g.tx, g.ty, g.blast, g.dmg, 'banana');
+    } else if (g.type === 'NUKE') {
+        createExplosion(g.tx, g.ty, g.blast, g.dmg, 'nuke', CONST.EXPLODE.NUKE);
+        for (let n = 0; n < CONST.GREN.NUKE_SUBS; n++) {
+            const a = (n / CONST.GREN.NUKE_SUBS) * Math.PI * 2;
+            const d = g.blast * 0.6;
+            setTimeout(() => {
+                createExplosion(g.tx + Math.cos(a) * d, g.ty + Math.sin(a) * d, g.blast * 0.4, g.dmg * 0.3, 'fire');
+            }, n * 50);
+        }
+    } else if (g.type === 'FREEZE_BOMB') {
+        game.enemies.forEach(e => {
+            if (!canTarget(e)) return;
+            if (MathUtils.dist(e.x, e.y, g.tx, g.ty) < g.blast) {
+                e.frozen = true; e.frozenTimer = wep.freezeTime;
+                e.originalSpeed = e.originalSpeed || e.speed; e.speed = 0;
+                e.hp -= g.dmg;
+            }
+        });
+        createExplosion(g.tx, g.ty, g.blast, 0, 'freeze', CONST.EXPLODE.FREEZE);
+    } else {
+        createExplosion(g.tx, g.ty, g.blast, g.dmg);
+    }
+}
+
+function createExplosion(x, y, radius, dmg, color = 'default', frames = CONST.EXPLODE.DEFAULT) {
+    game.explosions.push({
+        x, y, radius: 0, maxRadius: radius, dmg,
+        frame: 0, maxFrames: frames, dealt: false, color
+    });
+}
+// ============================================
+// OUTPOST '95 - PROJECTILE SYSTEM
+// ============================================
+
+function updateProjectiles() {
+    game.projectiles = game.projectiles.filter(p => {
+        if (p.gravity) p.vy += p.gravity;
+        p.x += p.vx; p.y += p.vy;
+        
+        if (!MathUtils.inBounds(p.x, p.y, CONST.PROJ.MARGIN)) return false;
+        
+        if (p.pierce) {
+            return updatePiercing(p);
+        } else if (p.type === 'bfg') {
+            return updateBFG(p);
+        } else if (p.type === 'ripper') {
+            return updateRipper(p);
+        } else {
+            return updateStandardProjectile(p);
+        }
+    });
+}
+
+function updatePiercing(p) {
+    game.enemies.forEach(e => {
+        if (!canTarget(e) || p.hitList.includes(e)) return;
+        if (MathUtils.dist(p.x, p.y, e.x, e.y) < e.size) {
+            e.hp -= p.dmg; e.hitF = 5; p.hitList.push(e);
+        }
+    });
+    return true;
+}
+
+function updateBFG(p) {
+    const hit = game.enemies.find(e => canTarget(e) && MathUtils.dist(p.x, p.y, e.x, e.y) < e.size + CONST.PROJ.BFG_SIZE);
+    if (hit) {
+        createExplosion(p.x, p.y, p.blast, p.dmg, 'bfg', CONST.EXPLODE.BFG);
+        return false;
+    }
+    return true;
+}
+
+function updateRipper(p) {
+    const hit = game.enemies.find(e => canTarget(e) && !p.hitList.includes(e) && MathUtils.dist(p.x, p.y, e.x, e.y) < e.size + 8);
+    if (hit) {
+        hit.hp -= p.dmg; hit.hitF = 5; p.hitList.push(hit);
+        if (--p.bounces <= 0) return false;
+        
+        // Find next target
+        let next = null, nextDist = CONST.PROJ.RIPPER_RANGE;
+        game.enemies.forEach(e => {
+            if (p.hitList.includes(e) || !canTarget(e)) return;
+            const d = MathUtils.dist(p.x, p.y, e.x, e.y);
+            if (d < nextDist) { nextDist = d; next = e; }
+        });
+        
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        const a = next ? MathUtils.angle(p.x, p.y, next.x, next.y) : Math.random() * Math.PI * 2;
+        p.vx = Math.cos(a) * speed; p.vy = Math.sin(a) * speed;
+    }
+    return true;
+}
+
+function updateStandardProjectile(p) {
+    const hit = game.enemies.find(e => canTarget(e) && MathUtils.dist(p.x, p.y, e.x, e.y) < e.size);
+    if (hit) {
+        hit.hp -= p.dmg; hit.hitF = 3;
+        if (p.knockback) {
+            const a = Math.atan2(p.vy, p.vx);
+            hit.x += Math.cos(a) * p.knockback; hit.y += Math.sin(a) * p.knockback;
+        }
+        return false;
+    }
+    return true;
+}
+
+function updateRockets() {
+    game.rockets = game.rockets.filter(r => {
+        r.x += r.vx; r.y += r.vy;
+        r.trail.push({ x: r.x, y: r.y });
+        if (r.trail.length > CONST.VISUAL.TRAIL_LENGTH) r.trail.shift();
+        
+        if (!MathUtils.inBounds(r.x, r.y, CONST.PROJ.MARGIN)) return false;
+        
+        const hit = game.enemies.find(e => canTarget(e) && MathUtils.dist(r.x, r.y, e.x, e.y) < e.size + 10);
+        if (hit) {
+            createExplosion(r.x, r.y, r.blast, r.dmg, 'rocket');
+            return false;
+        }
+        return true;
+    });
+}
+
+function updateHomingMissiles() {
+    game.homingMissiles = game.homingMissiles.filter(m => {
+        if (--m.life <= 0) return false;
+        
+        // Find closest enemy
+        let target = null, minDist = 500;
+        game.enemies.forEach(e => {
+            if (!canTarget(e)) return;
+            const d = MathUtils.dist(m.x, m.y, e.x, e.y);
+            if (d < minDist) { minDist = d; target = e; }
+        });
+        
+        if (target) {
+            const targetAngle = MathUtils.angle(m.x, m.y, target.x, target.y);
+            const currentAngle = Math.atan2(m.vy, m.vx);
+            const diff = MathUtils.angleDiff(currentAngle, targetAngle);
+            const newAngle = currentAngle + Math.sign(diff) * Math.min(Math.abs(diff), CONST.PROJ.HOMING_TURN);
+            const speed = Math.sqrt(m.vx * m.vx + m.vy * m.vy);
+            m.vx = Math.cos(newAngle) * speed; m.vy = Math.sin(newAngle) * speed;
+        }
+        
+        m.x += m.vx; m.y += m.vy;
+        m.trail.push({ x: m.x, y: m.y });
+        if (m.trail.length > CONST.VISUAL.TRAIL_LENGTH) m.trail.shift();
+        
+        if (!MathUtils.inBounds(m.x, m.y, CONST.PROJ.MARGIN)) return false;
+        
+        const hit = game.enemies.find(e => canTarget(e) && MathUtils.dist(m.x, m.y, e.x, e.y) < e.size + 8);
+        if (hit) {
+            createExplosion(m.x, m.y, m.blast, m.dmg, 'fire');
+            return false;
+        }
+        return true;
+    });
+}
+// ============================================
+// OUTPOST '95 - EFFECTS SYSTEM
+// ============================================
+
+function updateEffects() {
+    updateExplosions();
+    updateBurnZones();
+    updatePoisonClouds();
+    updateTripMines();
+    updateSingularities();
+    updateStatusEffects();
+}
+
+function updateExplosions() {
+    game.explosions = game.explosions.filter(e => {
+        e.frame++;
+        const half = e.maxFrames / 2;
+        e.radius = e.frame < half ? (e.frame / half) * e.maxRadius : e.maxRadius * (1 - (e.frame - half) / half);
+        
+        if (e.frame === Math.floor(half) && !e.dealt && e.dmg > 0) {
+            game.enemies.forEach(enemy => {
+                const d = MathUtils.dist(enemy.x, enemy.y, e.x, e.y);
+                if (d < e.maxRadius) {
+                    const falloff = 1 - d / e.maxRadius;
+                    enemy.hp -= e.dmg * falloff; enemy.hitF = 5;
+                }
+            });
+            e.dealt = true;
+        }
+        
+        return e.frame < e.maxFrames;
+    });
+}
+
+function updateBurnZones() {
+    game.burnZones = game.burnZones.filter(z => {
+        z.frame++;
+        game.enemies.forEach(e => {
+            if (MathUtils.dist(e.x, e.y, z.x, z.y) < z.radius) {
+                e.hp -= z.dmg; e.hitF = 1;
+            }
+        });
+        return z.frame < z.duration;
+    });
+}
+
+function updatePoisonClouds() {
+    game.poisonClouds = game.poisonClouds.filter(c => {
+        c.frame++;
+        game.enemies.forEach(e => {
+            if (MathUtils.dist(e.x, e.y, c.x, c.y) < c.radius) {
+                e.hp -= c.dmg; e.hitF = 1;
+            }
+        });
+        return c.frame < c.duration;
+    });
+}
+
+function updateTripMines() {
+    game.tripMines = game.tripMines.filter(m => {
+        if (!m.armed) {
+            if (--m.armTimer <= 0) m.armed = true;
+            return true;
+        }
+        
+        const perpAngle = m.angle + Math.PI / 2;
+        const x1 = m.x + Math.cos(perpAngle) * m.laser / 2;
+        const y1 = m.y + Math.sin(perpAngle) * m.laser / 2;
+        const x2 = m.x - Math.cos(perpAngle) * m.laser / 2;
+        const y2 = m.y - Math.sin(perpAngle) * m.laser / 2;
+        
+        const triggered = game.enemies.some(e => {
+            if (!canTarget(e)) return false;
+            return MathUtils.distToSeg(e.x, e.y, x1, y1, x2, y2) < e.size + CONST.MINE.MARGIN;
+        });
+        
+        if (triggered) {
+            createExplosion(m.x, m.y, m.blast, m.dmg, 'fire');
+            return false;
+        }
+        return true;
+    });
+}
+
+function updateSingularities() {
+    game.singularities = game.singularities.filter(s => {
+        s.timer++;
+        if (s.timer >= s.duration) return false;
+        
+        game.enemies.forEach(e => {
+            const d = MathUtils.dist(e.x, e.y, s.x, s.y);
+            if (d < s.radius * CONST.SINGULARITY.PULL_R) {
+                const a = MathUtils.angle(e.x, e.y, s.x, s.y);
+                const pull = s.pull * (1 - d / (s.radius * CONST.SINGULARITY.PULL_R));
+                e.x += Math.cos(a) * pull; e.y += Math.sin(a) * pull;
+                
+                if (d < s.radius * CONST.SINGULARITY.DMG_R) {
+                    e.hp -= s.dmg * CONST.SINGULARITY.TICK; e.hitF = 1;
+                }
+            }
+        });
+        return true;
+    });
+}
+
+function updateStatusEffects() {
+    game.enemies.forEach(e => {
+        // Stun
+        if (e.stunned) {
+            if (--e.stunTimer <= 0) {
+                e.stunned = false; e.speed = e.originalSpeed || e.speed;
+            }
+        }
+        
+        // Frozen
+        if (e.frozen) {
+            if (--e.frozenTimer <= 0) {
+                e.frozen = false; e.speed = e.originalSpeed || e.speed;
+            }
+        }
+        
+        // Slow
+        if (e.slowed && e.slowTimer) {
+            if (--e.slowTimer <= 0) {
+                e.slowed = false; e.speed = e.originalSpeed || e.speed;
+            }
+        }
+        
+        // Regen
+        if (e.enemyType === 'REGENERATING') {
+            e.regenTimer = (e.regenTimer || 0) + 1;
+            const type = ENEMIES.TYPES.REGENERATING;
+            if (e.regenTimer >= type.regenInt) {
+                e.regenTimer = 0;
+                e.hp = Math.min(e.hp + type.regen + game.wave * 0.5, e.maxHp);
+            }
+        }
+    });
+}
+// ============================================
+// OUTPOST '95 - ENEMY SYSTEM
+// ============================================
+
+function spawnWave() {
+    game.enemies = [];
+    game.enemyProjectiles = [];
+    game.enemyGrenades = [];
+    resetIntel();
+    
+    let pool = CONST.WAVES.BASE_POOL + game.wave * CONST.WAVES.POOL_PER_WAVE;
+    const isBossWave = game.wave % CONST.WAVES.BOSS_EVERY === 0 && game.wave > 0;
+    
+    // Spawn direction
+    const dirs = ['NORTH', 'SOUTH', 'EAST', 'WEST'];
+    game.spawnDir = dirs[Math.floor(Math.random() * 4)];
+    
+    // Boss wave
+    if (isBossWave) {
+        const bossCount = Math.min(1 + Math.floor(game.wave / 10), CONST.WAVES.MAX_BOSSES);
+        for (let b = 0; b < bossCount; b++) {
+            const bossHP = ENEMIES.TYPES.BOSS.minHP + game.wave * ENEMIES.TYPES.BOSS.hpPerWave + Math.random() * (ENEMIES.TYPES.BOSS.maxHP - ENEMIES.TYPES.BOSS.minHP);
+            const moveTypes = ['LAND', 'SWIM', 'FLY'];
+            const moveType = moveTypes[Math.floor(Math.random() * 3)];
+            game.enemies.push(createEnemy(bossHP, moveType, 'BOSS'));
+            game.intel.totalHP += bossHP; game.intel.bosses++;
+            game.intel[moveType.toLowerCase() === 'fly' ? 'air' : moveType.toLowerCase()]++;
+            pool -= bossHP;
+        }
+        logTerminal('═══════════════════════════════');
+        logTerminal(`⚠ BOSS WAVE ${game.wave}!`);
+        logTerminal(`  ${bossCount} BOSS(ES) INCOMING!`);
+        logTerminal('═══════════════════════════════');
+    }
+    
+    // Regular enemies
+    const specialChance = Math.min(CONST.WAVES.SPECIAL_MAX, CONST.WAVES.SPECIAL_BASE + game.wave * CONST.WAVES.SPECIAL_PER_WAVE);
+    
+    while (pool > 0) {
+        const r = Math.random();
+        let moveType = r < 0.33 ? 'LAND' : r < 0.66 ? 'SWIM' : 'FLY';
+        game.intel[moveType === 'FLY' ? 'air' : moveType.toLowerCase()]++;
+        
+        let hp = 50 + Math.random() * 250;
+        if (Math.random() > 0.9) hp = 600 + Math.random() * 800;
+        
+        let enemyType = 'NORMAL';
+        if (game.wave >= 2 && Math.random() < specialChance) {
+            enemyType = pickSpecialType();
+            if (enemyType !== 'NORMAL') {
+                game.intel.special++;
+                const type = ENEMIES.TYPES[enemyType];
+                if (type.hpMult) hp *= type.hpMult;
+                if (type.minHp) hp = Math.max(hp, type.minHp);
+                
+                // Track intel
+                const key = enemyType.toLowerCase() + 's';
+                if (game.intel[key] !== undefined) game.intel[key]++;
+                else if (enemyType === 'REGENERATING') game.intel.regenerators++;
+            }
+        }
+        
+        game.enemies.push(createEnemy(hp, moveType, enemyType));
+        game.intel.totalHP += hp;
+        pool -= hp;
+    }
+    
+    // Bonus fast enemies
+    if (game.wave >= 2) {
+        const bonus = Math.floor(Math.random() * (3 + game.wave));
+        for (let i = 0; i < bonus; i++) {
+            const moveType = ['LAND', 'SWIM', 'FLY'][Math.floor(Math.random() * 3)];
+            game.enemies.push(createEnemy(30 + Math.random() * 40, moveType, 'FAST'));
+            game.intel.fast++; game.intel.special++;
+        }
+    }
+}
+
+function pickSpecialType() {
+    const available = [], weights = [];
+    Object.keys(ENEMIES.UNLOCK).forEach(type => {
+        if (game.wave >= ENEMIES.UNLOCK[type]) {
+            available.push(type); weights.push(ENEMIES.WEIGHTS[type]);
+        }
+    });
+    if (!available.length) return 'NORMAL';
+    return MathUtils.weightedRandom(available, weights);
+}
+
+function createEnemy(hp, moveType, enemyType) {
+    const type = ENEMIES.TYPES[enemyType] || ENEMIES.TYPES.NORMAL;
+    
+    // Spawn position
+    let x, y;
+    const off = CONST.SPAWN.OFFSET, spread = CONST.SPAWN.SPREAD;
+    if (game.spawnDir === 'NORTH') { x = Math.random() * CONST.WIDTH; y = -off - Math.random() * spread; }
+    else if (game.spawnDir === 'SOUTH') { x = Math.random() * CONST.WIDTH; y = CONST.HEIGHT + off + Math.random() * spread; }
+    else if (game.spawnDir === 'EAST') { x = CONST.WIDTH + off + Math.random() * spread; y = Math.random() * CONST.HEIGHT; }
+    else { x = -off - Math.random() * spread; y = Math.random() * CONST.HEIGHT; }
+    
+    // Size and speed
+    const baseSize = 8 + hp / 80;
+    const size = (baseSize + (Math.random() - 0.5) * 4) * type.size;
+    let speed = moveType === 'FLY' ? 1.2 + 20 / size : 0.8 + 15 / size;
+    speed *= type.speed;
+    
+    // Vertices (shape)
+    const vertices = [];
+    const color = type.color || ENEMIES.MOVE_COLORS[moveType];
+    
+    if (moveType === 'LAND') {
+        const sides = 4 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < sides; i++) {
+            const a = (i / sides) * Math.PI * 2;
+            const d = size * (1.2 + Math.random() * 0.3);
+            vertices.push({ x: Math.cos(a) * d, y: Math.sin(a) * d, bD: d });
+        }
+    } else if (moveType === 'SWIM') {
+        for (let i = 0; i < 20; i++) {
+            const a = (i / 20) * Math.PI * 2;
+            const d = size * (0.8 + Math.random() * 0.3);
+            vertices.push({ x: Math.cos(a) * d * 1.8, y: Math.sin(a) * d * 0.6, bD: d });
+        }
+    } else {
+        const pts = 3 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < pts; i++) {
+            const a = (i / pts) * Math.PI * 2;
+            const d = size * (1 + Math.random() * 0.5);
+            vertices.push({ x: Math.cos(a) * d * (i === 0 ? 1.5 : 1), y: Math.sin(a) * d, bD: d });
+        }
+    }
+    
+    const enemy = {
+        x, y, hp, maxHp: hp, moveType, size, vertices, color, baseColor: color,
+        speed, hitF: 0, enemyType, reward: type.reward,
+        shootTimer: Math.random() * 60, grenadeTimer: Math.random() * 80
+    };
+    
+    // Type-specific properties
+    if (enemyType === 'CARRIER') { enemy.spawnTimer = 0; enemy.spawnedCount = 0; }
+    if (enemyType === 'GHOST') { enemy.isVisible = true; enemy.visibleTimer = Math.floor(Math.random() * type.visibleTime); }
+    if (enemyType === 'ARMORED' || enemyType === 'BOSS') { enemy.dmgReduce = type.dmgReduce; }
+    if (enemyType === 'BOSS') {
+        enemy.currentWeapon = ENEMIES.randomBossWeapon();
+        enemy.weaponTimer = 0;
+        // Boss shape override
+        enemy.vertices = [];
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            const d = size * (1 + Math.sin(a * 3) * 0.3);
+            enemy.vertices.push({ x: Math.cos(a) * d, y: Math.sin(a) * d, bD: d });
+        }
+    }
+    if (enemyType === 'EXPLODER') { enemy.explodeR = type.explodeR; enemy.explodeDmg = type.explodeDmg; }
+    
+    return enemy;
+}
+
+function updateEnemies() {
+    const core = game.entities.find(e => e.type === 'core');
+    if (!core) return;
+    
+    const newSpawns = [];
+    
+    game.enemies.forEach(e => {
+        updateEnemyAI(e, newSpawns);
+        updateEnemyMovement(e, core);
+        updateEnemyCollision(e);
+    });
+    
+    // Death and rewards
+    game.enemies = game.enemies.filter(e => {
+        if (e.hp <= 0) {
+            game.money += e.reward;
+            onEnemyDeath(e, newSpawns);
+            return false;
+        }
+        return true;
+    });
+    
+    game.enemies.push(...newSpawns);
+}
+
+function updateEnemyAI(e, spawns) {
+    const distToPlayer = MathUtils.dist(e.x, e.y, game.player.x, game.player.y);
+    const type = ENEMIES.TYPES[e.enemyType];
+    
+    // Carrier spawns
+    if (e.enemyType === 'CARRIER') {
+        e.spawnTimer++;
+        if (e.spawnTimer >= type.spawnInt && e.spawnedCount < type.maxSpawns) {
+            e.spawnTimer = 0;
+            const count = type.spawnCount + Math.floor(Math.random() * 2);
+            for (let i = 0; i < count; i++) {
+                spawns.push(createMinion(e.x, e.y, e.moveType));
+                e.spawnedCount++;
+            }
+        }
+    }
+    
+    // Splitter shoots
+    if (e.enemyType === 'SPLITTER') {
+        e.shootTimer++;
+        if (distToPlayer < type.shootRange && e.shootTimer >= type.shootCD) {
+            e.shootTimer = 0;
+            enemyShoot(e, type.shootDmg, type.projSpeed, '#0ff');
+        }
+    }
+    
+    // Ghost visibility
+    if (e.enemyType === 'GHOST') {
+        e.visibleTimer++;
+        if (e.isVisible && e.visibleTimer >= type.visibleTime) { e.isVisible = false; e.visibleTimer = 0; }
+        else if (!e.isVisible && e.visibleTimer >= type.invisibleTime) { e.isVisible = true; e.visibleTimer = 0; }
+    }
+    
+    // Exploder grenades
+    if (e.enemyType === 'EXPLODER') {
+        e.grenadeTimer++;
+        if (distToPlayer < type.grenRange && e.grenadeTimer >= type.grenCD) {
+            e.grenadeTimer = 0;
+            enemyGrenade(e, type.grenDmg, type.grenR);
+        }
+    }
+    
+    // Boss weapons
+    if (e.enemyType === 'BOSS') {
+        e.shootTimer++; e.weaponTimer++;
+        if (e.weaponTimer >= type.weaponCD) { e.weaponTimer = 0; e.currentWeapon = ENEMIES.randomBossWeapon(); }
+        if (distToPlayer < type.shootRange && e.shootTimer >= type.shootCD) {
+            e.shootTimer = 0;
+            bossShoot(e);
+        }
+    }
+}
+
+function updateEnemyMovement(e, core) {
+    if (e.stunned || e.frozen) return;
+    
+    const ff = game.flowField[e.moveType.toLowerCase()];
+    let dx, dy;
+    
+    if (ff && ff.directions) {
+        const dir = getFlowDirection(e.x, e.y, ff);
+        dx = dir.dx; dy = dir.dy;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len) { dx /= len; dy /= len; }
+        else { const a = MathUtils.angle(e.x, e.y, core.x, core.y); dx = Math.cos(a); dy = Math.sin(a); }
+    } else {
+        const a = MathUtils.angle(e.x, e.y, core.x, core.y);
+        dx = Math.cos(a); dy = Math.sin(a);
+    }
+    
+    let terrainMult = 1 / getTerrainCost(e.x, e.y, e.moveType, e.size);
+    
+    // Lake avoidance for land
+    if (e.moveType === 'LAND' && willCollideWithLake(e.x, e.y, dx * e.speed * terrainMult, dy * e.speed * terrainMult, e.size, e.moveType)) {
+        const alts = [{ dx: -dy, dy: dx }, { dx: dy, dy: -dx }, { dx: dx * 0.5 - dy * 0.5, dy: dy * 0.5 + dx * 0.5 }, { dx: dx * 0.5 + dy * 0.5, dy: dy * 0.5 - dx * 0.5 }];
+        let found = false;
+        for (const alt of alts) {
+            const len = Math.sqrt(alt.dx * alt.dx + alt.dy * alt.dy);
+            const ndx = alt.dx / len, ndy = alt.dy / len;
+            if (!willCollideWithLake(e.x, e.y, ndx * e.speed * terrainMult, ndy * e.speed * terrainMult, e.size, e.moveType)) {
+                dx = ndx; dy = ndy; found = true; break;
+            }
+        }
+        if (!found) terrainMult = 0;
+    }
+    
+    e.x += dx * e.speed * terrainMult;
+    e.y += dy * e.speed * terrainMult;
+    
+    // Vertex jitter
+    e.vertices.forEach(v => {
+        const jitter = (Math.random() - 0.5) * CONST.ENEMY.JITTER;
+        const a = Math.atan2(v.y, v.x);
+        v.x = Math.cos(a) * (v.bD + jitter); v.y = Math.sin(a) * (v.bD + jitter);
+    });
+}
+
+function updateEnemyCollision(e) {
+    game.entities.forEach(ent => {
+        if (ent.type === 'mine') return;
+        if (MathUtils.dist(e.x, e.y, ent.x, ent.y) < e.size + 15) {
+            ent.curHP -= e.hp; e.hp = 0;
+            if (ent.type === 'core') game.hp = Math.max(0, ent.curHP);
+        }
+    });
+}
+
+function onEnemyDeath(e, spawns) {
+    if (e.enemyType === 'EXPLODER') {
+        createExplosion(e.x, e.y, e.explodeR, e.explodeDmg, 'fire');
+    }
+    if (e.enemyType === 'CARRIER') {
+        const count = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) spawns.push(createMinion(e.x, e.y, e.moveType));
+    }
+}
+
+function createMinion(px, py, moveType) {
+    const m = createEnemy(ENEMIES.MINION.baseHp + Math.random() * ENEMIES.MINION.hpRand, moveType, 'FAST');
+    m.x = px + (Math.random() - 0.5) * 60; m.y = py + (Math.random() - 0.5) * 60;
+    m.reward = ENEMIES.MINION.reward;
+    return m;
+}
+
+function enemyShoot(e, dmg, speed, color) {
+    const a = MathUtils.angle(e.x, e.y, game.player.x, game.player.y);
+    game.enemyProjectiles.push({ x: e.x, y: e.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, dmg, color, size: 4 });
+}
+
+function enemyGrenade(e, dmg, radius) {
+    game.enemyGrenades.push({
+        x: e.x, y: e.y, tx: game.player.x, ty: game.player.y, sx: e.x, sy: e.y,
+        progress: 0, speed: 0.03, dmg, radius, color: '#f80'
+    });
+}
+
+function bossShoot(boss) {
+    const w = boss.currentWeapon;
+    const tx = game.player.x + (Math.random() - 0.5) * 50;
+    const ty = game.player.y + (Math.random() - 0.5) * 50;
+    
+    if (w.pellets) {
+        const baseA = MathUtils.angle(boss.x, boss.y, tx, ty);
+        for (let i = 0; i < w.pellets; i++) {
+            const a = baseA + (Math.random() - 0.5) * 0.6;
+            game.enemyProjectiles.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, dmg: w.dmg, color: w.color, size: w.size });
+        }
+    } else if (w.homing) {
+        game.enemyProjectiles.push({ x: boss.x, y: boss.y, vx: 0, vy: 0, dmg: w.dmg, color: w.color, size: w.size, homing: true, speed: w.speed, life: 300 });
+    } else {
+        const a = MathUtils.angle(boss.x, boss.y, tx, ty);
+        game.enemyProjectiles.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, dmg: w.dmg, color: w.color, size: w.size });
+    }
+}
+
+function updateEnemyProjectiles() {
+    const core = game.entities.find(e => e.type === 'core');
+    
+    game.enemyProjectiles = game.enemyProjectiles.filter(p => {
+        if (p.homing) {
+            const a = MathUtils.angle(p.x, p.y, game.player.x, game.player.y);
+            p.vx += Math.cos(a) * 0.3; p.vy += Math.sin(a) * 0.3;
+            const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+            if (spd > p.speed) { p.vx = p.vx / spd * p.speed; p.vy = p.vy / spd * p.speed; }
+            if (--p.life <= 0) return false;
+        }
+        
+        p.x += p.vx; p.y += p.vy;
+        if (!MathUtils.inBounds(p.x, p.y, CONST.PROJ.MARGIN)) return false;
+        
+        if (MathUtils.dist(p.x, p.y, game.player.x, game.player.y) < 15) {
+            if (core) { core.curHP -= p.dmg; game.hp = Math.max(0, core.curHP); }
+            return false;
+        }
+        return true;
+    });
+}
+
+function updateEnemyGrenades() {
+    game.enemyGrenades = game.enemyGrenades.filter(g => {
+        g.progress += g.speed;
+        g.x = g.sx + (g.tx - g.sx) * g.progress;
+        g.y = g.sy + (g.ty - g.sy) * g.progress;
+        
+        if (g.progress >= 1) {
+            createExplosion(g.tx, g.ty, g.radius, g.dmg, 'enemy');
+            return false;
+        }
+        return true;
+    });
+}
+// ============================================
+// OUTPOST '95 - TOWER SYSTEM
+// ============================================
+
+function updateTowers() {
+    const now = Date.now();
+    
+    game.entities.forEach(t => {
+        if (t.type !== 'tower') return;
+        if (now - t.lastFire < t.rof) return;
+        
+        const target = game.enemies.find(e => canTarget(e) && MathUtils.dist(e.x, e.y, t.x, t.y) < t.range);
+        if (!target) return;
+        
+        t.lastFire = now;
+        t.lastTarget = target; // For rendering
+        
+        if (t.name === 'GRENADE TURRET') {
+            game.towerGrenades.push({
+                x: t.x, y: t.y, tx: target.x, ty: target.y, sx: t.x, sy: t.y,
+                progress: 0, speed: 0.04, dmg: t.dmg, blast: t.blast
+            });
+        } else if (t.name === 'SHOTGUN TURRET') {
+            const baseA = MathUtils.angle(t.x, t.y, target.x, target.y);
+            for (let i = 0; i < t.pellets; i++) {
+                const a = baseA + (Math.random() - 0.5) * t.spread;
+                game.projectiles.push({ x: t.x, y: t.y, vx: Math.cos(a) * 20, vy: Math.sin(a) * 20, dmg: t.dmg, type: 'tower_shotgun' });
+            }
+        } else if (t.name === 'ROCKET TURRET') {
+            const a = MathUtils.angle(t.x, t.y, target.x, target.y);
+            game.rockets.push({ x: t.x, y: t.y, vx: Math.cos(a) * t.vel, vy: Math.sin(a) * t.vel, dmg: t.dmg, blast: t.blast, trail: [], fromTower: true });
+        } else {
+            // Direct hit towers
+            target.hp -= t.dmg; target.hitF = 3;
+        }
+    });
+}
+
+function updateTowerGrenades() {
+    game.towerGrenades = game.towerGrenades.filter(g => {
+        g.progress += g.speed;
+        g.x = g.sx + (g.tx - g.sx) * g.progress;
+        g.y = g.sy + (g.ty - g.sy) * g.progress;
+        
+        if (g.progress >= 1) {
+            createExplosion(g.tx, g.ty, g.blast, g.dmg);
+            return false;
+        }
+        return true;
+    });
+}
+// ============================================
+// OUTPOST '95 - COMBAT SYSTEM
+// Main combat update loop
+// ============================================
+
+function updateCombat() {
+    updatePlayer();
+    updateEnemies();
+    updateTowers();
+    
+    updateProjectiles();
+    updateRockets();
+    updateGrenades();
+    updateTowerGrenades();
+    updateHomingMissiles();
+    
+    updateEnemyProjectiles();
+    updateEnemyGrenades();
+    
+    updateEffects();
+    
+    checkWaveEnd();
+}
+
+function checkWaveEnd() {
+    if (game.enemies.length === 0) {
+        game.mode = 'BASE';
+        document.getElementById('actionBtn').innerText = 'EXECUTE COMBAT';
+        document.getElementById('actionBtn').disabled = false;
+        logTerminal('═══════════════════════════════');
+        logTerminal('✓ THREATS NEUTRALIZED');
+        logTerminal(`  Credits: $${Math.floor(game.money)}`);
+        logTerminal('═══════════════════════════════');
+    }
+    
+    if (game.hp <= 0) {
+        alert('HQ OVERRUN - GAME OVER\nWave: ' + game.wave);
+        location.reload();
+    }
+}
+// ============================================
+// OUTPOST '95 - RENDERER
+// All drawing functions
+// ============================================
+
+// === TERRAIN ===
+function renderTacticalMap() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, CONST.WIDTH, CONST.HEIGHT);
+    
+    if (game.mapView === 'DETAILED') {
+        ctx.strokeStyle = 'rgba(0,100,0,0.05)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= CONST.WIDTH; i += CONST.VISUAL.GRID_SPACING) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CONST.HEIGHT); ctx.stroke();
+        }
+        for (let i = 0; i <= CONST.HEIGHT; i += CONST.VISUAL.GRID_SPACING) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(CONST.WIDTH, i); ctx.stroke();
+        }
+    }
+    
+    game.terrain.lakes.forEach(lake => {
+        ctx.fillStyle = COLORS.TERRAIN.lake;
+        ctx.beginPath();
+        lake.points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = COLORS.TERRAIN.lakeStroke; ctx.lineWidth = 2; ctx.stroke();
+    });
+    
+    game.terrain.forests.forEach(f => {
+        f.trees.forEach(t => {
+            ctx.fillStyle = COLORS.TERRAIN.forest;
+            ctx.beginPath(); ctx.arc(t.x, t.y, t.size, 0, Math.PI * 2); ctx.fill();
+        });
+    });
+    
+    game.terrain.hills.forEach(h => {
+        ctx.fillStyle = COLORS.TERRAIN.hill;
+        ctx.beginPath(); ctx.arc(h.x, h.y, h.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = COLORS.TERRAIN.hillStroke; ctx.lineWidth = 2; ctx.stroke();
+    });
+}
+
+// === ENTITIES ===
+function renderEntities() {
+    game.entities.forEach(e => {
+        ctx.fillStyle = e.color;
+        ctx.fillRect(e.x - 15, e.y - 15, 30, 30);
+        
+        if (e.range) {
+            ctx.strokeStyle = 'rgba(255,255,0,0.2)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.range, 0, Math.PI * 2); ctx.stroke();
+        }
+        
+        if (e.curHP !== undefined) {
+            const w = 30, h = 4, y = e.y - 20;
+            ctx.fillStyle = '#400'; ctx.fillRect(e.x - w/2, y, w, h);
+            const ratio = e.curHP / e.hp;
+            ctx.fillStyle = ratio > 0.5 ? '#0f0' : ratio > 0.25 ? '#ff0' : '#f00';
+            ctx.fillRect(e.x - w/2, y, w * ratio, h);
+        }
+        
+        ctx.fillStyle = '#fff'; ctx.font = '10px VT323'; ctx.textAlign = 'center';
+        ctx.fillText(e.name, e.x, e.y + 25);
+    });
+}
+
+// === PLAYER ===
+function renderPlayerUnit() {
+    ctx.fillStyle = '#0f0';
+    ctx.beginPath(); ctx.arc(game.player.x, game.player.y, CONST.PLAYER.SIZE, 0, Math.PI * 2); ctx.fill();
+    
+    const angle = MathUtils.angle(game.player.x, game.player.y, game.mouse.x, game.mouse.y);
+    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(game.player.x, game.player.y);
+    ctx.lineTo(game.player.x + Math.cos(angle) * 22, game.player.y + Math.sin(angle) * 22);
+    ctx.stroke();
+    
+    ctx.strokeStyle = 'rgba(0,255,0,0.3)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(game.player.x, game.player.y, CONST.PLAYER.SIZE + 5, 0, Math.PI * 2); ctx.stroke();
+}
+
+// === ENEMIES ===
+function renderAnomalies() {
+    game.enemies.forEach(e => {
+        // Ghost invisible
+        if (e.enemyType === 'GHOST' && !e.isVisible) {
+            ctx.strokeStyle = COLORS.EFFECT.ghostInvis; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2); ctx.stroke();
+            return;
+        }
+        
+        renderEnemyEffects(e);
+        
+        // Body
+        ctx.fillStyle = e.hitF > 0 ? '#fff' : e.color;
+        ctx.beginPath();
+        ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
+        for (let v = 1; v < e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.stroke();
+        
+        renderEnemyHP(e);
+        renderEnemyStatus(e);
+        
+        if (e.hitF > 0) e.hitF--;
+    });
+}
+
+function renderEnemyEffects(e) {
+    if (e.enemyType === 'BOSS') {
+        ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 8, 0, Math.PI * 2); ctx.stroke();
+        const pulse = Math.sin(Date.now() * 0.005) * 5;
+        ctx.strokeStyle = 'rgba(255,255,0,0.5)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 15 + pulse, 0, Math.PI * 2); ctx.stroke();
+        if (e.currentWeapon) {
+            ctx.fillStyle = e.currentWeapon.color;
+            ctx.beginPath(); ctx.arc(e.x, e.y - e.size - 25, 4, 0, Math.PI * 2); ctx.fill();
+        }
+    } else if (e.enemyType === 'CARRIER') {
+        ctx.strokeStyle = 'rgba(255,0,255,0.6)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 10, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+        if (e.spawnedCount < ENEMIES.TYPES.CARRIER.maxSpawns) {
+            const prog = (e.spawnTimer || 0) / ENEMIES.TYPES.CARRIER.spawnInt;
+            ctx.strokeStyle = 'rgba(255,0,255,0.8)'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 15, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * prog); ctx.stroke();
+        }
+    } else if (e.enemyType === 'REGENERATING' && Math.random() < 0.15) {
+        ctx.fillStyle = 'rgba(0,255,100,0.7)';
+        const a = Math.random() * Math.PI * 2, d = e.size * 0.8;
+        ctx.beginPath(); ctx.arc(e.x + Math.cos(a) * d, e.y + Math.sin(a) * d - Math.random() * 10, 3, 0, Math.PI * 2); ctx.fill();
+    } else if (e.enemyType === 'GHOST' && e.isVisible) {
+        ctx.strokeStyle = COLORS.EFFECT.ghostVis; ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    } else if (e.enemyType === 'EXPLODER') {
+        const alpha = 0.3 + Math.sin(Date.now() * 0.01) * 0.2;
+        ctx.fillStyle = `rgba(255,136,0,${alpha})`;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.fill();
+    } else if (e.enemyType === 'ARMORED') {
+        ctx.strokeStyle = 'rgba(150,150,150,0.7)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 3, 0, Math.PI * 2); ctx.stroke();
+    } else if (e.enemyType === 'SPLITTER') {
+        const d = MathUtils.dist(e.x, e.y, game.player.x, game.player.y);
+        if (d < ENEMIES.TYPES.SPLITTER.shootRange) {
+            ctx.strokeStyle = 'rgba(0,255,255,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([5, 10]);
+            ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(game.player.x, game.player.y); ctx.stroke(); ctx.setLineDash([]);
+        }
+    }
+}
+
+function renderEnemyHP(e) {
+    const w = Math.max(CONST.ENEMY.BAR_W, e.size * CONST.ENEMY.BAR_MULT);
+    const h = e.enemyType === 'BOSS' ? CONST.ENEMY.BAR_H_BOSS : CONST.ENEMY.BAR_H;
+    const y = e.y - e.size - 15 - (e.enemyType === 'BOSS' ? 5 : 0);
+    
+    ctx.fillStyle = '#400'; ctx.fillRect(e.x - w/2, y, w, h);
+    ctx.fillStyle = ENEMIES.HP_COLORS[e.enemyType] || '#ff0';
+    ctx.fillRect(e.x - w/2, y, w * (e.hp / e.maxHp), h);
+    
+    if (e.enemyType !== 'NORMAL' && e.enemyType !== 'FAST') {
+        ctx.fillStyle = '#fff'; ctx.font = '10px VT323'; ctx.textAlign = 'center';
+        ctx.fillText(e.enemyType, e.x, y - 3);
+    }
+}
+
+function renderEnemyStatus(e) {
+    if (e.stunned) {
+        ctx.strokeStyle = COLORS.EFFECT.stun; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.stroke();
+        for (let s = 0; s < 3; s++) {
+            const a = Math.random() * Math.PI * 2, d = e.size + Math.random() * 10;
+            ctx.fillStyle = 'rgba(100,200,255,0.8)';
+            ctx.fillRect(e.x + Math.cos(a) * d - 1, e.y + Math.sin(a) * d - 1, 2, 2);
+        }
+    }
+    if (e.frozen) {
+        ctx.strokeStyle = COLORS.EFFECT.frozen; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(200,230,255,0.9)';
+        for (let c = 0; c < 4; c++) {
+            const a = (c / 4) * Math.PI * 2 + Date.now() * 0.001, d = e.size + 8;
+            ctx.beginPath();
+            ctx.moveTo(e.x + Math.cos(a) * d, e.y + Math.sin(a) * d);
+            ctx.lineTo(e.x + Math.cos(a + 0.2) * (d - 5), e.y + Math.sin(a + 0.2) * (d - 5));
+            ctx.lineTo(e.x + Math.cos(a - 0.2) * (d - 5), e.y + Math.sin(a - 0.2) * (d - 5));
+            ctx.closePath(); ctx.fill();
+        }
+    }
+}
+
+// === PROJECTILES ===
+function renderProjectiles() {
+    game.projectiles.forEach(p => {
+        const color = COLORS.PROJECTILE[p.type] || '#fff';
+        
+        if (p.type === 'bfg') {
+            ctx.fillStyle = '#0f0'; ctx.shadowBlur = 20; ctx.shadowColor = '#0f0';
+            ctx.beginPath(); ctx.arc(p.x, p.y, CONST.PROJ.BFG_SIZE, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(150,255,150,0.7)'; ctx.lineWidth = 2;
+            for (let a = 0; a < 4; a++) {
+                const angle = Math.random() * Math.PI * 2, d = CONST.PROJ.BFG_SIZE + Math.random() * 20;
+                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + Math.cos(angle) * d, p.y + Math.sin(angle) * d); ctx.stroke();
+            }
+        } else if (p.type === 'ripper') {
+            p.angle = (p.angle || 0) + 0.3;
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+            ctx.fillStyle = '#0ff';
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const a = (i / 6) * Math.PI * 2, r = i % 2 === 0 ? 10 : 5;
+                if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+                else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+            }
+            ctx.closePath(); ctx.fill(); ctx.restore();
+        } else if (p.type === 'railgun') {
+            ctx.fillStyle = color; ctx.shadowBlur = 10; ctx.shadowColor = color;
+            ctx.fillRect(p.x - 3, p.y - 3, 6, 6); ctx.shadowBlur = 0;
+        } else if (p.type === 'sniper') {
+            ctx.fillStyle = color; ctx.shadowBlur = 5; ctx.shadowColor = color;
+            ctx.fillRect(p.x - 2, p.y - 2, 5, 5); ctx.shadowBlur = 0;
+        } else if (p.type === 'nail') {
+            ctx.fillStyle = color; ctx.save();
+            ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx));
+            ctx.fillRect(-6, -1, 12, 2); ctx.restore();
+        } else if (p.type === 'spread') {
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(p.x - 1, p.y - 1, p.type === 'shotgun' ? 4 : 3, p.type === 'shotgun' ? 4 : 3);
+        }
+    });
+    
+    // Lightning effect
+    if (game.lightningTargets && game.lightningTargets.length) {
+        ctx.strokeStyle = COLORS.EFFECT.lightning; ctx.lineWidth = 3;
+        ctx.shadowBlur = 10; ctx.shadowColor = '#0ff';
+        let prev = { x: game.player.x, y: game.player.y };
+        game.lightningTargets.forEach(t => {
+            ctx.beginPath(); ctx.moveTo(prev.x, prev.y);
+            const midX = (prev.x + t.x) / 2 + (Math.random() - 0.5) * 30;
+            const midY = (prev.y + t.y) / 2 + (Math.random() - 0.5) * 30;
+            ctx.lineTo(midX, midY); ctx.lineTo(t.x, t.y); ctx.stroke();
+            prev = t;
+        });
+        ctx.shadowBlur = 0;
+        game.lightningTargets = [];
+    }
+}
+
+// === ROCKETS & MISSILES ===
+function renderRockets() {
+    game.rockets.forEach(r => {
+        ctx.strokeStyle = 'rgba(255,150,0,0.5)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        r.trail.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+        
+        ctx.fillStyle = '#f80';
+        ctx.beginPath(); ctx.arc(r.x, r.y, 5, 0, Math.PI * 2); ctx.fill();
+    });
+    
+    game.homingMissiles.forEach(m => {
+        ctx.strokeStyle = 'rgba(255,150,0,0.5)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        m.trail.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ff8'; ctx.save();
+        ctx.translate(m.x, m.y); ctx.rotate(Math.atan2(m.vy, m.vx));
+        ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-5, -4); ctx.lineTo(-5, 4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+    });
+}
+
+// === GRENADES ===
+function renderGrenades() {
+    [...game.grenades, ...game.towerGrenades].forEach(g => {
+        const height = -CONST.GREN.ARC * Math.sin(g.progress * Math.PI);
+        const color = COLORS.GRENADE[g.type] || '#4f4';
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(g.x, g.y + height + 5, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.fillStyle = color; ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(g.x, g.y + height, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    });
+}
+
+// === ENEMY ATTACKS ===
+function renderEnemyProjectiles() {
+    game.enemyProjectiles.forEach(p => {
+        ctx.fillStyle = p.color || '#ff0';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size || 4, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = p.color || '#ff0'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 3, p.y - p.vy * 3); ctx.stroke();
+        ctx.globalAlpha = 1;
+        if (p.homing) {
+            ctx.strokeStyle = 'rgba(255,128,0,0.6)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.stroke();
+        }
+    });
+}
+
+function renderEnemyGrenades() {
+    game.enemyGrenades.forEach(g => {
+        const height = -CONST.GREN.ARC * Math.sin(g.progress * Math.PI);
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(g.x, g.y + height + 5, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = g.color || '#f80'; ctx.strokeStyle = '#ff0'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(g.x, g.y + height, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        if (g.progress > 0.5) {
+            ctx.strokeStyle = `rgba(255,0,0,${(g.progress - 0.5) * 2})`; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(g.tx, g.ty, g.radius, 0, Math.PI * 2); ctx.stroke();
+        }
+    });
+}
+
+// === EFFECTS ===
+function renderBurnZones() {
+    game.burnZones.forEach(z => {
+        const alpha = 0.3 * (1 - z.frame / z.duration);
+        ctx.fillStyle = `rgba(255,100,0,${alpha})`;
+        ctx.beginPath(); ctx.arc(z.x, z.y, z.radius, 0, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 5; i++) {
+            const a = Math.random() * Math.PI * 2, d = Math.random() * z.radius;
+            ctx.fillStyle = `rgba(255,${150 + Math.random() * 100},0,${0.5 + Math.random() * 0.5})`;
+            ctx.beginPath(); ctx.arc(z.x + Math.cos(a) * d, z.y + Math.sin(a) * d - Math.random() * 20, 3 + Math.random() * 5, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+}
+
+function renderPoisonClouds() {
+    game.poisonClouds.forEach(c => {
+        const alpha = 0.4 * (1 - c.frame / c.duration);
+        ctx.fillStyle = `rgba(100,255,100,${alpha})`;
+        ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 8; i++) {
+            const a = Math.random() * Math.PI * 2, d = Math.random() * c.radius * 0.8;
+            ctx.fillStyle = `rgba(150,255,150,${0.3 + Math.random() * 0.3})`;
+            ctx.beginPath(); ctx.arc(c.x + Math.cos(a) * d, c.y + Math.sin(a) * d, 10 + Math.random() * 15, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+}
+
+function renderExplosions() {
+    game.explosions.forEach(e => {
+        const colors = COLORS.EXPLOSION[e.color] || COLORS.EXPLOSION.default;
+        const alpha = 1 - e.frame / e.maxFrames;
+        
+        ctx.strokeStyle = `rgba(${colors[0][0]},${colors[0][1]},${colors[0][2]},${alpha * 0.8})`;
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2); ctx.stroke();
+        
+        ctx.fillStyle = `rgba(${colors[1][0]},${colors[1][1]},${colors[1][2]},${alpha * 0.5})`;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * 0.6, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.fillStyle = `rgba(${colors[2][0]},${colors[2][1]},${colors[2][2]},${alpha})`;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    });
+}
+
+function renderTripMines() {
+    game.tripMines.forEach(m => {
+        const perpA = m.angle + Math.PI / 2;
+        const x1 = m.x + Math.cos(perpA) * m.laser / 2, y1 = m.y + Math.sin(perpA) * m.laser / 2;
+        const x2 = m.x - Math.cos(perpA) * m.laser / 2, y2 = m.y - Math.sin(perpA) * m.laser / 2;
+        
+        ctx.fillStyle = m.armed ? '#f00' : '#880';
+        ctx.beginPath(); ctx.arc(m.x, m.y, 8, 0, Math.PI * 2); ctx.fill();
+        
+        if (m.armed) {
+            ctx.strokeStyle = 'rgba(255,0,0,0.6)'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.fillStyle = '#f00';
+            ctx.beginPath(); ctx.arc(x1, y1, 3, 0, Math.PI * 2); ctx.arc(x2, y2, 3, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+}
+
+function renderSingularities() {
+    game.singularities.forEach(s => {
+        const prog = s.timer / s.duration, alpha = 1 - prog * 0.5;
+        
+        ctx.strokeStyle = `rgba(128,0,255,${alpha * 0.3})`; ctx.lineWidth = 2;
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + s.timer * 0.05;
+            ctx.beginPath();
+            ctx.moveTo(s.x + Math.cos(a) * s.radius * 1.5, s.y + Math.sin(a) * s.radius * 1.5);
+            ctx.lineTo(s.x + Math.cos(a) * s.radius * 0.3, s.y + Math.sin(a) * s.radius * 0.3);
+            ctx.stroke();
+        }
+        
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius);
+        grad.addColorStop(0, `rgba(0,0,0,${alpha})`);
+        grad.addColorStop(0.5, `rgba(64,0,128,${alpha * 0.5})`);
+        grad.addColorStop(1, 'rgba(128,0,255,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.radius * 0.3, 0, Math.PI * 2); ctx.stroke();
+    });
+}
+
+// === BASE GRID ===
+function renderBaseGrid() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, CONST.WIDTH, CONST.HEIGHT);
+    
+    ctx.strokeStyle = 'rgba(32,255,32,0.1)';
+    for (let i = 0; i <= 12; i++) {
+        ctx.beginPath(); ctx.moveTo(150 + i * 50, 150); ctx.lineTo(150 + i * 50, 750); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(150, 150 + i * 50); ctx.lineTo(750, 150 + i * 50); ctx.stroke();
+    }
+    
+    game.buildings.forEach(b => {
+        ctx.fillStyle = b.cfg.color;
+        ctx.fillRect(150 + b.gx * 50 + 5, 150 + b.gy * 50 + 5, 40, 40);
+    });
+}
+
+function renderGhost() {
+    const cfg = BUILDINGS.DEFENSE[game.selected];
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    if (cfg.range) {
+        ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeRect(game.mouse.x - 10, game.mouse.y - 10, 20, 20);
+}
+
+// === FLAMETHROWER EFFECT ===
+function renderFlamethrower() {
+    if (game.player.primaryWeapon !== 'FLAMETHROWER' || !game.mouse.down) return;
+    const wep = WEAPONS.PRIMARY.FLAMETHROWER;
+    const angle = MathUtils.angle(game.player.x, game.player.y, game.mouse.x, game.mouse.y);
+    
+    ctx.save(); ctx.globalAlpha = 0.6;
+    const grad = ctx.createRadialGradient(game.player.x, game.player.y, 0,
+        game.player.x + Math.cos(angle) * wep.range, game.player.y + Math.sin(angle) * wep.range, wep.range * 0.5);
+    grad.addColorStop(0, 'rgba(255,150,0,0.8)');
+    grad.addColorStop(0.5, 'rgba(255,50,0,0.4)');
+    grad.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y);
+    ctx.arc(game.player.x, game.player.y, wep.range, angle - wep.cone, angle + wep.cone);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+}
+
+// === FREEZE RAY EFFECT ===
+function renderFreezeRay() {
+    if (game.player.primaryWeapon !== 'FREEZE_RAY' || !game.mouse.down) return;
+    const wep = WEAPONS.PRIMARY.FREEZE_RAY;
+    const angle = MathUtils.angle(game.player.x, game.player.y, game.mouse.x, game.mouse.y);
+    
+    ctx.strokeStyle = COLORS.EFFECT.freeze; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y);
+    ctx.lineTo(game.player.x + Math.cos(angle) * wep.range, game.player.y + Math.sin(angle) * wep.range);
+    ctx.stroke();
+    
+    for (let i = 0; i < 3; i++) {
+        const d = Math.random() * wep.range, spread = (Math.random() - 0.5) * 0.3;
+        ctx.fillStyle = 'rgba(200,230,255,0.8)';
+        ctx.beginPath();
+        ctx.arc(game.player.x + Math.cos(angle + spread) * d, game.player.y + Math.sin(angle + spread) * d, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+// ============================================
+// OUTPOST '95 - UI
+// ============================================
+
+function updateStatsUI() {
+    const moneyEl = document.getElementById('money');
+    const hpEl = document.getElementById('hp');
+    const waveEl = document.getElementById('wave');
+    
+    if (moneyEl) moneyEl.innerText = Math.floor(game.money);
+    if (hpEl) hpEl.innerText = Math.max(0, Math.ceil(game.hp));
+    if (waveEl) waveEl.innerText = game.wave;
+}
+
+function updateBuildMenu() {
+    const menu = document.getElementById('buildMenu');
+    if (!menu) return;
+    menu.innerHTML = '';
+    
+    // Weapon selection (PREP/COMBAT)
+    if (game.mode === 'PREP' || game.mode === 'COMBAT') {
+        const weaponDiv = document.createElement('div');
+        weaponDiv.innerHTML = '<h3 style="color:#4af;margin:0 0 10px">⚔ ARMORY</h3>';
+        
+        // Primary
+        weaponDiv.innerHTML += '<div style="color:#8f8;margin:10px 0 5px">PRIMARY (LMB):</div>';
+        Object.keys(WEAPONS.PRIMARY).forEach(key => {
+            const wpn = WEAPONS.PRIMARY[key];
+            const sel = game.player.primaryWeapon === key;
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.cssText = `font-size:0.85em;padding:6px;margin:2px;background:${sel ? '#0a4' : '#222'};border-color:${sel ? '#0f0' : '#4af'};color:${sel ? '#fff' : '#4af'}`;
+            btn.innerHTML = `${wpn.name}<br><span style="font-size:0.75em;color:#888">${wpn.desc}</span>`;
+            btn.onclick = () => {
+                game.player.primaryWeapon = key;
+                logTerminal(`EQUIPPED: ${wpn.name}`);
+                updateBuildMenu();
+            };
+            weaponDiv.appendChild(btn);
+        });
+        
+        // Secondary
+        weaponDiv.innerHTML += '<div style="color:#8f8;margin:15px 0 5px">SECONDARY (RMB):</div>';
+        Object.keys(WEAPONS.SECONDARY).forEach(key => {
+            const wpn = WEAPONS.SECONDARY[key];
+            const sel = game.player.secondaryWeapon === key;
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.cssText = `font-size:0.85em;padding:6px;margin:2px;background:${sel ? '#0a4' : '#222'};border-color:${sel ? '#0f0' : '#4af'};color:${sel ? '#fff' : '#4af'}`;
+            btn.innerHTML = `${wpn.name}<br><span style="font-size:0.75em;color:#888">${wpn.desc}</span>`;
+            btn.onclick = () => {
+                game.player.secondaryWeapon = key;
+                logTerminal(`EQUIPPED: ${wpn.name}`);
+                updateBuildMenu();
+            };
+            weaponDiv.appendChild(btn);
+        });
+        
+        menu.appendChild(weaponDiv);
+    }
+    
+    // Defense placement (PREP)
+    if (game.mode === 'PREP') {
+        const defDiv = document.createElement('div');
+        defDiv.innerHTML = '<h3 style="color:#f80;margin:20px 0 10px">🏰 DEFENSES</h3>';
+        
+        Object.keys(BUILDINGS.DEFENSE).forEach(key => {
+            const def = BUILDINGS.DEFENSE[key];
+            if (key === 'CORE' && game.corePlaced) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.cssText = `padding:8px;margin:3px;background:${game.selected === key ? '#440' : '#222'};border-color:${def.color}`;
+            btn.innerHTML = `${def.name}<br><span style="font-size:0.8em;color:#888">HP: ${def.hp}${def.range ? ' | Range: ' + def.range : ''}</span>`;
+            btn.onclick = () => {
+                game.selected = game.selected === key ? null : key;
+                updateBuildMenu();
+            };
+            defDiv.appendChild(btn);
+        });
+        
+        menu.appendChild(defDiv);
+    }
+    
+    // Base buildings (BASE)
+    if (game.mode === 'BASE') {
+        const baseDiv = document.createElement('div');
+        baseDiv.innerHTML = '<h3 style="color:#0f0;margin:0 0 10px">🏗 BASE</h3>';
+        
+        Object.keys(BUILDINGS.BASE).forEach(key => {
+            const bld = BUILDINGS.BASE[key];
+            const canAfford = game.money >= bld.cost;
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.cssText = `padding:8px;margin:3px;background:${game.selected === key ? '#440' : '#222'};border-color:${bld.color};opacity:${canAfford ? 1 : 0.5}`;
+            btn.innerHTML = `${bld.name} [$${bld.cost}]`;
+            btn.onclick = () => {
+                if (canAfford) {
+                    game.selected = game.selected === key ? null : key;
+                    updateBuildMenu();
+                }
+            };
+            baseDiv.appendChild(btn);
+        });
+        
+        menu.appendChild(baseDiv);
+    }
+    
+    // Map selector
+    const mapDiv = document.createElement('div');
+    mapDiv.innerHTML = '<h3 style="color:#888;margin:20px 0 10px">🗺 MAP</h3>';
+    
+    const select = document.createElement('select');
+    select.style.cssText = 'width:100%;padding:5px;background:#222;color:#0f0;border:1px solid #4af';
+    select.innerHTML = '<option value="">Random Map</option>';
+    ['CANYON', 'ISLANDS', 'FORTRESS', 'SWAMP'].forEach(m => {
+        select.innerHTML += `<option value="${m}">${m}</option>`;
+    });
+    select.value = game.selectedCustomMap || '';
+    select.onchange = () => {
+        game.selectedCustomMap = select.value || null;
+        logTerminal(select.value ? `MAP: ${select.value}` : 'MAP: Random');
+    };
+    mapDiv.appendChild(select);
+    
+    menu.appendChild(mapDiv);
+}
+
+function setupWeaponSelects() {
+    const primSelect = document.getElementById('primarySelect');
+    const secSelect = document.getElementById('secondarySelect');
+    
+    if (primSelect) {
+        primSelect.innerHTML = '';
+        Object.keys(WEAPONS.PRIMARY).forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = WEAPONS.PRIMARY[key].name;
+            primSelect.appendChild(opt);
+        });
+        primSelect.value = game.player.primaryWeapon;
+        primSelect.onchange = () => {
+            game.player.primaryWeapon = primSelect.value;
+            logTerminal(`PRIMARY: ${WEAPONS.PRIMARY[primSelect.value].name}`);
+        };
+    }
+    
+    if (secSelect) {
+        secSelect.innerHTML = '';
+        Object.keys(WEAPONS.SECONDARY).forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = WEAPONS.SECONDARY[key].name;
+            secSelect.appendChild(opt);
+        });
+        secSelect.value = game.player.secondaryWeapon;
+        secSelect.onchange = () => {
+            game.player.secondaryWeapon = secSelect.value;
+            logTerminal(`SECONDARY: ${WEAPONS.SECONDARY[secSelect.value].name}`);
+        };
+    }
+}
+// ============================================
+// OUTPOST '95 - MAIN
+// Initialization and game loop
+// ============================================
+
+function init() {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    game = createGameState();
+    
+    initInput();
+    updateBuildMenu();
+    setupWeaponSelects();
+    
+    logTerminal('═══════════════════════════════');
+    logTerminal('OUTPOST 95 INITIALIZED');
+    logTerminal('SYSTEM READY');
+    logTerminal('═══════════════════════════════');
+    
+    gameLoop();
+}
+
+function handleAction() {
+    if (game.mode === 'BASE') {
+        game.mode = 'PREP';
+        game.wave++;
+        game.entities = [];
+        game.corePlaced = false;
+        
+        generateStrategicMap();
+        spawnWave();
+        updateBuildMenu();
+        
+        document.getElementById('actionBtn').innerText = 'LOCK ALL UNITS';
+        showIntelReport();
+        
+    } else if (game.mode === 'PREP') {
+        if (!game.corePlaced) {
+            logTerminal('CRITICAL: HQ MUST BE DEPLOYED.');
+            return;
+        }
+        
+        const core = game.entities.find(e => e.type === 'core');
+        if (core) {
+            logTerminal('CALCULATING PATHFINDING...');
+            game.flowField.land = calculateFlowField(core.x, core.y, 'LAND');
+            game.flowField.swim = calculateFlowField(core.x, core.y, 'SWIM');
+            game.flowField.fly = calculateFlowField(core.x, core.y, 'FLY');
+            logTerminal('✓ PATHFINDING READY');
+        }
+        
+        game.mode = 'COMBAT';
+        document.getElementById('actionBtn').innerText = 'IN COMBAT';
+        document.getElementById('actionBtn').disabled = true;
+    }
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, CONST.WIDTH, CONST.HEIGHT);
+    
+    if (game.mode === 'BASE') {
+        renderBaseGrid();
+    } else {
+        renderTacticalMap();
+        renderBurnZones();
+        renderPoisonClouds();
+        
+        if (game.mode === 'COMBAT') {
+            updateCombat();
+        }
+        
+        renderEntities();
+        renderAnomalies();
+        
+        if (game.corePlaced) {
+            renderPlayerUnit();
+            renderFlamethrower();
+            renderFreezeRay();
+        }
+        
+        if (game.mode === 'PREP' && game.selected) {
+            renderGhost();
+        }
+        
+        renderGrenades();
+        renderRockets();
+        renderExplosions();
+        renderTripMines();
+        renderSingularities();
+        
+        renderEnemyProjectiles();
+        renderEnemyGrenades();
+    }
+    
+    renderProjectiles();
+    updateStatsUI();
+    
+    requestAnimationFrame(gameLoop);
+}
+
+// Expose to window
+window.handleAction = handleAction;
+window.throwGrenade = throwGrenade;
+
+// Start
+init();
+</script></body></html>
