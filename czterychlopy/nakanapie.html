@@ -359,40 +359,6 @@
         #game-screen.active {
             display: flex;
         }
-
-        /* PROGRAM INTRO - klikalny overlay */
-        .program-intro-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            cursor: pointer;
-            z-index: 20;
-        }
-        
-        .program-intro-overlay:hover {
-            background: rgba(0, 212, 255, 0.1);
-        }
-        
-        .click-hint {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            padding: 15px 30px;
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            animation: pulse 1.5s infinite;
-        }
     </style>
 </head>
 <body>
@@ -549,14 +515,14 @@
             </div>
         </div>
 
-        <!-- PROGRAM INTRO - teraz wymaga kliknięcia -->
+        <!-- PROGRAM INTRO - z przyciskiem POMIŃ -->
         <div id="program-intro-screen" class="screen" style="justify-content: center; align-items: center; background: #000; position: relative;">
             <div style="width: 100%; height: 100%; position: relative;">
                 <img id="program-intro-image" src="" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0;">
-                <div class="program-intro-overlay" id="program-intro-overlay">
-                    <div class="click-hint">[ KLIKNIJ ABY KONTYNUOWAĆ ]</div>
-                    <div id="program-intro-title" style="width: 100%; text-align: center; font-size: 32px; color: var(--neon-yellow); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px var(--neon-yellow), 2px 2px 0 #000; background: rgba(0,0,0,0.7); padding: 20px; z-index: 10;"></div>
-                </div>
+                <div id="program-intro-title" style="position: absolute; bottom: 40px; width: 100%; text-align: center; font-size: 32px; color: var(--neon-yellow); text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 20px var(--neon-yellow), 2px 2px 0 #000; background: rgba(0,0,0,0.7); padding: 20px; z-index: 10;"></div>
+            </div>
+            <div class="skip-btn-container">
+                <button class="btn" id="skip-program-intro-btn" style="font-size: 12px; padding: 8px 16px;">[ POMIŃ → ]</button>
             </div>
         </div>
 
@@ -679,7 +645,7 @@
 
 // POPRAWKA: nazwy plików - spróbuj różne warianty rozszerzeń
 const PROGRAM_IMAGES = {
-    'A': 'tetrycy.png',  // zmienione z .PNG na .png
+    'A': 'tetrycy.PNG',  // wielkie PNG jak w repo
     'B': 'piast.jpg',
     'C': 'dosrodkowanie.png',
     'D': 'posredni.png',
@@ -1151,8 +1117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     restartOutroBtn.addEventListener('click', () => location.reload());
     
-    // PROGRAM INTRO - KLIK aby kontynuować (zamiast auto-timeout)
-    document.getElementById('program-intro-overlay').addEventListener('click', enterStudio);
+    // PROGRAM INTRO - przycisk POMIŃ
+    document.getElementById('skip-program-intro-btn').addEventListener('click', enterStudio);
     
     // Główne przyciski
     document.getElementById('start-game-btn').addEventListener('click', () => showScreen('intro-screen'));
@@ -1381,30 +1347,16 @@ function showProgramIntro() {
     const img = document.getElementById('program-intro-image');
     const title = document.getElementById('program-intro-title');
     
-    // Spróbuj załadować obrazek - jeśli się nie uda, użyj fallbacku
     const imageName = PROGRAM_IMAGES[state.activeProgram.id];
     img.src = imageName;
     
-    // Fallback dla obrazka
+    // Jeśli obrazek się nie załaduje, po prostu pokaż tytuł
     img.onerror = function() {
-        // Spróbuj z innym rozszerzeniem
-        const altName = imageName.replace('.png', '.PNG').replace('.jpg', '.JPG');
-        if (img.src !== altName) {
-            img.src = altName;
-        } else {
-            // Jeśli nadal nie działa, ustaw placeholder
-            img.style.display = 'none';
-        }
-    };
-    
-    img.onload = function() {
-        img.style.display = 'block';
+        console.log('Nie można załadować obrazka:', imageName);
     };
     
     title.innerText = state.activeProgram.name;
     showScreen('program-intro-screen');
-    
-    // USUNIĘTO setTimeout - teraz wymaga kliknięcia
 }
 
 // ============================================
