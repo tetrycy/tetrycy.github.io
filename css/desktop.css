@@ -137,3 +137,7 @@
 .icon-video .icon-image::before { 
     content: "🎬";
 }
+/* Ikona piłki nożnej */
+.icon-soccer .icon-image::before { 
+    content: "⚽";
+}
