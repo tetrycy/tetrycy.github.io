@@ -472,7 +472,7 @@ const QUESTIONS_DATA = {
         }
       ]
     },
-    {"id": "C", "name": "Dośrodkowanie z rzutu rożnego na długi słupek", "description": "Niedzielne podsumowanie ligi. Przyzwoita oglądalność. Stawka sympatii: 20.", "targetPoints": 40, "sympathyStake": 20, "questionSets": [{"id": "set1", "rounds": [
+    {"id": "C", "name": "Dośrodkowanie z rzutu rożnego na długi słupek", "description": "Niedzielne podsumowanie ligi. Przyzwoita oglądalność. Stawka sympatii: 20.", "targetPoints": 35, "sympathyStake": 20, "questionSets": [{"id": "set1", "rounds": [
       {"topic": "Kto was zaskoczył w tej kolejce?", "options": [
         { "type": "POPULIZM", "min": 6, "max": 18, "text": "Zaskoczyło mnie tak wielu przeciętnych zagranicznych piłkarzy. Dlaczego nie gramy Polakami, młodymi?", "onSuccess": 7, "onFail": -2 },
         { "type": "ANEGDOTA", "min": 9, "max": 18, "text": "Zaskoczyć to zaskoczyło mnie tylko raz jak w Hamburgu nie mieli mojego ulubionego whisky", "onSuccess": 8, "onFail": -2 },
@@ -639,95 +639,64 @@ const QUESTIONS_DATA = {
         { "type": "ZAKULISOWE INFORMACJE", "min": 15, "max": 18, "text": "Adam Nawałka miał przed tym meczem propozycję z Zagłębia Lubin", "onSuccess": 11, "onFail": -3 }
       ]}
     ]}]},
-{
-  "id": "F",
-  "name": "MISJA BANGKOK",
-  "description": "Finałowy wyjazd! Reprezentacja Polski na Pucharze Króla Tajlandii. TO JEST TO!",
-  "targetPoints": 58,
-  "sympathyStake": 0,
-  "questionSets": [
-    {
-      "id": "set1",
-      "rounds": [
-        {
-          "topic": "Panowie, czy to dobrze, że wracają mecze ligowym składem w egzotycznych miejscach? Jaki to walor praktyczny?",
-          "options": [
-            { "type": "POPULIZM", "min": 11, "max": 18, "text": "W takich turniejach wykuwa się charakter i przyszły sukces. Nikt nie zaczyna od razu w finale Mistrzostw Świata", "onSuccess": 10, "onFail": -3 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "To sól futbolu. Ja grałbym tylko takie turnieje. Z mojej kariery je wspominam najcieplej. Jak Kazek Węgrzyn kupił w Hong Kongu magnetowid - dwa dni oglądaliśmy filmy karate, oniemiejąc z zachwytu", "onSuccess": 12, "onFail": -4 },
-            { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Trzeba wrócić do korzeni. I pamiętajmy: to szansa na medal. Ja mam ich pełną szafkę, co mogą powiedzieć o sobie dzisiejsi kadrowicze? Ta szafka dodam, że się nie domyka", "onSuccess": 13, "onFail": -5 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "W końcu przetestujmy taktykę na trzech carrillero", "onSuccess": 8, "onFail": -2 },
-            { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "A czemu nie? Zawsze może ktoś błyśnie. Nie ma minusów", "onSuccess": 9, "onFail": -2 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, to będzie duża szansa w walce o status 5 bramkarza. Jan Urban zdecyduje", "onSuccess": 11, "onFail": -3 }
-          ]
-        },
-        {
-          "topic": "Kto waszym zdaniem pokaże się na tym turnieju?",
-          "options": [
-            { "type": "POPULIZM", "min": 13, "max": 18, "text": "Ktoś na pewno, Polska jest pełna talentów, co widać po meczach ligowych, które bardzo często oglądam, głównie wręcz", "onSuccess": 11, "onFail": -3 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Powiem wam, że trenerowi kadry na takim zgrupowaniu trzeba zaimponować nie tylko na boisku. Na Pucharze Tygrysa w Indiach w 1996 tak zdobyłem zaufanie trenera młodzieżówki", "onSuccess": 13, "onFail": -4 },
-            { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Nie przesadzajmy. Za moich czasów musiałeś udowodnić wartość przez piętnaście lat kariery, dopiero byłeś doceniany. To może być cenny, ale przyczynek", "onSuccess": 12, "onFail": -4 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "Przede wszystkim pokażmy konsekwencję w wykonywaniu kornerów na krótko. To jest przyszłość", "onSuccess": 7, "onFail": -1 },
-            { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "Pietuszewski", "onSuccess": 10, "onFail": -3 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, PZPN zaprezentuje nowe oficjalne spodnie działacza PZPN, sponsorowane przez polskiego wytwórcę spodni", "onSuccess": 11, "onFail": -3 }
-          ]
-        },
-        {
-          "topic": "Naszymi rywalami są w grupie Tajlandia, Bangladeszu U-20 i Tajlandia B. Jak oceniacie szanse na prymat",
-          "options": [
-            { "type": "POPULIZM", "min": 13, "max": 18, "text": "Nie możemy się bać. To dobre zespoły, ale my jesteśmy lepsi. Chciałbym tylko, żeby Jan Urban nie zapominał, ile talentów jest w polskich trzecich ligach i stamtąd też powołał", "onSuccess": 12, "onFail": -4 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Powiem wam tak: ja. 1997 rok. Lato. Z Edmundo, Chilavertem i Petitem idziemy w Bangkok. Chyba mam tam mural tylko za to, co się działo tamtej nocy, tak mi pisał ostatnio Rai", "onSuccess": 14, "onFail": -5 },
-            { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Cieszę się, że ci chłopcy na dorobku uniknęli w losowaniu wicemistrza Filipin. To mogłoby być za duże dla nich wyzwanie, wiem, bo byłem kiedyś królem asyst w tamtejszej lidze futsalu", "onSuccess": 13, "onFail": -5 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "Nie lekceważmy Bangladeszu U-20 na pewno. Świetny ostatnio mecz z Laosem, duża dojrzałość przesuwania", "onSuccess": 8, "onFail": -2 },
-            { "type": "MERYTORYKA", "min": 14, "max": 18, "text": "Z Bangladeszu to ja mogę mieć portki", "onSuccess": 11, "onFail": -3 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, reprezentacja Tajlandii B przyjedzie osłabiona brakiem piłkarzy powołanych do reprezentacji A", "onSuccess": 12, "onFail": -4 }
-          ]
-        },
-        {
-          "topic": "A co jeśli przegramy? Czy to zagrozi posadzie Jana Urbana",
-          "options": [
-            { "type": "POPULIZM", "min": 13, "max": 18, "text": "Moim zdaniem Jan Urban już popełnia błędy. Musimy mierzyć wyżej, mógł zrobić awans bezpośredni", "onSuccess": 13, "onFail": -4 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Mieszkałem kiedyś u Janka pół roku w domu w Pampelunie. Pracował w Legii, mówi: masz, baw się, i dał mi klucze. Uważam, że człowiekowi, który podejmuje tak mądre decyzje, trzeba zaufać", "onSuccess": 15, "onFail": -5 },
-            { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów na każdy mecz miałem innego trenera. To działało", "onSuccess": 14, "onFail": -5 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "Wszystko zależy od tego, czy obudzi w końcu Karola Linettego", "onSuccess": 9, "onFail": -2 },
-            { "type": "MERYTORYKA", "min": 14, "max": 18, "text": "Nie oceniałbym, dopóki nie wróci Moder", "onSuccess": 12, "onFail": -3 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, PZPN ma numer telefoniczny do Macieja Skorży", "onSuccess": 13, "onFail": -4 }
-          ]
-        },
-        {
-          "topic": "Panowie, w drugiej grupie są Nowa Zelandia, reprezentacja stanu Guarani, a także XI Eleven ligi filipińskiej. Kogo chcemy uniknąć w play-offach?",
-          "options": [
-            { "type": "POPULIZM", "min": 14, "max": 18, "text": "Nikogo, musimy atakować, musimy grać ofensywnie, zawsze, nie możemy kalkulować", "onSuccess": 14, "onFail": -5 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Mogę po latach zdradzić, że mam 3 mecze w reprezentacji stanu Guarani", "onSuccess": 16, "onFail": -6 },
-            { "type": "ZA MOICH CZASÓW", "min": 8, "max": 18, "text": "Za moich czasów XI Eleven ligi filipińskiej była naprawdę groźna. To doświadczony zespół, z bramkarzem jeszcze grałem", "onSuccess": 5, "onFail": -5 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "Stan Guarani gra nieuporządkowaną piłkę, gwiazdy a nie kolektyw. Chcę grać z nimi", "onSuccess": 10, "onFail": -3 },
-            { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "Dobrze, że nie Stara Zelandia (śmiech)", "onSuccess": 20, "onFail": -4 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, sztab od trzech miesięcy analizuje taktykę XI Eleven", "onSuccess": 14, "onFail": -5 }
-          ]
-        },
-        {
-          "topic": "Panowie, po tym zgrupowaniu już tylko baraże. Damy radę?",
-          "options": [
-            { "type": "POPULIZM", "min": 14, "max": 18, "text": "Kto ma dać radę jak nie Polak", "onSuccess": 14, "onFail": -5 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Pozwólcie, że opowiem anegdotę. Baraż o awans do czeskiej II ligi, Karvina. Hobbystycznie już grałem, bo miałem te 31 lat, więc pomogłem tam przyjacielowi. Baraż musisz wygrać w swojej głowie. Nogi, piłka, gole - to już didaskalia", "onSuccess": 16, "onFail": -6 },
-            { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów nie graliśmy w barażach. Owszem, nie graliśmy też na wielkich turniejach, ale uważam, że tak lepiej", "onSuccess": 15, "onFail": -5 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "W tym barażu przede wszystkim chciałbym zobaczyć styl", "onSuccess": 10, "onFail": -3 },
-            { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Nie wiem", "onSuccess": 13, "onFail": -4 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "PZPN planuje w razie zwycięstwa pożyczyć odrzutowiec od pana Dobrzyckiego i nim przewieźć odpowiedzialnych za sukces działaczy", "onSuccess": 14, "onFail": -5 }
-          ]
-        },
-        {
-          "topic": "Panowie, ale co polecacie kadrowiczom zwiedzić w Bangkoku?",
-          "options": [
-            { "type": "POPULIZM", "min": 13, "max": 18, "text": "Tamtejsze trzecie ligi, może są tam poukrywani młodzi Polacy, którzy mogliby wzmocnić kadrę", "onSuccess": 20, "onFail": -5 },
-            { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "[Wyciąga pozakreślaną na czerwono mapę]", "onSuccess": 17, "onFail": -6 },
-            { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów niczego nie zwiedzano, żyliśmy na dnie szatni", "onSuccess": 16, "onFail": -6 },
-            { "type": "ANALIZA", "min": 11, "max": 18, "text": "Wszystkie kompleksy treningowe, jest ich tam aż 77", "onSuccess": 11, "onFail": -3 },
-            { "type": "MERYTORYKA", "min": 10, "max": 18, "text": "Na pewno warto sprawdzić tamtejszą kuchnię, niby jemy chinola, czyli w sumie też tajskie, ale tam to będzie oryginał - zupełnie inna półka", "onSuccess": 12, "onFail": -4 },
-            { "type": "ZAKULISOWE INFORMACJE", "min": 7, "max": 18, "text": "Według moich informacji, warto wyrobić sobie kontakty w tamtejszej lidze, można zarobić dobijając do czterdziestki", "onSuccess": 3, "onFail": -5 }
-          ]
-    }
-  ]
-}
+    {"id": "F", "name": "MISJA BANGKOK", "description": "Finałowy wyjazd! Reprezentacja Polski na Pucharze Króla Tajlandii. TO JEST TO!", "targetPoints": 55, "sympathyStake": 0, "questionSets": [{"id": "set1", "rounds": [
+      {"topic": "Panowie, czy to dobrze, że wracają mecze ligowym składem w egzotycznych miejscach? Jaki to walor praktyczny?", "options": [
+        { "type": "POPULIZM", "min": 11, "max": 18, "text": "W takich turniejach wykuwa się charakter i przyszły sukces. Nikt nie zaczyna od razu w finale Mistrzostw Świata", "onSuccess": 10, "onFail": -3 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "To sól futbolu. Ja grałbym tylko takie turnieje. Z mojej kariery je wspominam najcieplej. Jak Kazek Węgrzyn kupił w Hong Kongu magnetowid - dwa dni oglądaliśmy filmy karate, oniemiejąc z zachwytu", "onSuccess": 12, "onFail": -4 },
+        { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Trzeba wrócić do korzeni. I pamiętajmy: to szansa na medal. Ja mam ich pełną szafkę, co mogą powiedzieć o sobie dzisiejsi kadrowicze? Ta szafka dodam, że się nie domyka", "onSuccess": 13, "onFail": -5 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "W końcu przetestujmy taktykę na trzech carrillero", "onSuccess": 8, "onFail": -2 },
+        { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "A czemu nie? Zawsze może ktoś błyśnie", "onSuccess": 9, "onFail": -2 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, to będzie duża szansa w walce o status 5 bramkarza", "onSuccess": 11, "onFail": -3 }
+      ]},
+      {"topic": "Kto waszym zdaniem pokaże się na tym turnieju?", "options": [
+        { "type": "POPULIZM", "min": 13, "max": 18, "text": "Ktoś na pewno, Polska jest pełna talentów, co widać po meczach ligowych, które bardzo często oglądam, głównie wręcz", "onSuccess": 11, "onFail": -3 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Powiem wam, że trenerowi kadry na takim zgrupowaniu trzeba zaimponować nie tylko na boisku. Na Pucharze Tygrysa w Indiach w 1996 tak zdobyłem zaufanie trenera młodzieżówki", "onSuccess": 13, "onFail": -4 },
+        { "type": "ZA MOICH CZASÓW", "min": 11, "max": 18, "text": "Nie przesadzajmy. Za moich czasów musiałeś udowodnić wartość przez piętnaście lat kariery, dopiero byłeś doceniany. To może być cenny, ale przyczynek", "onSuccess": 12, "onFail": -4 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "Przede wszystkim pokażmy konsekwencję w wykonywaniu kornerów na krótko", "onSuccess": 7, "onFail": -1 },
+        { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "Pietuszewski", "onSuccess": 10, "onFail": -3 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, PZPN zaprezentuje nowe oficjalne spodnie działacza", "onSuccess": 11, "onFail": -3 }
+      ]},
+      {"topic": "Naszymi rywalami są Tajlandia, Bangladesz U-20 i Tajlandia B. Jak oceniacie szanse?", "options": [
+        { "type": "POPULIZM", "min": 13, "max": 18, "text": "Nie możemy się bać. To dobre zespoły, ale my jesteśmy lepsi. Chciałbym tylko, żeby Jan Urban nie zapominał, ile talentów jest w polskich trzecich ligach i stamtąd też powołał", "onSuccess": 12, "onFail": -4 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Powiem wam tak: ja. 1997 rok. Lato. Z Edmundo, Chilavertem i Petitem idziemy w Bangkok. Chyba mam tam mural tylko za to, co się działo tamtej nocy, tak mi pisał ostatnio Rai", "onSuccess": 14, "onFail": -5 },
+        { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Cieszę się, że ci chłopcy na dorobku uniknęli w losowaniu wicemistrza Filipin. To mogłoby być za duże dla nich wyzwanie, wiem, bo byłem kiedyś królem asyst w tamtejszej lidze futsalu", "onSuccess": 13, "onFail": -5 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "Nie lekceważmy Bangladeszu U-20 na pewno. Świetny ostatnio mecz z Laosem, duża dojrzałość przesuwania", "onSuccess": 8, "onFail": -2 },
+        { "type": "MERYTORYKA", "min": 14, "max": 18, "text": "Z Bangladeszu to ja mogę mieć portki", "onSuccess": 11, "onFail": -3 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, reprezentacja Tajlandii B przyjedzie osłabiona brakiem piłkarzy powołanych do reprezentacji A", "onSuccess": 12, "onFail": -4 }
+      ]},
+      {"topic": "A co jeśli przegramy? Czy to zagrozi posadzie Jana Urbana", "options": [
+        { "type": "POPULIZM", "min": 13, "max": 18, "text": "Moim zdaniem Jan Urban już popełnia błędy. Musimy mierzyć wyżej, mógł zrobić awans bezpośredni", "onSuccess": 13, "onFail": -4 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Mieszkałem kiedyś u Janka pół roku w domu w Pampelunie. Pracował w Legii, mówi: masz, baw się, i dał mi klucze. Uważam, że człowiekowi, który podejmuje tak mądre decyzje, trzeba zaufać", "onSuccess": 15, "onFail": -5 },
+        { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów na każdy mecz miałem innego trenera. To działało", "onSuccess": 14, "onFail": -5 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "Wszystko zależy od tego, czy obudzi w końcu Karola Linettego", "onSuccess": 9, "onFail": -2 },
+        { "type": "MERYTORYKA", "min": 14, "max": 18, "text": "Nie oceniałbym, dopólki nie wróci Moder", "onSuccess": 12, "onFail": -3 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, PZPN ma numer telefoniczny do Macieja Skorży", "onSuccess": 13, "onFail": -4 }
+      ]},
+      {"topic": "Panowie, w drugiej grupie są Nowa Zelandia, reprezentacja stanu Guarani, a także XI Eleven ligi filipińskiej. Kogo chcemy uniknąć w play-offach?", "options": [
+        { "type": "POPULIZM", "min": 14, "max": 18, "text": "Nikogo, musimy atakować, musimy grać ofensywnie, zawsze", "onSuccess": 14, "onFail": -5 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Mogę po latach zdradzić, że mam 3 mecze w reprezentacji stanu Guarani", "onSuccess": 16, "onFail": -6 },
+        { "type": "ZA MOICH CZASÓW", "min": 8, "max": 18, "text": "Za moich czasów XI Eleven ligi filipińskiej była naprawdę groźna. To doświadczony zespół, z bramkarzem jeszcze grałem", "onSuccess": 5, "onFail": -5 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "Stan Guarani gra nieuporządkowaną piłkę, gwiazdy a nie kolektyw", "onSuccess": 10, "onFail": -3 },
+        { "type": "MERYTORYKA", "min": 13, "max": 18, "text": "Dobrze, że nie Stara Zelandia (śmiech)", "onSuccess": 30, "onFail": -4 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "Według moich informacji, sztab od trzech miesięcy analizuje taktykę XI Eleven", "onSuccess": 14, "onFail": -5 }
+      ]},
+      {"topic": "Panowie, po tym zgrupowaniu już tylko baraże. Damy radę?", "options": [
+        { "type": "POPULIZM", "min": 14, "max": 18, "text": "Kto ma dać radę jak nie Polak", "onSuccess": 14, "onFail": -5 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "Pozwólcie, że opowiem anegdotę. Baraż o awans do czeskiej II ligi, Karvina. Hobbystycznie już grałem, bo miałem te 31 lat, więc pomogłem tam przyjacielowi. Baraż musisz wygrać w swojej głowie. Nogi, piłka, gole - to już didaskalia", "onSuccess": 16, "onFail": -6 },
+        { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów nie graliśmy w barażach. Owszem, nie graliśmy też na wielkich turniejach, ale uważam, że tak lepiej", "onSuccess": 15, "onFail": -5 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "W tym barażu przede wszystkim chciałbym zobaczyć styl", "onSuccess": 10, "onFail": -3 },
+        { "type": "MERYTORYKA", "min": 11, "max": 18, "text": "Nie wiem", "onSuccess": 13, "onFail": -4 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 11, "max": 18, "text": "PZPN planuje w razie zwycięstwa pożyczyć odrzutowiec od pana Dobrzyckiego i nim przewieźć odpowiedzialnych za sukces działaczy", "onSuccess": 14, "onFail": -5 }
+      ]},
+      {"topic": "Panowie, co polecacie kadrowiczom zwiedzić w Bangkoku?", "options": [
+        { "type": "POPULIZM", "min": 13, "max": 18, "text": "Tamtejsze trzecie ligi, może są tam poukrywani młodzi Polacy", "onSuccess": 20, "onFail": -5 },
+        { "type": "ANEGDOTA", "min": 11, "max": 18, "text": "[Wyciąga pozakreślaną na czerwono mapę]", "onSuccess": 17, "onFail": -6 },
+        { "type": "ZA MOICH CZASÓW", "min": 13, "max": 18, "text": "Za moich czasów niczego nie zwiedzano niczego, żyliśmy na dnie szatni", "onSuccess": 16, "onFail": -6 },
+        { "type": "ANALIZA", "min": 11, "max": 18, "text": "Wszystkie kompleksy treningowe, jest ich tam aż 77", "onSuccess": 11, "onFail": -3 },
+        { "type": "MERYTORYKA", "min": 10, "max": 18, "text": "Na pewno warto sprawdzić tamtejszą kuchnię, niby jemy chinola, czyli w sumie też tajskie, ale tam to będzie oryginał - zupełnie inna półka", "onSuccess": 12, "onFail": -4 },
+        { "type": "ZAKULISOWE INFORMACJE", "min": 7, "max": 18, "text": "Według moich informacji, warto wyrobić sobie kontakty w tamtejszej lidze, można zarobić dobijając do czterdziestki", "onSuccess": 3, "onFail": -5 }
+      ]}
+    ]}]}
   ]
 };
 
