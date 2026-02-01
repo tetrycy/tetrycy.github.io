@@ -875,7 +875,7 @@ function renderHub() {
     PROGRAMS.forEach(function(prog) {
         var requiredCred = thresholds[prog.id] || 0;
         var locked = state.credibility < requiredCred;
-        var isFinalLocked = prog.id === 'F' && state.weeks > 3;
+        var isFinalLocked = prog.id === 'F' && state.weeks > 1;
         var usageCount = state.programUsageCount[prog.id] || 0;
         var isUsedUp = prog.id !== 'F' && usageCount >= 2;
         
