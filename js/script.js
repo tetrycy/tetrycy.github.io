@@ -316,6 +316,9 @@ case 'marian-fussball':
 case 'fanatyk-pilkarstwa':
     window.open('https://www.youtube.com/watch?v=_c1p8JcCCqc&t=12s');
     break;
+                case 'misja-bangkok':
+    window.open('https://www.tetrycy.com.pl/misjabangkok.html', '_blank', 'width=700,height=500,resizable=yes,scrollbars=yes');
+    break;
 
         }
     });
