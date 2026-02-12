@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Engine v3.1 — Phase A</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0e14;
+    --surface: #111820;
+    --surface2: #1a2230;
+    --border: #2a3545;
+    --text: #c8d0da;
+    --text-dim: #6b7a8d;
+    --accent: #22d68a;
+    --accent2: #1ba86d;
+    --yellow: #f0c040;
+    --red: #e84057;
+    --blue: #4a9eff;
+    --orange: #ff8c42;
+    --goal-bg: #1a3a25;
+    --goal-border: #22d68a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.app { display: flex; height: 100vh; overflow: hidden; }
+.editor {
+    width: 420px; min-width: 420px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 16px; background: var(--surface);
+}
+.editor h2 {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--accent); margin-bottom: 12px;
+}
+.team-block { margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.team-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+.team-header input.team-name {
+    flex: 1; background: transparent; border: none; color: var(--text);
+    font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif; outline: none;
+}
+.team-header select {
+    background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 4px 6px; font-size: 11px;
+    font-family: 'JetBrains Mono', monospace; cursor: pointer;
+}
+.player-row {
+    display: grid; grid-template-columns: 38px 1fr 50px;
+    gap: 4px; padding: 3px 8px; border-bottom: 1px solid var(--border);
+    align-items: center; font-size: 12px;
+}
+.player-row:last-child { border-bottom: none; }
+.player-row.header-row {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+    padding: 6px 8px; background: var(--bg);
+}
+.pos-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 3px; text-align: center; width: 34px;
+}
+.pos-GK { background: #2a1f3a; color: #b088e0; }
+.pos-DEF { background: #1a2a3a; color: #60a0d8; }
+.pos-MID { background: #2a2a1a; color: #c0b060; }
+.pos-FWD { background: #3a1a1a; color: #e07060; }
+.player-row input[type="text"] {
+    background: transparent; border: none; color: var(--text);
+    font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; width: 100%;
+}
+.player-row input[type="number"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--accent); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; text-align: center; padding: 2px; width: 46px; outline: none;
+}
+.player-row input[type="number"]:focus { border-color: var(--accent); }
+.match-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.controls {
+    display: flex; gap: 10px; padding: 12px 20px;
+    border-bottom: 1px solid var(--border); background: var(--surface);
+    align-items: center; flex-wrap: wrap;
+}
+.btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 4px;
+    cursor: pointer; transition: all 0.15s; background: var(--surface2); color: var(--text);
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary { background: var(--accent2); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent); }
+.controls .score-display {
+    font-family: 'JetBrains Mono', monospace; font-size: 22px;
+    font-weight: 700; color: var(--text); margin: 0 12px; letter-spacing: 1px;
+}
+.controls .score-display .team-label { font-size: 11px; font-weight: 400; color: var(--text-dim); display: block; }
+.match-output {
+    flex: 1; overflow-y: auto; padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.7;
+}
+.log-entry { padding: 2px 0; border-left: 2px solid transparent; padding-left: 8px; margin-bottom: 1px; }
+.log-entry.goal { background: var(--goal-bg); border-left-color: var(--goal-border); color: var(--accent); font-weight: 700; padding: 6px 8px; margin: 4px 0; border-radius: 0 4px 4px 0; }
+.log-entry.penalty-goal { background: #2a2a15; border-left-color: var(--yellow); color: var(--yellow); font-weight: 700; padding: 6px 8px; margin: 4px 0; border-radius: 0 4px 4px 0; }
+.log-entry.shot { color: var(--blue); }
+.log-entry.miss { color: var(--text-dim); }
+.log-entry.save { color: var(--orange); }
+.log-entry.foul { color: var(--yellow); }
+.log-entry.card { color: var(--red); font-weight: 600; }
+.log-entry.corner { color: #8888cc; }
+.log-entry.possession-start { color: var(--text-dim); font-size: 10px; margin-top: 8px; border-left-color: var(--border); }
+.log-entry.action { color: var(--text); }
+.log-entry.action-fail { color: var(--red); opacity: 0.8; }
+.log-entry.dribble-success { color: var(--accent); }
+.log-entry.stoppage { color: var(--text-dim); font-style: italic; }
+.log-entry.half-time { text-align: center; color: var(--text); font-weight: 700; font-size: 13px; padding: 12px; margin: 8px 0; border-left: none; background: var(--surface2); border-radius: 4px; }
+.log-entry .detail { color: var(--text-dim); font-size: 10px; }
+.stats-panel {
+    border-top: 1px solid var(--border); padding: 16px 20px; background: var(--surface);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; max-height: 280px; overflow-y: auto;
+}
+.stats-grid { display: grid; grid-template-columns: 110px 1fr 60px 60px; gap: 2px 8px; }
+.stats-grid .label { color: var(--text-dim); text-align: right; }
+.stats-grid .bar-cell { padding: 2px 0; }
+.stats-grid .val { text-align: center; color: var(--accent); font-weight: 600; }
+.stats-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; display: flex; margin-top: 4px; }
+.stats-bar .home { background: var(--accent); }
+.stats-bar .away { background: var(--blue); }
+.stats-header {
+    font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px; display: grid; grid-template-columns: 110px 1fr 60px 60px; gap: 2px 8px;
+}
+.stats-header span:nth-child(3), .stats-header span:nth-child(4) { text-align: center; }
+.scorers-list { margin-top: 10px; }
+.scorers-list h4 { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.scorer-entry { color: var(--text); padding: 1px 0; }
+.scorer-entry .minute { color: var(--accent); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="editor" id="editor"></div>
+    <div class="match-area">
+        <div class="controls" id="controls"></div>
+        <div class="match-output" id="matchOutput">
+            <div style="color:var(--text-dim); text-align:center; margin-top:40px;">Ustaw składy → Symuluj mecz</div>
+        </div>
+        <div class="stats-panel" id="statsPanel" style="display:none;"></div>
+    </div>
+</div>
+
+<script>
+// ============================================================================
+// FOOTBALL ENGINE v3.1 — MICRO-ACTIONS WITH DIVERSE EVENTS
+// ============================================================================
+// Time unit: 1 "tick" ≈ variable seconds depending on action.
+// Match = 90 minutes = 5400 seconds. Ticks consume realistic time.
+// Actions: pass, dribble, shot, long_ball, cross, clearance, throw_in,
+//          goal_kick, free_kick, pressing_loss, offside, back_to_gk
+// ============================================================================
+
+const FORMATIONS = {
+    '3-4-3': { DEF: 3, MID: 4, FWD: 3 },
+    '4-3-3': { DEF: 4, MID: 3, FWD: 3 },
+    '4-4-2': { DEF: 4, MID: 4, FWD: 2 },
+    '4-5-1': { DEF: 4, MID: 5, FWD: 1 },
+    '5-3-2': { DEF: 5, MID: 3, FWD: 2 },
+    '5-4-1': { DEF: 5, MID: 4, FWD: 1 },
+};
+
+const TACTICS = ['balanced', 'attacking', 'defensive'];
+
+const DEFAULT_HOME = {
+    name: 'Legia Warszawa', formation: '4-4-2', tactic: 'balanced',
+    players: [
+        { name: 'Tobiasz', pos: 'GK', ovr: 72 },
+        { name: 'Jędrzejczyk', pos: 'DEF', ovr: 71 },
+        { name: 'Wieteska', pos: 'DEF', ovr: 69 },
+        { name: 'Nawrocki', pos: 'DEF', ovr: 73 },
+        { name: 'Mladenović', pos: 'DEF', ovr: 68 },
+        { name: 'Zieliński', pos: 'MID', ovr: 82 },
+        { name: 'Krychowiak', pos: 'MID', ovr: 78 },
+        { name: 'Kapustka', pos: 'MID', ovr: 76 },
+        { name: 'Josué', pos: 'MID', ovr: 80 },
+        { name: 'Lewandowski', pos: 'FWD', ovr: 85 },
+        { name: 'Rosołek', pos: 'FWD', ovr: 70 },
+    ]
+};
+
+const DEFAULT_AWAY = {
+    name: 'Radomiak Radom', formation: '5-4-1', tactic: 'defensive',
+    players: [
+        { name: 'Kochalski', pos: 'GK', ovr: 65 },
+        { name: 'Cichocki', pos: 'DEF', ovr: 66 },
+        { name: 'Rossi', pos: 'DEF', ovr: 64 },
+        { name: 'Mikołajewski', pos: 'DEF', ovr: 62 },
+        { name: 'Abramowicz', pos: 'DEF', ovr: 63 },
+        { name: 'Nowak', pos: 'DEF', ovr: 61 },
+        { name: 'Mastoras', pos: 'MID', ovr: 67 },
+        { name: 'Leandro', pos: 'MID', ovr: 65 },
+        { name: 'Kaput', pos: 'MID', ovr: 63 },
+        { name: 'Souza', pos: 'MID', ovr: 61 },
+        { name: 'Ishak', pos: 'FWD', ovr: 68 },
+    ]
+};
+
+// ============================================================================
+// EDITOR UI
+// ============================================================================
+function buildEditor() {
+    const editor = document.getElementById('editor');
+    let html = '<h2>⚽ Football Engine v3.1</h2>';
+    
+    [DEFAULT_HOME, DEFAULT_AWAY].forEach((team, ti) => {
+        const id = ti === 0 ? 'home' : 'away';
+        const label = ti === 0 ? '🏠 GOSPODARZ' : '✈️ GOŚĆ';
+        html += `<div class="team-block" id="team-${id}">`;
+        html += `<div class="team-header">`;
+        html += `<span style="font-size:11px;color:var(--text-dim)">${label}</span>`;
+        html += `<input type="text" class="team-name" data-team="${id}" data-field="name" value="${team.name}">`;
+        html += `<select data-team="${id}" data-field="formation">${Object.keys(FORMATIONS).map(f => `<option value="${f}" ${f===team.formation?'selected':''}>${f}</option>`).join('')}</select>`;
+        html += `<select data-team="${id}" data-field="tactic">${TACTICS.map(t => `<option value="${t}" ${t===team.tactic?'selected':''}>${t}</option>`).join('')}</select>`;
+        html += `</div>`;
+        html += `<div class="player-row header-row"><span>Poz</span><span>Nazwisko</span><span>OVR</span></div>`;
+        team.players.forEach((p, pi) => {
+            html += `<div class="player-row"><span class="pos-badge pos-${p.pos}">${p.pos}</span>`;
+            html += `<input type="text" data-team="${id}" data-idx="${pi}" data-field="name" value="${p.name}">`;
+            html += `<input type="number" data-team="${id}" data-idx="${pi}" data-field="ovr" value="${p.ovr}" min="30" max="99">`;
+            html += `</div>`;
+        });
+        html += `</div>`;
+    });
+    editor.innerHTML = html;
+}
+
+function readTeam(teamId) {
+    const block = document.getElementById(`team-${teamId}`);
+    const name = block.querySelector(`input[data-field="name"][data-team="${teamId}"]`).value;
+    const formation = block.querySelector(`select[data-field="formation"]`).value;
+    const tactic = block.querySelector(`select[data-field="tactic"]`).value;
+    const formDef = FORMATIONS[formation];
+    const posOrder = ['GK','DEF','MID','FWD'];
+    const posCounts = { GK: 1, ...formDef };
+    const players = [];
+    let idx = 0;
+    for (const pos of posOrder) {
+        for (let i = 0; i < posCounts[pos]; i++) {
+            const ni = block.querySelector(`input[data-field="name"][data-idx="${idx}"]`);
+            const oi = block.querySelector(`input[data-field="ovr"][data-idx="${idx}"]`);
+            players.push({ name: ni ? ni.value : `P${idx+1}`, pos, ovr: oi ? parseInt(oi.value)||60 : 60 });
+            idx++;
+        }
+    }
+    return { name, formation, tactic, players };
+}
+
+// ============================================================================
+// ENGINE
+// ============================================================================
+class Engine {
+    constructor(home, away, verbose = true) {
+        this.t = [
+            { ...home, r: this.calcRatings(home.players) },
+            { ...away, r: this.calcRatings(away.players) },
+        ];
+        this.verbose = verbose;
+        this.log = [];
+        this.sec = 0; // match clock in seconds (0-5400)
+        this.poss = -1;
+        this.ball = null; // current player with ball
+        this.ballLine = 'DEF';
+        this.dribbleBonus = false;
+        this.reds = [[], []];
+        this.possTime = [0, 0];
+        
+        for (let i = 0; i < 2; i++) {
+            this.t[i].s = {
+                goals: 0, shots: 0, shotsOnTarget: 0, possession: 0,
+                corners: 0, fouls: 0, yellowCards: 0, redCards: 0,
+                penalties: 0, penaltiesScored: 0,
+                passes: 0, passesOK: 0, dribbles: 0, dribblesOK: 0,
+                longBalls: 0, longBallsOK: 0, offsides: 0,
+                goalKicks: 0, throwIns: 0, freeKicks: 0,
+            };
+            this.t[i].scorers = [];
+        }
+    }
+    
+    calcRatings(players) {
+        const f = players.filter(p => p.pos !== 'GK');
+        const gk = players.find(p => p.pos === 'GK');
+        const fwd = f.filter(p => p.pos === 'FWD');
+        const mid = f.filter(p => p.pos === 'MID');
+        const def = f.filter(p => p.pos === 'DEF');
+        const sum = a => a.reduce((s, p) => s + p.ovr, 0);
+        return {
+            attack: (sum(fwd) * 2 + sum(mid)) / 11,
+            defense: sum(def) / 11,
+            passing: sum(f) / 11,
+            goalkeeper: gk ? gk.ovr : 50,
+        };
+    }
+    
+    active(ti) { return this.t[ti].players.filter(p => !this.reds[ti].includes(p.name)); }
+    byPos(ti, pos) { return this.active(ti).filter(p => p.pos === pos); }
+    
+    pick(ti, pos) {
+        const c = this.byPos(ti, pos);
+        if (!c.length) return null;
+        const tot = c.reduce((s, p) => s + p.ovr, 0);
+        let r = Math.random() * tot;
+        for (const p of c) { r -= p.ovr; if (r <= 0) return p; }
+        return c[c.length - 1];
+    }
+    
+    pickShooter(ti) {
+        const wt = { FWD: 5, MID: 1.5, DEF: 0.5 };
+        const f = this.active(ti).filter(p => p.pos !== 'GK');
+        const ws = f.map(p => ({ ...p, w: p.ovr * (wt[p.pos] || 1) }));
+        const tot = ws.reduce((s, p) => s + p.w, 0);
+        let r = Math.random() * tot;
+        for (const p of ws) { r -= p.w; if (r <= 0) return p; }
+        return ws[ws.length - 1];
+    }
+    
+    min() { return Math.floor(this.sec / 60); }
+    
+    addLog(text, type = 'action', detail = '') {
+        if (this.verbose) this.log.push({ minute: this.min(), text, type, detail });
+    }
+    
+    tick(seconds) { this.sec += seconds; }
+    
+    // ================================================================
+    // RUN MATCH
+    // ================================================================
+    run() {
+        this.poss = Math.random() < 0.5 ? 0 : 1;
+        this.addLog('Rozpoczęcie meczu — 1. połowa', 'half-time');
+        
+        let halfLogged = false;
+        
+        while (this.sec < 5400) {
+            // Half time
+            if (this.sec >= 2700 && !halfLogged) {
+                halfLogged = true;
+                this.addLog(`PRZERWA — ${this.t[0].name} ${this.t[0].s.goals}:${this.t[1].s.goals} ${this.t[1].name}`, 'half-time');
+                this.tick(60); // half time break eats 1 min of clock
+            }
+            
+            this.simPossession();
+        }
+        
+        this.addLog(`KONIEC MECZU — ${this.t[0].name} ${this.t[0].s.goals}:${this.t[1].s.goals} ${this.t[1].name}`, 'half-time');
+        
+        const total = this.possTime[0] + this.possTime[1];
+        this.t[0].s.possession = total > 0 ? Math.round(this.possTime[0] / total * 100) : 50;
+        this.t[1].s.possession = 100 - this.t[0].s.possession;
+        
+        return {
+            score: [this.t[0].s.goals, this.t[1].s.goals],
+            stats: [this.t[0].s, this.t[1].s],
+            teams: this.t,
+            log: this.log,
+        };
+    }
+    
+    // ================================================================
+    // POSSESSION = CHAIN OF MICRO-ACTIONS
+    // ================================================================
+    simPossession() {
+        const o = this.poss;
+        const d = 1 - o;
+        const team = this.t[o];
+        
+        this.dribbleBonus = false;
+        this.ballLine = 'DEF';
+        this.ball = this.pick(o, 'DEF');
+        if (!this.ball) { this.poss = d; this.tick(5); return; }
+        
+        const possStart = this.sec;
+        
+        this.addLog(
+            `${team.name} — posiadanie`,
+            'possession-start',
+            `piłka: ${this.ball.name} (${this.ball.pos} ${this.ball.ovr})`
+        );
+        
+        for (let step = 0; step < 35; step++) {
+            if (this.sec >= 5400) break;
+            
+            const action = this.chooseAction(o);
+            const result = this.exec(action, o, d);
+            
+            if (result.end) {
+                this.possTime[o] += (this.sec - possStart);
+                if (result.switchTo !== undefined) this.poss = result.switchTo;
+                else this.poss = d;
+                return;
+            }
+        }
+        
+        // Max steps — turnover
+        this.possTime[o] += (this.sec - possStart);
+        this.poss = d;
+    }
+    
+    // ================================================================
+    // CHOOSE ACTION — depends on ball position (line)
+    // ================================================================
+    chooseAction(o) {
+        const r = Math.random();
+        const line = this.ballLine;
+        
+        if (line === 'DEF') {
+            if (r < 0.35) return 'pass_side';      // circulation
+            if (r < 0.60) return 'pass_fwd';        // build up
+            if (r < 0.72) return 'back_to_gk';      // reset to GK
+            if (r < 0.82) return 'long_ball';        // bypass midfield
+            if (r < 0.90) return 'switch_play';      // change side (slow, safe)
+            if (r < 0.96) return 'dribble';          // 6%
+            return 'clearance';                       // 4% — just boot it
+        }
+        
+        if (line === 'MID') {
+            if (r < 0.28) return 'pass_side';        // circulation
+            if (r < 0.43) return 'pass_fwd';          // 15% — to FWD, bottleneck
+            if (r < 0.60) return 'pass_back';         // 17% — recycle
+            if (r < 0.73) return 'dribble';           // 13%
+            if (r < 0.80) return 'switch_play';       // 7%
+            if (r < 0.88) return 'long_ball';         // 8%
+            if (r < 0.95) return 'shot';              // 7% — long range
+            return 'through_ball';                     // 5% — risky key pass
+        }
+        
+        // FWD
+        if (r < 0.22) return 'shot';                  // 22%
+        if (r < 0.38) return 'dribble';               // 16%
+        if (r < 0.50) return 'pass_side';             // 12%
+        if (r < 0.75) return 'pass_back';             // 25% — can't find space
+        if (r < 0.88) return 'cross';                 // 13% — cross into box
+        return 'through_ball';                         // 12%
+    }
+    
+    // ================================================================
+    // EXECUTE ACTION
+    // ================================================================
+    exec(action, o, d) {
+        switch (action) {
+            case 'pass_side':    return this.doPassSide(o, d);
+            case 'pass_fwd':     return this.doPassFwd(o, d);
+            case 'pass_back':    return this.doPassBack(o, d);
+            case 'back_to_gk':   return this.doBackToGK(o, d);
+            case 'switch_play':  return this.doSwitchPlay(o, d);
+            case 'long_ball':    return this.doLongBall(o, d);
+            case 'through_ball': return this.doThroughBall(o, d);
+            case 'cross':        return this.doCross(o, d);
+            case 'dribble':      return this.doDribble(o, d);
+            case 'shot':         return this.doShot(o, d);
+            case 'clearance':    return this.doClearance(o, d);
+            default: this.tick(3); return { end: false };
+        }
+    }
+    
+    // --- PASS SIDEWAYS (very safe, costs time) ---
+    doPassSide(o, d) {
+        this.tick(4 + Math.random() * 3); // 4-7 seconds
+        this.t[o].s.passes++;
+        const carrier = this.ball;
+        const failChance = 0.05; // 5% — very safe
+        
+        if (Math.random() < failChance) {
+            this.t[o].s.passes; // already counted
+            this.addLog(`${carrier.name} — niecelne podanie w bok`, 'action-fail', `[fail ${(failChance*100)}%]`);
+            // Throw-in or opponent gets ball
+            if (Math.random() < 0.5) return this.doThrowIn(o, d);
+            return { end: true };
+        }
+        
+        this.t[o].s.passesOK++;
+        const receiver = this.pick(o, this.ballLine);
+        if (!receiver || receiver.name === carrier.name) {
+            // same player, just recirculate
+            this.addLog(`${carrier.name} → ${carrier.name} (kontrola)`, 'action', `podanie w bok`);
+            return { end: false };
+        }
+        this.ball = receiver;
+        this.addLog(`${carrier.name} → ${receiver.name}`, 'action', `podanie w bok [${this.ballLine}]`);
+        return { end: false };
+    }
+    
+    // --- PASS FORWARD (risky, advances line) ---
+    doPassFwd(o, d) {
+        this.tick(3 + Math.random() * 2);
+        this.t[o].s.passes++;
+        const carrier = this.ball;
+        const successProb = 0.55 + (carrier.ovr / 250); // ovr 60→79%, ovr 85→89%
+        const roll = Math.random();
+        
+        if (roll < successProb) {
+            this.t[o].s.passesOK++;
+            let nextLine = this.ballLine;
+            if (this.ballLine === 'DEF') nextLine = 'MID';
+            else if (this.ballLine === 'MID') nextLine = 'FWD';
+            
+            const receiver = this.pick(o, nextLine);
+            if (!receiver) return { end: true };
+            this.ball = receiver;
+            this.ballLine = nextLine;
+            this.addLog(
+                `${carrier.name} → ${receiver.name}`,
+                'action',
+                `podanie do przodu [${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+            );
+            return { end: false };
+        }
+        
+        this.addLog(
+            `${carrier.name} — podanie do przodu przechwycone`,
+            'action-fail',
+            `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+        );
+        return { end: true };
+    }
+    
+    // --- PASS BACK (very safe, loses ground) ---
+    doPassBack(o, d) {
+        this.tick(3 + Math.random() * 2);
+        this.t[o].s.passes++;
+        this.t[o].s.passesOK++; // almost never fails
+        const carrier = this.ball;
+        
+        let nextLine = this.ballLine;
+        if (this.ballLine === 'FWD') nextLine = 'MID';
+        else if (this.ballLine === 'MID') nextLine = 'DEF';
+        
+        const receiver = this.pick(o, nextLine);
+        if (!receiver) { this.ball = carrier; return { end: false }; }
+        this.ball = receiver;
+        this.ballLine = nextLine;
+        this.addLog(`${carrier.name} → ${receiver.name}`, 'action', `podanie do tyłu [${this.ballLine}]`);
+        return { end: false };
+    }
+    
+    // --- BACK TO GK (safe reset, eats time) ---
+    doBackToGK(o, d) {
+        this.tick(6 + Math.random() * 4); // 6-10 seconds — slow buildup
+        this.t[o].s.passes++;
+        this.t[o].s.passesOK++;
+        const gk = this.t[o].players.find(p => p.pos === 'GK');
+        const carrier = this.ball;
+        this.ball = gk || carrier;
+        this.ballLine = 'DEF';
+        this.addLog(`${carrier.name} → ${this.ball.name}`, 'action', `cofnięcie do bramkarza — reset`);
+        return { end: false };
+    }
+    
+    // --- SWITCH PLAY (change side, safe but slow) ---
+    doSwitchPlay(o, d) {
+        this.tick(5 + Math.random() * 3);
+        this.t[o].s.passes++;
+        const carrier = this.ball;
+        const successProb = 0.80;
+        
+        if (Math.random() < successProb) {
+            this.t[o].s.passesOK++;
+            const receiver = this.pick(o, this.ballLine);
+            if (receiver) this.ball = receiver;
+            this.addLog(`${carrier.name} ↔ ${this.ball.name}`, 'action', `zmiana strony [${this.ballLine}]`);
+            return { end: false };
+        }
+        
+        this.addLog(`${carrier.name} — zmiana strony niecelna`, 'action-fail', `aut`);
+        return this.doThrowIn(o, d);
+    }
+    
+    // --- LONG BALL (skip midfield, risky) ---
+    doLongBall(o, d) {
+        this.tick(4 + Math.random() * 2);
+        this.t[o].s.longBalls++;
+        const carrier = this.ball;
+        const successProb = 0.30 + (carrier.ovr / 300); // ovr 60→50%, ovr 80→57%
+        const roll = Math.random();
+        
+        if (roll < successProb) {
+            this.t[o].s.longBallsOK++;
+            const receiver = this.pick(o, 'FWD') || this.pick(o, 'MID');
+            if (!receiver) return { end: true };
+            this.ball = receiver;
+            this.ballLine = receiver.pos === 'FWD' ? 'FWD' : 'MID';
+            this.addLog(
+                `${carrier.name} ↗ ${receiver.name}`,
+                'action',
+                `długie podanie [→${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+            );
+            return { end: false };
+        }
+        
+        this.addLog(`${carrier.name} — długie podanie niecelne`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
+        // Goal kick for opponent
+        return this.doGoalKick(d);
+    }
+    
+    // --- THROUGH BALL (key pass, very risky, creates great chance) ---
+    doThroughBall(o, d) {
+        this.tick(2 + Math.random() * 2);
+        this.t[o].s.passes++;
+        const carrier = this.ball;
+        const successProb = 0.25 + (carrier.ovr / 300); // ovr 70→48%, ovr 85→53%
+        const roll = Math.random();
+        
+        if (roll < successProb) {
+            this.t[o].s.passesOK++;
+            const receiver = this.pick(o, 'FWD') || this.pick(o, 'MID');
+            if (!receiver) return { end: true };
+            this.ball = receiver;
+            this.ballLine = 'FWD';
+            this.dribbleBonus = true; // through ball = great chance (same bonus as dribble)
+            this.addLog(
+                `${carrier.name} ⚡→ ${receiver.name}`,
+                'dribble-success',
+                `kluczowe podanie! [bonus +12%] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+            );
+            return { end: false };
+        }
+        
+        // Failed through ball — often offside
+        if (Math.random() < 0.40) {
+            return this.doOffside(o, d);
+        }
+        this.addLog(`${carrier.name} — kluczowe podanie przechwycone`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
+        return { end: true };
+    }
+    
+    // --- CROSS (from wide, to FWD for header) ---
+    doCross(o, d) {
+        this.tick(3 + Math.random() * 2);
+        this.t[o].s.passes++;
+        const carrier = this.ball;
+        const successProb = 0.28 + (carrier.ovr / 300); // crosses are hard
+        const roll = Math.random();
+        
+        if (roll < successProb) {
+            this.t[o].s.passesOK++;
+            const target = this.pick(o, 'FWD') || this.pick(o, 'MID');
+            if (!target) return { end: true };
+            this.ball = target;
+            this.ballLine = 'FWD';
+            this.addLog(
+                `${carrier.name} ⤴ ${target.name}`,
+                'action',
+                `dośrodkowanie → główka/strzał prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+            );
+            // Cross goes directly to shot attempt
+            return this.doShot(o, d);
+        }
+        
+        this.addLog(`${carrier.name} — dośrodkowanie niecelne`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
+        if (Math.random() < 0.3) return this.doGoalKick(d);
+        if (Math.random() < 0.3) return this.doCorner(o, d);
+        return { end: true };
+    }
+    
+    // --- DRIBBLE (risk/reward, bonus to next action) ---
+    doDribble(o, d) {
+        this.tick(4 + Math.random() * 3);
+        this.t[o].s.dribbles++;
+        const carrier = this.ball;
+        const successProb = 0.40 + (carrier.ovr / 250); // ovr 60→64%, ovr 85→74%
+        const roll = Math.random();
+        
+        if (roll < successProb) {
+            this.t[o].s.dribblesOK++;
+            this.dribbleBonus = true;
+            // May advance line
+            if (this.ballLine === 'DEF' && Math.random() < 0.35) this.ballLine = 'MID';
+            else if (this.ballLine === 'MID' && Math.random() < 0.20) this.ballLine = 'FWD';
+            
+            this.addLog(
+                `${carrier.name} — udany drybling! ⚡`,
+                'dribble-success',
+                `[bonus +12%] [${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+            );
+            return { end: false };
+        }
+        
+        this.addLog(
+            `${carrier.name} — strata po dryblingu`,
+            'action-fail',
+            `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
+        );
+        // Foul chance on failed dribble
+        if (Math.random() < 0.25) return this.doFoul(o, d);
+        return { end: true };
+    }
+    
+    // --- SHOT ---
+    doShot(o, d) {
+        const carrier = this.ball;
+        const team = this.t[o];
+        const gk = this.t[d].players.find(p => p.pos === 'GK') || { name: 'GK', ovr: 50 };
+        
+        team.s.shots++;
+        this.tick(2);
+        
+        const dribBonus = this.dribbleBonus ? 0.12 : 0;
+        this.dribbleBonus = false;
+        
+        const distMod = this.ballLine === 'FWD' ? 0 : this.ballLine === 'MID' ? -0.15 : -0.30;
+        
+        // On target
+        const onTargetProb = Math.min(0.80, Math.max(0.05, carrier.ovr / 200 + dribBonus + distMod));
+        const onTargetRoll = Math.random();
+        
+        if (onTargetRoll < onTargetProb) {
+            team.s.shotsOnTarget++;
+            
+            // Goal
+            const goalBase = carrier.ovr / (carrier.ovr + gk.ovr);
+            const goalProb = Math.min(0.85, Math.max(0.05, goalBase + dribBonus / 2 + distMod / 4));
+            const goalRoll = Math.random();
+            
+            if (goalRoll < goalProb) {
+                team.s.goals++;
+                team.scorers.push({ name: carrier.name, minute: this.min() });
+                this.addLog(
+                    `${this.min()}' ⚽ GOL! ${carrier.name} (${team.name}) — ${this.t[0].s.goals}:${this.t[1].s.goals}`,
+                    'goal',
+                    `celność:${(onTargetProb*100).toFixed(0)}% roll:${(onTargetRoll*100).toFixed(1)}% | gol:${(goalProb*100).toFixed(0)}% roll:${(goalRoll*100).toFixed(1)}% | ${carrier.ovr}vs${gk.ovr} ${this.ballLine}${dribBonus>0?' +bonus':''}`
+                );
+                this.tick(30); // celebration + restart
+                return { end: true };
+            }
+            
+            this.addLog(
+                `${this.min()}' ${carrier.name} strzela — obrona ${gk.name}!`,
+                'save',
+                `celny:${(onTargetProb*100).toFixed(0)}% ✓ | gol:${(goalProb*100).toFixed(0)}% roll:${(goalRoll*100).toFixed(1)}% ✗ | ${carrier.ovr}vs${gk.ovr}`
+            );
+            if (Math.random() < 0.30) return this.doCorner(o, d);
+            return this.doGoalKick(d);
+        }
+        
+        this.addLog(
+            `${this.min()}' ${carrier.name} strzela — niecelnie`,
+            'miss',
+            `celność:${(onTargetProb*100).toFixed(0)}% roll:${(onTargetRoll*100).toFixed(1)}% ✗ | z ${this.ballLine}${dribBonus>0?' +bonus':''}`
+        );
+        if (Math.random() < 0.25) return this.doCorner(o, d);
+        return this.doGoalKick(d);
+    }
+    
+    // --- CLEARANCE (DEF just boots it) ---
+    doClearance(o, d) {
+        this.tick(3);
+        const carrier = this.ball;
+        this.addLog(`${carrier.name} — wybicie`, 'action', `clearance`);
+        // Opponent gets throw-in or just possession
+        if (Math.random() < 0.4) return this.doThrowIn(d, o);
+        return { end: true };
+    }
+    
+    // ================================================================
+    // SET PIECES & STOPPAGES (all eat time!)
+    // ================================================================
+    
+    doCorner(o, d) {
+        this.tick(15 + Math.random() * 10); // corners take 15-25 seconds
+        this.t[o].s.corners++;
+        this.addLog(`${this.min()}' Rzut rożny — ${this.t[o].name}`, 'corner');
+        
+        // 15% chance of shot from corner
+        if (Math.random() < 0.15) {
+            this.ball = this.pickShooter(o);
+            this.ballLine = 'FWD';
+            return this.doShot(o, d);
+        }
+        // Defended — opponent gets ball
+        return { end: true };
+    }
+    
+    doGoalKick(teamIdx) {
+        this.tick(12 + Math.random() * 8); // goal kicks take 12-20 seconds
+        this.t[teamIdx].s.goalKicks++;
+        this.addLog(`${this.min()}' Wznowienie od bramki — ${this.t[teamIdx].name}`, 'stoppage');
+        return { end: true, switchTo: teamIdx };
+    }
+    
+    doThrowIn(teamIdx, otherIdx) {
+        this.tick(8 + Math.random() * 7); // throw-ins take 8-15 seconds
+        this.t[teamIdx].s.throwIns++;
+        this.addLog(`${this.min()}' Wrzut z autu — ${this.t[teamIdx].name}`, 'stoppage');
+        return { end: true, switchTo: teamIdx };
+    }
+    
+    doOffside(o, d) {
+        this.tick(8 + Math.random() * 5);
+        this.t[o].s.offsides++;
+        this.addLog(`${this.min()}' Spalony — ${this.t[o].name}`, 'stoppage');
+        return { end: true, switchTo: d }; // free kick for defense
+    }
+    
+    doFoul(o, d) {
+        this.tick(10 + Math.random() * 10); // fouls + free kick take 10-20 seconds
+        this.t[d].s.fouls++;
+        
+        const fouler = this.pick(d, this.ballLine === 'FWD' ? 'DEF' : 'MID') || this.pick(d, 'DEF');
+        const foulerName = fouler ? fouler.name : '?';
+        
+        this.addLog(`${this.min()}' Faul — ${foulerName} (${this.t[d].name}) na ${this.ball.name}`, 'foul');
+        
+        // Yellow 15%
+        if (Math.random() < 0.15) {
+            this.t[d].s.yellowCards++;
+            this.addLog(`${this.min()}' 🟨 Żółta — ${foulerName}`, 'card');
+        }
+        
+        // Red 2%
+        if (fouler && fouler.pos !== 'GK' && Math.random() < 0.02) {
+            this.t[d].s.redCards++;
+            this.reds[d].push(fouler.name);
+            this.addLog(`${this.min()}' 🟥 CZERWONA — ${foulerName}!`, 'card');
+        }
+        
+        // Penalty if FWD line & 10% of FWD fouls
+        if (this.ballLine === 'FWD' && Math.random() < 0.10) {
+            return this.doPenalty(o, d);
+        }
+        
+        // Free kick — keep possession
+        this.t[o].s.freeKicks++;
+        this.addLog(`${this.min()}' Rzut wolny — ${this.t[o].name}`, 'stoppage');
+        
+        // 8% free kick leads to shot (direct)
+        if (this.ballLine !== 'DEF' && Math.random() < 0.08) {
+            this.ball = this.pickShooter(o);
+            return this.doShot(o, d);
+        }
+        
+        return { end: true, switchTo: o }; // keep possession
+    }
+    
+    doPenalty(o, d) {
+        this.tick(20 + Math.random() * 10);
+        const team = this.t[o];
+        const gk = this.t[d].players.find(p => p.pos === 'GK') || { name: 'GK', ovr: 50 };
+        
+        team.s.penalties++;
+        team.s.shots++;
+        team.s.shotsOnTarget++;
+        
+        const taker = this.pickShooter(o);
+        this.addLog(`${this.min()}' 🔴 RZUT KARNY — ${team.name}! Podchodzi ${taker.name}`, 'foul');
+        
+        const roll = Math.random();
+        if (roll < 0.80) {
+            team.s.goals++;
+            team.s.penaltiesScored++;
+            team.scorers.push({ name: taker.name, minute: this.min(), penalty: true });
+            this.addLog(
+                `${this.min()}' ⚽ GOL Z KARNEGO! ${taker.name} — ${this.t[0].s.goals}:${this.t[1].s.goals}`,
+                'penalty-goal',
+                `80% roll:${(roll*100).toFixed(1)}% ✓`
+            );
+            this.tick(30);
+        } else {
+            this.addLog(
+                `${this.min()}' Karny ${taker.name} — ZMARNOWANY! ${gk.name}!`,
+                'save',
+                `80% roll:${(roll*100).toFixed(1)}% ✗`
+            );
+        }
+        return { end: true };
+    }
+}
+
+// ============================================================================
+// CONTROLS & RENDERING
+// ============================================================================
+function buildControls() {
+    document.getElementById('controls').innerHTML = `
+        <button class="btn btn-primary" onclick="runSingle()">▶ Symuluj mecz</button>
+        <button class="btn" onclick="runBulk(100)">×100</button>
+        <button class="btn" onclick="runBulk(500)">×500</button>
+        <div class="score-display" id="sd" style="display:none">
+            <span class="team-label" id="sdH"></span>
+            <span id="sdS"></span>
+            <span class="team-label" id="sdA"></span>
+        </div>
+    `;
+}
+
+function renderMatch(r) {
+    const out = document.getElementById('matchOutput');
+    let html = '';
+    for (const e of r.log) {
+        const d = e.detail ? ` <span class="detail">${e.detail}</span>` : '';
+        html += `<div class="log-entry ${e.type}">${e.text}${d}</div>`;
+    }
+    out.innerHTML = html;
+    out.scrollTop = out.scrollHeight;
+    
+    document.getElementById('sd').style.display = 'block';
+    document.getElementById('sdH').textContent = r.teams[0].name;
+    document.getElementById('sdA').textContent = r.teams[1].name;
+    document.getElementById('sdS').textContent = `${r.score[0]} : ${r.score[1]}`;
+    
+    renderStats(r);
+}
+
+function renderStats(r) {
+    const panel = document.getElementById('statsPanel');
+    panel.style.display = 'block';
+    const s0 = r.stats[0], s1 = r.stats[1];
+    
+    const rows = [
+        ['Posiadanie', s0.possession+'%', s1.possession+'%', s0.possession, s1.possession],
+        ['Strzały', s0.shots, s1.shots, s0.shots, s1.shots],
+        ['Celne', s0.shotsOnTarget, s1.shotsOnTarget, s0.shotsOnTarget, s1.shotsOnTarget],
+        ['Podania', `${s0.passesOK}/${s0.passes}`, `${s1.passesOK}/${s1.passes}`, s0.passesOK, s1.passesOK],
+        ['Dryblingi', `${s0.dribblesOK}/${s0.dribbles}`, `${s1.dribblesOK}/${s1.dribbles}`, s0.dribblesOK, s1.dribblesOK],
+        ['Długie podania', `${s0.longBallsOK}/${s0.longBalls}`, `${s1.longBallsOK}/${s1.longBalls}`, s0.longBallsOK, s1.longBallsOK],
+        ['Kornery', s0.corners, s1.corners, s0.corners, s1.corners],
+        ['Spalone', s0.offsides, s1.offsides, s0.offsides, s1.offsides],
+        ['Faule', s0.fouls, s1.fouls, s0.fouls, s1.fouls],
+        ['Żółte', s0.yellowCards, s1.yellowCards, s0.yellowCards, s1.yellowCards],
+        ['Czerwone', s0.redCards, s1.redCards, s0.redCards, s1.redCards],
+        ['Rzuty wolne', s0.freeKicks, s1.freeKicks, s0.freeKicks, s1.freeKicks],
+        ['Wrzuty z autu', s0.throwIns, s1.throwIns, s0.throwIns, s1.throwIns],
+        ['Od bramki', s0.goalKicks, s1.goalKicks, s0.goalKicks, s1.goalKicks],
+        ['Karne', `${s0.penaltiesScored}/${s0.penalties}`, `${s1.penaltiesScored}/${s1.penalties}`, s0.penalties, s1.penalties],
+    ];
+    
+    let h = `<div class="stats-header"><span></span><span></span><span>${r.teams[0].name.split(' ')[0]}</span><span>${r.teams[1].name.split(' ')[0]}</span></div><div class="stats-grid">`;
+    for (const [label, v0, v1, n0, n1] of rows) {
+        const mx = Math.max(n0, n1, 1);
+        h += `<div class="label">${label}</div><div class="bar-cell"><div class="stats-bar"><div class="home" style="width:${n0/mx*50}%"></div><div style="flex:1"></div><div class="away" style="width:${n1/mx*50}%"></div></div></div><div class="val">${v0}</div><div class="val" style="color:var(--blue)">${v1}</div>`;
+    }
+    h += '</div>';
+    
+    for (let t = 0; t < 2; t++) {
+        if (r.teams[t].scorers.length) {
+            h += `<div class="scorers-list"><h4>⚽ ${r.teams[t].name}</h4>`;
+            for (const g of r.teams[t].scorers) h += `<div class="scorer-entry"><span class="minute">${g.minute}'</span> ${g.name}${g.penalty?' (k)':''}</div>`;
+            h += '</div>';
+        }
+    }
+    
+    for (let t = 0; t < 2; t++) {
+        const rt = r.teams[t].r;
+        h += `<div class="scorers-list"><h4>📊 ${r.teams[t].name} ratingi</h4><div style="color:var(--text-dim)">ATK:${rt.attack.toFixed(1)} DEF:${rt.defense.toFixed(1)} PAS:${rt.passing.toFixed(1)} GK:${rt.goalkeeper}</div></div>`;
+    }
+    
+    panel.innerHTML = h;
+}
+
+function runSingle() {
+    const e = new Engine(readTeam('home'), readTeam('away'), true);
+    renderMatch(e.run());
+}
+
+// Global storage for bulk match results
+let bulkResults = [];
+
+function runBulk(n) {
+    const h = readTeam('home'), a = readTeam('away');
+    const tot = { hW:0,aW:0,dr:0,hG:0,aG:0,hSh:0,aSh:0,hSoT:0,aSoT:0,hPo:0,aPo:0,hCo:0,aCo:0,hFo:0,aFo:0,hPa:0,aPa:0,hPaOK:0,aPaOK:0,hDr:0,aDr:0,hDrOK:0,aDrOK:0,hOff:0,aOff:0,hPen:0,aPen:0,hPenG:0,aPenG:0,hY:0,aY:0,hR:0,aR:0 };
+    const lines = {};
+    bulkResults = [];
+    
+    for (let i = 0; i < n; i++) {
+        // verbose=true to capture full logs
+        const e = new Engine(JSON.parse(JSON.stringify(h)), JSON.parse(JSON.stringify(a)), true);
+        const r = e.run();
+        bulkResults.push(r);
+        const [s0,s1] = r.stats;
+        tot.hG+=r.score[0]; tot.aG+=r.score[1];
+        tot.hSh+=s0.shots; tot.aSh+=s1.shots;
+        tot.hSoT+=s0.shotsOnTarget; tot.aSoT+=s1.shotsOnTarget;
+        tot.hPo+=s0.possession; tot.aPo+=s1.possession;
+        tot.hCo+=s0.corners; tot.aCo+=s1.corners;
+        tot.hFo+=s0.fouls; tot.aFo+=s1.fouls;
+        tot.hPa+=s0.passes; tot.aPa+=s1.passes;
+        tot.hPaOK+=s0.passesOK; tot.aPaOK+=s1.passesOK;
+        tot.hDr+=s0.dribbles; tot.aDr+=s1.dribbles;
+        tot.hDrOK+=s0.dribblesOK; tot.aDrOK+=s1.dribblesOK;
+        tot.hOff+=s0.offsides; tot.aOff+=s1.offsides;
+        tot.hPen+=s0.penalties; tot.aPen+=s1.penalties;
+        tot.hPenG+=s0.penaltiesScored; tot.aPenG+=s1.penaltiesScored;
+        tot.hY+=s0.yellowCards; tot.aY+=s1.yellowCards;
+        tot.hR+=s0.redCards; tot.aR+=s1.redCards;
+        if (r.score[0]>r.score[1]) tot.hW++; else if (r.score[1]>r.score[0]) tot.aW++; else tot.dr++;
+        const l = `${r.score[0]}-${r.score[1]}`; lines[l]=(lines[l]||0)+1;
+    }
+    
+    const sorted = Object.entries(lines).sort((a,b)=>b[1]-a[1]);
+    const avg = v => (v/n).toFixed(2);
+    const pct = v => (v/n*100).toFixed(0);
+    const hN = h.name.substring(0,12).padEnd(14);
+    const aN = a.name.substring(0,12).padEnd(14);
+    
+    let html = `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;padding:16px 20px;">`;
+    html += `<div style="color:var(--accent);font-weight:700;font-size:14px;margin-bottom:12px">WALIDACJA: ${n} MECZÓW</div>`;
+    html += `<div>${h.name} (${h.formation}, ${h.tactic}) vs ${a.name} (${a.formation}, ${a.tactic})</div><br>`;
+    html += `<div style="color:var(--accent)">WYNIKI:</div>`;
+    html += `<div>  ${h.name}: ${tot.hW} (${pct(tot.hW)}%) | ${a.name}: ${tot.aW} (${pct(tot.aW)}%) | Remisy: ${tot.dr} (${pct(tot.dr)}%)</div><br>`;
+    html += `<div style="color:var(--accent)">ŚREDNIE NA MECZ:</div>`;
+    html += `<div>                    ${hN} ${aN}</div>`;
+    html += `<div>  Gole:             ${avg(tot.hG).padEnd(14)} ${avg(tot.aG)}</div>`;
+    html += `<div>  Strzały:          ${avg(tot.hSh).padEnd(14)} ${avg(tot.aSh)}</div>`;
+    html += `<div>  Celne:            ${avg(tot.hSoT).padEnd(14)} ${avg(tot.aSoT)}</div>`;
+    html += `<div>  Posiadanie:       ${avg(tot.hPo).padEnd(14)} ${avg(tot.aPo)}</div>`;
+    html += `<div>  Podania:          ${avg(tot.hPaOK)}/${avg(tot.hPa).padEnd(8)} ${avg(tot.aPaOK)}/${avg(tot.aPa)}</div>`;
+    html += `<div>  Dryblingi:        ${avg(tot.hDrOK)}/${avg(tot.hDr).padEnd(8)} ${avg(tot.aDrOK)}/${avg(tot.aDr)}</div>`;
+    html += `<div>  Kornery:          ${avg(tot.hCo).padEnd(14)} ${avg(tot.aCo)}</div>`;
+    html += `<div>  Spalone:          ${avg(tot.hOff).padEnd(14)} ${avg(tot.aOff)}</div>`;
+    html += `<div>  Faule:            ${avg(tot.hFo).padEnd(14)} ${avg(tot.aFo)}</div>`;
+    html += `<div>  Żółte:            ${avg(tot.hY).padEnd(14)} ${avg(tot.aY)}</div>`;
+    html += `<div>  Czerwone:         ${avg(tot.hR).padEnd(14)} ${avg(tot.aR)}</div>`;
+    html += `<div>  Karne:            ${tot.hPenG}/${tot.hPen} total     ${tot.aPenG}/${tot.aPen} total</div>`;
+    html += `<br><div style="color:var(--accent)">NAJCZĘSTSZE WYNIKI:</div>`;
+    for (const [l,c] of sorted.slice(0,12)) {
+        html += `<div>  ${l.padEnd(6)} ${'█'.repeat(Math.round(c/n*80))} ${c} (${(c/n*100).toFixed(1)}%)</div>`;
+    }
+    
+    // Clickable match list
+    html += `<br><div style="color:var(--accent)">WSZYSTKIE MECZE (kliknij aby otworzyć log):</div>`;
+    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">`;
+    for (let i = 0; i < n; i++) {
+        const r = bulkResults[i];
+        const sc = `${r.score[0]}-${r.score[1]}`;
+        const totalG = r.score[0] + r.score[1];
+        let bgColor = 'var(--surface2)';
+        if (r.score[0] > r.score[1]) bgColor = '#1a2e1a'; // home win
+        else if (r.score[1] > r.score[0]) bgColor = '#1a1a2e'; // away win
+        else bgColor = '#2a2a1a'; // draw
+        html += `<span onclick="showBulkMatch(${i})" style="cursor:pointer;padding:3px 7px;background:${bgColor};border:1px solid var(--border);border-radius:3px;font-size:10px;color:var(--text);transition:all 0.1s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">#${i+1} ${sc}</span>`;
+    }
+    html += `</div>`;
+    html += '</div>';
+    
+    document.getElementById('matchOutput').innerHTML = html;
+    document.getElementById('statsPanel').style.display = 'none';
+}
+
+function showBulkMatch(idx) {
+    if (!bulkResults[idx]) return;
+    renderMatch(bulkResults[idx]);
+    // Add back button
+    const out = document.getElementById('matchOutput');
+    out.innerHTML = `<div style="margin-bottom:10px;"><button class="btn" onclick="runBulk(${bulkResults.length})" style="font-size:10px;padding:4px 10px;">← Wróć do listy</button> <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;">Mecz #${idx+1} z ${bulkResults.length}</span></div>` + out.innerHTML;
+}
+
+// INIT
+buildEditor();
+buildControls();
+</script>
+</body>
+</html>
