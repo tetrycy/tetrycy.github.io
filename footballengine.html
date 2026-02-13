@@ -3,1063 +3,1499 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Football Engine v3.1 — Phase A</title>
+<title>Football Engine v4 — AI Possession</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-    --bg: #0a0e14;
-    --surface: #111820;
-    --surface2: #1a2230;
-    --border: #2a3545;
-    --text: #c8d0da;
-    --text-dim: #6b7a8d;
-    --accent: #22d68a;
-    --accent2: #1ba86d;
-    --yellow: #f0c040;
-    --red: #e84057;
-    --blue: #4a9eff;
-    --orange: #ff8c42;
-    --goal-bg: #1a3a25;
-    --goal-border: #22d68a;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.app { display: flex; height: 100vh; overflow: hidden; }
-.editor {
-    width: 420px; min-width: 420px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto; padding: 16px; background: var(--surface);
-}
-.editor h2 {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px;
-    text-transform: uppercase; letter-spacing: 2px;
-    color: var(--accent); margin-bottom: 12px;
-}
-.team-block { margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-.team-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border);
-}
-.team-header input.team-name {
-    flex: 1; background: transparent; border: none; color: var(--text);
-    font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif; outline: none;
-}
-.team-header select {
-    background: var(--bg); color: var(--text); border: 1px solid var(--border);
-    border-radius: 4px; padding: 4px 6px; font-size: 11px;
-    font-family: 'JetBrains Mono', monospace; cursor: pointer;
-}
-.player-row {
-    display: grid; grid-template-columns: 38px 1fr 50px;
-    gap: 4px; padding: 3px 8px; border-bottom: 1px solid var(--border);
-    align-items: center; font-size: 12px;
-}
-.player-row:last-child { border-bottom: none; }
-.player-row.header-row {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px;
-    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
-    padding: 6px 8px; background: var(--bg);
-}
-.pos-badge {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
-    padding: 2px 6px; border-radius: 3px; text-align: center; width: 34px;
-}
-.pos-GK { background: #2a1f3a; color: #b088e0; }
-.pos-DEF { background: #1a2a3a; color: #60a0d8; }
-.pos-MID { background: #2a2a1a; color: #c0b060; }
-.pos-FWD { background: #3a1a1a; color: #e07060; }
-.player-row input[type="text"] {
-    background: transparent; border: none; color: var(--text);
-    font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; width: 100%;
-}
-.player-row input[type="number"] {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
-    color: var(--accent); font-size: 12px; font-family: 'JetBrains Mono', monospace;
-    font-weight: 700; text-align: center; padding: 2px; width: 46px; outline: none;
-}
-.player-row input[type="number"]:focus { border-color: var(--accent); }
-.match-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.controls {
-    display: flex; gap: 10px; padding: 12px 20px;
-    border-bottom: 1px solid var(--border); background: var(--surface);
-    align-items: center; flex-wrap: wrap;
-}
-.btn {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
-    padding: 8px 16px; border: 1px solid var(--border); border-radius: 4px;
-    cursor: pointer; transition: all 0.15s; background: var(--surface2); color: var(--text);
-}
-.btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn-primary { background: var(--accent2); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent); }
-.controls .score-display {
-    font-family: 'JetBrains Mono', monospace; font-size: 22px;
-    font-weight: 700; color: var(--text); margin: 0 12px; letter-spacing: 1px;
-}
-.controls .score-display .team-label { font-size: 11px; font-weight: 400; color: var(--text-dim); display: block; }
-.match-output {
-    flex: 1; overflow-y: auto; padding: 16px 20px;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.7;
-}
-.log-entry { padding: 2px 0; border-left: 2px solid transparent; padding-left: 8px; margin-bottom: 1px; }
-.log-entry.goal { background: var(--goal-bg); border-left-color: var(--goal-border); color: var(--accent); font-weight: 700; padding: 6px 8px; margin: 4px 0; border-radius: 0 4px 4px 0; }
-.log-entry.penalty-goal { background: #2a2a15; border-left-color: var(--yellow); color: var(--yellow); font-weight: 700; padding: 6px 8px; margin: 4px 0; border-radius: 0 4px 4px 0; }
-.log-entry.shot { color: var(--blue); }
-.log-entry.miss { color: var(--text-dim); }
-.log-entry.save { color: var(--orange); }
-.log-entry.foul { color: var(--yellow); }
-.log-entry.card { color: var(--red); font-weight: 600; }
-.log-entry.corner { color: #8888cc; }
-.log-entry.possession-start { color: var(--text-dim); font-size: 10px; margin-top: 8px; border-left-color: var(--border); }
-.log-entry.action { color: var(--text); }
-.log-entry.action-fail { color: var(--red); opacity: 0.8; }
-.log-entry.dribble-success { color: var(--accent); }
-.log-entry.stoppage { color: var(--text-dim); font-style: italic; }
-.log-entry.half-time { text-align: center; color: var(--text); font-weight: 700; font-size: 13px; padding: 12px; margin: 8px 0; border-left: none; background: var(--surface2); border-radius: 4px; }
-.log-entry .detail { color: var(--text-dim); font-size: 10px; }
-.stats-panel {
-    border-top: 1px solid var(--border); padding: 16px 20px; background: var(--surface);
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; max-height: 280px; overflow-y: auto;
-}
-.stats-grid { display: grid; grid-template-columns: 110px 1fr 60px 60px; gap: 2px 8px; }
-.stats-grid .label { color: var(--text-dim); text-align: right; }
-.stats-grid .bar-cell { padding: 2px 0; }
-.stats-grid .val { text-align: center; color: var(--accent); font-weight: 600; }
-.stats-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; display: flex; margin-top: 4px; }
-.stats-bar .home { background: var(--accent); }
-.stats-bar .away { background: var(--blue); }
-.stats-header {
-    font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
-    margin-bottom: 8px; display: grid; grid-template-columns: 110px 1fr 60px 60px; gap: 2px 8px;
-}
-.stats-header span:nth-child(3), .stats-header span:nth-child(4) { text-align: center; }
-.scorers-list { margin-top: 10px; }
-.scorers-list h4 { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-.scorer-entry { color: var(--text); padding: 1px 0; }
-.scorer-entry .minute { color: var(--accent); }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+:root{--bg:#0a0e14;--sf:#111820;--sf2:#1a2230;--bd:#2a3545;--tx:#c8d0da;--dim:#6b7a8d;--ac:#22d68a;--ac2:#1ba86d;--yl:#f0c040;--rd:#e84057;--bl:#4a9eff;--or:#ff8c42}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;justify-content:center;padding:16px;gap:16px}
+.pitch-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.info-bar{font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;text-align:center;min-width:420px}
+.info-bar b{color:var(--ac)}.info-bar .bl{color:var(--bl)}
+.carrier-info{font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;text-align:center;min-width:420px}
+.right-col{display:flex;flex-direction:column;gap:8px;width:420px}
+.ctrl-panel{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl-panel h3{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--ac);width:100%;margin-bottom:4px}
+.btn{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:6px 12px;border:1px solid var(--bd);border-radius:4px;cursor:pointer;background:var(--sf2);color:var(--tx)}
+.btn:hover{border-color:var(--ac);color:var(--ac)}
+.btn-p{background:var(--ac2);color:#fff;border-color:var(--ac)}
+.speed-ctrl{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim)}
+.speed-ctrl input[type="range"]{width:80px;accent-color:var(--ac)}
+.speed-label{color:var(--ac);font-weight:600;min-width:28px}
+.team-sel{display:flex;gap:8px;width:100%}
+.team-sel select{flex:1;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:4px;padding:4px 6px;font-family:'JetBrains Mono',monospace;font-size:10px}
+.team-sel label{font-size:9px;color:var(--dim)}
+.team-sel .tg{display:flex;flex-direction:column;flex:1;gap:2px}
+.log-panel{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px;flex:1;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.7;min-height:300px}
+.le{padding:2px 0;border-left:2px solid transparent;padding-left:5px;margin-bottom:1px}
+.le.goal{background:#1a3a25;border-left-color:var(--ac);color:var(--ac);font-weight:700;padding:4px 6px;margin:3px 0;border-radius:0 4px 4px 0}
+.le.save{color:var(--or)}.le.miss{color:var(--dim)}.le.foul{color:var(--yl)}
+.le.corner{color:#8888cc}.le.poss-start{color:var(--dim);font-size:8px;margin-top:4px;border-left-color:var(--bd)}
+.le.action{color:var(--tx)}.le.fail{color:var(--rd);opacity:0.8}.le.success{color:var(--ac)}
+.le.info{color:var(--dim)}.le.half{text-align:center;color:var(--tx);font-weight:700;font-size:11px;padding:6px;margin:4px 0;border-left:none;background:var(--sf2);border-radius:4px}
+.le .dt{color:var(--dim);font-size:8px}
+.stats-panel{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:9px}
+.sg{display:grid;grid-template-columns:1fr 45px 45px;gap:1px 5px}
+.sg .lb{color:var(--dim)}.sg .vl{text-align:center;font-weight:600}
+.sg .h{color:var(--ac)}.sg .a{color:var(--bl)}
+#actPanel{background:var(--sf);border:1px solid var(--yl);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace}
+#actPanel h4{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--yl);margin-bottom:6px}
+.ab{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;margin-bottom:4px;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;cursor:pointer;color:var(--tx);font-size:11px;font-family:'DM Sans',sans-serif;text-align:left}
+.ab:hover{border-color:var(--ac);background:#1a2a30}
+.ab .an{font-weight:700;flex:1}.ab .ar{font-family:'JetBrains Mono',monospace;font-size:9px;white-space:nowrap}
+.ab .axg{color:var(--ac);font-family:'JetBrains Mono',monospace;font-size:9px}
+.rl{padding:2px 6px;border-radius:3px;font-size:9px;font-weight:600}
+.rl-l{background:#1a2e1a;color:#66cc77}.rl-m{background:#2a2a15;color:#ccaa44}.rl-h{background:#2e1a1a;color:#cc6666}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 </style>
 </head>
 <body>
-<div class="app">
-    <div class="editor" id="editor"></div>
-    <div class="match-area">
-        <div class="controls" id="controls"></div>
-        <div class="match-output" id="matchOutput">
-            <div style="color:var(--text-dim); text-align:center; margin-top:40px;">Ustaw składy → Symuluj mecz</div>
-        </div>
-        <div class="stats-panel" id="statsPanel" style="display:none;"></div>
-    </div>
+<div class="pitch-col">
+<div class="info-bar" id="score">— vs —</div>
+<canvas id="pc" width="420" height="620"></canvas>
+<div class="info-bar" id="xgBar">xG: —</div>
+<div class="carrier-info" id="carrier">—</div>
+<div class="carrier-info" id="condInfo" style="font-size:9px;color:var(--dim)">—</div>
 </div>
-
+<div class="right-col">
+<div class="ctrl-panel">
+<h3>⚽ Engine v4</h3>
+<div class="team-sel">
+<div class="tg"><label>🏠 Gospodarze</label><select id="homeTeam"></select></div>
+<div class="tg"><label>✈️ Goście</label><select id="awayTeam"></select></div>
+</div>
+<button class="btn btn-p" id="btnPlay" onclick="startMatch()">▶ MECZ</button>
+<button class="btn" id="btnManual" onclick="startManual()">🎮 GRAM</button>
+<button class="btn" id="btnRestart" onclick="manRestart()" style="display:none">🔄 RESTART</button>
+<button class="btn" id="btnPause" onclick="togglePause()" style="display:none">⏸</button>
+<button class="btn" id="btnSkip" onclick="skipToEnd()" style="display:none">⏭</button>
+<div class="speed-ctrl"><span>Tempo:</span><input type="range" id="spd" min="1" max="30" value="8" oninput="setSpd(this.value)"><span class="speed-label" id="spdLbl">×8</span></div>
+</div>
+<div class="log-panel" id="logP"></div>
+<div id="actPanel" style="display:none"></div>
+<div class="stats-panel" id="statsP" style="display:none"></div>
+</div>
 <script>
-// ============================================================================
-// FOOTBALL ENGINE v3.1 — MICRO-ACTIONS WITH DIVERSE EVENTS
-// ============================================================================
-// Time unit: 1 "tick" ≈ variable seconds depending on action.
-// Match = 90 minutes = 5400 seconds. Ticks consume realistic time.
-// Actions: pass, dribble, shot, long_ball, cross, clearance, throw_in,
-//          goal_kick, free_kick, pressing_loss, offside, back_to_gk
-// ============================================================================
+// ========== CONSTANTS ==========
+const PW=105,PH=68,GW=7.32,GY1=(PH-GW)/2,GY2=(PH+GW)/2,GCY=PH/2;
+const CW=420,CH=620,SX=CW/PH,SY=CH/PW;
+function p2c(px,py){return{cx:py*SX,cy:(PW-px)*SY}}
 
-const FORMATIONS = {
-    '3-4-3': { DEF: 3, MID: 4, FWD: 3 },
-    '4-3-3': { DEF: 4, MID: 3, FWD: 3 },
-    '4-4-2': { DEF: 4, MID: 4, FWD: 2 },
-    '4-5-1': { DEF: 4, MID: 5, FWD: 1 },
-    '5-3-2': { DEF: 5, MID: 3, FWD: 2 },
-    '5-4-1': { DEF: 5, MID: 4, FWD: 1 },
+// ========== TEAMS (different OVR levels) ==========
+const TEAMS=[
+{name:'FC Elite 85',ovr:85,col:'#22d68a',players:[
+{n:'Neuer',p:'GK',o:86},{n:'Kimmich',p:'DEF',o:87},{n:'Rüdiger',p:'DEF',o:84},{n:'Upamecano',p:'DEF',o:83},{n:'Davies',p:'DEF',o:84},
+{n:'Kroos',p:'MID',o:88},{n:'Müller',p:'MID',o:85},{n:'Gündoğan',p:'MID',o:86},{n:'Sané',p:'MID',o:84},
+{n:'Lewandowski',p:'FWD',o:89},{n:'Gnabry',p:'FWD',o:83}]},
+{name:'Legia 75',ovr:75,col:'#e84057',players:[
+{n:'Tobiasz',p:'GK',o:72},{n:'Jędrzejczyk',p:'DEF',o:71},{n:'Wieteska',p:'DEF',o:69},{n:'Nawrocki',p:'DEF',o:73},{n:'Mladenović',p:'DEF',o:68},
+{n:'Zieliński',p:'MID',o:82},{n:'Krychowiak',p:'MID',o:78},{n:'Kapustka',p:'MID',o:76},{n:'Josué',p:'MID',o:80},
+{n:'Lewandowski',p:'FWD',o:85},{n:'Rosołek',p:'FWD',o:70}]},
+{name:'Radomiak 63',ovr:63,col:'#4a9eff',players:[
+{n:'Kochalski',p:'GK',o:65},{n:'Cichocki',p:'DEF',o:66},{n:'Rossi',p:'DEF',o:64},{n:'Mikołajewski',p:'DEF',o:62},{n:'Abramowicz',p:'DEF',o:63},
+{n:'Nowak',p:'DEF',o:61},{n:'Mastoras',p:'MID',o:67},{n:'Leandro',p:'MID',o:65},{n:'Kaput',p:'MID',o:63},
+{n:'Souza',p:'MID',o:61},{n:'Ishak',p:'FWD',o:68}]},
+{name:'Amatorzy 50',ovr:50,col:'#ff8c42',players:[
+{n:'Kowal',p:'GK',o:50},{n:'Nowak',p:'DEF',o:52},{n:'Zając',p:'DEF',o:48},{n:'Wójcik',p:'DEF',o:49},{n:'Mazur',p:'DEF',o:47},
+{n:'Pawlak',p:'MID',o:53},{n:'Szymański',p:'MID',o:51},{n:'Dąbrowski',p:'MID',o:50},{n:'Kozłowski',p:'MID',o:48},
+{n:'Jankowski',p:'FWD',o:55},{n:'Kamiński',p:'FWD',o:52}]}
+];
+
+// ========== xG MODEL ==========
+function calcXG(bx,by,aDir,mods){
+if(!mods)mods={};
+const gx=aDir>0?PW:0,dx=gx-bx,dy=by-GCY,dist=Math.sqrt(dx*dx+dy*dy);
+const dy1=GY1-by,dy2=GY2-by,adx=Math.abs(dx);
+const dot=adx*adx+dy1*dy2,m1=Math.sqrt(adx*adx+dy1*dy1),m2=Math.sqrt(adx*adx+dy2*dy2);
+let aRad=Math.acos(Math.max(-1,Math.min(1,dot/(m1*m2))));
+let logit=-2.55+3.2*aRad-0.10*dist;
+if(mods.throughBall)logit+=0.45;if(mods.dribble)logit+=0.35;
+if(mods.header)logit-=0.50;if(mods.freeKick)logit-=0.20;
+if(mods.ovr)logit+=(mods.ovr-65)/200;if(mods.gkOvr)logit-=(mods.gkOvr-65)/250;
+return{xg:Math.max(0.001,Math.min(0.95,1/(1+Math.exp(-logit)))),dist,ang:aRad*180/Math.PI}}
+
+// ========== PROGRESSIVE RISK ==========
+// Risk increases as ball approaches opponent's goal
+// Also affected by opponent OVR (better defenders = harder)
+function zoneRisk(bx,aDir,defOvr){
+  const nx=aDir>0?bx:(PW-bx);
+  let mult;
+  if(nx<35)mult=1.0;else if(nx<52)mult=1.2;else if(nx<70)mult=1.7;
+  else if(nx<80)mult=2.8;else if(nx<88)mult=4.0;else mult=5.5;
+  const defMod=1+(defOvr-65)/120;
+  return mult*defMod;
+}
+
+// ========== WEATHER & PITCH ==========
+const PITCHES=[
+{name:'Klasyczny',bg:'#2d5a27',stripes:true,stripe1:'#2d5a27',stripe2:'#326b2c'},
+{name:'Wypalony',bg:'#5a7a30',stripes:true,stripe1:'#5a7a30',stripe2:'#4e6e28'},
+{name:'Jesienny',bg:'#3a6030',stripes:false,stripe1:'#3a6030',stripe2:'#3a6030'},
+{name:'Zimowy',bg:'#4a6a50',stripes:true,stripe1:'#4a6a50',stripe2:'#3d5d43'},
+{name:'Arena',bg:'#1e4a1a',stripes:true,stripe1:'#1e4a1a',stripe2:'#245520'},
+];
+const WEATHERS=[
+{name:'☀️ Słonecznie',rain:0,fog:0,snow:0},
+{name:'⛅ Pochmurno',rain:0,fog:0.08,snow:0},
+{name:'🌧️ Deszcz',rain:1,fog:0.05,snow:0},
+{name:'🌫️ Mgła',rain:0,fog:0.25,snow:0},
+{name:'❄️ Śnieg',rain:0,fog:0.08,snow:1},
+{name:'⛈️ Ulewa',rain:2,fog:0.10,snow:0},
+];
+let curPitch=null,curWeather=null;
+function rollConditions(){
+curPitch=PITCHES[Math.floor(Math.random()*PITCHES.length)];
+curWeather=WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
+}
+
+// ========== DRAW ==========
+function drawPitch(ctx){
+if(!ctx)return;
+const p=curPitch||PITCHES[0];
+// Background with stripes
+if(p.stripes){
+  const stripeW=CW/12;
+  for(let i=0;i<12;i++){ctx.fillStyle=i%2===0?p.stripe1:p.stripe2;ctx.fillRect(i*stripeW,0,stripeW,CH)}
+}else{ctx.fillStyle=p.bg;ctx.fillRect(0,0,CW,CH)}
+// Lines
+ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5;
+function ln(x1,y1,x2,y2){const a=p2c(x1,y1),b=p2c(x2,y2);ctx.beginPath();ctx.moveTo(a.cx,a.cy);ctx.lineTo(b.cx,b.cy);ctx.stroke()}
+function rc(x1,y1,x2,y2){ln(x1,y1,x2,y1);ln(x2,y1,x2,y2);ln(x2,y2,x1,y2);ln(x1,y2,x1,y1)}
+rc(0,0,PW,PH);ln(PW/2,0,PW/2,PH);
+const cc=p2c(PW/2,PH/2);ctx.beginPath();ctx.ellipse(cc.cx,cc.cy,9.15*SX,9.15*SY,0,0,Math.PI*2);ctx.stroke();
+// Center spot
+ctx.fillStyle='rgba(255,255,255,0.6)';ctx.beginPath();ctx.arc(cc.cx,cc.cy,2,0,Math.PI*2);ctx.fill();
+for(const gx of[0,PW]){const s=gx===0?1:-1;
+rc(gx,GCY-20.16,gx+s*16.5,GCY+20.16);rc(gx,GCY-9.16,gx+s*5.5,GCY+9.16);
+// Penalty spot
+const ps=p2c(gx+s*11,GCY);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.beginPath();ctx.arc(ps.cx,ps.cy,2,0,Math.PI*2);ctx.fill();
+// Goal
+ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=3;ln(gx,GY1,gx,GY2);
+// Goal net
+ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=0.5;
+for(let ny=GY1;ny<=GY2;ny+=1.5){ln(gx,ny,gx-s*2.5,ny)}
+ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5}
+// Corner arcs
+for(const cx of[0,PW])for(const cy of[0,PH]){
+const pc=p2c(cx,cy);const sx2=cx===0?1:-1;const sy2=cy===0?-1:1;
+ctx.beginPath();ctx.ellipse(pc.cx,pc.cy,1*SX,1*SY,0,0,Math.PI*2);ctx.stroke()}
+// Weather overlay
+const w=curWeather||WEATHERS[0];
+if(w.fog>0){ctx.fillStyle=`rgba(200,210,220,${w.fog})`;ctx.fillRect(0,0,CW,CH)}
+if(w.rain>0){ctx.strokeStyle=`rgba(180,200,230,${0.15*w.rain})`;ctx.lineWidth=1;
+for(let i=0;i<60*w.rain;i++){const rx=Math.random()*CW,ry=Math.random()*CH;
+ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-1,ry+6);ctx.stroke()}}
+if(w.snow>0){ctx.fillStyle='rgba(240,245,255,0.5)';
+for(let i=0;i<80;i++){const rx=Math.random()*CW,ry=Math.random()*CH;
+ctx.beginPath();ctx.arc(rx,ry,1+Math.random()*1.5,0,Math.PI*2);ctx.fill()}}
+}
+
+function drawBall(ctx,bx,by,teamCol){
+if(!ctx)return;
+const p=p2c(bx,by);const r=6;
+// White ball with pentagon pattern
+ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(p.cx,p.cy,r,0,Math.PI*2);ctx.fill();
+// Black pentagons
+ctx.fillStyle='#222';
+for(let a=0;a<5;a++){const ang=a*Math.PI*2/5-Math.PI/2;
+const px=p.cx+Math.cos(ang)*r*0.45,py=p.cy+Math.sin(ang)*r*0.45;
+ctx.beginPath();ctx.arc(px,py,r*0.22,0,Math.PI*2);ctx.fill()}
+// Center pentagon
+ctx.beginPath();ctx.arc(p.cx,p.cy,r*0.2,0,Math.PI*2);ctx.fill();
+// Team ring
+ctx.strokeStyle=teamCol||'#fff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.cx,p.cy,r+2,0,Math.PI*2);ctx.stroke();
+// Shadow
+ctx.fillStyle='rgba(0,0,0,0.15)';ctx.beginPath();ctx.ellipse(p.cx+2,p.cy+3,r*0.9,r*0.4,0,0,Math.PI*2);ctx.fill();
+}
+
+function drawShots(ctx,shots){if(!ctx)return;
+for(const s of shots){
+const col=s.goal?'rgba(34,214,138,0.8)':s.ti===0?'rgba(255,100,100,0.5)':'rgba(100,150,255,0.5)';
+const p=p2c(s.x,s.y);const r=Math.max(3,s.xg*30);
+ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.cx,p.cy,r,0,Math.PI*2);ctx.fill();
+if(s.goal){ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1;ctx.stroke()}}}
+
+function drawTrail(ctx,trail,col){
+if(!ctx||trail.length<2)return;
+for(let i=1;i<trail.length;i++){
+const a=p2c(trail[i-1].x,trail[i-1].y),b=p2c(trail[i].x,trail[i].y);
+const alpha=0.08+0.35*(i/trail.length);
+ctx.strokeStyle=`rgba(255,255,255,${alpha})`;
+ctx.lineWidth=1.2+0.8*(i/trail.length);
+ctx.beginPath();ctx.moveTo(a.cx,a.cy);ctx.lineTo(b.cx,b.cy);ctx.stroke();
+// Arrow at end
+if(i===trail.length-1){
+const dx=b.cx-a.cx,dy=b.cy-a.cy,len=Math.sqrt(dx*dx+dy*dy);
+if(len>3){const ux=dx/len,uy=dy/len;
+ctx.fillStyle=`rgba(255,255,255,${alpha})`;ctx.beginPath();
+ctx.moveTo(b.cx,b.cy);ctx.lineTo(b.cx-ux*5+uy*3,b.cy-uy*5-ux*3);
+ctx.lineTo(b.cx-ux*5-uy*3,b.cy-uy*5+ux*3);ctx.fill()}}}}
+
+// ========== ENGINE ==========
+class Match{
+constructor(home,away){
+this.tm=[home,away];this.ad=[1,-1];
+this.bx=PW/2;this.by=PH/2;this.po=-1;this.car=null;this.mods={};
+this.lastAct=[null,null];this.sideCnt=[0,0];
+this.sec=0;this.score=[0,0];this.shots=[];this.trail=[];
+this.frames=[];
+for(let i=0;i<2;i++)this.tm[i].s={goals:0,shots:0,sot:0,poss:0,corners:0,fouls:0,
+yc:0,rc:0,passes:0,passOK:0,drib:0,dribOK:0,xg:0,fk:0};
+this.pt=[0,0];
+}
+
+act(ti){return this.tm[ti].players}
+byP(ti,pos){return this.act(ti).filter(p=>p.p===pos)}
+pick(ti,pos,ex){let c=this.byP(ti,pos);if(ex)c=c.filter(p=>p.n!==ex.n);
+if(!c.length)return null;const tot=c.reduce((s,p)=>s+p.o,0);
+let r=Math.random()*tot;for(const p of c){r-=p.o;if(r<=0)return p}return c[c.length-1]}
+pickN(ti,tgt,ex){const ord=tgt==='FWD'?['FWD','MID','DEF']:tgt==='DEF'?['DEF','MID','FWD']:['MID','FWD','DEF'];
+for(const p of ord){const r=this.pick(ti,p,ex);if(r)return r}return null}
+gk(ti){return this.tm[ti].players.find(p=>p.p==='GK')||{n:'GK',o:60}}
+avgOvr(ti){const pl=this.tm[ti].players;return pl.reduce((s,p)=>s+p.o,0)/pl.length}
+defOvr(ti){const d=this.byP(ti,'DEF');return d.length?d.reduce((s,p)=>s+p.o,0)/d.length:60}
+mn(){return Math.floor(this.sec/60)}
+tk(s){this.sec+=s}
+mb(nx,ny){this.bx=Math.max(1,Math.min(PW-1,nx));this.by=Math.max(1,Math.min(PH-1,ny));this.trail.push({x:this.bx,y:this.by})}
+zone(ti){const nx=this.ad[ti]>0?this.bx:(PW-this.bx);if(nx<35)return'DEF';if(nx<70)return'MID';return'FWD'}
+isFlank(){return this.by<15||this.by>53}
+isOwnHalf(ti){const nx=this.ad[ti]>0?this.bx:(PW-this.bx);return nx<52.5}
+// Normalized x: 0=own goal, 105=opp goal
+normX(ti){return this.ad[ti]>0?this.bx:(PW-this.bx)}
+// Risk modifier for current position
+zr(ti){const di=1-ti;const base=zoneRisk(this.bx,this.ad[ti],this.defOvr(di));
+const home=ti===0?0.96:1.04; // home advantage
+const weather=curWeather?(1+curWeather.rain*0.03+curWeather.snow*0.04):1; // wet/snow harder
+return base*home*weather}
+
+getBonus(ti,actId){
+let b=0;const la=this.lastAct[ti],sc=this.sideCnt[ti];
+if((actId==='fwd'||actId==='long'||actId==='through')&&sc>0)b-=Math.min(sc,3)*0.02;
+if(la==='switch'&&(actId==='flank'||actId==='dribble'))b-=0.05;
+if(la==='back'&&actId==='side')b-=0.03;
+return b}
+
+frame(text,type){
+this.frames.push({mn:this.mn(),bx:this.bx,by:this.by,text,type,
+score:[...this.score],shots:this.shots.map(s=>({...s})),
+xg:[this.tm[0].s.xg,this.tm[1].s.xg],trail:this.trail.map(t=>({...t})),
+carrier:this.car?this.car.n:'',po:this.po,
+stats:[{...this.tm[0].s},{...this.tm[1].s}]})}
+
+// ========== AI DECISION ENGINE ==========
+// Calculates expected value of each action: E[xG gained] = P(success) * xG_delta - P(fail) * cost
+aiPick(ti){
+const di=1-ti,nx=this.normX(ti),z=this.zone(ti);
+const acts=[];const zrMult=this.zr(ti);
+const curXG=calcXG(this.bx,this.by,this.ad[ti],{ovr:this.car.o}).xg;
+const gkOvr=this.gk(di).o;
+
+// Helper: build action
+const mkAct=(id,risk,exec,targetXG)=>{
+  const adjRisk=Math.max(0.02,Math.min(0.85,risk*zrMult+this.getBonus(ti,id)));
+  const ev=(1-adjRisk)*(targetXG-curXG); // expected xG gain
+  acts.push({id,risk:adjRisk,ev,exec});
 };
 
-const TACTICS = ['balanced', 'attacking', 'defensive'];
-
-const DEFAULT_HOME = {
-    name: 'Legia Warszawa', formation: '4-4-2', tactic: 'balanced',
-    players: [
-        { name: 'Tobiasz', pos: 'GK', ovr: 72 },
-        { name: 'Jędrzejczyk', pos: 'DEF', ovr: 71 },
-        { name: 'Wieteska', pos: 'DEF', ovr: 69 },
-        { name: 'Nawrocki', pos: 'DEF', ovr: 73 },
-        { name: 'Mladenović', pos: 'DEF', ovr: 68 },
-        { name: 'Zieliński', pos: 'MID', ovr: 82 },
-        { name: 'Krychowiak', pos: 'MID', ovr: 78 },
-        { name: 'Kapustka', pos: 'MID', ovr: 76 },
-        { name: 'Josué', pos: 'MID', ovr: 80 },
-        { name: 'Lewandowski', pos: 'FWD', ovr: 85 },
-        { name: 'Rosołek', pos: 'FWD', ovr: 70 },
-    ]
-};
-
-const DEFAULT_AWAY = {
-    name: 'Radomiak Radom', formation: '5-4-1', tactic: 'defensive',
-    players: [
-        { name: 'Kochalski', pos: 'GK', ovr: 65 },
-        { name: 'Cichocki', pos: 'DEF', ovr: 66 },
-        { name: 'Rossi', pos: 'DEF', ovr: 64 },
-        { name: 'Mikołajewski', pos: 'DEF', ovr: 62 },
-        { name: 'Abramowicz', pos: 'DEF', ovr: 63 },
-        { name: 'Nowak', pos: 'DEF', ovr: 61 },
-        { name: 'Mastoras', pos: 'MID', ovr: 67 },
-        { name: 'Leandro', pos: 'MID', ovr: 65 },
-        { name: 'Kaput', pos: 'MID', ovr: 63 },
-        { name: 'Souza', pos: 'MID', ovr: 61 },
-        { name: 'Ishak', pos: 'FWD', ovr: 68 },
-    ]
-};
-
-// ============================================================================
-// EDITOR UI
-// ============================================================================
-function buildEditor() {
-    const editor = document.getElementById('editor');
-    let html = '<h2>⚽ Football Engine v3.1</h2>';
-    
-    [DEFAULT_HOME, DEFAULT_AWAY].forEach((team, ti) => {
-        const id = ti === 0 ? 'home' : 'away';
-        const label = ti === 0 ? '🏠 GOSPODARZ' : '✈️ GOŚĆ';
-        html += `<div class="team-block" id="team-${id}">`;
-        html += `<div class="team-header">`;
-        html += `<span style="font-size:11px;color:var(--text-dim)">${label}</span>`;
-        html += `<input type="text" class="team-name" data-team="${id}" data-field="name" value="${team.name}">`;
-        html += `<select data-team="${id}" data-field="formation">${Object.keys(FORMATIONS).map(f => `<option value="${f}" ${f===team.formation?'selected':''}>${f}</option>`).join('')}</select>`;
-        html += `<select data-team="${id}" data-field="tactic">${TACTICS.map(t => `<option value="${t}" ${t===team.tactic?'selected':''}>${t}</option>`).join('')}</select>`;
-        html += `</div>`;
-        html += `<div class="player-row header-row"><span>Poz</span><span>Nazwisko</span><span>OVR</span></div>`;
-        team.players.forEach((p, pi) => {
-            html += `<div class="player-row"><span class="pos-badge pos-${p.pos}">${p.pos}</span>`;
-            html += `<input type="text" data-team="${id}" data-idx="${pi}" data-field="name" value="${p.name}">`;
-            html += `<input type="number" data-team="${id}" data-idx="${pi}" data-field="ovr" value="${p.ovr}" min="30" max="99">`;
-            html += `</div>`;
-        });
-        html += `</div>`;
-    });
-    editor.innerHTML = html;
+// 1. Pass forward
+if(nx<95){
+  const fwdDist=8+Math.random()*10;
+  const tx=this.bx+this.ad[ti]*fwdDist,ty=this.by+(Math.random()-0.5)*20;
+  const txC=Math.max(1,Math.min(PW-1,tx)),tyC=Math.max(3,Math.min(PH-3,ty));
+  const tXG=calcXG(txC,tyC,this.ad[ti],{ovr:70}).xg;
+  mkAct('fwd',0.15,()=>{
+    this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+    this.mb(txC,tyC);const r=this.pickN(ti,this.zone(ti),this.car);if(r)this.car=r;
+    this.lastAct[ti]='fwd';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} — do przodu`,'action');
+  },tXG);
 }
 
-function readTeam(teamId) {
-    const block = document.getElementById(`team-${teamId}`);
-    const name = block.querySelector(`input[data-field="name"][data-team="${teamId}"]`).value;
-    const formation = block.querySelector(`select[data-field="formation"]`).value;
-    const tactic = block.querySelector(`select[data-field="tactic"]`).value;
-    const formDef = FORMATIONS[formation];
-    const posOrder = ['GK','DEF','MID','FWD'];
-    const posCounts = { GK: 1, ...formDef };
-    const players = [];
-    let idx = 0;
-    for (const pos of posOrder) {
-        for (let i = 0; i < posCounts[pos]; i++) {
-            const ni = block.querySelector(`input[data-field="name"][data-idx="${idx}"]`);
-            const oi = block.querySelector(`input[data-field="ovr"][data-idx="${idx}"]`);
-            players.push({ name: ni ? ni.value : `P${idx+1}`, pos, ovr: oi ? parseInt(oi.value)||60 : 60 });
-            idx++;
-        }
-    }
-    return { name, formation, tactic, players };
+// 2. Through ball
+if(nx>40&&nx<92){
+  const td=18+Math.random()*14;
+  const tx=this.bx+this.ad[ti]*td,ty=this.by+(GCY-this.by)*0.3+(Math.random()-0.5)*6;
+  const txC=Math.max(1,Math.min(PW-1,tx)),tyC=Math.max(3,Math.min(PH-3,ty));
+  const tXG=calcXG(txC,tyC,this.ad[ti],{ovr:70,throughBall:true}).xg;
+  mkAct('through',0.50,()=>{
+    this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+    this.mb(txC,tyC);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+    this.mods.throughBall=true;this.lastAct[ti]='through';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} ⚡ kluczowe!`,'success');
+  },tXG);
 }
 
-// ============================================================================
-// ENGINE
-// ============================================================================
-class Engine {
-    constructor(home, away, verbose = true) {
-        this.t = [
-            { ...home, r: this.calcRatings(home.players) },
-            { ...away, r: this.calcRatings(away.players) },
-        ];
-        this.verbose = verbose;
-        this.log = [];
-        this.sec = 0; // match clock in seconds (0-5400)
-        this.poss = -1;
-        this.ball = null; // current player with ball
-        this.ballLine = 'DEF';
-        this.dribbleBonus = false;
-        this.reds = [[], []];
-        this.possTime = [0, 0];
-        
-        for (let i = 0; i < 2; i++) {
-            this.t[i].s = {
-                goals: 0, shots: 0, shotsOnTarget: 0, possession: 0,
-                corners: 0, fouls: 0, yellowCards: 0, redCards: 0,
-                penalties: 0, penaltiesScored: 0,
-                passes: 0, passesOK: 0, dribbles: 0, dribblesOK: 0,
-                longBalls: 0, longBallsOK: 0, offsides: 0,
-                goalKicks: 0, throwIns: 0, freeKicks: 0,
-            };
-            this.t[i].scorers = [];
-        }
-    }
-    
-    calcRatings(players) {
-        const f = players.filter(p => p.pos !== 'GK');
-        const gk = players.find(p => p.pos === 'GK');
-        const fwd = f.filter(p => p.pos === 'FWD');
-        const mid = f.filter(p => p.pos === 'MID');
-        const def = f.filter(p => p.pos === 'DEF');
-        const sum = a => a.reduce((s, p) => s + p.ovr, 0);
-        return {
-            attack: (sum(fwd) * 2 + sum(mid)) / 11,
-            defense: sum(def) / 11,
-            passing: sum(f) / 11,
-            goalkeeper: gk ? gk.ovr : 50,
-        };
-    }
-    
-    active(ti) { return this.t[ti].players.filter(p => !this.reds[ti].includes(p.name)); }
-    byPos(ti, pos) { return this.active(ti).filter(p => p.pos === pos); }
-    
-    pick(ti, pos) {
-        const c = this.byPos(ti, pos);
-        if (!c.length) return null;
-        const tot = c.reduce((s, p) => s + p.ovr, 0);
-        let r = Math.random() * tot;
-        for (const p of c) { r -= p.ovr; if (r <= 0) return p; }
-        return c[c.length - 1];
-    }
-    
-    pickShooter(ti) {
-        const wt = { FWD: 5, MID: 1.5, DEF: 0.5 };
-        const f = this.active(ti).filter(p => p.pos !== 'GK');
-        const ws = f.map(p => ({ ...p, w: p.ovr * (wt[p.pos] || 1) }));
-        const tot = ws.reduce((s, p) => s + p.w, 0);
-        let r = Math.random() * tot;
-        for (const p of ws) { r -= p.w; if (r <= 0) return p; }
-        return ws[ws.length - 1];
-    }
-    
-    min() { return Math.floor(this.sec / 60); }
-    
-    addLog(text, type = 'action', detail = '') {
-        if (this.verbose) this.log.push({ minute: this.min(), text, type, detail });
-    }
-    
-    tick(seconds) { this.sec += seconds; }
-    
-    // ================================================================
-    // RUN MATCH
-    // ================================================================
-    run() {
-        this.poss = Math.random() < 0.5 ? 0 : 1;
-        this.addLog('Rozpoczęcie meczu — 1. połowa', 'half-time');
-        
-        let halfLogged = false;
-        
-        while (this.sec < 5400) {
-            // Half time
-            if (this.sec >= 2700 && !halfLogged) {
-                halfLogged = true;
-                this.addLog(`PRZERWA — ${this.t[0].name} ${this.t[0].s.goals}:${this.t[1].s.goals} ${this.t[1].name}`, 'half-time');
-                this.tick(60); // half time break eats 1 min of clock
-            }
-            
-            this.simPossession();
-        }
-        
-        this.addLog(`KONIEC MECZU — ${this.t[0].name} ${this.t[0].s.goals}:${this.t[1].s.goals} ${this.t[1].name}`, 'half-time');
-        
-        const total = this.possTime[0] + this.possTime[1];
-        this.t[0].s.possession = total > 0 ? Math.round(this.possTime[0] / total * 100) : 50;
-        this.t[1].s.possession = 100 - this.t[0].s.possession;
-        
-        return {
-            score: [this.t[0].s.goals, this.t[1].s.goals],
-            stats: [this.t[0].s, this.t[1].s],
-            teams: this.t,
-            log: this.log,
-        };
-    }
-    
-    // ================================================================
-    // POSSESSION = CHAIN OF MICRO-ACTIONS
-    // ================================================================
-    simPossession() {
-        const o = this.poss;
-        const d = 1 - o;
-        const team = this.t[o];
-        
-        this.dribbleBonus = false;
-        this.ballLine = 'DEF';
-        this.ball = this.pick(o, 'DEF');
-        if (!this.ball) { this.poss = d; this.tick(5); return; }
-        
-        const possStart = this.sec;
-        
-        this.addLog(
-            `${team.name} — posiadanie`,
-            'possession-start',
-            `piłka: ${this.ball.name} (${this.ball.pos} ${this.ball.ovr})`
-        );
-        
-        for (let step = 0; step < 35; step++) {
-            if (this.sec >= 5400) break;
-            
-            const action = this.chooseAction(o);
-            const result = this.exec(action, o, d);
-            
-            if (result.end) {
-                this.possTime[o] += (this.sec - possStart);
-                if (result.switchTo !== undefined) this.poss = result.switchTo;
-                else this.poss = d;
-                return;
-            }
-        }
-        
-        // Max steps — turnover
-        this.possTime[o] += (this.sec - possStart);
-        this.poss = d;
-    }
-    
-    // ================================================================
-    // CHOOSE ACTION — depends on ball position (line)
-    // ================================================================
-    chooseAction(o) {
-        const r = Math.random();
-        const line = this.ballLine;
-        
-        if (line === 'DEF') {
-            if (r < 0.35) return 'pass_side';      // circulation
-            if (r < 0.60) return 'pass_fwd';        // build up
-            if (r < 0.72) return 'back_to_gk';      // reset to GK
-            if (r < 0.82) return 'long_ball';        // bypass midfield
-            if (r < 0.90) return 'switch_play';      // change side (slow, safe)
-            if (r < 0.96) return 'dribble';          // 6%
-            return 'clearance';                       // 4% — just boot it
-        }
-        
-        if (line === 'MID') {
-            if (r < 0.28) return 'pass_side';        // circulation
-            if (r < 0.43) return 'pass_fwd';          // 15% — to FWD, bottleneck
-            if (r < 0.60) return 'pass_back';         // 17% — recycle
-            if (r < 0.73) return 'dribble';           // 13%
-            if (r < 0.80) return 'switch_play';       // 7%
-            if (r < 0.88) return 'long_ball';         // 8%
-            if (r < 0.95) return 'shot';              // 7% — long range
-            return 'through_ball';                     // 5% — risky key pass
-        }
-        
-        // FWD
-        if (r < 0.22) return 'shot';                  // 22%
-        if (r < 0.38) return 'dribble';               // 16%
-        if (r < 0.50) return 'pass_side';             // 12%
-        if (r < 0.75) return 'pass_back';             // 25% — can't find space
-        if (r < 0.88) return 'cross';                 // 13% — cross into box
-        return 'through_ball';                         // 12%
-    }
-    
-    // ================================================================
-    // EXECUTE ACTION
-    // ================================================================
-    exec(action, o, d) {
-        switch (action) {
-            case 'pass_side':    return this.doPassSide(o, d);
-            case 'pass_fwd':     return this.doPassFwd(o, d);
-            case 'pass_back':    return this.doPassBack(o, d);
-            case 'back_to_gk':   return this.doBackToGK(o, d);
-            case 'switch_play':  return this.doSwitchPlay(o, d);
-            case 'long_ball':    return this.doLongBall(o, d);
-            case 'through_ball': return this.doThroughBall(o, d);
-            case 'cross':        return this.doCross(o, d);
-            case 'dribble':      return this.doDribble(o, d);
-            case 'shot':         return this.doShot(o, d);
-            case 'clearance':    return this.doClearance(o, d);
-            default: this.tick(3); return { end: false };
-        }
-    }
-    
-    // --- PASS SIDEWAYS (very safe, costs time) ---
-    doPassSide(o, d) {
-        this.tick(4 + Math.random() * 3); // 4-7 seconds
-        this.t[o].s.passes++;
-        const carrier = this.ball;
-        const failChance = 0.05; // 5% — very safe
-        
-        if (Math.random() < failChance) {
-            this.t[o].s.passes; // already counted
-            this.addLog(`${carrier.name} — niecelne podanie w bok`, 'action-fail', `[fail ${(failChance*100)}%]`);
-            // Throw-in or opponent gets ball
-            if (Math.random() < 0.5) return this.doThrowIn(o, d);
-            return { end: true };
-        }
-        
-        this.t[o].s.passesOK++;
-        const receiver = this.pick(o, this.ballLine);
-        if (!receiver || receiver.name === carrier.name) {
-            // same player, just recirculate
-            this.addLog(`${carrier.name} → ${carrier.name} (kontrola)`, 'action', `podanie w bok`);
-            return { end: false };
-        }
-        this.ball = receiver;
-        this.addLog(`${carrier.name} → ${receiver.name}`, 'action', `podanie w bok [${this.ballLine}]`);
-        return { end: false };
-    }
-    
-    // --- PASS FORWARD (risky, advances line) ---
-    doPassFwd(o, d) {
-        this.tick(3 + Math.random() * 2);
-        this.t[o].s.passes++;
-        const carrier = this.ball;
-        const successProb = 0.55 + (carrier.ovr / 250); // ovr 60→79%, ovr 85→89%
-        const roll = Math.random();
-        
-        if (roll < successProb) {
-            this.t[o].s.passesOK++;
-            let nextLine = this.ballLine;
-            if (this.ballLine === 'DEF') nextLine = 'MID';
-            else if (this.ballLine === 'MID') nextLine = 'FWD';
-            
-            const receiver = this.pick(o, nextLine);
-            if (!receiver) return { end: true };
-            this.ball = receiver;
-            this.ballLine = nextLine;
-            this.addLog(
-                `${carrier.name} → ${receiver.name}`,
-                'action',
-                `podanie do przodu [${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-            );
-            return { end: false };
-        }
-        
-        this.addLog(
-            `${carrier.name} — podanie do przodu przechwycone`,
-            'action-fail',
-            `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-        );
-        return { end: true };
-    }
-    
-    // --- PASS BACK (very safe, loses ground) ---
-    doPassBack(o, d) {
-        this.tick(3 + Math.random() * 2);
-        this.t[o].s.passes++;
-        this.t[o].s.passesOK++; // almost never fails
-        const carrier = this.ball;
-        
-        let nextLine = this.ballLine;
-        if (this.ballLine === 'FWD') nextLine = 'MID';
-        else if (this.ballLine === 'MID') nextLine = 'DEF';
-        
-        const receiver = this.pick(o, nextLine);
-        if (!receiver) { this.ball = carrier; return { end: false }; }
-        this.ball = receiver;
-        this.ballLine = nextLine;
-        this.addLog(`${carrier.name} → ${receiver.name}`, 'action', `podanie do tyłu [${this.ballLine}]`);
-        return { end: false };
-    }
-    
-    // --- BACK TO GK (safe reset, eats time) ---
-    doBackToGK(o, d) {
-        this.tick(6 + Math.random() * 4); // 6-10 seconds — slow buildup
-        this.t[o].s.passes++;
-        this.t[o].s.passesOK++;
-        const gk = this.t[o].players.find(p => p.pos === 'GK');
-        const carrier = this.ball;
-        this.ball = gk || carrier;
-        this.ballLine = 'DEF';
-        this.addLog(`${carrier.name} → ${this.ball.name}`, 'action', `cofnięcie do bramkarza — reset`);
-        return { end: false };
-    }
-    
-    // --- SWITCH PLAY (change side, safe but slow) ---
-    doSwitchPlay(o, d) {
-        this.tick(5 + Math.random() * 3);
-        this.t[o].s.passes++;
-        const carrier = this.ball;
-        const successProb = 0.80;
-        
-        if (Math.random() < successProb) {
-            this.t[o].s.passesOK++;
-            const receiver = this.pick(o, this.ballLine);
-            if (receiver) this.ball = receiver;
-            this.addLog(`${carrier.name} ↔ ${this.ball.name}`, 'action', `zmiana strony [${this.ballLine}]`);
-            return { end: false };
-        }
-        
-        this.addLog(`${carrier.name} — zmiana strony niecelna`, 'action-fail', `aut`);
-        return this.doThrowIn(o, d);
-    }
-    
-    // --- LONG BALL (skip midfield, risky) ---
-    doLongBall(o, d) {
-        this.tick(4 + Math.random() * 2);
-        this.t[o].s.longBalls++;
-        const carrier = this.ball;
-        const successProb = 0.30 + (carrier.ovr / 300); // ovr 60→50%, ovr 80→57%
-        const roll = Math.random();
-        
-        if (roll < successProb) {
-            this.t[o].s.longBallsOK++;
-            const receiver = this.pick(o, 'FWD') || this.pick(o, 'MID');
-            if (!receiver) return { end: true };
-            this.ball = receiver;
-            this.ballLine = receiver.pos === 'FWD' ? 'FWD' : 'MID';
-            this.addLog(
-                `${carrier.name} ↗ ${receiver.name}`,
-                'action',
-                `długie podanie [→${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-            );
-            return { end: false };
-        }
-        
-        this.addLog(`${carrier.name} — długie podanie niecelne`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
-        // Goal kick for opponent
-        return this.doGoalKick(d);
-    }
-    
-    // --- THROUGH BALL (key pass, very risky, creates great chance) ---
-    doThroughBall(o, d) {
-        this.tick(2 + Math.random() * 2);
-        this.t[o].s.passes++;
-        const carrier = this.ball;
-        const successProb = 0.25 + (carrier.ovr / 300); // ovr 70→48%, ovr 85→53%
-        const roll = Math.random();
-        
-        if (roll < successProb) {
-            this.t[o].s.passesOK++;
-            const receiver = this.pick(o, 'FWD') || this.pick(o, 'MID');
-            if (!receiver) return { end: true };
-            this.ball = receiver;
-            this.ballLine = 'FWD';
-            this.dribbleBonus = true; // through ball = great chance (same bonus as dribble)
-            this.addLog(
-                `${carrier.name} ⚡→ ${receiver.name}`,
-                'dribble-success',
-                `kluczowe podanie! [bonus +12%] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-            );
-            return { end: false };
-        }
-        
-        // Failed through ball — often offside
-        if (Math.random() < 0.40) {
-            return this.doOffside(o, d);
-        }
-        this.addLog(`${carrier.name} — kluczowe podanie przechwycone`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
-        return { end: true };
-    }
-    
-    // --- CROSS (from wide, to FWD for header) ---
-    doCross(o, d) {
-        this.tick(3 + Math.random() * 2);
-        this.t[o].s.passes++;
-        const carrier = this.ball;
-        const successProb = 0.28 + (carrier.ovr / 300); // crosses are hard
-        const roll = Math.random();
-        
-        if (roll < successProb) {
-            this.t[o].s.passesOK++;
-            const target = this.pick(o, 'FWD') || this.pick(o, 'MID');
-            if (!target) return { end: true };
-            this.ball = target;
-            this.ballLine = 'FWD';
-            this.addLog(
-                `${carrier.name} ⤴ ${target.name}`,
-                'action',
-                `dośrodkowanie → główka/strzał prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-            );
-            // Cross goes directly to shot attempt
-            return this.doShot(o, d);
-        }
-        
-        this.addLog(`${carrier.name} — dośrodkowanie niecelne`, 'action-fail', `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`);
-        if (Math.random() < 0.3) return this.doGoalKick(d);
-        if (Math.random() < 0.3) return this.doCorner(o, d);
-        return { end: true };
-    }
-    
-    // --- DRIBBLE (risk/reward, bonus to next action) ---
-    doDribble(o, d) {
-        this.tick(4 + Math.random() * 3);
-        this.t[o].s.dribbles++;
-        const carrier = this.ball;
-        const successProb = 0.40 + (carrier.ovr / 250); // ovr 60→64%, ovr 85→74%
-        const roll = Math.random();
-        
-        if (roll < successProb) {
-            this.t[o].s.dribblesOK++;
-            this.dribbleBonus = true;
-            // May advance line
-            if (this.ballLine === 'DEF' && Math.random() < 0.35) this.ballLine = 'MID';
-            else if (this.ballLine === 'MID' && Math.random() < 0.20) this.ballLine = 'FWD';
-            
-            this.addLog(
-                `${carrier.name} — udany drybling! ⚡`,
-                'dribble-success',
-                `[bonus +12%] [${this.ballLine}] prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-            );
-            return { end: false };
-        }
-        
-        this.addLog(
-            `${carrier.name} — strata po dryblingu`,
-            'action-fail',
-            `prob:${(successProb*100).toFixed(0)}% roll:${(roll*100).toFixed(1)}%`
-        );
-        // Foul chance on failed dribble
-        if (Math.random() < 0.25) return this.doFoul(o, d);
-        return { end: true };
-    }
-    
-    // --- SHOT ---
-    doShot(o, d) {
-        const carrier = this.ball;
-        const team = this.t[o];
-        const gk = this.t[d].players.find(p => p.pos === 'GK') || { name: 'GK', ovr: 50 };
-        
-        team.s.shots++;
-        this.tick(2);
-        
-        const dribBonus = this.dribbleBonus ? 0.12 : 0;
-        this.dribbleBonus = false;
-        
-        const distMod = this.ballLine === 'FWD' ? 0 : this.ballLine === 'MID' ? -0.15 : -0.30;
-        
-        // On target
-        const onTargetProb = Math.min(0.80, Math.max(0.05, carrier.ovr / 200 + dribBonus + distMod));
-        const onTargetRoll = Math.random();
-        
-        if (onTargetRoll < onTargetProb) {
-            team.s.shotsOnTarget++;
-            
-            // Goal
-            const goalBase = carrier.ovr / (carrier.ovr + gk.ovr);
-            const goalProb = Math.min(0.85, Math.max(0.05, goalBase + dribBonus / 2 + distMod / 4));
-            const goalRoll = Math.random();
-            
-            if (goalRoll < goalProb) {
-                team.s.goals++;
-                team.scorers.push({ name: carrier.name, minute: this.min() });
-                this.addLog(
-                    `${this.min()}' ⚽ GOL! ${carrier.name} (${team.name}) — ${this.t[0].s.goals}:${this.t[1].s.goals}`,
-                    'goal',
-                    `celność:${(onTargetProb*100).toFixed(0)}% roll:${(onTargetRoll*100).toFixed(1)}% | gol:${(goalProb*100).toFixed(0)}% roll:${(goalRoll*100).toFixed(1)}% | ${carrier.ovr}vs${gk.ovr} ${this.ballLine}${dribBonus>0?' +bonus':''}`
-                );
-                this.tick(30); // celebration + restart
-                return { end: true };
-            }
-            
-            this.addLog(
-                `${this.min()}' ${carrier.name} strzela — obrona ${gk.name}!`,
-                'save',
-                `celny:${(onTargetProb*100).toFixed(0)}% ✓ | gol:${(goalProb*100).toFixed(0)}% roll:${(goalRoll*100).toFixed(1)}% ✗ | ${carrier.ovr}vs${gk.ovr}`
-            );
-            if (Math.random() < 0.30) return this.doCorner(o, d);
-            return this.doGoalKick(d);
-        }
-        
-        this.addLog(
-            `${this.min()}' ${carrier.name} strzela — niecelnie`,
-            'miss',
-            `celność:${(onTargetProb*100).toFixed(0)}% roll:${(onTargetRoll*100).toFixed(1)}% ✗ | z ${this.ballLine}${dribBonus>0?' +bonus':''}`
-        );
-        if (Math.random() < 0.25) return this.doCorner(o, d);
-        return this.doGoalKick(d);
-    }
-    
-    // --- CLEARANCE (DEF just boots it) ---
-    doClearance(o, d) {
-        this.tick(3);
-        const carrier = this.ball;
-        this.addLog(`${carrier.name} — wybicie`, 'action', `clearance`);
-        // Opponent gets throw-in or just possession
-        if (Math.random() < 0.4) return this.doThrowIn(d, o);
-        return { end: true };
-    }
-    
-    // ================================================================
-    // SET PIECES & STOPPAGES (all eat time!)
-    // ================================================================
-    
-    doCorner(o, d) {
-        this.tick(15 + Math.random() * 10); // corners take 15-25 seconds
-        this.t[o].s.corners++;
-        this.addLog(`${this.min()}' Rzut rożny — ${this.t[o].name}`, 'corner');
-        
-        // 15% chance of shot from corner
-        if (Math.random() < 0.15) {
-            this.ball = this.pickShooter(o);
-            this.ballLine = 'FWD';
-            return this.doShot(o, d);
-        }
-        // Defended — opponent gets ball
-        return { end: true };
-    }
-    
-    doGoalKick(teamIdx) {
-        this.tick(12 + Math.random() * 8); // goal kicks take 12-20 seconds
-        this.t[teamIdx].s.goalKicks++;
-        this.addLog(`${this.min()}' Wznowienie od bramki — ${this.t[teamIdx].name}`, 'stoppage');
-        return { end: true, switchTo: teamIdx };
-    }
-    
-    doThrowIn(teamIdx, otherIdx) {
-        this.tick(8 + Math.random() * 7); // throw-ins take 8-15 seconds
-        this.t[teamIdx].s.throwIns++;
-        this.addLog(`${this.min()}' Wrzut z autu — ${this.t[teamIdx].name}`, 'stoppage');
-        return { end: true, switchTo: teamIdx };
-    }
-    
-    doOffside(o, d) {
-        this.tick(8 + Math.random() * 5);
-        this.t[o].s.offsides++;
-        this.addLog(`${this.min()}' Spalony — ${this.t[o].name}`, 'stoppage');
-        return { end: true, switchTo: d }; // free kick for defense
-    }
-    
-    doFoul(o, d) {
-        this.tick(10 + Math.random() * 10); // fouls + free kick take 10-20 seconds
-        this.t[d].s.fouls++;
-        
-        const fouler = this.pick(d, this.ballLine === 'FWD' ? 'DEF' : 'MID') || this.pick(d, 'DEF');
-        const foulerName = fouler ? fouler.name : '?';
-        
-        this.addLog(`${this.min()}' Faul — ${foulerName} (${this.t[d].name}) na ${this.ball.name}`, 'foul');
-        
-        // Yellow 15%
-        if (Math.random() < 0.15) {
-            this.t[d].s.yellowCards++;
-            this.addLog(`${this.min()}' 🟨 Żółta — ${foulerName}`, 'card');
-        }
-        
-        // Red 2%
-        if (fouler && fouler.pos !== 'GK' && Math.random() < 0.02) {
-            this.t[d].s.redCards++;
-            this.reds[d].push(fouler.name);
-            this.addLog(`${this.min()}' 🟥 CZERWONA — ${foulerName}!`, 'card');
-        }
-        
-        // Penalty if FWD line & 10% of FWD fouls
-        if (this.ballLine === 'FWD' && Math.random() < 0.10) {
-            return this.doPenalty(o, d);
-        }
-        
-        // Free kick — keep possession
-        this.t[o].s.freeKicks++;
-        this.addLog(`${this.min()}' Rzut wolny — ${this.t[o].name}`, 'stoppage');
-        
-        // 8% free kick leads to shot (direct)
-        if (this.ballLine !== 'DEF' && Math.random() < 0.08) {
-            this.ball = this.pickShooter(o);
-            return this.doShot(o, d);
-        }
-        
-        return { end: true, switchTo: o }; // keep possession
-    }
-    
-    doPenalty(o, d) {
-        this.tick(20 + Math.random() * 10);
-        const team = this.t[o];
-        const gk = this.t[d].players.find(p => p.pos === 'GK') || { name: 'GK', ovr: 50 };
-        
-        team.s.penalties++;
-        team.s.shots++;
-        team.s.shotsOnTarget++;
-        
-        const taker = this.pickShooter(o);
-        this.addLog(`${this.min()}' 🔴 RZUT KARNY — ${team.name}! Podchodzi ${taker.name}`, 'foul');
-        
-        const roll = Math.random();
-        if (roll < 0.80) {
-            team.s.goals++;
-            team.s.penaltiesScored++;
-            team.scorers.push({ name: taker.name, minute: this.min(), penalty: true });
-            this.addLog(
-                `${this.min()}' ⚽ GOL Z KARNEGO! ${taker.name} — ${this.t[0].s.goals}:${this.t[1].s.goals}`,
-                'penalty-goal',
-                `80% roll:${(roll*100).toFixed(1)}% ✓`
-            );
-            this.tick(30);
-        } else {
-            this.addLog(
-                `${this.min()}' Karny ${taker.name} — ZMARNOWANY! ${gk.name}!`,
-                'save',
-                `80% roll:${(roll*100).toFixed(1)}% ✗`
-            );
-        }
-        return { end: true };
-    }
+// 3. Flank pass
+if(nx>20&&nx<90){
+  const side=this.by<GCY?8+Math.random()*6:PH-8-Math.random()*6;
+  const fd=6+Math.random()*12;
+  const tx=this.bx+this.ad[ti]*fd,txC=Math.max(1,Math.min(PW-1,tx));
+  const tXG=calcXG(txC,side,this.ad[ti],{ovr:70}).xg;
+  // Flank is valuable because it enables cross — add bonus to EV
+  const crossBonus=(this.normX(ti)+fd*this.ad[ti]>65)?0.01:0;
+  mkAct('flank',0.12,()=>{
+    this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+    this.mb(txC,side);const r=this.pickN(ti,'MID',this.car);if(r)this.car=r;
+    this.lastAct[ti]='flank';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} — na flankę`,'action');
+  },tXG+crossBonus);
 }
 
-// ============================================================================
-// CONTROLS & RENDERING
-// ============================================================================
-function buildControls() {
-    document.getElementById('controls').innerHTML = `
-        <button class="btn btn-primary" onclick="runSingle()">▶ Symuluj mecz</button>
-        <button class="btn" onclick="runBulk(100)">×100</button>
-        <button class="btn" onclick="runBulk(500)">×500</button>
-        <div class="score-display" id="sd" style="display:none">
-            <span class="team-label" id="sdH"></span>
-            <span id="sdS"></span>
-            <span class="team-label" id="sdA"></span>
-        </div>
-    `;
+// 4. Cross (from flank, x>65 normalized)
+if(this.isFlank()&&nx>65){
+  const depth=nx;
+  let tgtX,tgtY,baseRisk;
+  if(depth>=92){tgtX=this.ad[ti]>0?94+Math.random()*5:6+Math.random()*5;tgtY=GCY+(Math.random()-0.5)*8;baseRisk=0.38}
+  else if(depth>=78){tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;tgtY=GCY+(Math.random()-0.5)*12;baseRisk=0.55}
+  else{tgtX=this.ad[ti]>0?86+Math.random()*10:9+Math.random()*10;tgtY=GCY+(Math.random()-0.5)*16;baseRisk=0.65}
+  const tXG=calcXG(tgtX,tgtY,this.ad[ti],{ovr:70,header:depth<92}).xg;
+  mkAct('cross',baseRisk,()=>{
+    this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+    this.mb(tgtX,tgtY);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+    if(depth<92)this.mods.header=true;this.lastAct[ti]='cross';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} ⤴ dośrodkowanie`,'action');
+  },tXG);
 }
 
-function renderMatch(r) {
-    const out = document.getElementById('matchOutput');
-    let html = '';
-    for (const e of r.log) {
-        const d = e.detail ? ` <span class="detail">${e.detail}</span>` : '';
-        html += `<div class="log-entry ${e.type}">${e.text}${d}</div>`;
-    }
-    out.innerHTML = html;
-    out.scrollTop = out.scrollHeight;
-    
-    document.getElementById('sd').style.display = 'block';
-    document.getElementById('sdH').textContent = r.teams[0].name;
-    document.getElementById('sdA').textContent = r.teams[1].name;
-    document.getElementById('sdS').textContent = `${r.score[0]} : ${r.score[1]}`;
-    
-    renderStats(r);
+// 5. Long ball
+if(nx<65){
+  const tx=this.ad[ti]>0?70+Math.random()*20:10+Math.random()*20;
+  const ty=GCY+(Math.random()-0.5)*30;
+  const tXG=calcXG(tx,ty,this.ad[ti],{ovr:70}).xg;
+  mkAct('long',0.48,()=>{
+    this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+    this.mb(tx,ty);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+    this.lastAct[ti]='long';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} ↗ długie`,'action');
+  },tXG);
 }
 
-function renderStats(r) {
-    const panel = document.getElementById('statsPanel');
-    panel.style.display = 'block';
-    const s0 = r.stats[0], s1 = r.stats[1];
-    
-    const rows = [
-        ['Posiadanie', s0.possession+'%', s1.possession+'%', s0.possession, s1.possession],
-        ['Strzały', s0.shots, s1.shots, s0.shots, s1.shots],
-        ['Celne', s0.shotsOnTarget, s1.shotsOnTarget, s0.shotsOnTarget, s1.shotsOnTarget],
-        ['Podania', `${s0.passesOK}/${s0.passes}`, `${s1.passesOK}/${s1.passes}`, s0.passesOK, s1.passesOK],
-        ['Dryblingi', `${s0.dribblesOK}/${s0.dribbles}`, `${s1.dribblesOK}/${s1.dribbles}`, s0.dribblesOK, s1.dribblesOK],
-        ['Długie podania', `${s0.longBallsOK}/${s0.longBalls}`, `${s1.longBallsOK}/${s1.longBalls}`, s0.longBallsOK, s1.longBallsOK],
-        ['Kornery', s0.corners, s1.corners, s0.corners, s1.corners],
-        ['Spalone', s0.offsides, s1.offsides, s0.offsides, s1.offsides],
-        ['Faule', s0.fouls, s1.fouls, s0.fouls, s1.fouls],
-        ['Żółte', s0.yellowCards, s1.yellowCards, s0.yellowCards, s1.yellowCards],
-        ['Czerwone', s0.redCards, s1.redCards, s0.redCards, s1.redCards],
-        ['Rzuty wolne', s0.freeKicks, s1.freeKicks, s0.freeKicks, s1.freeKicks],
-        ['Wrzuty z autu', s0.throwIns, s1.throwIns, s0.throwIns, s1.throwIns],
-        ['Od bramki', s0.goalKicks, s1.goalKicks, s0.goalKicks, s1.goalKicks],
-        ['Karne', `${s0.penaltiesScored}/${s0.penalties}`, `${s1.penaltiesScored}/${s1.penalties}`, s0.penalties, s1.penalties],
-    ];
-    
-    let h = `<div class="stats-header"><span></span><span></span><span>${r.teams[0].name.split(' ')[0]}</span><span>${r.teams[1].name.split(' ')[0]}</span></div><div class="stats-grid">`;
-    for (const [label, v0, v1, n0, n1] of rows) {
-        const mx = Math.max(n0, n1, 1);
-        h += `<div class="label">${label}</div><div class="bar-cell"><div class="stats-bar"><div class="home" style="width:${n0/mx*50}%"></div><div style="flex:1"></div><div class="away" style="width:${n1/mx*50}%"></div></div></div><div class="val">${v0}</div><div class="val" style="color:var(--blue)">${v1}</div>`;
-    }
-    h += '</div>';
-    
-    for (let t = 0; t < 2; t++) {
-        if (r.teams[t].scorers.length) {
-            h += `<div class="scorers-list"><h4>⚽ ${r.teams[t].name}</h4>`;
-            for (const g of r.teams[t].scorers) h += `<div class="scorer-entry"><span class="minute">${g.minute}'</span> ${g.name}${g.penalty?' (k)':''}</div>`;
-            h += '</div>';
-        }
-    }
-    
-    for (let t = 0; t < 2; t++) {
-        const rt = r.teams[t].r;
-        h += `<div class="scorers-list"><h4>📊 ${r.teams[t].name} ratingi</h4><div style="color:var(--text-dim)">ATK:${rt.attack.toFixed(1)} DEF:${rt.defense.toFixed(1)} PAS:${rt.passing.toFixed(1)} GK:${rt.goalkeeper}</div></div>`;
-    }
-    
-    panel.innerHTML = h;
+// 6. Dribble
+if(nx<100){
+  const dd=6+Math.random()*10;
+  const tx=this.bx+this.ad[ti]*dd,ty=this.by+(Math.random()-0.5)*6;
+  const txC=Math.max(1,Math.min(PW-1,tx));
+  const tXG=calcXG(txC,ty,this.ad[ti],{ovr:this.car.o,dribble:true}).xg;
+  const baseRisk=0.58-this.car.o/250;
+  mkAct('dribble',baseRisk,()=>{
+    this.tm[ti].s.drib++;this.tm[ti].s.dribOK++;
+    this.mb(txC,ty);this.mods.dribble=true;this.lastAct[ti]='dribble';this.sideCnt[ti]=0;
+    this.frame(`${this.car.n} ⚡ drybling!`,'success');
+  },tXG);
 }
 
-function runSingle() {
-    const e = new Engine(readTeam('home'), readTeam('away'), true);
-    renderMatch(e.run());
+// 7. Side pass
+{const sd=Math.random()<0.5?1:-1;
+const ny=Math.max(3,Math.min(PH-3,this.by+sd*(8+Math.random()*12)));
+const tXG=calcXG(this.bx+(Math.random()-0.5)*5,ny,this.ad[ti],{ovr:70}).xg;
+mkAct('side',0.05,()=>{
+  this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+  this.mb(this.bx+(Math.random()-0.5)*6,ny);const r=this.pickN(ti,this.zone(ti),this.car);if(r)this.car=r;
+  this.lastAct[ti]='side';this.sideCnt[ti]++;
+  this.frame(`${this.car.n} → bok (cyr:${this.sideCnt[ti]})`,'action');
+},tXG)}
+
+// 8. Switch
+if(this.lastAct[ti]!=='switch'){
+const targetY=this.by<GCY?PH-8-Math.random()*10:8+Math.random()*10;
+const tXG=calcXG(this.bx,targetY,this.ad[ti],{ovr:70}).xg;
+// Switch is valuable: enables flank on other side
+const switchBonus=0.005;
+mkAct('switch',0.18,()=>{
+  this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+  this.mb(this.bx+(Math.random()-0.5)*8,targetY);const r=this.pickN(ti,'MID',this.car);if(r)this.car=r;
+  this.lastAct[ti]='switch';
+  this.frame(`${this.car.n} ↔ zmiana strony`,'action');
+},tXG+switchBonus)}
+
+// 9. Back pass
+if(nx>15){
+const bd=8+Math.random()*8;
+const tx=this.bx-this.ad[ti]*bd,txC=Math.max(1,Math.min(PW-1,tx));
+const tXG=calcXG(txC,this.by+(Math.random()-0.5)*8,this.ad[ti],{ovr:70}).xg;
+mkAct('back',0.03,()=>{
+  this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+  this.mb(txC,this.by+(Math.random()-0.5)*8);const r=this.pickN(ti,this.zone(ti),this.car);if(r)this.car=r;
+  this.lastAct[ti]='back';
+  this.frame(`${this.car.n} — cofnięcie`,'action');
+},tXG)}
+
+// 10. GK back
+if(this.isOwnHalf(ti)){
+mkAct('gk',0.015,()=>{
+  this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+  const gkx=this.ad[ti]>0?8+Math.random()*5:PW-8-Math.random()*5;
+  this.mb(gkx,GCY+(Math.random()-0.5)*10);this.car=this.gk(ti);
+  this.lastAct[ti]='back';
+  this.frame(`${this.car.n} — bramkarz`,'action');
+},0)}
+
+// 11. Shot — AI evaluates: is shooting better than passing?
+if(nx>52.5){
+const xg=calcXG(this.bx,this.by,this.ad[ti],{...this.mods,ovr:this.car.o,gkOvr}).xg;
+// Shot is only worth it if xG > expected xG from continuing to build
+// Rough heuristic: best forward action EV + current xG vs shot xG
+const bestFwdEV=Math.max(0,...acts.filter(a=>a.id!=='shot').map(a=>a.ev));
+const shotEV=xg; // direct value: probability of scoring
+// AI shoots if shot xG > threshold that depends on position
+const shotThreshold=nx>92?0.02:nx>85?0.04:nx>75?0.08:nx>65?0.15:0.30;
+if(xg>shotThreshold){
+  mkAct('shot',0,()=>{
+    this.doShot(ti,xg);
+  },xg);
+}}
+
+if(!acts.length)return null;
+// Pick by expected value, with some randomness
+// Higher OVR = more optimal choices
+const intelligence=0.5+this.avgOvr(ti)/200; // 0.75 for ovr50, 0.925 for ovr85
+acts.sort((a,b)=>b.ev-a.ev);
+// Weighted pick: best action gets highest weight
+const weights=acts.map((a,i)=>{
+  const rank=i/(acts.length-1||1); // 0=best, 1=worst
+  return Math.pow(1-rank,intelligence*3);
+});
+const tot=weights.reduce((s,w)=>s+w,0);
+let roll=Math.random()*tot;
+for(let i=0;i<acts.length;i++){roll-=weights[i];if(roll<=0)return acts[i]}
+return acts[acts.length-1];
 }
 
-// Global storage for bulk match results
-let bulkResults = [];
-
-function runBulk(n) {
-    const h = readTeam('home'), a = readTeam('away');
-    const tot = { hW:0,aW:0,dr:0,hG:0,aG:0,hSh:0,aSh:0,hSoT:0,aSoT:0,hPo:0,aPo:0,hCo:0,aCo:0,hFo:0,aFo:0,hPa:0,aPa:0,hPaOK:0,aPaOK:0,hDr:0,aDr:0,hDrOK:0,aDrOK:0,hOff:0,aOff:0,hPen:0,aPen:0,hPenG:0,aPenG:0,hY:0,aY:0,hR:0,aR:0 };
-    const lines = {};
-    bulkResults = [];
-    
-    for (let i = 0; i < n; i++) {
-        // verbose=true to capture full logs
-        const e = new Engine(JSON.parse(JSON.stringify(h)), JSON.parse(JSON.stringify(a)), true);
-        const r = e.run();
-        bulkResults.push(r);
-        const [s0,s1] = r.stats;
-        tot.hG+=r.score[0]; tot.aG+=r.score[1];
-        tot.hSh+=s0.shots; tot.aSh+=s1.shots;
-        tot.hSoT+=s0.shotsOnTarget; tot.aSoT+=s1.shotsOnTarget;
-        tot.hPo+=s0.possession; tot.aPo+=s1.possession;
-        tot.hCo+=s0.corners; tot.aCo+=s1.corners;
-        tot.hFo+=s0.fouls; tot.aFo+=s1.fouls;
-        tot.hPa+=s0.passes; tot.aPa+=s1.passes;
-        tot.hPaOK+=s0.passesOK; tot.aPaOK+=s1.passesOK;
-        tot.hDr+=s0.dribbles; tot.aDr+=s1.dribbles;
-        tot.hDrOK+=s0.dribblesOK; tot.aDrOK+=s1.dribblesOK;
-        tot.hOff+=s0.offsides; tot.aOff+=s1.offsides;
-        tot.hPen+=s0.penalties; tot.aPen+=s1.penalties;
-        tot.hPenG+=s0.penaltiesScored; tot.aPenG+=s1.penaltiesScored;
-        tot.hY+=s0.yellowCards; tot.aY+=s1.yellowCards;
-        tot.hR+=s0.redCards; tot.aR+=s1.redCards;
-        if (r.score[0]>r.score[1]) tot.hW++; else if (r.score[1]>r.score[0]) tot.aW++; else tot.dr++;
-        const l = `${r.score[0]}-${r.score[1]}`; lines[l]=(lines[l]||0)+1;
-    }
-    
-    const sorted = Object.entries(lines).sort((a,b)=>b[1]-a[1]);
-    const avg = v => (v/n).toFixed(2);
-    const pct = v => (v/n*100).toFixed(0);
-    const hN = h.name.substring(0,12).padEnd(14);
-    const aN = a.name.substring(0,12).padEnd(14);
-    
-    let html = `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;padding:16px 20px;">`;
-    html += `<div style="color:var(--accent);font-weight:700;font-size:14px;margin-bottom:12px">WALIDACJA: ${n} MECZÓW</div>`;
-    html += `<div>${h.name} (${h.formation}, ${h.tactic}) vs ${a.name} (${a.formation}, ${a.tactic})</div><br>`;
-    html += `<div style="color:var(--accent)">WYNIKI:</div>`;
-    html += `<div>  ${h.name}: ${tot.hW} (${pct(tot.hW)}%) | ${a.name}: ${tot.aW} (${pct(tot.aW)}%) | Remisy: ${tot.dr} (${pct(tot.dr)}%)</div><br>`;
-    html += `<div style="color:var(--accent)">ŚREDNIE NA MECZ:</div>`;
-    html += `<div>                    ${hN} ${aN}</div>`;
-    html += `<div>  Gole:             ${avg(tot.hG).padEnd(14)} ${avg(tot.aG)}</div>`;
-    html += `<div>  Strzały:          ${avg(tot.hSh).padEnd(14)} ${avg(tot.aSh)}</div>`;
-    html += `<div>  Celne:            ${avg(tot.hSoT).padEnd(14)} ${avg(tot.aSoT)}</div>`;
-    html += `<div>  Posiadanie:       ${avg(tot.hPo).padEnd(14)} ${avg(tot.aPo)}</div>`;
-    html += `<div>  Podania:          ${avg(tot.hPaOK)}/${avg(tot.hPa).padEnd(8)} ${avg(tot.aPaOK)}/${avg(tot.aPa)}</div>`;
-    html += `<div>  Dryblingi:        ${avg(tot.hDrOK)}/${avg(tot.hDr).padEnd(8)} ${avg(tot.aDrOK)}/${avg(tot.aDr)}</div>`;
-    html += `<div>  Kornery:          ${avg(tot.hCo).padEnd(14)} ${avg(tot.aCo)}</div>`;
-    html += `<div>  Spalone:          ${avg(tot.hOff).padEnd(14)} ${avg(tot.aOff)}</div>`;
-    html += `<div>  Faule:            ${avg(tot.hFo).padEnd(14)} ${avg(tot.aFo)}</div>`;
-    html += `<div>  Żółte:            ${avg(tot.hY).padEnd(14)} ${avg(tot.aY)}</div>`;
-    html += `<div>  Czerwone:         ${avg(tot.hR).padEnd(14)} ${avg(tot.aR)}</div>`;
-    html += `<div>  Karne:            ${tot.hPenG}/${tot.hPen} total     ${tot.aPenG}/${tot.aPen} total</div>`;
-    html += `<br><div style="color:var(--accent)">NAJCZĘSTSZE WYNIKI:</div>`;
-    for (const [l,c] of sorted.slice(0,12)) {
-        html += `<div>  ${l.padEnd(6)} ${'█'.repeat(Math.round(c/n*80))} ${c} (${(c/n*100).toFixed(1)}%)</div>`;
-    }
-    
-    // Clickable match list
-    html += `<br><div style="color:var(--accent)">WSZYSTKIE MECZE (kliknij aby otworzyć log):</div>`;
-    html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">`;
-    for (let i = 0; i < n; i++) {
-        const r = bulkResults[i];
-        const sc = `${r.score[0]}-${r.score[1]}`;
-        const totalG = r.score[0] + r.score[1];
-        let bgColor = 'var(--surface2)';
-        if (r.score[0] > r.score[1]) bgColor = '#1a2e1a'; // home win
-        else if (r.score[1] > r.score[0]) bgColor = '#1a1a2e'; // away win
-        else bgColor = '#2a2a1a'; // draw
-        html += `<span onclick="showBulkMatch(${i})" style="cursor:pointer;padding:3px 7px;background:${bgColor};border:1px solid var(--border);border-radius:3px;font-size:10px;color:var(--text);transition:all 0.1s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">#${i+1} ${sc}</span>`;
-    }
-    html += `</div>`;
-    html += '</div>';
-    
-    document.getElementById('matchOutput').innerHTML = html;
-    document.getElementById('statsPanel').style.display = 'none';
+// ========== SHOT ==========
+doShot(ti,xg){
+const di=1-ti;
+this.tm[ti].s.shots++;this.tm[ti].s.xg+=xg;
+this.shots.push({x:this.bx,y:this.by,xg,goal:false,ti});
+const roll=Math.random();
+if(roll<xg){
+  this.shots[this.shots.length-1].goal=true;
+  this.score[ti]++;this.tm[ti].s.goals++;this.tm[ti].s.sot++;
+  this.frame(`${this.mn()}' ⚽ GOL! ${this.car.n} (${this.tm[ti].name}) xG:${xg.toFixed(3)}`,'goal');
+  return 'goal';
+}
+const onTarget=roll<xg*3.5;
+if(onTarget){
+  this.tm[ti].s.sot++;
+  this.frame(`${this.mn()}' ${this.car.n} — obrona! xG:${xg.toFixed(3)}`,'save');
+  return this.onShotSaved(ti,xg);
+}
+this.frame(`${this.mn()}' ${this.car.n} — niecelnie xG:${xg.toFixed(3)}`,'miss');
+return this.onShotMiss(ti,xg);
 }
 
-function showBulkMatch(idx) {
-    if (!bulkResults[idx]) return;
-    renderMatch(bulkResults[idx]);
-    // Add back button
-    const out = document.getElementById('matchOutput');
-    out.innerHTML = `<div style="margin-bottom:10px;"><button class="btn" onclick="runBulk(${bulkResults.length})" style="font-size:10px;padding:4px 10px;">← Wróć do listy</button> <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;">Mecz #${idx+1} z ${bulkResults.length}</span></div>` + out.innerHTML;
+// ========== OUTCOMES ==========
+onShotMiss(ti,xg){
+const r=Math.random();
+if(r<0.55)return 'end';        // od bramki
+if(r<0.75){this.tm[ti].s.corners++;return this.doCorner(ti)} // korner (20%)
+return 'end';                   // inne
+}
+onShotSaved(ti,xg){
+const r=Math.random();
+if(r<0.55)return 'end';        // bramkarz łapie
+if(r<0.75){this.tm[ti].s.corners++;return this.doCorner(ti)} // korner (20%)
+// dobitka (25%)
+const di=1-ti;
+const dbx=this.ad[ti]>0?90+Math.random()*8:7+Math.random()*8;
+this.mb(dbx,GCY+(Math.random()-0.5)*12);
+const r2=this.pickN(ti,'FWD',this.car);if(r2)this.car=r2;
+this.mods={};this.lastAct[ti]='rebound';
+this.frame(`Dobitka! ${this.car.n}`,'success');
+return 'continue';
+}
+onPassLost(ti,type){
+const di=1-ti,r=Math.random();
+if(type==='fwd'||type==='through'){
+  if(r<0.60)return 'end';
+  if(r<0.82){return this.doThrowIn(ti)}
+  this.tm[di].s.fouls++;
+  if(this.normX(ti)>88&&Math.abs(this.by-GCY)<20&&Math.random()<0.12)return this.doPenalty(ti);
+  return this.doFreeKick(ti);
+}
+if(type==='long'){if(r<0.70)return 'end';if(r<0.88)return this.doThrowIn(ti);return this.doFreeKick(ti)}
+if(type==='flank'){if(r<0.55)return 'end';if(r<0.82)return this.doThrowIn(ti);return this.doFreeKick(ti)}
+if(type==='side'||type==='switch'){if(r<0.55)return 'end';return this.doThrowIn(ti)}
+if(type==='back'){if(r<0.75)return 'end';return this.doThrowIn(ti)}
+return 'end';
+}
+onDribbleLost(ti){
+const r=Math.random();
+if(r<0.45)return 'end';
+if(r<0.80){this.tm[1-ti].s.fouls++;
+  if(this.normX(ti)>88&&Math.abs(this.by-GCY)<20&&Math.random()<0.18)return this.doPenalty(ti);
+  return this.doFreeKick(ti)}
+return this.doThrowIn(ti);
+}
+onCrossLost(ti){
+const r=Math.random();
+if(r<0.50)return 'end';
+if(r<0.70){this.tm[ti].s.corners++;return this.doCorner(ti)} // 20%
+return 'end';
 }
 
-// INIT
-buildEditor();
-buildControls();
-</script>
-</body>
-</html>
+// ========== SET PIECES (AI auto-pick) ==========
+doCorner(ti){
+this.frame(`${this.mn()}' Korner — ${this.tm[ti].name}`,'corner');
+this.tk(15+Math.random()*10);
+// 70% cross, 30% short
+if(Math.random()<0.70){
+  const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+  const tgtY=GCY+(Math.random()-0.5)*14;
+  if(Math.random()<0.50){this.frame('Dośrodkowanie niecelne','fail');return 'end'}
+  this.mb(tgtX,tgtY);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(1-ti).o});
+  return this.doShot(ti,xg.xg);
+}
+// Short corner — continue possession
+const sx=this.ad[ti]>0?PW-14-Math.random()*8:14+Math.random()*8;
+const sy=this.by<GCY?10+Math.random()*8:PH-10-Math.random()*8;
+this.mb(sx,sy);const r=this.pickN(ti,'MID',this.car);if(r)this.car=r;
+this.mods={};this.lastAct[ti]='corner-short';this.sideCnt[ti]=0;
+this.frame(`Krótkie rozegranie → ${this.car.n}`,'action');
+return 'continue';
+}
+
+doFreeKick(ti){
+this.tk(12+Math.random()*8);this.tm[ti].s.fk++;
+const dist=this.ad[ti]>0?PW-this.bx:this.bx;
+this.frame(`${this.mn()}' Rzut wolny — ${this.tm[ti].name} (${dist.toFixed(0)}m)`,'foul');
+if(dist<28&&Math.abs(this.by-GCY)<22){
+  // Shoot
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{freeKick:true,ovr:this.car.o,gkOvr:this.gk(1-ti).o});
+  return this.doShot(ti,xg.xg*0.6);
+}
+if(this.normX(ti)>50){
+  // Cross
+  const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+  const tgtY=GCY+(Math.random()-0.5)*14;
+  if(Math.random()<0.45){this.frame('Dośrodkowanie niecelne','fail');return 'end'}
+  this.mb(tgtX,tgtY);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(1-ti).o});
+  return this.doShot(ti,xg.xg);
+}
+// Short — continue
+this.mb(this.bx-this.ad[ti]*5,this.by+(Math.random()-0.5)*10);
+const r=this.pickN(ti,'MID',this.car);if(r)this.car=r;
+this.mods={};this.lastAct[ti]='fk-short';this.sideCnt[ti]=0;
+return 'continue';
+}
+
+doThrowIn(ti){
+this.tk(6+Math.random()*5);
+const ty=this.by<GCY?1:PH-1;
+this.mb(this.bx+(Math.random()-0.5)*5,ty);
+this.frame(`${this.mn()}' Aut — ${this.tm[ti].name}`,'info');
+// Long throw if near box
+if(this.normX(ti)>75&&Math.random()<0.20){
+  const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+  const tgtY=GCY+(Math.random()-0.5)*12;
+  if(Math.random()<0.55){this.frame('Wrzut niecelny','fail');return 'end'}
+  this.mb(tgtX,tgtY);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+  this.mods={header:true};
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(1-ti).o});
+  return this.doShot(ti,xg.xg);
+}
+// Short — continue
+const r=this.pickN(ti,this.zone(ti),this.car);if(r)this.car=r;
+if(Math.random()<0.06)return 'end';
+this.mb(this.bx+(Math.random()-0.5)*8,this.by<GCY?this.by+8:this.by-8);
+this.mods={};this.lastAct[ti]='throwin';this.sideCnt[ti]=0;
+return 'continue';
+}
+
+doPenalty(ti){
+this.tk(20+Math.random()*10);
+const taker=this.pickN(ti,'FWD')||this.car;
+this.car=taker;this.mb(this.ad[ti]>0?93.5:11.5,GCY);
+this.frame(`${this.mn()}' KARNY — ${this.tm[ti].name}! ${taker.n}`,'foul');
+this.tm[ti].s.xg+=0.76;this.shots.push({x:this.bx,y:this.by,xg:0.76,goal:false,ti});
+if(Math.random()<0.76){
+  this.shots[this.shots.length-1].goal=true;this.score[ti]++;this.tm[ti].s.goals++;
+  this.frame(`${this.mn()}' ⚽ GOL Z KARNEGO! ${taker.n}`,'goal');return 'goal'}
+this.frame(`${this.mn()}' Karny ZMARNOWANY!`,'save');return 'end';
+}
+
+// ========== POSSESSION LOOP ==========
+// ========== POSSESSION TYPE SYSTEM ==========
+rollPossType(ti){
+const di=1-ti;
+const delta=this.avgOvr(ti)-this.avgOvr(di); // pos=I'm stronger
+// Fixed rates: counter is rare event
+let pPos=78+delta*0.3, pCounter=5, pSetPiece=15-delta*0.1, pPenalty=2;
+pPos=Math.max(60,Math.min(85,pPos));
+pSetPiece=Math.max(10,Math.min(20,pSetPiece));
+const tot=pPos+pCounter+pSetPiece+pPenalty;
+const r=Math.random()*tot;
+if(r<pPos)return'positional';
+if(r<pPos+pCounter)return'counter';
+if(r<pPos+pCounter+pSetPiece)return Math.random()<0.55?'freekick':'corner';
+return'penalty';
+}
+
+// ========== COUNTER ATTACK ==========
+aiPickCounter(ti,step){
+const di=1-ti,nx=this.normX(ti);
+const acts=[];
+const gkO=this.gk(di).o;
+const curXG=calcXG(this.bx,this.by,this.ad[ti],{ovr:this.car.o}).xg;
+// Risk escalation per step: defense recovering
+const stepMult=1+step*0.45; // step0=1.0, step1=1.45, step2=1.90, step3=2.35
+const defMod=1+(this.defOvr(di)-65)/80;
+// Weaker team = worse at executing counters (less precise passing in transition)
+const ovrPenalty=1+(65-this.avgOvr(ti))/100; // ovr85=0.80, ovr75=0.90, ovr63=1.02, ovr50=1.15
+const riskM=stepMult*defMod*ovrPenalty;
+const mk=(id,risk,exec,tXG)=>{const ar=Math.max(0.03,Math.min(0.85,risk*riskM));
+acts.push({id,risk:ar,ev:(1-ar)*(tXG-curXG),exec})};
+
+// Forward pass
+if(nx<95){const fd=10+Math.random()*12;
+const tx=Math.max(1,Math.min(PW-1,this.bx+this.ad[ti]*fd));
+const ty=Math.max(3,Math.min(PH-3,this.by+(Math.random()-0.5)*16));
+const tXG=calcXG(tx,ty,this.ad[ti],{ovr:70}).xg;
+mk('fwd',0.22,()=>{this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+this.mb(tx,ty);const r=this.pickN(ti,this.zone(ti),this.car);if(r)this.car=r;
+this.frame(`${this.car.n} → do przodu`,'action')},tXG)}
+
+// Through ball
+if(nx>40&&nx<95){const td=20+Math.random()*15;
+const tx=Math.max(1,Math.min(PW-1,this.bx+this.ad[ti]*td));
+const ty=Math.max(3,Math.min(PH-3,this.by+(GCY-this.by)*0.3+(Math.random()-0.5)*8));
+const tXG=calcXG(tx,ty,this.ad[ti],{ovr:70,throughBall:true}).xg;
+mk('through',0.45,()=>{this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+this.mb(tx,ty);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;this.mods.throughBall=true;
+this.frame(`${this.car.n} ⚡ prostopadłe!`,'success')},tXG)}
+
+// Long ball to striker
+if(nx<70){const tx=this.ad[ti]>0?75+Math.random()*20:10+Math.random()*20;
+const ty=GCY+(Math.random()-0.5)*24;
+const tXG=calcXG(tx,ty,this.ad[ti],{ovr:70}).xg;
+mk('long',0.48,()=>{this.tm[ti].s.passes++;this.tm[ti].s.passOK++;
+this.mb(tx,ty);const r=this.pickN(ti,'FWD',this.car);if(r)this.car=r;
+this.frame(`${this.car.n} ↗ długie`,'action')},tXG)}
+
+// Dribble
+if(nx<100){const dd=8+Math.random()*12;
+const tx=Math.max(1,Math.min(PW-1,this.bx+this.ad[ti]*dd));
+const ty=this.by+(Math.random()-0.5)*6;
+const tXG=calcXG(tx,ty,this.ad[ti],{ovr:this.car.o,dribble:true}).xg;
+mk('dribble',0.35,()=>{this.tm[ti].s.drib++;this.tm[ti].s.dribOK++;
+this.mb(tx,ty);this.mods.dribble=true;
+this.frame(`${this.car.n} ⚡ drybling!`,'success')},tXG)}
+
+// Shot
+if(nx>52.5){const xg=calcXG(this.bx,this.by,this.ad[ti],{...this.mods,ovr:this.car.o,gkOvr:gkO}).xg;
+const st=nx>92?0.02:nx>85?0.03:nx>75?0.06:0.12;
+if(xg>st)mk('shot',0,()=>{this.doShot(ti,xg)},xg)}
+
+if(!acts.length)return null;
+const intel=0.5+this.avgOvr(ti)/200;acts.sort((a,b)=>b.ev-a.ev);
+const w=acts.map((a,i)=>Math.pow(1-i/(acts.length-1||1),intel*3));
+const tot=w.reduce((s,v)=>s+v,0);let roll=Math.random()*tot;
+for(let i=0;i<acts.length;i++){roll-=w[i];if(roll<=0)return acts[i]}return acts[acts.length-1]}
+
+simCounter(ti){
+this.po=ti;this.mods={};
+// Start from midfield area
+const sx=this.ad[ti]>0?45+Math.random()*25:35+Math.random()*25;
+this.mb(sx,10+Math.random()*48);
+this.car=this.pickN(ti,'MID')||this.pickN(ti,'FWD')||this.act(ti)[1];
+const ps=this.sec;
+this.tk(12+Math.random()*10); // transition time: ball recovery, orientation
+this.frame(`${this.mn()}' ⚡ ${this.tm[ti].name} — KONTRA!`,'success');
+
+const maxSteps=3+Math.floor(Math.random()*2); // 3-4 steps
+for(let step=0;step<maxSteps;step++){
+  if(this.sec>=5400)break;
+  this.tk(5+Math.random()*5); // counter pace
+  const act=this.aiPickCounter(ti,step);
+  if(!act){this.frame('Kontra wygasła — brak opcji','fail');break}
+  if(act.id==='shot'){act.exec();this.pt[ti]+=(this.sec-ps);return}
+  if(Math.random()<act.risk){
+    let o;
+    if(act.id==='dribble'){this.tm[ti].s.drib++;this.frame(`${this.car.n} — strata`,'fail');o=this.onDribbleLost(ti)}
+    else{this.frame(`${this.car.n} — strata (${act.id})`,'fail');o=this.onPassLost(ti,act.id)}
+    this.pt[ti]+=(this.sec-ps);return;
+  }
+  act.exec();
+}
+// Counter expired — possession dies
+this.frame('Obrona wróciła — koniec kontry','info');
+this.pt[ti]+=(this.sec-ps);
+}
+
+// ========== SET PIECE POSSESSIONS ==========
+simCornerPoss(ti){
+this.po=ti;this.mods={};
+const cornerY=Math.random()<0.5?0.5:PH-0.5;
+const cx=this.ad[ti]>0?PW-0.5:0.5;
+this.mb(cx,cornerY);
+this.car=this.pickN(ti,'MID')||this.act(ti)[1];
+this.tm[ti].s.corners++;
+const ps=this.sec;
+this.tk(12+Math.random()*8);
+this.frame(`${this.mn()}' 🚩 ${this.tm[ti].name} — korner`,'corner');
+
+// AI picks: 65% cross center, 15% far post, 20% short
+const r=Math.random();
+const di=1-ti;
+
+if(r<0.65){
+  // Cross into box center
+  const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+  const tgtY=GCY+(Math.random()-0.5)*12;
+  if(Math.random()<0.50){this.frame('Dośrodkowanie niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+  this.mb(tgtX,tgtY);const rcv=this.pickN(ti,'FWD',this.car);if(rcv)this.car=rcv;
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+  this.frame(`${this.car.n} — główka!`,'action');
+  const res=this.doShot(ti,xg.xg);
+  this.pt[ti]+=(this.sec-ps);return;
+}
+if(r<0.80){
+  // Cross far post
+  const tgtX=this.ad[ti]>0?96+Math.random()*4:5+Math.random()*4;
+  const farY=cornerY<GCY?GCY+8+Math.random()*6:GCY-8-Math.random()*6;
+  if(Math.random()<0.55){this.frame('Dośrodkowanie na dalszy — niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+  this.mb(tgtX,farY);const rcv=this.pickN(ti,'DEF',this.car);if(rcv)this.car=rcv;
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+  this.frame(`${this.car.n} — dalszy słupek!`,'action');
+  this.doShot(ti,xg.xg);
+  this.pt[ti]+=(this.sec-ps);return;
+}
+if(r<0.95){
+  // Cross short — in front of box
+  const tgtX=this.ad[ti]>0?82+Math.random()*8:15+Math.random()*8;
+  const tgtY=GCY+(Math.random()-0.5)*20;
+  if(Math.random()<0.45){this.frame('Dośrodkowanie przed pole — niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+  this.mb(tgtX,tgtY);const rcv=this.pickN(ti,'MID',this.car);if(rcv)this.car=rcv;
+  const xg=calcXG(this.bx,this.by,this.ad[ti],{ovr:this.car.o,gkOvr:this.gk(di).o});
+  this.frame(`${this.car.n} — strzał sprzed pola!`,'action');
+  this.doShot(ti,xg.xg);
+  this.pt[ti]+=(this.sec-ps);return;
+}
+// Short corner → positional
+const sx=this.ad[ti]>0?PW-14-Math.random()*8:14+Math.random()*8;
+const sy=cornerY<GCY?8+Math.random()*10:PH-8-Math.random()*10;
+this.mb(sx,sy);const rcv=this.pickN(ti,'MID',this.car);if(rcv)this.car=rcv;
+this.mods={};this.lastAct[ti]='corner-short';this.sideCnt[ti]=0;
+this.frame(`Krótkie rozegranie → ${this.car.n}`,'action');
+// Continue as positional from high position
+this.simPossFrom(ti,ps);
+}
+
+simFreeKickPoss(ti){
+this.po=ti;this.mods={};
+// Random position on opponent half
+const fkx=this.ad[ti]>0?55+Math.random()*38:12+Math.random()*38;
+const fky=8+Math.random()*52;
+this.mb(fkx,fky);
+this.car=this.pickN(ti,'MID')||this.act(ti)[1];
+this.tm[ti].s.fk++;
+const ps=this.sec;
+this.tk(10+Math.random()*8);
+const dist=this.ad[ti]>0?PW-this.bx:this.bx;
+this.frame(`${this.mn()}' ⚑ ${this.tm[ti].name} — wolny (${dist.toFixed(0)}m)`,'foul');
+
+const di=1-ti;
+const central=Math.abs(this.by-GCY)<22;
+
+// AI decision
+if(dist<28&&central){
+  // Close + central: 55% shoot, 25% cross, 20% short
+  const r=Math.random();
+  if(r<0.55){
+    const xg=calcXG(this.bx,this.by,this.ad[ti],{freeKick:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+    const fkXG=xg.xg*0.6;
+    this.frame(`${this.car.n} — strzał z wolnego!`,'action');
+    this.doShot(ti,fkXG);this.pt[ti]+=(this.sec-ps);return;
+  }
+  if(r<0.80){
+    const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+    const tgtY=GCY+(Math.random()-0.5)*14;
+    if(Math.random()<0.45){this.frame('Dośrodkowanie niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+    this.mb(tgtX,tgtY);const rcv=this.pickN(ti,'FWD',this.car);if(rcv)this.car=rcv;
+    const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+    this.frame(`${this.car.n} — główka!`,'action');
+    this.doShot(ti,xg.xg);this.pt[ti]+=(this.sec-ps);return;
+  }
+} else if(dist<35&&central){
+  // Medium distance: 30% shoot (long range), 40% cross, 30% short
+  const r=Math.random();
+  if(r<0.30){
+    const xg=calcXG(this.bx,this.by,this.ad[ti],{freeKick:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+    const fkXG=xg.xg*0.4; // further + wall
+    this.frame(`${this.car.n} — strzał z dystansu!`,'action');
+    this.doShot(ti,fkXG);this.pt[ti]+=(this.sec-ps);return;
+  }
+  if(r<0.70){
+    const tgtX=this.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;
+    const tgtY=GCY+(Math.random()-0.5)*14;
+    if(Math.random()<0.50){this.frame('Dośrodkowanie niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+    this.mb(tgtX,tgtY);const rcv=this.pickN(ti,'FWD',this.car);if(rcv)this.car=rcv;
+    const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+    this.frame(`${this.car.n} — główka!`,'action');
+    this.doShot(ti,xg.xg);this.pt[ti]+=(this.sec-ps);return;
+  }
+} else {
+  // Far or wide: 70% cross, 30% short
+  if(Math.random()<0.70){
+    const tgtX=this.ad[ti]>0?90+Math.random()*9:6+Math.random()*9;
+    const tgtY=GCY+(Math.random()-0.5)*16;
+    if(Math.random()<0.50){this.frame('Dośrodkowanie niecelne','fail');this.pt[ti]+=(this.sec-ps);return}
+    this.mb(tgtX,tgtY);const rcv=this.pickN(ti,'FWD',this.car);if(rcv)this.car=rcv;
+    const xg=calcXG(this.bx,this.by,this.ad[ti],{header:true,ovr:this.car.o,gkOvr:this.gk(di).o});
+    this.frame(`${this.car.n} — główka!`,'action');
+    this.doShot(ti,xg.xg);this.pt[ti]+=(this.sec-ps);return;
+  }
+}
+// Short → positional from current pos
+this.mb(this.bx-this.ad[ti]*5,this.by+(Math.random()-0.5)*10);
+const rcv=this.pickN(ti,'MID',this.car);if(rcv)this.car=rcv;
+this.mods={};this.lastAct[ti]='fk-short';this.sideCnt[ti]=0;
+this.frame(`Rozegranie na krótko → ${this.car.n}`,'action');
+this.simPossFrom(ti,ps);
+}
+
+simPenaltyPoss(ti){
+this.po=ti;this.mods={};
+const taker=this.pickN(ti,'FWD')||this.car;
+this.car=taker;
+this.mb(this.ad[ti]>0?93.5:11.5,GCY);
+const ps=this.sec;
+this.tk(20+Math.random()*15);
+this.frame(`${this.mn()}' 🔴 KARNY dla ${this.tm[ti].name}! ${taker.n} podchodzi...`,'foul');
+this.tm[ti].s.xg+=0.76;
+this.shots.push({x:this.bx,y:this.by,xg:0.76,goal:false,ti});
+if(Math.random()<0.76){
+  this.shots[this.shots.length-1].goal=true;this.score[ti]++;this.tm[ti].s.goals++;this.tm[ti].s.sot++;
+  this.frame(`${this.mn()}' ⚽ GOL Z KARNEGO! ${taker.n}!`,'goal');
+}else{
+  this.frame(`${this.mn()}' ${taker.n} — karny ZMARNOWANY!`,'save');
+}
+this.pt[ti]+=(this.sec-ps);
+}
+
+// ========== POSITIONAL ATTACK (renamed) ==========
+simPoss(ti){
+this.po=ti;
+this.mods={};this.lastAct[ti]=null;this.sideCnt[ti]=0;
+const sx=this.ad[ti]>0?15+Math.random()*18:72+Math.random()*18;
+this.mb(sx,15+Math.random()*38);
+this.car=this.pick(ti,'DEF');
+if(!this.car)this.car=this.act(ti)[0];
+const ps=this.sec;
+this.frame(`${this.tm[ti].name} — posiadanie`,'poss-start');
+this.simPossFrom(ti,ps);
+}
+
+simPossFrom(ti,ps){
+for(let step=0;step<50;step++){
+  if(this.sec>=5400)break;
+  this.tk(8+Math.random()*8);
+  const act=this.aiPick(ti);
+  if(!act)break;
+  if(act.id==='shot'){act.exec();this.pt[ti]+=(this.sec-ps);return}
+  if(Math.random()<act.risk){
+    let outcome;
+    if(act.id==='dribble'){this.tm[ti].s.drib++;this.frame(`${this.car.n} — strata drybling`,'fail');outcome=this.onDribbleLost(ti)}
+    else if(act.id==='cross'){this.frame(`${this.car.n} — dośrodkowanie niecelne`,'fail');outcome=this.onCrossLost(ti)}
+    else{this.frame(`${this.car.n} — strata (${act.id})`,'fail');outcome=this.onPassLost(ti,act.id)}
+    if(outcome==='continue')continue;
+    this.pt[ti]+=(this.sec-ps);return;
+  }
+  act.exec();
+}
+this.pt[ti]+=(this.sec-ps);
+}
+
+// ========== MATCH LOOP ==========
+run(){
+this.po=Math.random()<0.5?0:1;
+this.frame('Rozpoczęcie — 1. połowa','half');
+let hl=false;
+while(this.sec<5400){
+  if(this.sec>=2700&&!hl){hl=true;
+    this.frame(`PRZERWA — ${this.tm[0].name} ${this.score[0]}:${this.score[1]} ${this.tm[1].name}`,'half');
+    this.ad=[this.ad[0]*-1,this.ad[1]*-1];this.tk(60)}
+  
+  // Dead time between possessions (transition, reset, throw-ins etc)
+  this.tk(42+Math.random()*25);
+  
+  const ti=this.po;
+  const possType=this.rollPossType(ti);
+  
+  if(possType==='positional')this.simPoss(ti);
+  else if(possType==='counter')this.simCounter(ti);
+  else if(possType==='corner')this.simCornerPoss(ti);
+  else if(possType==='freekick')this.simFreeKickPoss(ti);
+  else if(possType==='penalty')this.simPenaltyPoss(ti);
+  
+  this.po=1-this.po;
+}
+const tot=this.pt[0]+this.pt[1];
+this.tm[0].s.poss=tot>0?Math.round(this.pt[0]/tot*100):50;
+this.tm[1].s.poss=100-this.tm[0].s.poss;
+this.frame(`KONIEC — ${this.tm[0].name} ${this.score[0]}:${this.score[1]} ${this.tm[1].name}`,'half');
+return{frames:this.frames,teams:this.tm,score:this.score}}
+}// end Match
+
+// ========== PLAYBACK ==========
+let frames=[],fIdx=0,timer=null,speed=8,playing=false,matchData=null;
+
+function setSpd(v){speed=parseInt(v);document.getElementById('spdLbl').textContent='×'+v}
+
+function startMatch(){
+if(playing){togglePause();return}
+const hi=document.getElementById('homeTeam').selectedIndex;
+const ai=document.getElementById('awayTeam').selectedIndex;
+rollConditions();
+const m=new Match(JSON.parse(JSON.stringify(TEAMS[hi])),JSON.parse(JSON.stringify(TEAMS[ai])));
+matchData=m.run();frames=matchData.frames;fIdx=0;playing=true;
+document.getElementById('btnPlay').style.display='none';
+document.getElementById('btnManual').style.display='none';
+document.getElementById('btnPause').style.display='';
+document.getElementById('btnSkip').style.display='';
+document.getElementById('logP').innerHTML='';
+document.getElementById('statsP').style.display='none';
+document.getElementById('condInfo').textContent=`${curPitch.name} | ${curWeather.name}`;
+playNext()}
+
+function togglePause(){
+if(playing){clearTimeout(timer);timer=null;playing=false;
+document.getElementById('btnPause').textContent='▶';
+}else{playing=true;document.getElementById('btnPause').textContent='⏸';playNext()}}
+
+function skipToEnd(){
+if(timer)clearTimeout(timer);playing=false;
+while(fIdx<frames.length){renderFrame(frames[fIdx]);fIdx++}
+finish()}
+
+function playNext(){
+if(!playing||fIdx>=frames.length){finish();return}
+const f=frames[fIdx];renderFrame(f);fIdx++;
+const baseDelay=f.type==='goal'?900:f.type==='half'?700:f.type==='save'||f.type==='miss'?400:200;
+timer=setTimeout(playNext,Math.max(15,baseDelay/speed))}
+
+function finish(){
+playing=false;
+document.getElementById('btnPlay').textContent='▶ MECZ';document.getElementById('btnPlay').style.display='';
+document.getElementById('btnManual').style.display='';
+document.getElementById('btnPlay').onclick=startMatch;
+document.getElementById('btnPause').style.display='none';document.getElementById('btnSkip').style.display='none';
+if(matchData)showStats()}
+
+function renderFrame(f){
+// Score
+const t=matchData.teams;
+document.getElementById('score').innerHTML=
+`<b>${t[0].name}</b> <b style="font-size:18px">${f.score[0]}</b> : <b style="font-size:18px" class="bl">${f.score[1]}</b> <b class="bl">${t[1].name}</b> — ${f.mn}'`;
+// Pitch
+const ctx=document.getElementById('pc').getContext('2d');
+drawPitch(ctx);
+if(f.trail)drawTrail(ctx,f.trail,f.po===0?'rgb(34,214,138)':'rgb(74,158,255)');
+drawShots(ctx,f.shots);
+drawBall(ctx,f.bx,f.by,f.po===0?t[0].col:t[1].col);
+// xG
+document.getElementById('xgBar').innerHTML=
+`${t[0].name}: <b>${f.xg[0].toFixed(2)}</b> xG | ${t[1].name}: <b class="bl">${f.xg[1].toFixed(2)}</b> xG`;
+// Carrier
+document.getElementById('carrier').textContent=f.carrier?`⚽ ${f.carrier}`:'-';
+// Log
+const lp=document.getElementById('logP');
+lp.innerHTML+=`<div class="le ${f.type}">${f.text}</div>`;
+lp.scrollTop=lp.scrollHeight}
+
+function showStats(){
+const t=matchData.teams,s0=t[0].s,s1=t[1].s;
+const sp=document.getElementById('statsP');sp.style.display='';
+const row=(lb,v0,v1)=>`<div class="sg"><div class="lb">${lb}</div><div class="vl h">${v0}</div><div class="vl a">${v1}</div></div>`;
+sp.innerHTML=`<div class="sg"><div class="lb"></div><div class="vl h">${t[0].name.split(' ')[0]}</div><div class="vl a">${t[1].name.split(' ')[0]}</div></div>`+
+row('Posiadanie',s0.poss+'%',s1.poss+'%')+
+row('Strzały',s0.shots,s1.shots)+
+row('Celne',s0.sot,s1.sot)+
+row('xG',s0.xg.toFixed(2),s1.xg.toFixed(2))+
+row('Podania',s0.passes,s1.passes)+
+row('Celne pod.',s0.passOK,s1.passOK)+
+row('Dryblingi',s0.drib+'('+s0.dribOK+')',s1.drib+'('+s1.dribOK+')')+
+row('Kornery',s0.corners,s1.corners)+
+row('Faule',s0.fouls,s1.fouls)+
+row('Rz. wolne',s0.fk,s1.fk)}
+
+// ========== INIT ==========
+function init(){
+const hs=document.getElementById('homeTeam'),as=document.getElementById('awayTeam');
+TEAMS.forEach((t,i)=>{
+  hs.innerHTML+=`<option value="${i}" ${i===1?'selected':''}>${t.name} (${t.ovr})</option>`;
+  as.innerHTML+=`<option value="${i}" ${i===2?'selected':''}>${t.name} (${t.ovr})</option>`});
+rollConditions();
+drawPitch(document.getElementById('pc').getContext('2d'))}
+
+// ========== MANUAL MODE ==========
+let manMatch=null,manStep=0,manEnded=false;
+
+function startManual(){
+const hi=document.getElementById('homeTeam').selectedIndex;
+const ai=document.getElementById('awayTeam').selectedIndex;
+rollConditions();
+manMatch=new Match(JSON.parse(JSON.stringify(TEAMS[hi])),JSON.parse(JSON.stringify(TEAMS[ai])));
+manMatch.frame('Rozpoczęcie — 1. połowa','half');
+manStep=0;manEnded=false;manHalf=false;manFramesSeen=0;
+document.getElementById('logP').innerHTML='';
+document.getElementById('statsP').style.display='none';
+document.getElementById('actPanel').style.display='none';
+document.getElementById('btnPlay').style.display='none';
+document.getElementById('btnManual').style.display='none';
+document.getElementById('btnRestart').style.display='';
+document.getElementById('condInfo').textContent=`${curPitch.name} | ${curWeather.name}`;
+manRenderNewFrames();
+manNextPoss();
+}
+
+function manRestart(){
+if(confirm('Nowy mecz? Możesz zmienić drużyny.')){
+  manEnded=true;
+  document.getElementById('actPanel').style.display='none';
+  document.getElementById('btnRestart').style.display='none';
+  document.getElementById('btnPlay').style.display='';
+  document.getElementById('btnManual').style.display='';
+  drawPitch(document.getElementById('pc').getContext('2d'));
+}
+}
+
+let manHalf=false;
+
+function manNextPoss(){
+if(manEnded){return}
+if(manMatch.sec>=5400){manFinish();return}
+if(manMatch.sec>=2700&&!manHalf){
+  manHalf=true;
+  manMatch.frame(`PRZERWA — ${manMatch.tm[0].name} ${manMatch.score[0]}:${manMatch.score[1]} ${manMatch.tm[1].name}`,'half');
+  manMatch.ad=[manMatch.ad[0]*-1,manMatch.ad[1]*-1];manMatch.tk(60);
+  manRenderNewFrames();
+}
+// Alternate possession
+manMatch.po=manMatch.po===-1?0:(1-manMatch.po);
+const ti=manMatch.po;
+const possType=manMatch.rollPossType(ti);
+
+if(ti===1){
+  // Away: AI plays all types
+  if(possType==='positional')manMatch.simPoss(1);
+  else if(possType==='counter')manMatch.simCounter(1);
+  else if(possType==='corner')manMatch.simCornerPoss(1);
+  else if(possType==='freekick')manMatch.simFreeKickPoss(1);
+  else if(possType==='penalty')manMatch.simPenaltyPoss(1);
+  manRenderNewFrames();
+  setTimeout(manNextPoss,300);
+} else {
+  // Home: manual — depends on type
+  if(possType==='positional')manStartHomePoss();
+  else if(possType==='counter')manStartHomeCounter();
+  else if(possType==='corner')manStartHomeCorner();
+  else if(possType==='freekick')manStartHomeFreeKick();
+  else if(possType==='penalty'){manMatch.simPenaltyPoss(0);manRenderNewFrames();setTimeout(manNextPoss,400)}
+}
+}
+
+let manFramesSeen=0;
+function manRenderNewFrames(){
+for(let i=manFramesSeen;i<manMatch.frames.length;i++){
+  renderFrameManual(manMatch.frames[i]);
+}
+manFramesSeen=manMatch.frames.length;
+}
+
+function renderFrameManual(f){
+const t=manMatch.tm;
+document.getElementById('score').innerHTML=
+`<b>${t[0].name}</b> <b style="font-size:18px">${f.score[0]}</b> : <b style="font-size:18px" class="bl">${f.score[1]}</b> <b class="bl">${t[1].name}</b> — ${f.mn}'`;
+const ctx=document.getElementById('pc').getContext('2d');
+drawPitch(ctx);
+if(f.trail)drawTrail(ctx,f.trail,f.po===0?'rgb(34,214,138)':'rgb(74,158,255)');
+drawShots(ctx,f.shots);
+drawBall(ctx,f.bx,f.by,f.po===0?t[0].col:t[1].col);
+document.getElementById('xgBar').innerHTML=
+`${t[0].name}: <b>${f.xg[0].toFixed(2)}</b> xG | ${t[1].name}: <b class="bl">${f.xg[1].toFixed(2)}</b> xG`;
+document.getElementById('carrier').textContent=f.carrier?`⚽ ${f.carrier}`:'-';
+const lp=document.getElementById('logP');
+lp.innerHTML+=`<div class="le ${f.type}">${f.text}</div>`;
+lp.scrollTop=lp.scrollHeight;
+}
+
+function manStartHomePoss(){
+const M=manMatch,ti=0;
+M.mods={};M.lastAct[ti]=null;M.sideCnt[ti]=0;
+const sx=M.ad[ti]>0?15+Math.random()*18:72+Math.random()*18;
+M.mb(sx,15+Math.random()*38);
+M.car=M.pick(ti,'DEF')||M.act(ti)[0];
+M.frame(`${M.tm[ti].name} — twoja posesja!`,'poss-start');
+manRenderNewFrames();
+manShowActions();
+}
+
+function manStartHomeCounter(){
+const M=manMatch,ti=0;
+M.mods={};manCounterStep=0;
+const sx=M.ad[ti]>0?45+Math.random()*25:35+Math.random()*25;
+M.mb(sx,10+Math.random()*48);
+M.car=M.pickN(ti,'MID')||M.pickN(ti,'FWD')||M.act(ti)[1];
+M.frame(`${M.mn()}' ⚡ ${M.tm[ti].name} — KONTRA!`,'success');
+manRenderNewFrames();
+manShowCounterActions();
+}
+let manCounterStep=0;
+
+function manShowCounterActions(){
+const M=manMatch,ti=0,di=1;
+if(M.sec>=5400||manCounterStep>=4){
+  M.frame('Obrona wróciła — koniec kontry','info');
+  manRenderNewFrames();manEndAction();return}
+const acts=manBuildCounterActions(M,ti,di,manCounterStep);
+const panel=document.getElementById('actPanel');panel.style.display='';
+const curXG=calcXG(M.bx,M.by,M.ad[ti],{ovr:M.car.o}).xg;
+let h=`<h4>⚡ KONTRA krok ${manCounterStep+1}/4 — ${M.car.n} (${M.car.p} ${M.car.o})</h4>`;
+for(let i=0;i<acts.length;i++){const a=acts[i];
+const rc=a.riskPct<=10?'rl-l':a.riskPct<=25?'rl-m':'rl-h';
+const xgDelta=a.targetXG-curXG;
+const xgStr=a.isShot?`xG:${a.targetXG.toFixed(3)}`:`${a.targetXG.toFixed(3)} (${xgDelta>=0?'+':''}${xgDelta.toFixed(3)})`;
+h+=`<div class="ab" onclick="manExecCounter(${i})">
+<div><div class="an">${a.label}</div><div style="font-size:9px;color:var(--dim)">${a.detail}</div></div>
+<div style="text-align:right"><div class="axg">${xgStr}</div><span class="rl ${rc}">${a.riskPct}%</span></div></div>`}
+panel.innerHTML=h;window._manActs=acts}
+
+function manBuildCounterActions(M,ti,di,step){
+const acts=[];const nx=M.normX(ti);
+const stepMult=1+step*0.45;const defMod=1+(M.defOvr(di)-65)/80;const ovrP=1+(65-M.avgOvr(ti))/150;const riskM=stepMult*defMod*ovrP;
+function add(id,label,detail,br,tXG,exec,isShot){
+const risk=Math.max(0.03,Math.min(0.85,br*riskM));
+acts.push({id,label,detail,risk,riskPct:Math.round(risk*100),targetXG:tXG,isShot:!!isShot,exec})}
+
+if(nx<95){const fd=10+Math.random()*12;const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*fd));
+const ty=Math.max(3,Math.min(PH-3,M.by+(Math.random()-0.5)*16));const rcv=M.pickN(ti,'FWD',M.car)||M.pickN(ti,'MID',M.car);
+const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+add('fwd','Do przodu →',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.22,tXG,()=>{
+M.tm[ti].s.passes++;M.tm[ti].s.passOK++;M.mb(tx,ty);if(rcv)M.car=rcv;M.frame(`${M.car.n} → do przodu`,'action')})}
+
+if(nx>40&&nx<95){const td=20+Math.random()*15;const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*td));
+const ty=Math.max(3,Math.min(PH-3,M.by+(GCY-M.by)*0.3+(Math.random()-0.5)*8));const rcv=M.pickN(ti,'FWD',M.car);
+const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70,throughBall:true}).xg;
+add('through','Prostopadłe ⚡',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.45,tXG,()=>{
+M.tm[ti].s.passes++;M.tm[ti].s.passOK++;M.mb(tx,ty);if(rcv)M.car=rcv;M.mods.throughBall=true;M.frame(`${M.car.n} ⚡ prostopadłe!`,'success')})}
+
+if(nx<70){const tx=M.ad[ti]>0?75+Math.random()*20:10+Math.random()*20;const ty=GCY+(Math.random()-0.5)*24;const rcv=M.pickN(ti,'FWD',M.car);
+const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+add('long','Długie ↗',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.48,tXG,()=>{
+M.tm[ti].s.passes++;M.tm[ti].s.passOK++;M.mb(tx,ty);if(rcv)M.car=rcv;M.frame(`${M.car.n} ↗ długie`,'action')})}
+
+if(nx<100){const dd=8+Math.random()*12;const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*dd));const ty=M.by+(Math.random()-0.5)*6;
+const tXG=calcXG(tx,ty,M.ad[ti],{ovr:M.car.o,dribble:true}).xg;
+add('dribble',`Drybling ${M.car.n} ⚡`,`(${tx.toFixed(0)},${ty.toFixed(0)})`,0.35,tXG,()=>{
+M.tm[ti].s.drib++;M.tm[ti].s.dribOK++;M.mb(tx,ty);M.mods.dribble=true;M.frame(`${M.car.n} ⚡ drybling!`,'success')})}
+
+if(nx>52.5){const xg=calcXG(M.bx,M.by,M.ad[ti],{...M.mods,ovr:M.car.o,gkOvr:M.gk(di).o}).xg;
+add('shot','STRZAŁ! 🎯',`${M.car.n} dist:${calcXG(M.bx,M.by,M.ad[ti]).dist.toFixed(0)}m`,0,xg,()=>{M.doShot(ti,xg)},true)}
+
+return acts}
+
+function manExecCounter(idx){
+const M=manMatch,ti=0,a=window._manActs[idx];if(!a)return;
+M.tk(4+Math.random()*4);
+if(a.isShot){a.exec();manRenderNewFrames();manEndAction();return}
+if(Math.random()<a.risk){
+  if(a.id==='dribble'){M.tm[ti].s.drib++;M.frame(`${M.car.n} — strata`,'fail')}
+  else{M.frame(`${M.car.n} — strata (${a.id})`,'fail')}
+  manRenderNewFrames();manEndAction();return}
+a.exec();manRenderNewFrames();manCounterStep++;manShowCounterActions()}
+
+function manStartHomeCorner(){
+const M=manMatch,ti=0,di=1;M.mods={};
+const cornerY=Math.random()<0.5?0.5:PH-0.5;M.mb(M.ad[ti]>0?PW-0.5:0.5,cornerY);
+M.car=M.pickN(ti,'MID')||M.act(ti)[1];M.tm[ti].s.corners++;M.tk(12+Math.random()*8);
+M.frame(`${M.mn()}' 🚩 ${M.tm[ti].name} — korner`,'corner');manRenderNewFrames();
+const acts=[];const panel=document.getElementById('actPanel');panel.style.display='';
+// Build corner options
+const tgt1X=M.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;const tgt1Y=GCY+(Math.random()-0.5)*12;
+const rcvH=M.pickN(ti,'FWD',M.car);const xg1=calcXG(tgt1X,tgt1Y,M.ad[ti],{header:true,ovr:rcvH?rcvH.o:70,gkOvr:M.gk(di).o}).xg;
+acts.push({label:'Dośrodkowanie w pole karne ⤴',detail:`→ ${rcvH?rcvH.n:'?'} (${tgt1X.toFixed(0)},${tgt1Y.toFixed(0)})`,riskPct:50,targetXG:xg1,isShot:false,
+exec(){if(Math.random()<0.50){M.frame('Dośrodkowanie niecelne','fail');manRenderNewFrames();manEndAction();return}
+M.mb(tgt1X,tgt1Y);if(rcvH)M.car=rcvH;M.frame(`${M.car.n} — główka!`,'action');M.doShot(ti,xg1);manRenderNewFrames();manEndAction()}});
+
+const farY=cornerY<GCY?GCY+8+Math.random()*6:GCY-8-Math.random()*6;
+const tgt2X=M.ad[ti]>0?96+Math.random()*4:5+Math.random()*4;
+const rcvF=M.pickN(ti,'DEF',M.car);const xg2=calcXG(tgt2X,farY,M.ad[ti],{header:true,ovr:rcvF?rcvF.o:70,gkOvr:M.gk(di).o}).xg;
+acts.push({label:'Dalszy słupek ⤴',detail:`→ ${rcvF?rcvF.n:'?'} (${tgt2X.toFixed(0)},${farY.toFixed(0)})`,riskPct:55,targetXG:xg2,isShot:false,
+exec(){if(Math.random()<0.55){M.frame('Niecelne','fail');manRenderNewFrames();manEndAction();return}
+M.mb(tgt2X,farY);if(rcvF)M.car=rcvF;M.frame(`${M.car.n} — dalszy!`,'action');M.doShot(ti,xg2);manRenderNewFrames();manEndAction()}});
+
+const tgt3X=M.ad[ti]>0?82+Math.random()*8:15+Math.random()*8;const tgt3Y=GCY+(Math.random()-0.5)*20;
+const rcvM=M.pickN(ti,'MID',M.car);const xg3=calcXG(tgt3X,tgt3Y,M.ad[ti],{ovr:rcvM?rcvM.o:70,gkOvr:M.gk(di).o}).xg;
+acts.push({label:'Przed pole karne',detail:`→ ${rcvM?rcvM.n:'?'} (${tgt3X.toFixed(0)},${tgt3Y.toFixed(0)})`,riskPct:45,targetXG:xg3,isShot:false,
+exec(){if(Math.random()<0.45){M.frame('Niecelne','fail');manRenderNewFrames();manEndAction();return}
+M.mb(tgt3X,tgt3Y);if(rcvM)M.car=rcvM;M.frame(`${M.car.n} — strzał sprzed pola!`,'action');M.doShot(ti,xg3);manRenderNewFrames();manEndAction()}});
+
+const sX=M.ad[ti]>0?PW-14-Math.random()*8:14+Math.random()*8;const sY=cornerY<GCY?8+Math.random()*10:PH-8-Math.random()*10;
+const rcvS=M.pickN(ti,'MID',M.car);const xg4=calcXG(sX,sY,M.ad[ti],{ovr:rcvS?rcvS.o:70}).xg;
+acts.push({label:'Rozegranie na krótko',detail:`→ ${rcvS?rcvS.n:'?'} (${sX.toFixed(0)},${sY.toFixed(0)})`,riskPct:8,targetXG:xg4,isShot:false,
+exec(){if(Math.random()<0.08){M.frame('Przechwycone','fail');manRenderNewFrames();manEndAction();return}
+M.mb(sX,sY);if(rcvS)M.car=rcvS;M.mods={};M.lastAct[ti]='corner-short';M.sideCnt[ti]=0;
+M.frame(`Krótkie → ${M.car.n}`,'action');manRenderNewFrames();manShowActions()}});
+
+let h=`<h4>🚩 KORNER</h4>`;
+for(let i=0;i<acts.length;i++){const a=acts[i];
+const rc=a.riskPct<=10?'rl-l':a.riskPct<=25?'rl-m':'rl-h';
+const xgStr=`${a.targetXG.toFixed(3)} xG`;
+h+=`<div class="ab" onclick="window._spActs[${i}].exec()">
+<div><div class="an">${a.label}</div><div style="font-size:9px;color:var(--dim)">${a.detail}</div></div>
+<div style="text-align:right"><div class="axg">${xgStr}</div><span class="rl ${rc}">${a.riskPct}%</span></div></div>`}
+panel.innerHTML=h;window._spActs=acts}
+
+function manStartHomeFreeKick(){
+const M=manMatch,ti=0,di=1;M.mods={};
+const fkx=M.ad[ti]>0?55+Math.random()*38:12+Math.random()*38;const fky=8+Math.random()*52;
+M.mb(fkx,fky);M.car=M.pickN(ti,'MID')||M.act(ti)[1];M.tm[ti].s.fk++;M.tk(10+Math.random()*8);
+const dist=M.ad[ti]>0?PW-M.bx:M.bx;const central=Math.abs(M.by-GCY)<22;
+M.frame(`${M.mn()}' ⚑ ${M.tm[ti].name} — wolny (${dist.toFixed(0)}m)`,'foul');manRenderNewFrames();
+const acts=[];const panel=document.getElementById('actPanel');panel.style.display='';
+
+if(dist<35&&central){
+const fkMult=dist<28?0.6:0.4;
+const xgS=calcXG(M.bx,M.by,M.ad[ti],{freeKick:true,ovr:M.car.o,gkOvr:M.gk(di).o}).xg*fkMult;
+acts.push({label:'Strzał z wolnego 🎯',detail:`${M.car.n} — xG:${xgS.toFixed(3)} (mur)`,riskPct:0,targetXG:xgS,isShot:true,
+exec(){M.doShot(ti,xgS);manRenderNewFrames();manEndAction()}})}
+
+const tgtX=M.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;const tgtY=GCY+(Math.random()-0.5)*14;
+const rcvC=M.pickN(ti,'FWD',M.car);const xgC=calcXG(tgtX,tgtY,M.ad[ti],{header:true,ovr:rcvC?rcvC.o:70,gkOvr:M.gk(di).o}).xg;
+acts.push({label:'Dośrodkowanie ⤴',detail:`→ ${rcvC?rcvC.n:'?'} (${tgtX.toFixed(0)},${tgtY.toFixed(0)})`,riskPct:45,targetXG:xgC,isShot:false,
+exec(){if(Math.random()<0.45){M.frame('Dośrodkowanie niecelne','fail');manRenderNewFrames();manEndAction();return}
+M.mb(tgtX,tgtY);if(rcvC)M.car=rcvC;M.frame(`${M.car.n} — główka!`,'action');M.doShot(ti,xgC);manRenderNewFrames();manEndAction()}});
+
+const sX=M.bx-M.ad[ti]*5;const sY=M.by+(Math.random()-0.5)*10;
+const rcvS=M.pickN(ti,'MID',M.car);const xgSh=calcXG(sX,sY,M.ad[ti],{ovr:rcvS?rcvS.o:70}).xg;
+acts.push({label:'Rozegranie na krótko',detail:`→ ${rcvS?rcvS.n:'?'} (${sX.toFixed(0)},${sY.toFixed(0)})`,riskPct:6,targetXG:xgSh,isShot:false,
+exec(){if(Math.random()<0.06){M.frame('Przechwycone','fail');manRenderNewFrames();manEndAction();return}
+M.mb(sX,sY);if(rcvS)M.car=rcvS;M.mods={};M.lastAct[ti]='fk-short';M.sideCnt[ti]=0;
+M.frame(`Rozegranie → ${M.car.n}`,'action');manRenderNewFrames();manShowActions()}});
+
+let h=`<h4>⚑ RZUT WOLNY (${dist.toFixed(0)}m)</h4>`;
+for(let i=0;i<acts.length;i++){const a=acts[i];
+const rc=a.riskPct<=5?'rl-l':a.riskPct<=20?'rl-m':'rl-h';
+const xgStr=a.isShot?`xG:${a.targetXG.toFixed(3)}`:`${a.targetXG.toFixed(3)} xG`;
+h+=`<div class="ab" onclick="window._spActs[${i}].exec()">
+<div><div class="an">${a.label}</div><div style="font-size:9px;color:var(--dim)">${a.detail}</div></div>
+<div style="text-align:right"><div class="axg">${xgStr}</div><span class="rl ${rc}">${a.riskPct>0?a.riskPct+'%':''}</span></div></div>`}
+panel.innerHTML=h;window._spActs=acts}
+
+function manShowActions(){
+const M=manMatch,ti=0,di=1;
+if(M.sec>=5400){manNextPoss();return}
+const acts=manBuildActions(M,ti,di);
+const panel=document.getElementById('actPanel');
+panel.style.display='';
+const curXG=calcXG(M.bx,M.by,M.ad[ti],{ovr:M.car.o}).xg;
+let h=`<h4>🎮 ${M.car.n} (${M.car.p} ${M.car.o}) — (${M.bx.toFixed(0)},${M.by.toFixed(0)}) ${M.zone(ti)} | cyrk:${M.sideCnt[ti]}</h4>`;
+for(let i=0;i<acts.length;i++){
+  const a=acts[i];
+  const rc=a.riskPct<=6?'rl-l':a.riskPct<=20?'rl-m':'rl-h';
+  const xgDelta=a.targetXG-curXG;
+  const xgStr=a.isShot?`xG:${a.targetXG.toFixed(3)}`:`${a.targetXG.toFixed(3)} (${xgDelta>=0?'+':''}${xgDelta.toFixed(3)})`;
+  const bonusStr=a.bonus<0?` <span style="color:var(--yl)">(${(a.bonus*100).toFixed(0)}%)</span>`:'';
+  h+=`<div class="ab" onclick="manExec(${i})">
+<div><div class="an">${a.label}</div><div style="font-size:9px;color:var(--dim)">${a.detail}${bonusStr}</div></div>
+<div style="text-align:right"><div class="axg">${xgStr}</div><span class="rl ${rc}">${a.riskPct}%</span></div></div>`;
+}
+panel.innerHTML=h;
+window._manActs=acts;
+}
+
+function manBuildActions(M,ti,di){
+const acts=[];
+const zrMult=M.zr(ti);
+const nx=M.normX(ti);
+const gkOvr=M.gk(di).o;
+
+function add(id,label,detail,baseRisk,targetXG,execFn,isShot){
+  const bonus=M.getBonus(ti,id);
+  const risk=Math.max(0.02,Math.min(0.85,baseRisk*zrMult+bonus));
+  acts.push({id,label,detail,risk,riskPct:Math.round(risk*100),targetXG,bonus,isShot:!!isShot,exec:execFn});
+}
+
+// fwd
+if(nx<95){
+  const fd=8+Math.random()*10;
+  const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*fd));
+  const ty=Math.max(3,Math.min(PH-3,M.by+(Math.random()-0.5)*20));
+  const rcv=M.pickN(ti,M.zone(ti)===undefined?'MID':zoneName(tx)!=='FWD'?'MID':'FWD',M.car);
+  const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+  add('fwd','Podanie do przodu',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.15,tXG,()=>{
+    M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+    M.mb(tx,ty);if(rcv)M.car=rcv;M.lastAct[ti]='fwd';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} — do przodu`,'action');
+  });
+}
+
+// through
+if(nx>40&&nx<92){
+  const td=18+Math.random()*14;
+  const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*td));
+  const ty=Math.max(3,Math.min(PH-3,M.by+(GCY-M.by)*0.3+(Math.random()-0.5)*6));
+  const rcv=M.pickN(ti,'FWD',M.car);
+  const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70,throughBall:true}).xg;
+  add('through','Prostopadłe ⚡',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.50,tXG,()=>{
+    M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+    M.mb(tx,ty);if(rcv)M.car=rcv;M.mods.throughBall=true;M.lastAct[ti]='through';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} ⚡ kluczowe!`,'success');
+  });
+}
+
+// flank
+if(nx>20&&nx<90){
+  const side=M.by<GCY?8+Math.random()*6:PH-8-Math.random()*6;
+  const fd=6+Math.random()*12;
+  const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*fd));
+  const rcv=M.pickN(ti,'MID',M.car);
+  const tXG=calcXG(tx,side,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+  add('flank','Na flankę',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${side.toFixed(0)})`,0.12,tXG,()=>{
+    M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+    M.mb(tx,side);if(rcv)M.car=rcv;M.lastAct[ti]='flank';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} — na flankę`,'action');
+  });
+}
+
+// cross
+if(M.isFlank()&&nx>65){
+  const depth=nx;let tgtX,tgtY,br,lbl;
+  if(depth>=92){tgtX=M.ad[ti]>0?94+Math.random()*5:6+Math.random()*5;tgtY=GCY+(Math.random()-0.5)*8;br=0.38;lbl='Cut-back ⤴'}
+  else if(depth>=78){tgtX=M.ad[ti]>0?92+Math.random()*7:6+Math.random()*7;tgtY=GCY+(Math.random()-0.5)*12;br=0.55;lbl='Dośrodkowanie ⤴'}
+  else{tgtX=M.ad[ti]>0?86+Math.random()*10:9+Math.random()*10;tgtY=GCY+(Math.random()-0.5)*16;br=0.65;lbl='Wczesne dośrodkowanie ⤴'}
+  const rcv=M.pickN(ti,'FWD',M.car);
+  const tXG=calcXG(tgtX,tgtY,M.ad[ti],{ovr:rcv?rcv.o:70,header:depth<92}).xg;
+  add('cross',lbl,`→ ${rcv?rcv.n:'?'} (${tgtX.toFixed(0)},${tgtY.toFixed(0)})`,br,tXG,()=>{
+    M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+    M.mb(tgtX,tgtY);if(rcv)M.car=rcv;if(depth<92)M.mods.header=true;M.lastAct[ti]='cross';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} ⤴ dośrodkowanie`,'action');
+  });
+}
+
+// long
+if(nx<65){
+  const tx=M.ad[ti]>0?70+Math.random()*20:10+Math.random()*20;
+  const ty=GCY+(Math.random()-0.5)*30;
+  const rcv=M.pickN(ti,'FWD',M.car);
+  const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+  add('long','Długie ↗',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.48,tXG,()=>{
+    M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+    M.mb(tx,ty);if(rcv)M.car=rcv;M.lastAct[ti]='long';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} ↗ długie`,'action');
+  });
+}
+
+// dribble
+if(nx<100){
+  const dd=6+Math.random()*10;
+  const tx=Math.max(1,Math.min(PW-1,M.bx+M.ad[ti]*dd));
+  const ty=M.by+(Math.random()-0.5)*6;
+  const tXG=calcXG(tx,ty,M.ad[ti],{ovr:M.car.o,dribble:true}).xg;
+  add('dribble',`Drybling ${M.car.n} ⚡`,`(${tx.toFixed(0)},${ty.toFixed(0)})`,0.58-M.car.o/250,tXG,()=>{
+    M.tm[ti].s.drib++;M.tm[ti].s.dribOK++;
+    M.mb(tx,ty);M.mods.dribble=true;M.lastAct[ti]='dribble';M.sideCnt[ti]=0;
+    M.frame(`${M.car.n} ⚡ drybling!`,'success');
+  });
+}
+
+// side
+{const sd=Math.random()<0.5?1:-1;
+const ny=Math.max(3,Math.min(PH-3,M.by+sd*(8+Math.random()*12)));
+const tXG=calcXG(M.bx,ny,M.ad[ti],{ovr:70}).xg;
+add('side','W bok →',`(${M.bx.toFixed(0)},${ny.toFixed(0)}) cyr:${M.sideCnt[ti]+1}`,0.05,tXG,()=>{
+  M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+  M.mb(M.bx+(Math.random()-0.5)*6,ny);const r=M.pickN(ti,M.zone(ti),M.car);if(r)M.car=r;
+  M.lastAct[ti]='side';M.sideCnt[ti]++;
+  M.frame(`${M.car.n} → bok (cyr:${M.sideCnt[ti]})`,'action');
+});}
+
+// switch
+if(M.lastAct[ti]!=='switch'){
+const targetY=M.by<GCY?PH-8-Math.random()*10:8+Math.random()*10;
+const tXG=calcXG(M.bx,targetY,M.ad[ti],{ovr:70}).xg;
+add('switch','Zmiana strony ↔',`(${M.bx.toFixed(0)},${targetY.toFixed(0)})`,0.18,tXG,()=>{
+  M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+  M.mb(M.bx+(Math.random()-0.5)*8,targetY);const r=M.pickN(ti,'MID',M.car);if(r)M.car=r;
+  M.lastAct[ti]='switch';
+  M.frame(`${M.car.n} ↔ zmiana strony`,'action');
+});}
+
+// back
+if(nx>15){
+const bd=8+Math.random()*8;
+const tx=Math.max(1,Math.min(PW-1,M.bx-M.ad[ti]*bd));
+const ty=M.by+(Math.random()-0.5)*8;
+const rcv=M.pickN(ti,zoneName(tx)==='DEF'?'DEF':'MID',M.car);
+const tXG=calcXG(tx,ty,M.ad[ti],{ovr:rcv?rcv.o:70}).xg;
+add('back','Cofnięcie',`→ ${rcv?rcv.n:'?'} (${tx.toFixed(0)},${ty.toFixed(0)})`,0.03,tXG,()=>{
+  M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+  M.mb(tx,ty);if(rcv)M.car=rcv;M.lastAct[ti]='back';
+  M.frame(`${M.car.n} — cofnięcie`,'action');
+});}
+
+// gk
+if(M.isOwnHalf(ti)){
+add('gk','Do bramkarza',`→ ${M.gk(ti).n}`,0.015,0,()=>{
+  M.tm[ti].s.passes++;M.tm[ti].s.passOK++;
+  const gkx=M.ad[ti]>0?8+Math.random()*5:PW-8-Math.random()*5;
+  M.mb(gkx,GCY+(Math.random()-0.5)*10);M.car=M.gk(ti);M.lastAct[ti]='back';
+  M.frame(`${M.car.n} — bramkarz`,'action');
+});}
+
+// shot
+if(nx>52.5){
+const xg=calcXG(M.bx,M.by,M.ad[ti],{...M.mods,ovr:M.car.o,gkOvr}).xg;
+add('shot','STRZAŁ! 🎯',`${M.car.n} dist:${calcXG(M.bx,M.by,M.ad[ti]).dist.toFixed(0)}m`,0,xg,()=>{
+  M.doShot(ti,xg);
+},true);}
+
+return acts;
+}
+
+function manExec(idx){
+const M=manMatch,ti=0,a=window._manActs[idx];
+if(!a)return;
+M.tk(3+Math.random()*4);
+
+if(a.isShot){a.exec();manRenderNewFrames();manEndAction();return}
+
+if(Math.random()<a.risk){
+  // FAIL
+  let outcome;
+  if(a.id==='dribble'){M.tm[ti].s.drib++;M.frame(`${M.car.n} — strata drybling`,'fail');outcome=M.onDribbleLost(ti)}
+  else if(a.id==='cross'){M.frame(`${M.car.n} — dośrodkowanie niecelne`,'fail');outcome=M.onCrossLost(ti)}
+  else{M.frame(`${M.car.n} — strata (${a.id})`,'fail');outcome=M.onPassLost(ti,a.id)}
+  manRenderNewFrames();
+  if(outcome==='continue'){manShowActions();return}
+  manEndAction();return;
+}
+// SUCCESS
+a.exec();manRenderNewFrames();manShowActions();
+}
+
+function manEndAction(){
+document.getElementById('actPanel').style.display='none';
+setTimeout(manNextPoss,400);
+}
+
+function manFinish(){
+document.getElementById('actPanel').style.display='none';
+const tot=manMatch.pt[0]+manMatch.pt[1];
+manMatch.tm[0].s.poss=tot>0?Math.round(manMatch.pt[0]/tot*100):50;
+manMatch.tm[1].s.poss=100-manMatch.tm[0].s.poss;
+manMatch.frame(`KONIEC — ${manMatch.tm[0].name} ${manMatch.score[0]}:${manMatch.score[1]} ${manMatch.tm[1].name}`,'half');
+manRenderNewFrames();
+matchData={teams:manMatch.tm,score:manMatch.score,frames:manMatch.frames};
+showStats();
+document.getElementById('btnRestart').style.display='none';
+document.getElementById('btnPlay').style.display='';
+document.getElementById('btnManual').style.display='';
+}
+
+function zoneName(x){if(x<35)return'DEF';if(x<70)return'MID';return'FWD'}
+
+init();
+</script></body></html>
