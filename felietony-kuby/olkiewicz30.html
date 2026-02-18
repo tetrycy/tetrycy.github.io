@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jak co środę... JAKUB OLKIEWICZ #30</title>
+  <meta name="description" content="Felieton o Lechu Poznań i meczu z KuPS" />
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Jak co środę... JAKUB OLKIEWICZ #30">
+  <meta property="og:description" content="Felieton o Lechu Poznań i meczu z KuPS">
+  <meta property="og:url" content="Jak co środę... JAKUB OLKIEWICZ #30">
+  <meta property="og:site_name" content="Weszło">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111111; --muted:#6e6e6e; --link:#1a1a1a; --accent:#0066cc; /* Zmiana akcentu na "lechowy" niebieski, opcjonalnie */
+      --maxw: 700px;
+      --space-1: .5rem; --space-2: 1rem; --space-3: 1.5rem; --space-4: 2rem; --radius: 10px;
+    }
+    /* Przywrócenie oryginalnego akcentu jeśli wolisz czerwony: --accent:#b4162a; */
+    :root{ --accent:#b4162a; }
+
+    html{ color-scheme: light dark; }
+    body{
+      margin:0;
+      background:var(--bg); color:var(--fg);
+      font-family: "Libre Baskerville", serif;
+      line-height:1.75;
+      font-size: clamp(16px, 1.4vw + 0.5rem, 19px);
+    }
+
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding: var(--space-4) var(--space-2); }
+
+    /* Skip link */
+    .skip{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+    .skip:focus{ left: var(--space-2); top: var(--space-2); width:auto; height:auto; background:#ffd; padding:.5rem .75rem; outline:2px solid #000; }
+
+    nav{
+      display:flex; gap: .75rem; justify-content:center; flex-wrap:wrap;
+      margin-bottom: var(--space-4);
+    }
+    nav a{
+      text-decoration:none; color:var(--link);
+      padding:.25rem .5rem; border-radius:.4rem;
+      outline-offset:3px;
+    }
+    nav a:hover, nav a:focus{ text-decoration:underline; }
+    nav a[aria-current="page"]{ font-weight:700; }
+
+    h1{ font-size: clamp(1.8rem, 2.8vw + 1rem, 2.6rem); line-height:1.2; margin: 0 0 .3em; text-align:center; }
+    time{ display:block; color:var(--muted); margin-bottom: var(--space-2); font-size:.95em; text-align:center; }
+
+    p{ margin: 0 0 1.2em; }
+
+    /* Audio player */
+    .audio-player{ 
+      text-align:center; 
+      margin: var(--space-2) 0 var(--space-3); 
+    }
+
+    .audio-player audio{
+      max-width: 100%;
+      width: 500px;
+      outline-color: var(--accent);
+    }
+    /* Ukryj timer audio */
+    .audio-player audio::-webkit-media-controls-current-time-display,
+    .audio-player audio::-webkit-media-controls-time-remaining-display {
+      display: none;
+    }
+
+    /* CTA (opcjonalnie) */
+    .cta{ text-align:center; margin: var(--space-4) 0 var(--space-3); }
+    .cta a{
+      display:inline-block; padding: .9rem 1.1rem; border-radius: .6rem;
+      border:2px solid var(--accent); color: var(--accent); font-weight:700; font-size: clamp(1.05rem, 1.2vw + .6rem, 1.35rem);
+      text-decoration:none; transition: transform .08s ease, background .2s ease, color .2s ease;
+    }
+    .cta a:hover, .cta a:focus{ background: var(--accent); color:#fff; transform: translateY(-1px); }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0f0f10; --fg:#f2f2f2; --muted:#aaaaaa; --link:#e6e6e6; --accent:#ff4d5a; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Przejdź do treści</a>
+
+  <div class="wrap">
+
+    <main id="main" role="main">
+      <article itemscope itemtype="https://schema.org/Article">
+        <header>
+          <h1 itemprop="headline">Jak co środę... JAKUB OLKIEWICZ #30</h1>
+          <time itemprop="datePublished" datetime="2026-02-18">18.02.2026</time>
+          
+          <div class="audio-player">
+            <audio controls preload="metadata">
+              <source src="olkiaudio18.mp3" type="audio/mpeg">
+              Twoja przeglądarka nie obsługuje odtwarzacza audio.
+            </audio>
+          </div>
+        </header>
+
+        <div itemprop="articleBody">
+          <p>Już jutro poznański Lech znów wybiegnie na boisko piłkarskie, a po drugiej stronie w koszulkach rywali będzie biegać nie tylko jedenastu zawodników fińskiego Kuopion Palloseura, ale też cała gromada, wręcz wataha, albo i batalion duchów. Lech Poznań na nieprzyjaznej, sztucznej fińskiej ziemi zmierzy się bowiem ze wszystkimi swoimi wrogami rasowymi, z całą swoją Nemezis, poczynając właśnie od sztucznej murawy, przez status murowanego faworyta, aż po dźwignięcie oczekiwań znów pełnych wiary fanatyków z całej Wielkopolski. Czy może być właściwie gorszy scenariusz dla kibiców "Kolejorza"?</p>
+
+          <p>Ilekroć myślałem w trakcie przerwy zimowej o nadchodzących meczach Ligi Konferencji, tyle razy przyłapywałem się na rozgonieniu starych demonów towarzyszących Lechowi Poznań. Odkąd jesteśmy na swoim, dużą część planowania staram się wykonać z dużym wyprzedzeniem, dla komfortu swojego, naszych widzów i partnerów, żeby w miarę wcześnie ogłaszać wszystkie nasze nadchodzące programy. I tak tydzień po tygodniu, dzień po dniu musiałem upominać sam siebie za totalny brak pokory. "Jaga pewnie odpadnie, Lech formalność, od następnej rundy dojdzie Raków, więc domówki będą i tak trwały dłużej, bo najpierw Lech, potem Raków... STOP"!</p>
+
+          <p>Panie Jakubie, STOP. Jakie Lech formalność, jakie Lech w tej samej rundzie co Raków, jakie 5-godzinne domówki, skoro najpierw jest drużyna o pięknej nazwie Kuopion Palloseura, ale i jeszcze piękniejszym skrócie KUPS. Dziś, w wigilię pierwszego meczu fińsko-polskiego, składam się już w ogromnej części z wątpliwości, rozterek i obaw. Nie chcę raz jeszcze wymachiwać tą zdartą taśmą o mokrych szmatach, o genie autodestrukcji, o tym, że to idealny moment, by wszystko zaczęło się sypać. Bo w gruncie rzeczy chodzi o coś zupełnie innego.</p>
+
+          <p>Zacznijmy od tego, że KUPS po prostu dobrze brzmi. Zwróćmy uwagę, że na mapie polskich klęsk futbolowi bogowie dość pieczołowicie podchodzą do kwestii estetycznych. Cmentarz polskich nadziei to przecież Cementarnica Skopje, Wisła legła pod ciężarem własnych wad na Levadii Tallin, a największy żal i najbardziej bolesna strata to przecież Żalgiris i Stjarnan. Nawet Spartak Trnawa brzmiał dokładnie tak, jak powinien brzmieć sprawca dużych cierpień wobec licznych polskich kibiców, obserwujących ze zgrozą jak naszpikowany gwiazdami Lech uwala na ringu dowcipny i elegancki Martin Miković (eks-Bruk-Bet-Termalica-Nieciecza-KS). No co tu dużo pisać, jeśli Żalgiris to żal, Cementarnica to cmentarz, Stjarnan to strata - sami pewnie się domyślacie, jak się może zakończyć mecz z KUPS.</p>
+
+          <p>Chodzi oczywiście o zwrot "ups" towarzyszący upuszczaniu czegoś szklanego i wartościowego na twardą posadzkę.</p>
+
+          <p>Ale byłoby dobrze, gdyby Lech musiał walczyć jedynie z nazwą, która jest łakomym kąskiem dla internetowych śmieszków i ich folderów z memami na wypadek kompromitacji poznaniaków. Na scenie bowiem znajdują się już przecież inne rekwizyty, które brały udział w najbardziej bolesnych spektaklach z udziałem polskiej piłki. Sztuczna murawa. Porażający mróz. Niekorzystny biometr, fatalne wiatrzysko (już nie zwykły wiatr, nawet nie wicher, po prostu wiatrzysko). Jeśli w grach typu "survival" wchodzisz do opuszczonego szpitala psychiatrycznego, mniej więcej wiesz, co cię czeka. Plansza typu lutowy wieczór na północnych krańcach świata w asyście sztucznej trawy i szronu osiadającego na brwiach to właśnie futbolowy odpowiednik opuszczonego szpitala psychiatrycznego w grach survivalowych.</p>
+
+          <p>Warto tu zresztą dodać - Lech dawno sobie nie nagrabił. Tak, było blisko w Słupsku, ale ostatecznie przecież awansował, w bólach, ale awansował. Tak, po drodze zdarzył się Gibraltar, ale przecież miało to miejsce w fazie ligowej, ostatecznie Lech wciąż jest w grze, więc i konsekwencje nie były wcale druzgocące. Ale tu znów przywołuje mnie do porządku wewnętrzny głos: panie Jakubie, stop. Jakie bez konsekwencji? Jakie "właściwie bezkarne"? Przecież nie byłoby tego tekstu, nie byłoby dzisiejszego strachu i jutrzejszych męczarni, gdyby nie Gibraltar. Lech unikając tamtej kompromitacji, zadanej mu zresztą z rąk zawodników grubo po trzydziestce, a nawet i po czterdziestce, dziś miałby wolne. W spokoju szykowałby się do ligowego starcia, może trzymał delikatnie kciuki za Jagiellonię - sam bowiem jako członek TOP 8, w towarzystwie między innymi Rakowa, czekałby sobie spokojnie na rywala w 1/8 finału. To, co może się skończyć w Kuopio, zaczęło się właśnie na Gibraltarze. Tamta porażka okaże się niemal bezbolesna dopiero w chwili, gdy Lech zamelduje się w kolejnej fazie - a po drodze ma, przypomnijmy tym, których nie było z nami w tym tekście od początku, sztuczną murawę i zabawny skrót nazwy rywala.</p>
+
+          <p>Ale to przecież jeszcze nie koniec. Jest kwestia "timingu", jest kwestia etapu, na którym obecnie znajduje się Lech Poznań, klub często pod względem narracji i opowieści targany od ściany do ściany, od dramatu i tragedii po zasłużony tytuł polskiego hegemona. Zima na rollercoasterze wielkopolskich emocji była zdecydowanie wjazdem na górę: spokojne, bogate przygotowania, powracający do zdrowia zawodnicy, na rynku transferowym co najwyżej delikatne korekty - bo przy kadrze w pełni sił zaczyna się robić ciasno w składzie, nawet uwzględniając grę na kilku frontach. A potem przyjeżdża Lechia Gdańsk, popularni "ujemnopunktowi" i w Poznaniu wygrywa 3:1. Wchodzą na boisko te Walemarki, Palmy, grają te Gholizadehy, ale po drugiej stronie biega Sezonienko, nawet remis jest poza zasięgiem. Potem mecz z Piastem, znów kuriozalny brak skuteczności, wręcz niewiarygodne pudła i zwycięska z murawy schodzi kapela Daniela Myśliwca.</p>
+
+          <p>Oczekiwania budowane nieśmiało zimą leżą w gruzach, na ich szczątkach tańczą ucieszeni ligowi konkurenci. Lech zamiast szybkiego odrabiania punktów - nie tylko tych do Wisły Płock czy Górnika, cały czas dość mocno lekceważonych, ale też do Jagi - utracił atut wynikający z meczu zaległego. Gdyby w tamtych okolicznościach wypadło KUPS - przynajmniej by nie bolało, byłoby logiczną konsekwencją, a w Poznaniu wystartowałby sezon na smarowanie kreatywnych haseł protestacyjnych, a każdy pewnie pokiwałby ze zrozumieniem głową: och, to już, czas na rewolucję i wywrócenie wszystko do góry nogami, okej, niech się dzieje.</p>
+
+          <p>Ale Lech ostatnie dwa mecze wygrał, a z Piastem wykręcił mocne 3:0 z 10 celnymi uderzeniami na bramkę oraz xG zbliżającym się do 3.00. Co więcej - Niels Frederiksen mógł triumfować, bo przecież po dwóch pierwszych porażkach zapewniał, że przy takiej liczbie tworzonych sytuacji bramkowych, w końcu Lech zacznie strzelać, a co za tym idziecie - wygrywać i punktować. W normalnych okolicznościach i ja, i każdy kibic Lecha uznałby to za dobrą monetę - teraz już wiatr wieje mocno w żagle, a może nawet pod narty, więc tym bardziej KUPS należy po prostu przejść, możliwie niewielkim nakładem sił, bo przecież Kolejorz nadal celuje w dublet.</p>
+
+          <p>Gibraltar przytrafił się dwa tygodnie po oklepaniu 4:1 Rapidu Wiedeń.</p>
+
+          <p>Odpadnięcie z Pucharu Polski przeciw Resovii przytrafiło się po serii pięciu zwycięstw, w tym 5:0 z Jagiellonią.</p>
+
+          <p>Przed Trnawą Lech zagrał w sezonie sześć meczów, z których wygrał pięć i zremisował z Zagłębiem Lubin.</p>
+
+          <p>Nie chcę o tym myślec, chcę to wyrzucić z głowy, ale spójrzcie jak wiele rzeczy tutaj się układa w jedną logiczną całość, jak wiele puzzli do siebie pasuje, jak bardzo typowe byłoby to szokujące, niespodziewane i sensacyjne potknięcie Lecha Poznań. Te wszystkie duchy, strachy na lachy, demony przeszłości, potencjalne miny - to są niby tylko rzekomi, niby tylko narracyjni rywale wielkopolskiego klubu, ale przecież tak często się do nich odwołujemy, tak mocno o nich pamiętamy, że naprawdę nie zdziwię się, jak z siódemką w Kuopio zagra Martin Miković, a na stoperze będzie stał wielki transparent o Litwinach.</p>
+
+          <p>Kursy u bukmacherów okolice 1,50, a przecież mówimy o Lechu Poznań zimą na sztucznej murawie. Najciekawsze w tym wszystkim jest to, że wraz ze swoimi obawami zapisuję się do partii wieloletnich kibiców Lecha, których wciąż męczą te niemal pokoleniowe traumy. Wtorkowy poranek przegadaliśmy z Radkiem Nawrotem, znawcą duszy lechity, który najczęściej w temacie swoich marzeń związanych z klubem używał zwrotu: żeby na Lechu można było polegać. Prześledziłem jak zawsze komentarze i, co ciekawe, nie brakowało tam twierdzeń nieco młodszych kibiców, że Lech od dłuższego czasu zawodzi rzadko, minimalizmem grzeszy jeszcze rzadziej, gdy trzeba wydać, to wydaje, gdy trzeba mocniej opłacić gwiazdę, to mocniej opłaca gwiazdę. Że Lech stjarnanowo-żalgirisowy to już tylko stare przebranie halloweenowe, które może i robi wrażenie na dziadkach takich jak ja, o słabszym sercu i słabszym wzroku, ale młodych już raczej śmieszy. Finał z Arką Gdynia był dziesięć lat temu, nie przedwczoraj. Uznawanie wyższości Legii, czy to w wyścigu mistrzowskim, czy na Stadionie Narodowym, to pieśń z bardzo odległej przeszłości - obecnie, gdy Lech walczy na trzech frontach, Legia mierzy się z wyzwaniem, jakim jest wrzucenie posta na Facebooka bez podpalania połowy Warszawy.</p>
+
+          <p>Chciałbym, by ci młodzi mieli rację. By Lech nie musiał się oglądać na Legię, a właściwie: by nie musiał się oglądać na kogokolwiek, bo i przed kim w Polsce miałby czuć prawdziwy lęk? By Lech, w gruncie rzeczy bardzo zdrowy, odpowiedzialnie i konsekwentnie zarządzany, co jakiś czas wygrywał, udowadniając, że czasem i nudnawy pozytywizm ma sens, nawet w świecie niepoprawnych romantyków. By na Lechu faktycznie, słowami Radka Nawrota, można było polegać.</p>
+
+          <p>Ale z wiarą w to wstrzymam się przynajmniej do jutra. Demony pod łóżkiem są najstraszniejsze wtedy, gdy jesteś przekonany, że już je wszystkie wymiotłeś i pożegnałeś. Na wszelki wypadek postaram się używać nazwy Kupion Palloseura, żeby nie kusić losu tym całym KUPS-em.</p>
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
