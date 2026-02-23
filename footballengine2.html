@@ -106,9 +106,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 <script>
 // ========== CONSTANTS ==========
 const PW=105,PH=68,GW=7.32,GY1=(PH-GW)/2,GY2=(PH+GW)/2,GCY=PH/2;
-const CW=420,CH=620,SX=CW/PH,SY=CH/PW;
-function p2c(px,py){return{cx:py*SX,cy:(PW-px)*SY}}
+const CW=420,CH=620;
 
+// Nowa funkcja transformująca płaskie X/Y na ekranowe 3D (Izometria)
+function p2c(px,py){
+    // Centrujemy współrzędne względem środka boiska
+    const dx = px - PW/2; 
+    const dy = py - PH/2; 
+    
+    // Magia rzutu: rotacja i skalowanie do izometrii
+    // Te współczynniki są idealnie dobrane pod Canvas 420x620
+    const cx = CW/2 + (dy * 2.6 - dx * 2.0);
+    const cy = CH/2 + (dx * 2.2 + dy * 1.8);
+    
+    return {cx, cy};
+}
 // ========== TEAMS ==========
 const TEAMS=[
 {name:'FC Elite 85',ovr:85,col:'#22d68a',players:[
@@ -200,83 +212,107 @@ curWeather=WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
 function drawPitch(ctx){
 if(!ctx)return;
 const p=curPitch||PITCHES[0];
+
+// Tło poza boiskiem
+ctx.fillStyle='#0a0e14';
+ctx.fillRect(0,0,CW,CH);
+
+// Pasy na boisku (teraz jako izometryczne wielokąty)
 if(p.stripes){
-  const stripeW=CW/12;
-  for(let i=0;i<12;i++){ctx.fillStyle=i%2===0?p.stripe1:p.stripe2;ctx.fillRect(i*stripeW,0,stripeW,CH)}
-}else{ctx.fillStyle=p.bg;ctx.fillRect(0,0,CW,CH)}
+    const stripeW=PW/12;
+    for(let i=0;i<12;i++){
+        ctx.fillStyle=i%2===0?p.stripe1:p.stripe2;
+        ctx.beginPath();
+        const p1=p2c(i*stripeW, 0), p2=p2c((i+1)*stripeW, 0);
+        const p3=p2c((i+1)*stripeW, PH), p4=p2c(i*stripeW, PH);
+        ctx.moveTo(p1.cx, p1.cy); ctx.lineTo(p2.cx, p2.cy); 
+        ctx.lineTo(p3.cx, p3.cy); ctx.lineTo(p4.cx, p4.cy);
+        ctx.fill();
+    }
+}else{
+    ctx.fillStyle=p.bg;
+    ctx.beginPath();
+    const p1=p2c(0,0), p2=p2c(PW,0), p3=p2c(PW,PH), p4=p2c(0,PH);
+    ctx.moveTo(p1.cx, p1.cy); ctx.lineTo(p2.cx, p2.cy); 
+    ctx.lineTo(p3.cx, p3.cy); ctx.lineTo(p4.cx, p4.cy);
+    ctx.fill();
+}
+
 ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5;
 function ln(x1,y1,x2,y2){const a=p2c(x1,y1),b=p2c(x2,y2);ctx.beginPath();ctx.moveTo(a.cx,a.cy);ctx.lineTo(b.cx,b.cy);ctx.stroke()}
 function rc(x1,y1,x2,y2){ln(x1,y1,x2,y1);ln(x2,y1,x2,y2);ln(x2,y2,x1,y2);ln(x1,y2,x1,y1)}
-rc(0,0,PW,PH);ln(PW/2,0,PW/2,PH);
-const cc=p2c(PW/2,PH/2);ctx.beginPath();ctx.ellipse(cc.cx,cc.cy,9.15*SX,9.15*SY,0,0,Math.PI*2);ctx.stroke();
+
+// Zewnętrzne krawędzie boiska i linia połowy
+rc(0,0,PW,PH);
+ln(PW/2,0,PW/2,PH);
+
+// Koło środkowe - renderowane izometrycznie (odrysowane z wielu punktów)
+ctx.beginPath();
+for(let i=0; i<=32; i++){
+    const angle = (i/32) * Math.PI * 2;
+    const pt = p2c(PW/2 + Math.cos(angle)*9.15, PH/2 + Math.sin(angle)*9.15);
+    if(i===0) ctx.moveTo(pt.cx, pt.cy);
+    else ctx.lineTo(pt.cx, pt.cy);
+}
+ctx.stroke();
+
+// Środek boiska (kropka)
+const cc=p2c(PW/2,PH/2);
 ctx.fillStyle='rgba(255,255,255,0.6)';ctx.beginPath();ctx.arc(cc.cx,cc.cy,2,0,Math.PI*2);ctx.fill();
-for(const gx of[0,PW]){const s=gx===0?1:-1;
-rc(gx,GCY-20.16,gx+s*16.5,GCY+20.16);rc(gx,GCY-9.16,gx+s*5.5,GCY+9.16);
-const ps=p2c(gx+s*11,GCY);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.beginPath();ctx.arc(ps.cx,ps.cy,2,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=3;ln(gx,GY1,gx,GY2);
-ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=0.5;
-for(let ny=GY1;ny<=GY2;ny+=1.5){ln(gx,ny,gx-s*2.5,ny)}
-ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5}
+
+// Pola karne i... BRAMKI W 3D!
+for(const gx of[0,PW]){
+    const s=gx===0?1:-1;
+    rc(gx,GCY-20.16,gx+s*16.5,GCY+20.16);
+    rc(gx,GCY-9.16,gx+s*5.5,GCY+9.16);
+    
+    const ps=p2c(gx+s*11,GCY);
+    ctx.fillStyle='rgba(255,255,255,0.5)';ctx.beginPath();ctx.arc(ps.cx,ps.cy,2,0,Math.PI*2);ctx.fill();
+    
+    // Rysowanie bramek wystających w górę (Z-axis w dół ekranu)
+    const gHeight = 16; 
+    const p1 = p2c(gx, GY1);
+    const p2 = p2c(gx, GY2);
+    const backX = gx - s * 2.5;
+    const b1 = p2c(backX, GY1);
+    const b2 = p2c(backX, GY2);
+
+    // Szczyty słupków
+    const p1Top = {cx: p1.cx, cy: p1.cy - gHeight};
+    const p2Top = {cx: p2.cx, cy: p2.cy - gHeight};
+    
+    // Słupki i poprzeczka
+    ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(p1.cx, p1.cy); ctx.lineTo(p1Top.cx, p1Top.cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p2.cx, p2.cy); ctx.lineTo(p2Top.cx, p2Top.cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p1Top.cx, p1Top.cy); ctx.lineTo(p2Top.cx, p2Top.cy); ctx.stroke();
+    
+    // Boczna siatka i dół
+    ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(p1Top.cx, p1Top.cy); ctx.lineTo(b1.cx, b1.cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p2Top.cx, p2Top.cy); ctx.lineTo(b2.cx, b2.cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b1.cx, b1.cy); ctx.lineTo(b2.cx, b2.cy); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5;
+}
+
+// Pogoda 
 const w=curWeather||WEATHERS[0];
 if(w.fog>0){ctx.fillStyle=`rgba(200,210,220,${w.fog})`;ctx.fillRect(0,0,CW,CH)}
-if(w.rain>0){ctx.strokeStyle=`rgba(180,200,230,${0.15*w.rain})`;ctx.lineWidth=1;
-for(let i=0;i<60*w.rain;i++){const rx=Math.random()*CW,ry=Math.random()*CH;
-ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-1,ry+6);ctx.stroke()}}
-if(w.snow>0){ctx.fillStyle='rgba(240,245,255,0.5)';
-for(let i=0;i<80;i++){const rx=Math.random()*CW,ry=Math.random()*CH;
-ctx.beginPath();ctx.arc(rx,ry,1+Math.random()*1.5,0,Math.PI*2);ctx.fill()}}
+if(w.rain>0){
+    ctx.strokeStyle=`rgba(180,200,230,${0.15*w.rain})`;ctx.lineWidth=1;
+    for(let i=0;i<60*w.rain;i++){
+        const rx=Math.random()*CW,ry=Math.random()*CH;
+        ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-1,ry+6);ctx.stroke()
+    }
 }
-
-function drawBall(ctx,bx,by,teamCol){
-if(!ctx)return;
-const p=p2c(bx,by);const r=6;
-ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(p.cx,p.cy,r,0,Math.PI*2);ctx.fill();
-ctx.fillStyle='#222';
-for(let a=0;a<5;a++){const ang=a*Math.PI*2/5-Math.PI/2;
-const px=p.cx+Math.cos(ang)*r*0.45,py=p.cy+Math.sin(ang)*r*0.45;
-ctx.beginPath();ctx.arc(px,py,r*0.22,0,Math.PI*2);ctx.fill()}
-ctx.beginPath();ctx.arc(p.cx,p.cy,r*0.2,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle=teamCol||'#fff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.cx,p.cy,r+2,0,Math.PI*2);ctx.stroke();
-ctx.fillStyle='rgba(0,0,0,0.15)';ctx.beginPath();ctx.ellipse(p.cx+2,p.cy+3,r*0.9,r*0.4,0,0,Math.PI*2);ctx.fill();
+if(w.snow>0){
+    ctx.fillStyle='rgba(240,245,255,0.5)';
+    for(let i=0;i<80;i++){
+        const rx=Math.random()*CW,ry=Math.random()*CH;
+        ctx.beginPath();ctx.arc(rx,ry,1+Math.random()*1.5,0,Math.PI*2);ctx.fill()
+    }
 }
-
-function drawShots(ctx,shots){if(!ctx)return;
-for(const s of shots){
-const col=s.goal?'rgba(34,214,138,0.8)':s.ti===0?'rgba(255,100,100,0.5)':'rgba(100,150,255,0.5)';
-const p=p2c(s.x,s.y);const r=Math.max(3,Math.min(18,(s.threat||1)*8));
-ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.cx,p.cy,r,0,Math.PI*2);ctx.fill();
-if(s.goal){ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1;ctx.stroke()}}}
-
-function drawEvents(ctx,events){if(!ctx||!events)return;
-for(const e of events){
-const p=p2c(e.x,e.y);
-if(e.type==='dribble'){
-  ctx.fillStyle=e.ti===0?'rgba(255,200,50,0.5)':'rgba(50,180,255,0.5)';
-  ctx.beginPath();ctx.moveTo(p.cx,p.cy-4);ctx.lineTo(p.cx+3,p.cy);
-  ctx.lineTo(p.cx,p.cy+4);ctx.lineTo(p.cx-3,p.cy);ctx.closePath();ctx.fill();
-} else if(e.type==='foul'){
-  ctx.strokeStyle=e.ti===0?'rgba(255,80,80,0.6)':'rgba(80,130,255,0.6)';
-  ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(p.cx-3,p.cy-3);ctx.lineTo(p.cx+3,p.cy+3);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(p.cx+3,p.cy-3);ctx.lineTo(p.cx-3,p.cy+3);ctx.stroke();
-}}}
-
-function drawTrail(ctx,trail,col){
-if(!ctx||trail.length<2)return;
-for(let i=1;i<trail.length;i++){
-const ax=trail[i-1].x,ay=trail[i-1].y,bxx=trail[i].x,byy=trail[i].y;
-const a=p2c(ax,ay),b=p2c(bxx,byy);
-const alpha=0.08+0.35*(i/trail.length);
-ctx.strokeStyle='rgba(255,255,255,'+alpha+')';
-ctx.lineWidth=1.2+0.8*(i/trail.length);
-ctx.beginPath();ctx.moveTo(a.cx,a.cy);ctx.lineTo(b.cx,b.cy);ctx.stroke();
-if(i===trail.length-1){
-const dx=b.cx-a.cx,dy=b.cy-a.cy,len=Math.sqrt(dx*dx+dy*dy);
-if(len>3){const ux=dx/len,uy=dy/len;
-ctx.fillStyle='rgba(255,255,255,'+alpha+')';ctx.beginPath();
-ctx.moveTo(b.cx,b.cy);ctx.lineTo(b.cx-ux*5+uy*3,b.cy-uy*5-ux*3);
-ctx.lineTo(b.cx-ux*5-uy*3,b.cy-uy*5+ux*3);ctx.fill()}}}}
-
+}
 
 // ========== CARDS SYSTEM ==========
 // Niezależna mechanika kartek — przypisywana przed meczem, wyzwalana w trakcie
