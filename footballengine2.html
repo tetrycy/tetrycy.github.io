@@ -6,187 +6,186 @@
 <title>Football Engine v4 — AI Possession</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg: #1a1a1a;
-    --pitch: #2a8c2a;
-    --panel-bg: #333;
-    --panel-border: #555;
-    --pixel-green: #00ff41;
-    --pixel-yellow: #ffff00;
-    --pixel-red: #ff0000;
-    --pixel-blue: #0099ff;
-    --text: #ffffff;
-    --ui-inner: #222;
+    --bg: #f0f2f5;          /* Jasne tło ZenGM */
+    --card-bg: #ffffff;
+    --border: #dee2e6;
+    --text-main: #212529;
+    --text-dim: #6c757d;
+    --accent: #0d6efd;      /* Klasyczny niebieski ZenGM */
+    --success: #198754;
+    --danger: #dc3545;
+    --pitch-bg: #2d5a27;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'VT323', monospace;
+    font-family: 'Inter', -apple-system, sans-serif;
     background: var(--bg);
-    color: var(--text);
-    padding: 16px;
+    color: var(--text-main);
+    padding: 20px;
     display: flex;
     justify-content: center;
-    gap: 16px;
-    letter-spacing: 1px;
-    image-rendering: pixelated; /* Kluczowe dla stylu retro */
+    gap: 20px;
+    line-height: 1.4;
 }
 
-/* GŁÓWNY KONTENER BOISKA */
+/* KONTENER BOISKA */
 .pitch-col {
-    background: #000;
-    padding: 6px;
-    border: 4px solid #444;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 canvas {
-    border: 2px solid #222;
-    display: block;
-    background: var(--pitch);
+    background: var(--pitch-bg);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* PANELE INFORMACYJNE (Wynik, xG) */
+/* PANELE JAKO KARTY */
+.info-bar, .carrier-info, .ctrl-panel, .log-panel, .stats-panel, .gk-card, .squad-panel, #actPanel {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* WYNIK I NAGŁÓWKI */
 .info-bar {
-    background: var(--ui-inner);
-    border: 3px solid var(--panel-border);
-    border-bottom-color: #111;
-    border-right-color: #111;
-    margin-bottom: 4px;
-    padding: 6px;
-    font-size: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.info-bar b { color: var(--pixel-green); }
-.info-bar .bl { color: var(--pixel-blue); }
+.info-bar b { color: var(--accent); }
 
-.carrier-info {
-    background: #111;
-    border: 2px solid #333;
-    color: var(--pixel-yellow);
-    font-size: 16px;
-    padding: 4px;
-    margin-top: 4px;
-}
-
-/* PRAWY PANEL KONTROLNY */
 .right-col {
-    width: 420px;
+    width: 440px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-}
-
-.ctrl-panel, .log-panel, .stats-panel, .gk-card, .squad-panel, #actPanel {
-    background: var(--panel-bg);
-    border: 4px solid #000;
-    box-shadow: inset 2px 2px 0 #555, inset -2px -2px 0 #222;
-    padding: 12px;
+    gap: 12px;
 }
 
 .ctrl-panel h3 {
-    font-size: 24px;
-    color: var(--pixel-yellow);
-    margin-bottom: 8px;
-    text-shadow: 2px 2px #000;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
 }
 
-/* PRZYCISKI RETRO */
+/* BUTTONS (Bootstrap/ZenGM Style) */
 .btn {
-    font-family: 'VT323', monospace;
-    font-size: 18px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
     padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
     cursor: pointer;
-    background: #444;
-    color: #fff;
-    border: 3px solid;
-    border-color: #666 #111 #111 #666; /* Efekt 3D */
-    margin: 2px;
+    transition: all 0.1s;
 }
 
-.btn:active {
-    border-color: #111 #666 #666 #111;
-    transform: translate(1px, 1px);
+.btn:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
 }
 
 .btn-p {
-    background: #006600;
-    border-color: #00aa00 #003300 #003300 #00aa00;
-    color: var(--pixel-green);
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
 }
 
-.btn-p:hover { background: #008800; }
-
-/* LOGI I STATYSTYKI */
-.log-panel {
-    background: #0a0a0a;
-    font-size: 16px;
-    border-color: #222;
-    color: #aaa;
-    max-height: 400px;
-    overflow-y: scroll;
+.btn-p:hover {
+    background: #0b5ed7;
 }
 
-.le { border-bottom: 1px dotted #333; padding: 2px 0; }
-.le.goal { color: var(--pixel-green); font-weight: bold; background: #1a2a1a; }
-.le.red-card { color: var(--pixel-red); background: #2a1a1a; }
-.le.yellow-card { color: var(--pixel-yellow); }
-
-/* TABELA STATYSTYK */
+/* TABELE I STATYSTYKI (Klucz do ZenGM) */
 .sg {
     display: grid;
-    grid-template-columns: 1fr 60px 60px;
-    gap: 4px;
-    border-bottom: 1px solid #444;
-    padding: 3px 0;
+    grid-template-columns: 1fr 50px 50px;
+    border-bottom: 1px solid #f1f1f1;
+    padding: 5px 0;
+    font-size: 12px;
 }
-.sg .h { color: var(--pixel-green); }
-.sg .a { color: var(--pixel-blue); }
 
-/* SELECTY I INPUTY */
+.sg:last-child { border: none; }
+.sg .lb { color: var(--text-dim); }
+.sg .vl { text-align: center; font-weight: 600; }
+.sg .h { color: var(--success); }
+.sg .a { color: var(--accent); }
+
+/* LOG PANEL */
+.log-panel {
+    font-size: 12px;
+    height: 350px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.le {
+    padding: 4px 8px;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.le:hover { background: #fcfcfc; }
+.le.goal { background: #e6fffa; color: var(--success); font-weight: 600; border-left: 3px solid var(--success); }
+.le.red-card { background: #fff5f5; color: var(--danger); border-left: 3px solid var(--danger); }
+
+/* FORMULARZE */
 select {
-    background: #111;
-    color: var(--pixel-green);
-    border: 2px solid #555;
-    font-family: 'VT323', monospace;
-    font-size: 16px;
-}
-
-/* AKCJE (MANUAL MODE) */
-.ab {
-    background: #222;
-    border: 3px solid #444;
-    margin-bottom: 6px;
-    padding: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.ab:hover {
-    background: #333;
-    border-color: var(--pixel-green);
-}
-
-.ab .an { font-size: 20px; color: #fff; }
-.ab .axg { color: var(--pixel-green); }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #444; border: 2px solid #111; }
-
-/* GK CARDS */
-.gk-card .gk-name { font-size: 22px; color: var(--pixel-yellow); }
-.gk-attr .at {
-    background: #111;
-    border: 1px solid #444;
+    width: 100%;
     padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    background: #f8f9fa;
 }
-.gk-attr .at .av { font-size: 18px; color: var(--pixel-green); }
+
+label { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+
+/* AKCJE (MANUAL) */
+.ab {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    padding: 8px;
+    transition: background 0.2s;
+}
+
+.ab:hover { background: #f0f7ff; border-color: var(--accent); }
+.ab .an { font-weight: 600; font-size: 13px; }
+.ab .axg { font-family: monospace; color: var(--success); }
+
+/* SQUAD VIEW */
+.squad-row {
+    display: grid;
+    grid-template-columns: 25px 1fr 30px repeat(14, 25px);
+    font-size: 11px;
+    border-bottom: 1px solid #eee;
+}
+
+.squad-hdr {
+    background: #f8f9fa;
+    font-weight: bold;
+    color: var(--text-dim);
+}
+
+.av.hi { font-weight: bold; color: var(--success); }
+.av.lo { color: var(--danger); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 </style>
 </head>
 <body>
