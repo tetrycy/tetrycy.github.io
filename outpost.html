@@ -3,134 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <title>OUTPOST '95: SUPREME COMMANDER [PATHFINDING]</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --green: #20ff20; --green-dim: #0a6010; --green-glow: rgba(32,255,32,0.15);
-            --red: #ff3333; --blue: #33aaff; --orange: #ff8800; --cyan: #00ffff;
-            --yellow: #ffff00; --purple: #cc33ff; --mutant: #00ff80;
-            --bg: #020302; --panel: #0d0f0d; --panel2: #111311; --border: #1a2e1a;
+            --accent: #e8a020; --accent2: #5b9bd5; --accent3: #7ec87e;
+            --danger: #e05050; --mutant: #50c878; --cryo: #7ec8e0;
+            --bg: #0f1117; --panel: #161820; --panel2: #1e2028; --border: #2a2d3a;
+            --text: #d0d4e0; --text-dim: #6a6e80; --text-bright: #f0f2f8;
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; background: #000; color: var(--green); font-family: VT323, monospace; display: flex; height: 100vh; overflow: hidden; font-size: 16px; }
-        
-        /* ── CANVAS ─────────────────────────────────── */
-        #viewport { flex-grow: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; min-height: 0; }
-        canvas { border: 2px solid var(--green); background: var(--bg); cursor: crosshair; image-rendering: crisp-edges; max-width: 100%; max-height: 100%; width: auto; height: auto; }
-
-        /* ── SIDEBAR SHELL ───────────────────────────── */
-        #sidebar { width: 360px; background: var(--panel); border-left: 3px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-        /* ── STATUS BAR (always visible) ────────────── */
-        #status-bar {
-            background: #000; border-bottom: 2px solid var(--border);
-            padding: 8px 12px; flex-shrink: 0;
-        }
-        #status-bar .title { font-size: 1.3em; color: var(--green); letter-spacing: 2px; text-align: center; border-bottom: 1px solid var(--green-dim); padding-bottom: 4px; margin-bottom: 6px; }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; padding: 2px 0; }
-        .stat-label { color: #5a8a5a; }
-        .stat-val { color: var(--green); font-size: 1.3em; }
-        .stat-val.danger { color: var(--red); animation: blink 0.5s step-end infinite; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #000; color: var(--text); font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; font-size: 13px; line-height: 1.4; }
+        #viewport { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; min-height: 0; }
+        canvas { border: 1px solid #2a2d3a; cursor: crosshair; image-rendering: crisp-edges; max-width: 100%; max-height: 100%; }
+        #sidebar { width: 340px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; overflow: hidden; flex-shrink: 0; }
+        #status-bar { background: var(--bg); border-bottom: 1px solid var(--border); padding: 10px 12px; flex-shrink: 0; }
+        #status-bar .title { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); text-align: center; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .stat-row { display: flex; gap: 5px; }
+        .stat-chip { display: flex; align-items: center; gap: 5px; background: var(--panel2); border: 1px solid var(--border); padding: 4px 8px; border-radius: 3px; flex: 1; }
+        .stat-chip .sl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-chip .sv { font-size: 13px; font-weight: 600; color: var(--text-bright); font-family: 'JetBrains Mono', monospace; margin-left: auto; }
+        .stat-chip .sv.danger { color: var(--danger); animation: blink 0.6s step-end infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
-        .weapon-row { display: flex; gap: 8px; margin-top: 5px; }
-        .weapon-badge { flex: 1; background: #071207; border: 1px solid var(--green-dim); padding: 3px 6px; font-size: 0.85em; }
-        .weapon-badge .wlabel { color: #5a8a5a; display: block; font-size: 0.8em; }
-        .weapon-badge .wname { color: var(--cyan); }
-
-        /* ── PHASE PANELS ────────────────────────────── */
-        #panel-base, #panel-prep, #panel-combat { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
-        #panel-base.active, #panel-prep.active, #panel-combat.active { display: flex; }
-
-        /* ── BASE PANEL ──────────────────────────────── */
-        #panel-base { padding: 16px; gap: 12px; justify-content: center; align-items: center; }
-        .base-title { font-size: 2.2em; color: var(--green); text-align: center; letter-spacing: 4px; text-shadow: 0 0 20px var(--green); }
-        .base-subtitle { color: #5a8a5a; text-align: center; font-size: 1.1em; margin-top: -8px; }
-        .map-selector-box { width: 100%; background: #000; border: 1px solid var(--green-dim); padding: 12px; }
-        .map-selector-box label { color: #5a8a5a; font-size: 1em; display: block; margin-bottom: 6px; }
-        select { background: #0a0f0a; color: var(--green); border: 1px solid var(--green-dim); padding: 8px; font-family: VT323; font-size: 1.2em; width: 100%; }
-        select:focus { outline: none; border-color: var(--green); }
-        .wave-info-box { width: 100%; background: #050805; border: 1px solid var(--green-dim); padding: 10px; font-size: 1.1em; color: #5a8a5a; text-align: center; }
-        .wave-info-box span { color: var(--green); }
-
-        /* ── TABS ────────────────────────────────────── */
-        .tab-bar { display: flex; border-bottom: 2px solid var(--border); flex-shrink: 0; background: #000; }
-        .tab { flex: 1; padding: 8px 4px; text-align: center; cursor: pointer; font-size: 1em; color: #4a6a4a; border: none; background: none; font-family: VT323; letter-spacing: 1px; border-bottom: 3px solid transparent; transition: all 0.1s; }
-        .tab:hover { color: var(--green); }
-        .tab.active { color: var(--green); border-bottom-color: var(--green); background: var(--green-glow); }
-
-        /* ── TAB CONTENT ─────────────────────────────── */
-        .tab-content { display: none; flex-direction: column; overflow-y: auto; padding: 10px; flex-grow: 1; gap: 6px; }
+        .weapon-row { display: flex; gap: 5px; margin-top: 7px; }
+        .weapon-badge { flex: 1; background: var(--panel2); border: 1px solid var(--border); padding: 5px 8px; border-radius: 3px; min-width: 0; }
+        .weapon-badge .wlabel { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px; }
+        .weapon-badge .wname { font-size: 11px; font-weight: 500; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .unit-stats { display: flex; gap: 10px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim); }
+        .unit-stats span { color: var(--text); font-family: 'JetBrains Mono', monospace; }
+        #panel-base, #panel-prep, #panel-combat, #panel-editor { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
+        #panel-base.active, #panel-prep.active, #panel-combat.active, #panel-editor.active { display: flex; }
+        #panel-base { padding: 20px 16px; gap: 12px; justify-content: center; }
+        .base-title { font-size: 18px; font-weight: 700; color: var(--text-bright); }
+        .base-subtitle { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
+        .map-selector-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
+        .map-selector-box label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+        select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 7px 10px; font-family: 'Inter', sans-serif; font-size: 12px; width: 100%; border-radius: 3px; outline: none; cursor: pointer; }
+        select:focus { border-color: var(--accent); }
+        .wave-info-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 12px; font-size: 12px; color: var(--text-dim); }
+        .wave-info-box .wi-num { font-size: 26px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; display: block; line-height: 1; }
+        .hint-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-size: 11px; color: var(--text-dim); line-height: 1.8; }
+        .hint-box .hk { color: var(--accent2); font-family: 'JetBrains Mono', monospace; background: var(--bg); padding: 1px 5px; border-radius: 2px; border: 1px solid var(--border); font-size: 10px; }
+        .tab-bar { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
+        .tab { flex: 1; padding: 9px 2px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 500; color: var(--text-dim); border: none; background: none; font-family: 'Inter', sans-serif; border-bottom: 2px solid transparent; transition: all 0.15s; }
+        .tab:hover { color: var(--text); background: var(--panel2); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(232,160,32,0.05); }
+        .tab-content { display: none; flex-direction: column; overflow-y: auto; padding: 8px 10px; flex-grow: 1; gap: 3px; }
         .tab-content.active { display: flex; }
         .tab-content::-webkit-scrollbar { width: 4px; }
-        .tab-content::-webkit-scrollbar-track { background: #000; }
-        .tab-content::-webkit-scrollbar-thumb { background: var(--green-dim); }
-
-        /* ── SECTION HEADER ──────────────────────────── */
-        .sec-hdr { font-size: 0.85em; color: #4a6a4a; letter-spacing: 2px; padding: 4px 0 2px 0; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
-
-        /* ── WEAPON BUTTONS ──────────────────────────── */
-        .wpn-btn { width: 100%; background: #050d05; border: 1px solid #1a3a1a; padding: 7px 10px; cursor: pointer; font-family: VT323; color: #8ab88a; text-align: left; transition: all 0.1s; display: flex; justify-content: space-between; align-items: center; }
-        .wpn-btn:hover { border-color: var(--green); background: #0a1a0a; color: var(--green); }
-        .wpn-btn.selected { border-color: var(--green); background: #051505; color: var(--green); box-shadow: inset 0 0 8px rgba(32,255,32,0.1); }
-        .wpn-btn .wpn-name { font-size: 1.15em; }
-        .wpn-btn .wpn-desc { font-size: 0.78em; color: #4a6a4a; display: block; }
-        .wpn-btn .wpn-key { font-size: 0.9em; color: var(--cyan); background: #001a1a; padding: 1px 5px; border: 1px solid #004444; }
-        .wpn-btn.monster-btn { border-color: #004422; color: #60c880; }
-        .wpn-btn.monster-btn.selected { border-color: var(--mutant); color: var(--mutant); box-shadow: inset 0 0 8px rgba(0,255,128,0.1); }
-
-        /* ── TOWER BUTTONS ───────────────────────────── */
-        .tower-btn { width: 100%; background: #0a0800; border: 1px solid #2a2000; padding: 7px 10px; cursor: pointer; font-family: VT323; color: #a09040; text-align: left; transition: all 0.1s; display: grid; grid-template-columns: 1fr auto; gap: 2px; }
-        .tower-btn:hover { border-color: var(--orange); background: #120f00; color: var(--orange); }
-        .tower-btn.selected { border-color: var(--orange); background: #0d0900; box-shadow: inset 0 0 8px rgba(255,136,0,0.1); color: var(--orange); }
-        .tower-btn .t-name { font-size: 1.1em; }
-        .tower-btn .t-stats { font-size: 0.78em; color: #6a5a20; }
-        .tower-btn .t-cost { font-size: 1em; color: var(--yellow); text-align: right; }
-        .tower-btn .t-color-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-
-        /* ── INTEL PANEL ─────────────────────────────── */
-        .intel-box { background: #000; border: 1px solid var(--border); padding: 10px; }
-        .intel-box .intel-title { color: #4a6a4a; font-size: 0.85em; letter-spacing: 2px; margin-bottom: 6px; }
-        .intel-row { display: flex; justify-content: space-between; font-size: 1.15em; padding: 2px 0; border-bottom: 1px solid #0a140a; }
-        .intel-row:last-child { border-bottom: none; }
-        .intel-row .il { color: #5a8a5a; }
-        .intel-row .iv { color: var(--green); }
-        .intel-row .iv.land { color: var(--red); }
-        .intel-row .iv.swim { color: var(--blue); }
-        .intel-row .iv.air { color: var(--purple); }
-        .threat-bar { height: 6px; background: #0a1a0a; margin: 6px 0; border: 1px solid var(--border); }
-        .threat-bar-fill { height: 100%; background: linear-gradient(90deg, #004400, var(--green)); transition: width 0.3s; }
-
-        /* ── UPGRADE GRID ────────────────────────────── */
+        .tab-content::-webkit-scrollbar-track { background: var(--bg); }
+        .tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .sec-hdr { font-size: 10px; font-weight: 600; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase; padding: 8px 0 5px 0; border-bottom: 1px solid var(--border); margin-bottom: 3px; }
+        .sec-hdr:first-child { padding-top: 2px; }
+        .wpn-btn { width: 100%; background: var(--panel2); border: 1px solid var(--border); padding: 8px 10px; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text); text-align: left; transition: all 0.12s; display: flex; justify-content: space-between; align-items: center; border-radius: 3px; margin-bottom: 2px; gap: 8px; }
+        .wpn-btn:hover { border-color: #4a4a6a; background: rgba(255,255,255,0.03); }
+        .wpn-btn.selected { border-color: var(--accent); background: rgba(232,160,32,0.07); }
+        .wpn-btn .wpn-left { flex-grow: 1; min-width: 0; }
+        .wpn-btn .wpn-name { font-size: 12px; font-weight: 500; color: var(--text-bright); display: block; }
+        .wpn-btn .wpn-desc { font-size: 10px; color: var(--text-dim); display: block; margin-top: 1px; }
+        .wpn-btn .wpn-stats { font-size: 10px; color: var(--accent2); display: block; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+        .wpn-btn .wpn-key { font-size: 10px; font-weight: 600; color: var(--accent); background: rgba(232,160,32,0.1); padding: 2px 7px; border-radius: 2px; border: 1px solid rgba(232,160,32,0.3); flex-shrink: 0; white-space: nowrap; }
+        .wpn-btn.monster-btn.selected { border-color: var(--mutant); }
+        .wpn-btn.monster-btn.selected .wpn-key { color: var(--mutant); background: rgba(80,200,120,0.1); border-color: rgba(80,200,120,0.3); }
+        .wpn-btn.util-btn.selected { border-color: var(--accent2); }
+        .wpn-btn.util-btn.selected .wpn-key { color: var(--accent2); background: rgba(91,155,213,0.1); border-color: rgba(91,155,213,0.3); }
+        .tower-btn { width: 100%; background: var(--panel2); border: 1px solid var(--border); padding: 8px 10px; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text); text-align: left; transition: all 0.12s; display: grid; grid-template-columns: 1fr auto; gap: 2px; align-items: start; border-radius: 3px; margin-bottom: 2px; }
+        .tower-btn:hover { border-color: #4a4a6a; background: rgba(255,255,255,0.03); }
+        .tower-btn.selected { border-color: var(--accent2); background: rgba(91,155,213,0.07); }
+        .tower-btn .t-name { font-size: 12px; font-weight: 500; color: var(--text-bright); display: flex; align-items: center; gap: 6px; }
+        .tower-btn .t-stats { font-size: 10px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+        .tower-btn .t-cost { font-size: 12px; font-weight: 600; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .t-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .intel-box { background: var(--panel2); border: 1px solid var(--border); padding: 12px; border-radius: 4px; }
+        .intel-title { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+        .intel-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); }
+        .intel-row:last-of-type { border-bottom: none; }
+        .il { font-size: 11px; color: var(--text-dim); }
+        .iv { font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--text-bright); }
+        .iv.land { color: #e07070; }
+        .iv.swim { color: #70a0e0; }
+        .iv.air { color: #b070e0; }
+        .threat-bar { height: 5px; background: var(--bg); margin: 8px 0 2px; border-radius: 3px; overflow: hidden; }
+        .threat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent3), var(--accent)); transition: width 0.4s; }
         .upg-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-        .upg-btn { background: #050d05; border: 1px solid #1a3a1a; padding: 8px 4px; cursor: pointer; font-family: VT323; color: #6a9a6a; text-align: center; font-size: 0.95em; transition: all 0.1s; }
-        .upg-btn:hover { border-color: var(--green); color: var(--green); background: #0a1a0a; }
-        .upg-btn .upg-type { font-size: 1.3em; display: block; color: var(--green); }
-        .upg-btn .upg-cost { color: var(--yellow); font-size: 0.85em; }
-
-        /* ── TERMINAL ────────────────────────────────── */
-        #terminal { font-size: 0.88em; flex-shrink: 0; height: 110px; overflow-y: auto; color: #6ab86a; border-top: 2px solid var(--border); padding: 6px 10px; background: #020502; line-height: 1.4; }
+        .upg-btn { background: var(--panel2); border: 1px solid var(--border); padding: 10px 6px; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text); text-align: center; border-radius: 3px; transition: all 0.12s; }
+        .upg-btn:hover { border-color: var(--accent3); background: rgba(126,200,126,0.05); }
+        .upg-btn .upg-type { font-size: 14px; font-weight: 700; display: block; color: var(--accent3); }
+        .upg-btn .upg-lv { font-size: 10px; color: var(--text-dim); display: block; margin-top: 1px; }
+        .upg-btn .upg-cost { font-size: 10px; color: var(--accent); font-family: 'JetBrains Mono', monospace; display: block; margin-top: 3px; }
+        #terminal { font-size: 10px; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; height: 85px; overflow-y: auto; color: #606870; border-top: 1px solid var(--border); padding: 6px 10px; background: var(--bg); line-height: 1.7; }
         #terminal::-webkit-scrollbar { width: 3px; }
-        #terminal::-webkit-scrollbar-thumb { background: var(--green-dim); }
+        #terminal::-webkit-scrollbar-thumb { background: var(--border); }
+        #actionBtn { flex-shrink: 0; width: 100%; padding: 13px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; cursor: pointer; border: none; text-transform: uppercase; transition: all 0.15s; }
+        #actionBtn.phase-base { background: var(--accent3); color: #071507; }
+        #actionBtn.phase-base:hover { background: #90da90; }
+        #actionBtn.phase-prep { background: var(--accent); color: #1a0d00; }
+        #actionBtn.phase-prep:hover { background: #f0b030; }
+        #actionBtn.phase-combat { background: var(--panel2); color: var(--text-dim); cursor: not-allowed; }
+        .mutant-status { background: rgba(80,200,120,0.06); border: 1px solid rgba(80,200,120,0.2); padding: 5px 10px; border-radius: 3px; font-size: 11px; color: var(--mutant); display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
 
-        /* ── ACTION BUTTON ───────────────────────────── */
-        #actionBtn { flex-shrink: 0; width: 100%; padding: 12px; font-family: VT323; font-size: 1.5em; letter-spacing: 3px; cursor: pointer; border: none; text-transform: uppercase; transition: all 0.15s; }
-        #actionBtn.phase-base { background: #001a00; color: var(--green); border-top: 2px solid var(--green); }
-        #actionBtn.phase-base:hover { background: var(--green); color: #000; }
-        #actionBtn.phase-prep { background: #1a0a00; color: var(--orange); border-top: 2px solid var(--orange); }
-        #actionBtn.phase-prep:hover { background: var(--orange); color: #000; }
-        #actionBtn.phase-combat { background: #0a0000; color: #444; border-top: 2px solid #222; cursor: not-allowed; }
-        
-        /* ── COOLDOWN INDICATOR ──────────────────────── */
-        .cd-bar-wrap { height: 3px; background: #0a140a; margin-top: 3px; }
-        .cd-bar { height: 100%; background: var(--green); width: 100%; transition: width 0.1s linear; }
 
-        /* ── MUTANT COUNTER ──────────────────────────── */
-        .mutant-status { background: #001a08; border: 1px solid #004422; padding: 5px 8px; font-size: 0.95em; color: var(--mutant); display: flex; justify-content: space-between; }
+        /* ── BASE PANEL EXTRAS ── */
+        #panel-base { padding: 14px; gap: 10px; overflow-y: auto; justify-content: flex-start; }
+        .base-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .base-title { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+        .wave-chip { background: var(--accent); color: #1a0d00; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 2px; letter-spacing: 0.5px; }
+        .base-section { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+        .base-sec-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+        /* Presety */
+        .preset-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .preset-btn { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; padding: 6px; border-radius: 3px; cursor: pointer; transition: all 0.12s; }
+        .preset-btn:hover { border-color: #4a4a6a; color: var(--text); }
+        .preset-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(91,155,213,0.08); }
+        /* Suwaki */
+        .slider-list { display: flex; flex-direction: column; gap: 7px; }
+        .slider-row { display: flex; flex-direction: column; gap: 3px; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+        .slider-val { font-family: 'JetBrains Mono', monospace; color: var(--text); font-size: 11px; letter-spacing: 2px; }
+        input[type=range] { width: 100%; height: 4px; appearance: none; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent2); cursor: pointer; border: 2px solid var(--panel2); transition: background 0.1s; }
+        input[type=range]:hover::-webkit-slider-thumb { background: #7ab8f0; }
+        /* CHAOS MODE */
+        .chaos-btn { width: 100%; background: #1a0808; border: 1px solid #5a1a1a; border-radius: 3px; padding: 10px 12px; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 10px; transition: all 0.15s; text-align: left; }
+        .chaos-btn:hover { border-color: var(--danger); background: #200a0a; }
+        .chaos-btn.active { border-color: var(--danger); background: rgba(224,80,80,0.1); box-shadow: 0 0 12px rgba(224,80,80,0.15); }
+        .chaos-icon { font-size: 20px; flex-shrink: 0; }
+        .chaos-label { font-size: 12px; font-weight: 700; color: #c04040; display: block; line-height: 1; }
+        .chaos-btn.active .chaos-label { color: var(--danger); }
+        .chaos-sub { font-size: 10px; color: var(--text-dim); display: block; margin-top: 2px; }
+        .chaos-btn.active .chaos-sub { color: #a06060; }
+
+        /* ── MERC CARDS ── */
+        .merc-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 10px; margin-bottom: 5px; transition: border-color 0.15s; }
+        .merc-card.hired { border-color: var(--accent3); background: rgba(126,200,126,0.05); }
+        .merc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+        .merc-icon { font-size: 20px; flex-shrink: 0; }
+        .merc-info { flex-grow: 1; min-width: 0; }
+        .merc-name { font-size: 13px; font-weight: 700; color: var(--text-bright); display: block; }
+        .merc-spec { font-size: 10px; color: var(--text-dim); display: block; margin-top: 1px; }
+        .merc-hire-btn { background: var(--accent3); color: #071507; border: none; border-radius: 3px; padding: 5px 10px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: background 0.12s; }
+        .merc-hire-btn:hover { background: #90da90; }
+        .merc-hired-badge { font-size: 10px; font-weight: 600; color: var(--accent3); flex-shrink: 0; }
+        .merc-stats { display: flex; gap: 10px; font-size: 10px; color: var(--text-dim); }
+        .merc-stats b { color: var(--text); font-family: 'JetBrains Mono', monospace; }
+
+        /* ══ EDITOR ══════════════════════════════════ */
+        #panel-editor { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
+        #panel-editor.active { display: flex; }
+
+        .ed-section { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+        .ed-sec-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
+
+        /* Tool buttons */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .tool-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 8px 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: var(--text-dim); text-align: center; transition: all 0.12s; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .tool-btn:hover { border-color: #4a4a6a; color: var(--text); }
+        .tool-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(91,155,213,0.08); }
+        .tool-btn.active.mountain { border-color: #a08060; color: #c0a070; background: rgba(160,128,96,0.08); }
+        .tool-btn.active.lake     { border-color: #4080c0; color: #60a0e0; background: rgba(64,128,192,0.08); }
+        .tool-btn.active.forest   { border-color: #408040; color: #60a060; background: rgba(64,128,64,0.08); }
+        .tool-btn.active.eraser   { border-color: var(--danger); color: var(--danger); background: rgba(224,80,80,0.08); }
+        .tool-icon { font-size: 18px; line-height: 1; }
+        .tool-label { font-size: 10px; }
+
+        /* Size slider */
+        .ed-slider-wrap { margin-top: 4px; }
+        .ed-slider-row { display: flex; align-items: center; gap: 8px; }
+        .ed-slider-row label { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+        .ed-slider-row input { flex: 1; }
+        .ed-slider-row .sv { font-size: 11px; color: var(--text); font-family: 'JetBrains Mono', monospace; width: 28px; text-align: right; }
+
+        /* Spawn direction */
+        .spawn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .spawn-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 7px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: var(--text-dim); text-align: center; transition: all 0.12s; }
+        .spawn-btn:hover { border-color: #4a4a6a; color: var(--text); }
+        .spawn-btn.active { border-color: var(--danger); color: var(--danger); background: rgba(224,80,80,0.08); }
+
+        /* Map name input */
+        .ed-input { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 6px 10px; font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text); width: 100%; outline: none; }
+        .ed-input:focus { border-color: var(--accent); }
+        .ed-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px; }
+        .ed-btn { background: var(--panel2); border: 1px solid var(--border); border-radius: 3px; padding: 7px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-dim); text-align: center; transition: all 0.12s; }
+        .ed-btn:hover { border-color: #4a4a6a; color: var(--text); }
+        .ed-btn.save { border-color: var(--accent3); color: var(--accent3); }
+        .ed-btn.save:hover { background: rgba(126,200,126,0.08); }
+        .ed-btn.clear { border-color: var(--danger); color: var(--danger); }
+        .ed-btn.clear:hover { background: rgba(224,80,80,0.08); }
+        .ed-btn.load { border-color: var(--accent2); color: var(--accent2); }
+        .ed-btn.load:hover { background: rgba(91,155,213,0.08); }
+
+        /* Saved maps list */
+        .saved-map-item { display: flex; align-items: center; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+        .saved-map-item:last-child { border-bottom: none; }
+        .saved-map-name { flex: 1; color: var(--text); }
+        .saved-map-load { background: none; border: 1px solid var(--accent2); color: var(--accent2); border-radius: 2px; padding: 2px 7px; cursor: pointer; font-size: 10px; font-family: 'Inter', sans-serif; }
+        .saved-map-del  { background: none; border: 1px solid #3a2020; color: #a06060; border-radius: 2px; padding: 2px 7px; cursor: pointer; font-size: 10px; font-family: 'Inter', sans-serif; }
+        .saved-map-load:hover { background: rgba(91,155,213,0.1); }
+        .saved-map-del:hover  { border-color: var(--danger); color: var(--danger); }
+
+        /* Mode indicator on canvas */
+        #editor-overlay { position: absolute; top: 8px; left: 8px; background: rgba(10,12,16,0.85); border: 1px solid var(--border); border-radius: 3px; padding: 5px 10px; font-size: 11px; font-family: 'Inter', sans-serif; color: var(--text-dim); display: none; pointer-events: none; }
+        #editor-overlay.visible { display: block; }
     </style>
 </head>
 <body>
 
 <div id="viewport">
+    <div id="editor-overlay"></div>
     <canvas id="gameCanvas" width="2400" height="1800"></canvas>
 </div>
 
@@ -140,9 +218,9 @@
     <div id="status-bar">
         <div class="title">OUTPOST '95</div>
         <div class="stat-row">
-            <span class="stat-label">FALA</span><span class="stat-val" id="ui-wave">—</span>
-            <span class="stat-label">KREDYTY</span><span class="stat-val" id="ui-money">$800</span>
-            <span class="stat-label">HQ</span><span class="stat-val" id="ui-hp">100%</span>
+            <div class="stat-chip"><span class="sl">Fala</span><span class="sv" id="ui-wave">—</span></div>
+            <div class="stat-chip"><span class="sl">$</span><span class="sv" id="ui-money">800</span></div>
+            <div class="stat-chip"><span class="sl">HQ</span><span class="sv" id="ui-hp">100%</span></div>
         </div>
         <div class="weapon-row" id="weapon-row" style="display:none">
             <div class="weapon-badge">
@@ -163,24 +241,115 @@
 
     <!-- ═══ PANEL: BASE ═══ -->
     <div id="panel-base" class="active">
-        <div class="base-title">▓ STRAT-COM ▓</div>
-        <div class="base-subtitle">FAZA PRZYGOTOWAŃ</div>
+        <div class="base-header">
+            <div class="base-title">Outpost '95</div>
+            <div class="wave-chip">Fala <span id="next-wave-num">1</span></div>
+        </div>
 
-        <div class="map-selector-box">
-            <label>🗺 WYBIERZ POLE BITWY:</label>
+        <!-- Mapa kampanii -->
+        <div class="base-section">
+            <div class="base-sec-label">Mapa kampanii</div>
             <select id="map-selector" onchange="onMapChange(this)">
-                <option value="">[ LOSOWA MAPA ]</option>
+                <option value="">Losowa mapa</option>
             </select>
         </div>
 
-        <div class="wave-info-box">
-            NASTĘPNA FALA: <span id="next-wave-num">1</span><br>
-            <span style="font-size:0.85em;color:#3a5a3a;">Rozmieść HQ i wieżyczki przed walką</span>
+        <!-- Mapa losowa — presety -->
+        <div class="base-section" id="random-map-section">
+            <div class="base-sec-label">Losowa mapa — teren</div>
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyPreset('easy')">Łatwa</button>
+                <button class="preset-btn active" onclick="applyPreset('normal')">Normalna</button>
+                <button class="preset-btn" onclick="applyPreset('hard')">Trudna</button>
+            </div>
+
+            <!-- Suwaki -->
+            <div class="slider-list">
+                <div class="slider-row">
+                    <div class="slider-labels"><span>Góry</span><span class="slider-val" id="val-mountains">●●○○</span></div>
+                    <input type="range" min="0" max="4" value="2" id="sl-mountains" oninput="onSlider('mountains',this.value)">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-labels"><span>Jeziora</span><span class="slider-val" id="val-lakes">●●○○</span></div>
+                    <input type="range" min="0" max="4" value="2" id="sl-lakes" oninput="onSlider('lakes',this.value)">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-labels"><span>Lasy</span><span class="slider-val" id="val-forests">●●○○</span></div>
+                    <input type="range" min="0" max="4" value="2" id="sl-forests" oninput="onSlider('forests',this.value)">
+                </div>
+            </div>
+
+            <!-- CHAOS MODE -->
+            <button class="chaos-btn" id="chaos-btn" onclick="toggleChaos()">
+                <span class="chaos-icon">💀</span>
+                <span class="chaos-label">CHAOS MODE</span>
+                <span class="chaos-sub">Wolna amerykanka</span>
+            </button>
         </div>
 
-        <div style="font-size:0.9em;color:#3a5a3a;text-align:center;padding:4px;">
-            ✓ PATHFINDING&nbsp;&nbsp;✓ FLOW FIELD<br>
-            <span style="color:#4a6a4a;">WASD = ruch | LMB = strzał | RMB = granaty</span>
+        <!-- Skróty -->
+        <button class="ed-btn" style="border-color:var(--accent2);color:var(--accent2);font-size:11px;" onclick="enterEditor()">✏ Edytor mapy</button>
+        <button class="ed-btn" style="border-color:var(--accent2);color:var(--accent2);font-size:11px;padding:8px;" onclick="enterEditor()">✏ Edytor mapy</button>
+        <div class="hint-box">
+            <span class="hk">WASD</span> ruch &nbsp;
+            <span class="hk">LMB</span> strzał &nbsp;
+            <span class="hk">RMB</span> dodatkowa<br>
+            <span class="hk">Scroll</span> zoom
+        </div>
+    </div>
+
+    <!-- ═══ PANEL: EDITOR ═══ -->
+    <div id="panel-editor">
+        <div style="background:var(--bg);border-bottom:1px solid var(--border);padding:10px 12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:600;color:var(--text-bright);">Edytor mapy</span>
+            <button class="ed-btn" onclick="exitEditor()" style="padding:4px 10px;font-size:10px;">✕ Wróć</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;">
+            <div class="ed-section">
+                <span class="ed-sec-label">Narzędzie</span>
+                <div class="tool-grid">
+                    <button class="tool-btn mountain active" id="tool-mountain" onclick="setEditorTool('mountain')"><span class="tool-icon">⛰</span><span class="tool-label">Góra</span></button>
+                    <button class="tool-btn lake" id="tool-lake" onclick="setEditorTool('lake')"><span class="tool-icon">💧</span><span class="tool-label">Jezioro</span></button>
+                    <button class="tool-btn forest" id="tool-forest" onclick="setEditorTool('forest')"><span class="tool-icon">🌲</span><span class="tool-label">Las</span></button>
+                    <button class="tool-btn eraser" id="tool-eraser" onclick="setEditorTool('eraser')"><span class="tool-icon">🧹</span><span class="tool-label">Gumka</span></button>
+                </div>
+            </div>
+            <div class="ed-section">
+                <span class="ed-sec-label">Rozmiar pędzla</span>
+                <div class="ed-slider-row">
+                    <label>Mały</label>
+                    <input type="range" min="30" max="300" value="80" id="ed-size" oninput="editorState.brushSize=+this.value;document.getElementById('ed-size-val').innerText=this.value">
+                    <label>Duży</label>
+                    <span class="sv" id="ed-size-val">80</span>
+                </div>
+                <div class="ed-slider-row" style="margin-top:6px;">
+                    <label>Płaski</label>
+                    <input type="range" min="1" max="20" value="8" id="ed-intensity" oninput="editorState.intensity=+this.value;document.getElementById('ed-int-val').innerText=this.value">
+                    <label>Wysoki</label>
+                    <span class="sv" id="ed-int-val">8</span>
+                </div>
+            </div>
+            <div class="ed-section">
+                <span class="ed-sec-label">Kierunek ataku wrogów</span>
+                <div class="spawn-grid">
+                    <button class="spawn-btn active" id="spawn-NORTH" onclick="setSpawnDir('NORTH')">↓ Północ</button>
+                    <button class="spawn-btn" id="spawn-SOUTH" onclick="setSpawnDir('SOUTH')">↑ Południe</button>
+                    <button class="spawn-btn" id="spawn-WEST"  onclick="setSpawnDir('WEST')">→ Zachód</button>
+                    <button class="spawn-btn" id="spawn-EAST"  onclick="setSpawnDir('EAST')">← Wschód</button>
+                </div>
+            </div>
+            <div class="ed-section">
+                <span class="ed-sec-label">Nazwa mapy</span>
+                <input class="ed-input" type="text" id="ed-mapname" placeholder="np. Wąwóz Północny" maxlength="32">
+                <div class="ed-actions">
+                    <button class="ed-btn save" onclick="editorSaveMap()">💾 Zapisz</button>
+                    <button class="ed-btn clear" onclick="editorClearMap()">🗑 Wyczyść</button>
+                </div>
+            </div>
+            <div class="ed-section">
+                <span class="ed-sec-label">Zapisane mapy</span>
+                <div id="ed-saved-list" style="max-height:130px;overflow-y:auto;"></div>
+            </div>
         </div>
     </div>
 
@@ -190,6 +359,7 @@
         <div class="tab-bar">
             <button class="tab active" onclick="switchTab('prep','towers')" id="tab-prep-towers">🏗 WIEŻE</button>
             <button class="tab" onclick="switchTab('prep','weapons')" id="tab-prep-weapons">🔫 BROŃ</button>
+            <button class="tab" onclick="switchTab('prep','mercs')" id="tab-prep-mercs">🪖 NAJEMN.</button>
             <button class="tab" onclick="switchTab('prep','upgrades')" id="tab-prep-upgrades">⬆ ULG</button>
             <button class="tab" onclick="switchTab('prep','intel')" id="tab-prep-intel">📡 INTEL</button>
         </div>
@@ -207,6 +377,16 @@
                 <span class="t-name">DEBUG PATHFIND: <span id="debug-label">OFF</span></span>
                 <span class="t-stats">flow field overlay</span>
             </button>
+        </div>
+
+        <!-- Tab: Mercs -->
+        <div class="tab-content" id="tc-prep-mercs">
+            <div class="sec-hdr">DOSTĘPNI NAJEMNICY — FALA <span id="merc-wave-label">1</span></div>
+            <div id="merc-roster"></div>
+            <div style="font-size:10px;color:var(--text-dim);padding:6px 0;line-height:1.6;">
+                Najemnicy walczą autonomicznie i przyciągają wrogów.<br>
+                Giną permanentnie — następna fala, nowy roster.
+            </div>
         </div>
 
         <!-- Tab: Weapons (PREP) -->
@@ -316,7 +496,8 @@ const CONFIG = {
         BATTERY: { name: "LR BATTERY", cost: 0, range: 600, dmg: 100, rof: 1000, hp: 600, type: 'tower', color: '#f80' },  // range: 420->600
         MORTAR: { name: "GRENADE TURRET", cost: 0, range: 380, dmg: 80, blastRadius: 100, rof: 3500, hp: 500, type: 'tower', color: '#4f4' },
         SHOTGUN_TURRET: { name: "SHOTGUN TURRET", cost: 0, range: 180, dmg: 15, pellets: 6, spread: 0.2, rof: 800, hp: 450, type: 'tower', color: '#f4f' },
-        ROCKET_TURRET: { name: "ROCKET TURRET", cost: 0, range: 750, dmg: 200, blastRadius: 90, velocity: 12, rof: 4000, hp: 550, type: 'tower', color: '#f66' }  // range: 500->750
+        ROCKET_TURRET: { name: "ROCKET TURRET", cost: 0, range: 750, dmg: 200, blastRadius: 90, velocity: 12, rof: 4000, hp: 550, type: 'tower', color: '#f66' },
+        CRYO_TURRET: { name: "CRYO TURRET", cost: 0, range: 320, slowMult: 0.25, rof: 1500, hp: 350, type: 'tower', color: '#4af' }
     },
     BUILDINGS: {
         SOLAR: { name: "SOLAR ARRAY", cost: 150, pwr: 50, color: "#AA0" },
@@ -339,7 +520,9 @@ const CONFIG = {
         POISON: { name: "TOXIC GRENADE", cost: 0, cooldown: 3000, damage: 40, blastRadius: 140, range: 420, poisonDmg: 3, poisonTime: 100, desc: "Poison cloud DOT" },
         EMP: { name: "EMP BLAST", cost: 0, cooldown: 4500, damage: 0, blastRadius: 200, range: 450, stunTime: 60, desc: "Stuns enemies" },
         BANANA: { name: "BANANA GRENADE", cost: 0, cooldown: 5000, damage: 80, blastRadius: 100, range: 450, bananas: 7, desc: "Splits into 7 bananas!" },
-        MONSTER: { name: "MONSTER THROWER", cost: 0, cooldown: 8000, range: 500, monsterHp: 400, monsterDmg: 45, monsterDuration: 600, desc: "Releases mutant ally!" }
+        MONSTER: { name: "MONSTER THROWER", cost: 0, cooldown: 8000, range: 500, monsterHp: 400, monsterDmg: 45, monsterDuration: 600, desc: "Releases mutant ally!" },
+        HOLOGRAM: { name: "HOLOGRAM DECOY", cost: 0, cooldown: 10000, range: 900, duration: 300, desc: "Attracts all enemies for 5s" },
+        SHIELD: { name: "COMBAT SHIELD", cost: 0, cooldown: 12000, radius: 220, duration: 240, slowMult: 0.2, desc: "Slows enemies 80% for 4s" }
     }
 };
 
@@ -360,7 +543,7 @@ let game = {
         secondaryWeapon: 'GRENADE',
         ownedWeapons: { 
             RIFLE: true, MINIGUN: true, SHOTGUN: true, SNIPER: true, FLAMETHROWER: true, RAILGUN: true,
-            GRENADE: true, CLUSTER: true, INCENDIARY: true, ROCKET: true, POISON: true, EMP: true, BANANA: true, MONSTER: true
+            GRENADE: true, CLUSTER: true, INCENDIARY: true, ROCKET: true, POISON: true, EMP: true, BANANA: true, MONSTER: true, HOLOGRAM: true, SHIELD: true
         }
     },
     spawnDir: 'NORTH',
@@ -368,7 +551,12 @@ let game = {
     mapView: 'DETAILED',
     selectedCustomMap: null,
     flowField: { land: null, swim: null, fly: null },
-    debugPathfinding: false
+    debugPathfinding: false,
+    holograms: [],   // { x, y, frame, duration }
+    mapSettings: { mountains: 2, lakes: 2, forests: 2, chaos: false },
+    mercs: [],          // active mercenaries on field
+    mercRoster: [],     // 3 random mercs available to hire this wave
+    shields: []      // { x, y, frame, duration, radius, slowMult }
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -396,6 +584,7 @@ function init() {
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     populateMapSelector();
     showPanel('base');
+    updateSliderDisplay();
     updateStatusBar();
     gameLoop();
 }
@@ -407,6 +596,9 @@ function handleAction() {
         game.entities = [];
         game.corePlaced = false;
         game.monsters = [];
+        game.holograms = [];
+        game.shields = [];
+        game.mercs = [];
         
         if (game.selectedCustomMap) loadCustomMap(game.selectedCustomMap);
         else generateStrategicMap();
@@ -571,7 +763,10 @@ function loadCustomMap(mapName) {
     const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
     if (maps[mapName]) {
         game.terrain = JSON.parse(JSON.stringify(maps[mapName].terrain));
-        const scaleX = CONFIG.WIDTH / 1200, scaleY = CONFIG.HEIGHT / 900;
+        if (maps[mapName].spawnDir) game.spawnDir = maps[mapName].spawnDir;
+        const isEditorMap = maps[mapName].editorMap;
+        const scaleX = isEditorMap ? 1 : CONFIG.WIDTH / 1200;
+        const scaleY = isEditorMap ? 1 : CONFIG.HEIGHT / 900;
         game.terrain.hills.forEach(h => {
             if (h.isRidge) { h.points.forEach(p => { p.x *= scaleX; p.y *= scaleY; }); }
             else { h.x *= scaleX; h.y *= scaleY; h.layers.forEach(layer => { layer.radius *= scaleX; layer.verts.forEach(v => { v.x *= scaleX; v.y *= scaleY; }); }); }
@@ -589,29 +784,52 @@ function showIntelReport() {
     logTerminal(`ŁĄCZNE HP: ${Math.floor(game.intel.totalHP)}`);
 }
 
+
+// ══════════════════════════════════════════════
+//  TERRAIN HELPERS — global, used by generator + editor
+// ══════════════════════════════════════════════
+function terrainAddMountain(terrain, centerX, centerY, baseRadius, totalLayers) {
+    const mountain = { x: centerX, y: centerY, layers: [], totalLayers, height: totalLayers };
+    for (let l = 0; l < totalLayers; l++) {
+        const radius = baseRadius * (1 - l / totalLayers);
+        const verts = [], segments = 25, seed = Math.random() * 100, noiseAmount = 0.4;
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
+            verts.push({ x: Math.cos(angle) * (radius + noise), y: Math.sin(angle) * (radius + noise) });
+        }
+        mountain.layers.push({ verts, radius, level: l });
+    }
+    terrain.hills.push(mountain);
+}
+
+function terrainAddLake(terrain, centerX, centerY, radius) {
+    const points = [], segments = 20;
+    for (let i = 0; i < segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        const r = radius * (0.8 + Math.random() * 0.4);
+        points.push({ x: centerX + Math.cos(angle) * r, y: centerY + Math.sin(angle) * r });
+    }
+    terrain.lakes.push({ points, type: 'sulfur' });
+}
+
+function terrainAddForest(terrain, centerX, centerY, radius, density) {
+    const trees = [];
+    for (let t = 0; t < density; t++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * radius;
+        trees.push({ x: centerX + Math.cos(angle)*dist, y: centerY + Math.sin(angle)*dist, size: 6 + Math.random()*8 });
+    }
+    terrain.forests.push({ trees, centerX, centerY, radius });
+}
+
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
     game.terrain = { hills: [], lakes: [], forests: [] };
     const S = 1;
     
-    function createMountain(centerX, centerY, baseRadius, totalLayers) {
-        const mountain = { x: centerX, y: centerY, layers: [], totalLayers, height: totalLayers };
-        for(let l = 0; l < totalLayers; l++) {
-            const radius = baseRadius * (1 - l / totalLayers);
-            const verts = [];
-            const segments = 25;
-            const seed = Math.random() * 100;
-            const noiseAmount = 0.4;
-            for(let i = 0; i < segments; i++) {
-                const angle = (i / segments) * Math.PI * 2;
-                const noise = noiseAmount * radius * ((Math.sin(angle * 3 + seed) * 0.5) + (Math.sin(angle * 7) * 0.3));
-                const r = radius + noise;
-                verts.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
-            }
-            mountain.layers.push({ verts, radius, level: l });
-        }
-        game.terrain.hills.push(mountain);
-    }
+    // use global terrainAddMountain
+    function createMountain(cx, cy, r, layers) { terrainAddMountain(game.terrain, cx, cy, r, layers); }
     
     function createRidge(startX, startY, ridgeLength, ridgeAngle, layers) {
         const endX = startX + Math.cos(ridgeAngle) * ridgeLength;
@@ -652,28 +870,16 @@ function generateStrategicMap() {
         }
     }
     
-    function createLake(centerX, centerY, radius) {
-        const points = [];
-        const segments = 20;
-        for(let i = 0; i < segments; i++) {
-            const angle = (i / segments) * Math.PI * 2;
-            const r = radius * (0.8 + Math.random() * 0.4);
-            points.push({ x: centerX + Math.cos(angle) * r, y: centerY + Math.sin(angle) * r });
-        }
-        game.terrain.lakes.push({ points, type: 'sulfur' });
-    }
+    function createLake(cx, cy, r) { terrainAddLake(game.terrain, cx, cy, r); }
     
-    function createForest(centerX, centerY, radius, density) {
-        const trees = [];
-        for(let t = 0; t < density; t++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = Math.random() * radius;
-            trees.push({ x: centerX + Math.cos(angle)*dist, y: centerY + Math.sin(angle)*dist, size: 6 + Math.random() * 8 });
-        }
-        game.terrain.forests.push({ trees, centerX, centerY, radius });
-    }
+    function createForest(cx, cy, r, density) { terrainAddForest(game.terrain, cx, cy, r, density); }
     
-    const mountainCount = Math.floor(Math.random() * 16);
+    const ms = game.mapSettings;
+    // Map counts from settings levels 0-4
+    const mtnMax  = ms.chaos ? 40 : [0, 4, 10, 20, 30][ms.mountains];
+    const lakMax  = ms.chaos ? 25 : [0, 3,  8, 16, 22][ms.lakes];
+    const forMax  = ms.chaos ? 40 : [0, 4, 10, 20, 35][ms.forests];
+    const mountainCount = ms.chaos ? mtnMax : Math.floor(Math.random() * (mtnMax + 1));
     for(let i = 0; i < mountainCount; i++) {
         const mountainType = Math.random();
         const x = 300 + Math.random() * 1800, y = 300 + Math.random() * 1200;
@@ -689,12 +895,12 @@ function generateStrategicMap() {
         }
     }
     
-    const lakeCount = Math.floor(Math.random() * 13);
+    const lakeCount = ms.chaos ? lakMax : Math.floor(Math.random() * (lakMax + 1));
     for(let i = 0; i < lakeCount; i++) {
         createLake(400 + Math.random() * 1600, 300 + Math.random() * 1200, 40 + Math.random() * 200);
     }
     
-    const forestCount = 3 + Math.floor(Math.random() * 16);
+    const forestCount = ms.chaos ? forMax : Math.floor(Math.random() * (forMax + 1));
     for(let i = 0; i < forestCount; i++) {
         createForest(400 + Math.random() * 1600, 300 + Math.random() * 1200, 80 + Math.random() * 140, 15 + Math.floor(Math.random() * 40));
     }
@@ -708,6 +914,31 @@ function spawnWaveLogic() {
     let pool = 3000 + (game.wave * 4000);
     const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
     const total = r1+r2+r3;
+
+    // Spawn 1-2 regenerators from wave 2 onwards
+    const regenCount = game.wave >= 2 ? 1 + (game.wave >= 5 ? 1 : 0) : 0;
+    for (let i = 0; i < regenCount; i++) {
+        const regenHp = 300 + game.wave * 80;
+        const regen = createEnemy(regenHp, 'LAND');
+        regen.isRegenerator = true;
+        regen.regenRadius = 160;
+        regen.regenAmount = 1.5 + game.wave * 0.3; // HP per frame to nearby allies
+        regen.regenCooldown = 0;
+        regen.color = '#00ffaa';
+        // Rounder shape for regenerator
+        regen.vertices = [];
+        const pts = 12;
+        for (let j = 0; j < pts; j++) {
+            const a = (j / pts) * Math.PI * 2;
+            const d = regen.size * (1.1 + Math.sin(j * 2.3) * 0.15);
+            regen.vertices.push({ x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d });
+        }
+        game.enemies.push(regen);
+        game.intel.land++;
+        game.intel.totalHP += regenHp;
+        pool -= regenHp;
+    }
+
     while (pool > 0) {
         const r = Math.random();
         let moveType = 'FLY';
@@ -731,7 +962,7 @@ function createEnemy(hp, moveType) {
     
     const baseSize = 8 + (hp / 80);
     const size = baseSize + (Math.random() - 0.5) * 4;
-    let baseSpeed = moveType === 'FLY' ? 1.2 + (20 / size) : 0.8 + (15 / size);
+    let baseSpeed = moveType === 'FLY' ? 0.85 + (14 / size) : 0.55 + (11 / size);
     const vertices = [];
     let color;
     
@@ -874,13 +1105,7 @@ function updateMonsters() {
                         }
                     });
                     
-                    // Attack flash effect
-                    game.explosions.push({
-                        x: monster.x, y: monster.y,
-                        radius: 0, maxRadius: monster.attackRange,
-                        damage: 0, frame: 0, maxFrames: 10,
-                        hasDealtDamage: true, color: 'monster_attack'
-                    });
+                    // Attack flash — just hitF on hit enemies, no explosion ring
                 }
             }
         } else {
@@ -961,9 +1186,13 @@ function gameLoop() {
         if (game.mode === 'COMBAT') {
             updateCombat();
             updateMonsters();
+            updateMercs();
+            updateHolograms();
+            updateShields();
             updateCombatIntel();
         }
         renderMonsters();
+        renderMercs();
         renderEntities();
         renderAnomalies();
         if (game.corePlaced) renderPlayerUnit();
@@ -1008,6 +1237,16 @@ function updateCombat() {
     const deadEnemyIndices = new Set();
     
     game.enemies.forEach((e, i) => {
+        // Reset cryo slow if not currently in any cryo tower range
+        if (e._cryo) {
+            const inCryo = game.entities.some(u => u.name === 'CRYO TURRET' && Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            if (!inCryo) {
+                e.speed = e._cryoOrigSpeed || e.speed;
+                delete e._cryo;
+                delete e._cryoOrigSpeed;
+            }
+        }
+
         // Handle stun
         if (e.stunned) {
             e.stunTimer = (e.stunTimer || 0) - 1;
@@ -1030,7 +1269,21 @@ function updateCombat() {
         else if (e.moveType === 'FLY') flowField = game.flowField.fly;
         
         let dirX, dirY;
-        if (flowField && flowField.directions) {
+
+        // Merc aggro override — enemy is targeting a mercenary
+        if (e._mercTarget && game.mercs.includes(e._mercTarget)) {
+            const mt = e._mercTarget;
+            const ang = Math.atan2(mt.y - e.y, mt.x - e.x);
+            dirX = Math.cos(ang); dirY = Math.sin(ang);
+            // Attack merc if close enough
+            if (Math.hypot(mt.x - e.x, mt.y - e.y) < e.size + mt.size + 10) {
+                mt.hp -= e.dmg || 8;
+                mt.hitF = 8;
+                if (mt.hp <= 0) { mt.dead = true; delete e._mercTarget; logTerminal(mt.name + ' KIA!'); }
+            }
+        } else if (e._holoOverride) {
+            dirX = e._holoOverride.dx; dirY = e._holoOverride.dy;
+        } else if (flowField && flowField.directions) {
             const dir = getFlowDirection(e.x, e.y, flowField);
             dirX = dir.dx; dirY = dir.dy;
             const len = Math.sqrt(dirX*dirX + dirY*dirY);
@@ -1058,6 +1311,16 @@ function updateCombat() {
         
         e.x += dirX * e.speed * terrainMult;
         e.y += dirY * e.speed * terrainMult;
+
+        // REGENERATOR: heal nearby allies
+        if (e.isRegenerator && !e.stunned) {
+            game.enemies.forEach(ally => {
+                if (ally === e) return;
+                if (Math.hypot(ally.x - e.x, ally.y - e.y) < e.regenRadius) {
+                    ally.hp = Math.min(ally.maxHp, ally.hp + e.regenAmount);
+                }
+            });
+        }
         
         e.vertices.forEach(v => {
             const jitter = (Math.random()-0.5)*2.5;
@@ -1106,8 +1369,38 @@ function updateCombat() {
                     const angle = Math.atan2(target.y - u.y, target.x - u.x);
                     game.rockets.push({ x: u.x, y: u.y, vx: Math.cos(angle)*u.velocity, vy: Math.sin(angle)*u.velocity, damage: u.dmg, blastRadius: u.blastRadius, trail: [], fromTower: true });
                     u.lastFire = now;
+                } else if (u.name === 'CRYO TURRET') {
+                    // Slow all enemies in range
+                    game.enemies.forEach(target => {
+                        if (Math.hypot(target.x - u.x, target.y - u.y) < u.range) {
+                            if (!target._cryo) {
+                                target._cryoOrigSpeed = target._cryoOrigSpeed || target.speed;
+                                target.speed = target._cryoOrigSpeed * u.slowMult;
+                                target._cryo = true;
+                                target.hitF = 1;
+                            }
+                        }
+                    });
+                    // Visual: ice beam to nearest
+                    const nearest = game.enemies.reduce((best, e) => {
+                        const d = Math.hypot(e.x - u.x, e.y - u.y);
+                        return (!best || d < best.d) ? {e, d} : best;
+                    }, null);
+                    if (nearest && nearest.d < u.range) {
+                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([4, 4]);
+                        ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(nearest.e.x, nearest.e.y); ctx.stroke();
+                        ctx.setLineDash([]);
+                        // Ice crystals at target
+                        for (let c = 0; c < 4; c++) {
+                            const a = (c / 4) * Math.PI * 2;
+                            ctx.fillStyle = 'rgba(160, 220, 255, 0.7)';
+                            ctx.fillRect(nearest.e.x + Math.cos(a)*8 - 2, nearest.e.y + Math.sin(a)*8 - 2, 4, 4);
+                        }
+                    }
+                    u.lastFire = now;
                 } else {
-                    target.hp -= u.dmg; target.hitF = 3; u.lastFire = now;
                     if (u.name === 'LR BATTERY') {
                         ctx.strokeStyle = "rgba(255,140,0,0.9)"; ctx.lineWidth = 4;
                         ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(target.x, target.y); ctx.stroke();
@@ -1124,6 +1417,7 @@ function updateCombat() {
     if (game.enemies.length === 0) {
         game.mode = 'BASE';
         game.monsters = [];
+        game.mercs = [];
         showPanel('base');
         populateMapSelector();
         logTerminal("ZAGROŻENIE WYELIMINOWANE. Kredyty wypłacone.");
@@ -1142,6 +1436,34 @@ function isPointInPolygon(x, y, points) {
 
 function renderAnomalies() {
     game.enemies.forEach(e => {
+        // REGENERATOR: pulsing heal aura
+        if (e.isRegenerator) {
+            const pulse = 0.3 + Math.sin(Date.now() * 0.004) * 0.25;
+            ctx.strokeStyle = `rgba(0, 255, 160, ${pulse})`;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.regenRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Heal particles drifting outward
+            for (let p = 0; p < 4; p++) {
+                const a = Math.random() * Math.PI * 2;
+                const d = Math.random() * e.regenRadius;
+                ctx.fillStyle = `rgba(0, 255, 160, ${Math.random() * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(e.x + Math.cos(a)*d, e.y + Math.sin(a)*d, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Inner glow
+            ctx.fillStyle = 'rgba(0, 255, 120, 0.12)';
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size + 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color;
         ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
@@ -1360,6 +1682,21 @@ function throwGrenade() {
         targetY = game.player.y + Math.sin(angle)*weapon.range;
     }
     
+    if (game.player.secondaryWeapon === 'HOLOGRAM') {
+        game.holograms.push({ x: targetX, y: targetY, frame: 0, duration: CONFIG.WEAPONS_SECONDARY.HOLOGRAM.duration });
+        logTerminal('HOLOGRAM aktywny!');
+        game.player.lastGrenade = now;
+        return;
+    }
+
+    if (game.player.secondaryWeapon === 'SHIELD') {
+        const cfg = CONFIG.WEAPONS_SECONDARY.SHIELD;
+        game.shields.push({ x: game.player.x, y: game.player.y, frame: 0, duration: cfg.duration, radius: cfg.radius, slowMult: cfg.slowMult });
+        logTerminal('TARCZA aktywna!');
+        game.player.lastGrenade = now;
+        return;
+    }
+
     if (game.player.secondaryWeapon === 'MONSTER') {
         // Monster throw - arc animation then spawn
         const actualDist = Math.hypot(targetX - game.player.x, targetY - game.player.y);
@@ -1692,8 +2029,805 @@ function updateStatsUI() {
 }
 
 // ══════════════════════════════════════════════
-//  UI — panel switching
+//  HOLOGRAM — attracts enemies
 // ══════════════════════════════════════════════
+function updateHolograms() {
+    const toRemove = new Set();
+    game.holograms.forEach((h, i) => {
+        h.frame++;
+
+        // While active, redirect nearby enemies toward hologram
+        game.enemies.forEach(e => {
+            if (e.moveType === 'FLY') return; // Flying units ignore ground decoys
+            const dist = Math.hypot(e.x - h.x, e.y - h.y);
+            if (dist < 600) { // Influence radius
+                // Override enemy direction toward hologram this frame
+                const ang = Math.atan2(h.y - e.y, h.x - e.x);
+                e._holoOverride = { dx: Math.cos(ang), dy: Math.sin(ang) };
+            }
+        });
+
+        // Render: flickering cyan pillar
+        const alpha = 1 - (h.frame / h.duration);
+        const flicker = 0.6 + Math.sin(h.frame * 0.3) * 0.4;
+
+        // Outer ring pulse
+        ctx.strokeStyle = `rgba(0, 220, 255, ${alpha * flicker * 0.5})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.arc(h.x, h.y, 600, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Pillar glow
+        for (let r = 30; r > 0; r -= 6) {
+            ctx.fillStyle = `rgba(0, 200, 255, ${alpha * flicker * (r / 30) * 0.12})`;
+            ctx.beginPath(); ctx.arc(h.x, h.y, r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Diamond shape
+        ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * flicker})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(h.x, h.y - 20); ctx.lineTo(h.x + 14, h.y);
+        ctx.lineTo(h.x, h.y + 20); ctx.lineTo(h.x - 14, h.y);
+        ctx.closePath(); ctx.stroke();
+
+        // Scan line animation
+        const scanY = h.y - 20 + (h.frame % 40);
+        ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.6})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(h.x - 14, scanY); ctx.lineTo(h.x + 14, scanY); ctx.stroke();
+
+        if (h.frame >= h.duration) toRemove.add(i);
+    });
+    game.holograms = game.holograms.filter((_, i) => !toRemove.has(i));
+
+    // Clear holo overrides after frame
+    game.enemies.forEach(e => delete e._holoOverride);
+}
+
+// ══════════════════════════════════════════════
+//  SHIELD — slow field around player
+// ══════════════════════════════════════════════
+function updateShields() {
+    const toRemove = new Set();
+    game.shields.forEach((s, i) => {
+        s.frame++;
+        const alpha = 1 - (s.frame / s.duration);
+
+        // Slow enemies inside radius
+        game.enemies.forEach(e => {
+            const dist = Math.hypot(e.x - s.x, e.y - s.y);
+            if (dist < s.radius) {
+                if (!e._shielded) {
+                    e._shieldedOrigSpeed = e._shieldedOrigSpeed || e.speed;
+                    e.speed = e._shieldedOrigSpeed * s.slowMult;
+                    e._shielded = true;
+                }
+            } else if (e._shielded) {
+                e.speed = e._shieldedOrigSpeed || e.speed;
+                delete e._shielded;
+                delete e._shieldedOrigSpeed;
+            }
+        });
+
+        // Render: hexagonal slow-field
+        const sides = 6;
+        ctx.strokeStyle = `rgba(80, 160, 255, ${alpha * 0.7})`;
+        ctx.fillStyle = `rgba(40, 80, 200, ${alpha * 0.08})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let k = 0; k < sides; k++) {
+            const a = (k / sides) * Math.PI * 2 - Math.PI / 6;
+            const x = s.x + Math.cos(a) * s.radius;
+            const y = s.y + Math.sin(a) * s.radius;
+            k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // Rotating inner rings
+        for (let ring = 0; ring < 2; ring++) {
+            const rot = (s.frame * 0.02 + ring * Math.PI) % (Math.PI * 2);
+            ctx.strokeStyle = `rgba(100, 180, 255, ${alpha * 0.4})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let k = 0; k < sides; k++) {
+                const a = (k / sides) * Math.PI * 2 + rot;
+                const r = s.radius * (0.5 + ring * 0.3);
+                const x = s.x + Math.cos(a) * r;
+                const y = s.y + Math.sin(a) * r;
+                k === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.closePath(); ctx.stroke();
+        }
+
+        if (s.frame >= s.duration) {
+            // Restore speeds on expiry
+            game.enemies.forEach(e => {
+                if (e._shielded) {
+                    e.speed = e._shieldedOrigSpeed || e.speed;
+                    delete e._shielded;
+                    delete e._shieldedOrigSpeed;
+                }
+            });
+            toRemove.add(i);
+        }
+    });
+    game.shields = game.shields.filter((_, i) => !toRemove.has(i));
+}
+
+
+// ══════════════════════════════════════════════
+//  MAP SETTINGS — presety, suwaki, chaos
+// ══════════════════════════════════════════════
+
+const PRESETS = {
+    easy:   { mountains: 1, lakes: 1, forests: 1 },
+    normal: { mountains: 2, lakes: 2, forests: 2 },
+    hard:   { mountains: 3, lakes: 3, forests: 3 }
+};
+const DOTS = ['○○○○', '●○○○', '●●○○', '●●●○', '●●●●'];
+
+function updateSliderDisplay() {
+    const ms = game.mapSettings;
+    ['mountains','lakes','forests'].forEach(k => {
+        const valEl = document.getElementById('val-' + k);
+        const sl = document.getElementById('sl-' + k);
+        if (valEl) valEl.innerText = DOTS[ms[k]];
+        if (sl) sl.value = ms[k];
+    });
+    const chaosBtn = document.getElementById('chaos-btn');
+    if (chaosBtn) {
+        chaosBtn.classList.toggle('active', ms.chaos);
+        const sub = chaosBtn.querySelector('.chaos-sub');
+        if (sub) sub.innerText = ms.chaos ? '💀 Aktywny — pełna losowość' : 'Wolna amerykanka';
+    }
+    ['mountains','lakes','forests'].forEach(k => {
+        const sl = document.getElementById('sl-' + k);
+        if (sl) sl.disabled = ms.chaos;
+    });
+    document.querySelectorAll('.preset-btn').forEach(b => b.disabled = ms.chaos);
+}
+
+function applyPreset(name) {
+    const p = PRESETS[name];
+    game.mapSettings.mountains = p.mountains;
+    game.mapSettings.lakes = p.lakes;
+    game.mapSettings.forests = p.forests;
+    game.mapSettings.chaos = false;
+    document.querySelectorAll('.preset-btn').forEach(b => {
+        const txt = b.textContent.toLowerCase();
+        b.classList.toggle('active',
+            (name==='easy' && txt.includes('atwa')) ||
+            (name==='normal' && txt.includes('normalna')) ||
+            (name==='hard' && txt.includes('trudna'))
+        );
+    });
+    updateSliderDisplay();
+}
+
+function onSlider(key, val) {
+    game.mapSettings[key] = parseInt(val);
+    game.mapSettings.chaos = false;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    updateSliderDisplay();
+}
+
+function toggleChaos() {
+    game.mapSettings.chaos = !game.mapSettings.chaos;
+    if (game.mapSettings.chaos) {
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    }
+    updateSliderDisplay();
+}
+
+// ══════════════════════════════════════════════
+//  MERCENARIES — definicje, losowanie, AI, render
+// ══════════════════════════════════════════════
+
+const MERC_WEAPONS = [
+    { id: 'AR',       name: 'Karabin szturmowy', dmg: 18,  rof: 12,  range: 260, projectile: true,  color: '#f0d060' },
+    { id: 'MINIGUN',  name: 'Minigun',            dmg: 8,   rof: 5,   range: 220, projectile: true,  color: '#ff9020' },
+    { id: 'SHOTGUN',  name: 'Shotgun',            dmg: 12,  rof: 45,  range: 140, pellets: 5, projectile: true, color: '#e08040' },
+    { id: 'ROCKET',   name: 'Rakietnica',         dmg: 120, rof: 90,  range: 380, blast: 80,  projectile: false, color: '#ff4040' },
+    { id: 'FLAMER',   name: 'Miotacz ognia',      dmg: 6,   rof: 20,  range: 130, dot: true,  projectile: false, color: '#ff6010' },
+    { id: 'SNIPER',   name: 'Snajper',            dmg: 200, rof: 150, range: 500, projectile: true,  color: '#60d0ff' },
+];
+
+const MERC_SPECS = [
+    { id: 'ASSAULT',  name: 'Szturmowiec', moveType: 'LAND', speedMult: 1.3, terrainBonus: {},           color: '#8080c0', icon: '⚔' },
+    { id: 'GOORAL',   name: 'Góral',       moveType: 'LAND', speedMult: 1.0, terrainBonus: {hill: 1.6},  color: '#a09060', icon: '⛰' },
+    { id: 'SWIMMER',  name: 'Pływak',      moveType: 'SWIM', speedMult: 1.1, terrainBonus: {water: 1.5}, color: '#4090c0', icon: '🌊' },
+    { id: 'RANGER',   name: 'Leśny',       moveType: 'LAND', speedMult: 1.0, terrainBonus: {forest: 1.4},color: '#406040', icon: '🌲' },
+    { id: 'HEAVY',    name: 'Ciężki',      moveType: 'LAND', speedMult: 0.6, terrainBonus: {},           color: '#707070', icon: '🛡' },
+];
+
+const MERC_NAMES = [
+    'Marek','Zbyszek','Waldek','Gruby','Cichy','Ryba','Noga','Jajo',
+    'Kura','Sęp','Wilk','Lis','Byk','Reks','Stary','Nowy','Zuch'
+];
+
+function generateMercRoster() {
+    game.mercRoster = [];
+    const usedNames = new Set();
+    for (let i = 0; i < 3; i++) {
+        const spec   = MERC_SPECS[Math.floor(Math.random() * MERC_SPECS.length)];
+        const weapon = MERC_WEAPONS[Math.floor(Math.random() * MERC_WEAPONS.length)];
+        let name;
+        do { name = MERC_NAMES[Math.floor(Math.random() * MERC_NAMES.length)]; } while (usedNames.has(name));
+        usedNames.add(name);
+
+        const hp = 200 + Math.floor(Math.random() * 400);
+        const speed = (1.2 + Math.random() * 0.8) * spec.speedMult;
+
+        game.mercRoster.push({
+            id: 'merc_' + i + '_' + Date.now(),
+            name, spec, weapon, hp, maxHp: hp, speed,
+            hired: false
+        });
+    }
+}
+
+function hireMerc(idx) {
+    const entry = game.mercRoster[idx];
+    if (!entry || entry.hired) return;
+    entry.hired = true;
+
+    // Spawn near player
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 80 + Math.random() * 60;
+    const mx = (game.player.x || CONFIG.WIDTH/2) + Math.cos(angle) * dist;
+    const my = (game.player.y || CONFIG.HEIGHT/2) + Math.sin(angle) * dist;
+
+    const merc = {
+        x: mx, y: my,
+        hp: entry.hp, maxHp: entry.maxHp,
+        speed: entry.speed,
+        moveType: entry.spec.moveType,
+        spec: entry.spec,
+        weapon: entry.weapon,
+        name: entry.name,
+        size: 14,
+        fireCooldown: 0,
+        target: null,
+        // projectiles fired by this merc
+        projectiles: [],
+        burnZones: [],
+        facing: 0,
+        hitF: 0,
+        dead: false
+    };
+    game.mercs.push(merc);
+    logTerminal(entry.name + ' (' + entry.spec.name + ') dołączył!');
+    buildMercRosterUI();
+}
+
+// ── UPDATE ──────────────────────────────────────
+function updateMercs() {
+    const toRemove = new Set();
+
+    game.mercs.forEach((m, mi) => {
+        if (m.dead) { toRemove.add(mi); return; }
+        if (m.hitF > 0) m.hitF--;
+
+        // Update own projectiles
+        m.projectiles = m.projectiles.filter(p => {
+            p.x += p.vx; p.y += p.vy; p.life--;
+            if (p.life <= 0) return false;
+            // Hit enemies
+            let hit = false;
+            game.enemies.forEach(e => {
+                if (hit) return;
+                const hitR = p.blast ? Math.min(p.blast, 60) : e.size + 5;
+                if (Math.hypot(e.x - p.x, e.y - p.y) < hitR) {
+                    e.hp -= p.dmg; e.hitF = 3;
+                    hit = true;
+                }
+            });
+            return !hit;
+        });
+
+        // Find nearest enemy
+        let nearest = null, nearestDist = Infinity;
+        game.enemies.forEach(e => {
+            const d = Math.hypot(e.x - m.x, e.y - m.y);
+            if (d < nearestDist) { nearestDist = d; nearest = e; }
+        });
+        m.target = nearest;
+
+        if (nearest) {
+            m.facing = Math.atan2(nearest.y - m.y, nearest.x - m.x);
+
+            // Move toward enemy if out of range
+            if (nearestDist > m.weapon.range * 0.85) {
+                const ang = m.facing;
+                let dx = Math.cos(ang), dy = Math.sin(ang);
+                if (willCollideWithLake(m.x, m.y, dx * m.speed, dy * m.speed, m.size, m.moveType)) {
+                    const perps = [{dx:-dy,dy:dx},{dx:dy,dy:-dx}];
+                    for (const alt of perps) {
+                        if (!willCollideWithLake(m.x, m.y, alt.dx*m.speed, alt.dy*m.speed, m.size, m.moveType)) {
+                            dx = alt.dx; dy = alt.dy; break;
+                        }
+                    }
+                }
+                m.x += dx * m.speed;
+                m.y += dy * m.speed;
+            }
+
+            // Fire
+            m.fireCooldown--;
+            if (m.fireCooldown <= 0 && nearestDist <= m.weapon.range) {
+                m.fireCooldown = m.weapon.rof;
+                fireMercWeapon(m, nearest);
+            }
+        }
+
+        // Enemies aggro toward mercs — every enemy within 350px has 30% chance to redirect
+        game.enemies.forEach(e => {
+            if (e.moveType === 'FLY') return;
+            const d = Math.hypot(e.x - m.x, e.y - m.y);
+            if (d < 350 && Math.random() < 0.008) {
+                e._mercTarget = m;
+            }
+        });
+
+        // Clamp to map
+        m.x = Math.max(30, Math.min(CONFIG.WIDTH-30, m.x));
+        m.y = Math.max(30, Math.min(CONFIG.HEIGHT-30, m.y));
+    });
+
+    game.mercs = game.mercs.filter((_, i) => !toRemove.has(i));
+
+    // Apply merc-targeted enemy movement
+    game.enemies.forEach(e => {
+        if (e._mercTarget) {
+            if (e._mercTarget.dead || !game.mercs.includes(e._mercTarget)) {
+                delete e._mercTarget;
+            }
+        }
+    });
+}
+
+function fireMercWeapon(m, target) {
+    const ang = Math.atan2(target.y - m.y, target.x - m.x);
+    const wpn = m.weapon;
+
+    if (wpn.id === 'FLAMER') {
+        // Single burn zone per shot — no spam
+        const spread = (Math.random()-0.5)*0.35;
+        const dist = 30 + Math.random()*wpn.range;
+        game.burnZones.push({
+            x: m.x + Math.cos(ang+spread)*dist,
+            y: m.y + Math.sin(ang+spread)*dist,
+            radius: 18, damage: wpn.dmg,
+            frame: 0, maxFrames: 20, hasDealtDamage: false,
+            color: '#f60'
+        });
+        return;
+    }
+
+    if (wpn.id === 'ROCKET') {
+        game.explosions = game.explosions || [];
+        // Arc rocket — direct hit + blast
+        const pellets = 1;
+        for (let p = 0; p < pellets; p++) {
+            const spread = (Math.random()-0.5)*0.05;
+            const speed = 7;
+            m.projectiles.push({
+                x: m.x, y: m.y,
+                vx: Math.cos(ang+spread)*speed,
+                vy: Math.sin(ang+spread)*speed,
+                dmg: wpn.dmg, life: Math.ceil(wpn.range / speed),
+                blast: wpn.blast || 0,
+                color: wpn.color
+            });
+        }
+        return;
+    }
+
+    // Default: bullet(s)
+    const count = wpn.pellets || 1;
+    for (let i = 0; i < count; i++) {
+        const spread = wpn.id === 'SHOTGUN' ? (Math.random()-0.5)*0.5 : (Math.random()-0.5)*0.04;
+        const speed = wpn.id === 'SNIPER' ? 22 : 14;
+        const maxLife = Math.ceil(wpn.range / speed);
+        m.projectiles.push({
+            x: m.x, y: m.y,
+            vx: Math.cos(ang+spread)*speed,
+            vy: Math.sin(ang+spread)*speed,
+            dmg: wpn.dmg / count, life: maxLife,
+            blast: 0, color: wpn.color
+        });
+    }
+}
+
+// ── RENDER ──────────────────────────────────────
+function renderMercs() {
+    game.mercs.forEach(m => {
+        // Draw own projectiles
+        m.projectiles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, m.weapon.id === 'ROCKET' ? 5 : 3, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        const hit = m.hitF > 0;
+        ctx.save();
+        ctx.translate(m.x, m.y);
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(3, 6, m.size*0.7, m.size*0.3, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        // Body — humanoid shape
+        const col = hit ? '#fff' : m.spec.color;
+
+        // Legs
+        ctx.fillStyle = hit ? '#fff' : '#404050';
+        ctx.fillRect(-5, 6, 4, 10);
+        ctx.fillRect(2, 6, 4, 10);
+
+        // Torso
+        ctx.fillStyle = col;
+        ctx.fillRect(-7, -4, 14, 12);
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(0, -10, 6, 0, Math.PI*2);
+        ctx.fill();
+
+        // Weapon barrel (pointing toward target)
+        ctx.save();
+        ctx.rotate(m.facing);
+        ctx.fillStyle = '#303040';
+        const blen = m.weapon.id === 'SNIPER' ? 18 : m.weapon.id === 'ROCKET' ? 14 : 10;
+        ctx.fillRect(4, -2, blen, 3);
+        ctx.restore();
+
+        // Spec icon above head
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.spec.icon, 0, -20);
+
+        ctx.restore();
+
+        // HP bar
+        const bw = 30, bh = 4;
+        const bx = m.x - bw/2, by = m.y - m.size - 18;
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(bx, by, bw, bh);
+        const pct = Math.max(0, m.hp / m.maxHp);
+        ctx.fillStyle = pct > 0.5 ? '#50c050' : pct > 0.25 ? '#c0a030' : '#c03030';
+        ctx.fillRect(bx, by, bw*pct, bh);
+
+        // Name
+        ctx.fillStyle = 'rgba(220,220,220,0.85)';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.name, m.x, m.y - m.size - 22);
+    });
+}
+
+// ── UI ──────────────────────────────────────────
+function buildMercRosterUI() {
+    const container = document.getElementById('merc-roster');
+    if (!container) return;
+    container.innerHTML = '';
+
+    game.mercRoster.forEach((entry, idx) => {
+        const div = document.createElement('div');
+        div.className = 'merc-card' + (entry.hired ? ' hired' : '');
+
+        const hpBar = Math.round((entry.hp / 600) * 100);
+        div.innerHTML =
+            '<div class="merc-top">' +
+                '<span class="merc-icon">' + entry.spec.icon + '</span>' +
+                '<div class="merc-info">' +
+                    '<span class="merc-name">' + entry.name + '</span>' +
+                    '<span class="merc-spec">' + entry.spec.name + ' · ' + entry.weapon.name + '</span>' +
+                '</div>' +
+                (!entry.hired ? '<button class="merc-hire-btn" onclick="hireMerc(' + idx + ')">WERBUJ</button>'
+                              : '<span class="merc-hired-badge">✓ NA POLU</span>') +
+            '</div>' +
+            '<div class="merc-stats">' +
+                '<span>HP <b>' + entry.hp + '</b></span>' +
+                '<span>SPD <b>' + entry.speed.toFixed(1) + '</b></span>' +
+                '<span>DMG <b>' + entry.weapon.dmg + '</b></span>' +
+                '<span>RNG <b>' + entry.weapon.range + '</b></span>' +
+            '</div>';
+        container.appendChild(div);
+    });
+}
+
+
+
+// ══════════════════════════════════════════════
+//  MAP EDITOR
+// ══════════════════════════════════════════════
+
+const editorState = {
+    active: false,
+    tool: 'mountain',       // mountain | lake | forest | eraser
+    brushSize: 80,
+    intensity: 8,
+    painting: false,
+    spawnDir: 'NORTH',
+    terrain: null,          // working copy while editing
+    lastPaintX: -999, lastPaintY: -999,
+    minPaintDist: 40        // min px between brush strokes while dragging
+};
+
+function enterEditor() {
+    editorState.active = true;
+    editorState.terrain = { hills: [], lakes: [], forests: [] };
+    editorState.spawnDir = 'NORTH';
+    // Show panel
+    document.querySelectorAll('#sidebar > div[id^="panel-"]').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-editor').classList.add('active');
+    // Canvas cursor
+    canvas.style.cursor = 'crosshair';
+    // Bind events
+    canvas.addEventListener('mousedown', editorMouseDown);
+    canvas.addEventListener('mousemove', editorMouseMove);
+    canvas.addEventListener('mouseup',   editorMouseUp);
+    canvas.addEventListener('mouseleave',editorMouseUp);
+    // Overlay
+    const ov = document.getElementById('editor-overlay');
+    if (ov) ov.classList.add('visible');
+    editorUpdateOverlay();
+    editorRefreshSavedList();
+    // Start render loop
+    editorRenderLoop();
+}
+
+function exitEditor() {
+    editorState.active = false;
+    canvas.removeEventListener('mousedown', editorMouseDown);
+    canvas.removeEventListener('mousemove', editorMouseMove);
+    canvas.removeEventListener('mouseup',   editorMouseUp);
+    canvas.removeEventListener('mouseleave',editorMouseUp);
+    canvas.style.cursor = 'default';
+    const ov = document.getElementById('editor-overlay');
+    if (ov) ov.classList.remove('visible');
+    showPanel('base');
+}
+
+// ── Tool selection ──────────────────────────
+function setEditorTool(tool) {
+    editorState.tool = tool;
+    ['mountain','lake','forest','eraser'].forEach(t => {
+        const btn = document.getElementById('tool-' + t);
+        if (btn) btn.classList.toggle('active', t === tool);
+    });
+    editorUpdateOverlay();
+}
+
+function setSpawnDir(dir) {
+    editorState.spawnDir = dir;
+    ['NORTH','SOUTH','EAST','WEST'].forEach(d => {
+        const btn = document.getElementById('spawn-' + d);
+        if (btn) btn.classList.toggle('active', d === dir);
+    });
+}
+
+// ── Canvas coordinate conversion ───────────
+function editorCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (e.clientX - rect.left)  * scaleX,
+        y: (e.clientY - rect.top)   * scaleY
+    };
+}
+
+// ── Mouse events ────────────────────────────
+function editorMouseDown(e) {
+    if (!editorState.active) return;
+    editorState.painting = true;
+    editorState.lastPaintX = -999;
+    editorState.lastPaintY = -999;
+    const {x, y} = editorCanvasCoords(e);
+    editorApplyBrush(x, y);
+}
+
+function editorMouseMove(e) {
+    if (!editorState.active) return;
+    const {x, y} = editorCanvasCoords(e);
+    // Update cursor overlay position
+    editorState.cursorX = x;
+    editorState.cursorY = y;
+    if (!editorState.painting) return;
+    const dx = x - editorState.lastPaintX;
+    const dy = y - editorState.lastPaintY;
+    if (Math.hypot(dx, dy) < editorState.minPaintDist) return;
+    editorApplyBrush(x, y);
+}
+
+function editorMouseUp() {
+    editorState.painting = false;
+}
+
+// ── Core brush logic ────────────────────────
+function editorApplyBrush(x, y) {
+    editorState.lastPaintX = x;
+    editorState.lastPaintY = y;
+    const t = editorState.terrain;
+    const r = editorState.brushSize;
+    const lv = editorState.intensity;
+
+    if (editorState.tool === 'eraser') {
+        // Remove any terrain objects whose center is within eraser radius
+        t.hills    = t.hills.filter(h => {
+            const cx = h.isRidge ? (h.points[0].x + h.points[h.points.length-1].x)/2 : h.x;
+            const cy = h.isRidge ? (h.points[0].y + h.points[h.points.length-1].y)/2 : h.y;
+            return Math.hypot(cx - x, cy - y) > r * 0.8;
+        });
+        t.lakes    = t.lakes.filter(lake => {
+            const cx = lake.points.reduce((s,p)=>s+p.x,0)/lake.points.length;
+            const cy = lake.points.reduce((s,p)=>s+p.y,0)/lake.points.length;
+            return Math.hypot(cx - x, cy - y) > r * 0.8;
+        });
+        t.forests  = t.forests.filter(f => Math.hypot(f.centerX - x, f.centerY - y) > r * 0.8);
+        return;
+    }
+
+    if (editorState.tool === 'mountain') {
+        terrainAddMountain(t, x, y, r * 0.7, lv);
+    } else if (editorState.tool === 'lake') {
+        terrainAddLake(t, x, y, r * 0.6);
+    } else if (editorState.tool === 'forest') {
+        const density = Math.round(lv * 3);
+        terrainAddForest(t, x, y, r * 0.8, density);
+    }
+}
+
+// ── Render loop ─────────────────────────────
+function editorRenderLoop() {
+    if (!editorState.active) return;
+    requestAnimationFrame(editorRenderLoop);
+    editorDraw();
+}
+
+function editorDraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background
+    ctx.fillStyle = '#0d1008';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let gx = 0; gx < canvas.width; gx += 100) {
+        ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,canvas.height); ctx.stroke();
+    }
+    for (let gy = 0; gy < canvas.height; gy += 100) {
+        ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(canvas.width,gy); ctx.stroke();
+    }
+
+    // Render terrain preview using existing render functions
+    // temporarily swap game.terrain
+    const savedTerrain = game.terrain;
+    game.terrain = editorState.terrain;
+    renderTerrain();
+    game.terrain = savedTerrain;
+
+    // Spawn direction indicator
+    editorDrawSpawnArrow();
+
+    // Brush cursor
+    if (editorState.cursorX !== undefined) {
+        const col = editorState.tool === 'mountain' ? 'rgba(160,128,80,0.5)'
+                  : editorState.tool === 'lake'     ? 'rgba(64,128,220,0.5)'
+                  : editorState.tool === 'forest'   ? 'rgba(64,160,64,0.5)'
+                  : 'rgba(220,80,80,0.4)';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5,4]);
+        ctx.beginPath();
+        ctx.arc(editorState.cursorX, editorState.cursorY, editorState.brushSize, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+}
+
+function editorDrawSpawnArrow() {
+    const W = canvas.width, H = canvas.height;
+    const dir = editorState.spawnDir;
+    let ax, ay, angle, label;
+    if (dir === 'NORTH') { ax=W/2; ay=60;    angle=Math.PI*0.5;  label='↓ SPAWN'; }
+    if (dir === 'SOUTH') { ax=W/2; ay=H-60;  angle=-Math.PI*0.5; label='↑ SPAWN'; }
+    if (dir === 'WEST')  { ax=60;  ay=H/2;   angle=0;            label='→ SPAWN'; }
+    if (dir === 'EAST')  { ax=W-60;ay=H/2;   angle=Math.PI;      label='← SPAWN'; }
+
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(angle);
+
+    ctx.strokeStyle = 'rgba(220,80,80,0.9)';
+    ctx.fillStyle   = 'rgba(220,80,80,0.9)';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-30,0); ctx.lineTo(20,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(20,0); ctx.lineTo(5,-10); ctx.lineTo(5,10); ctx.closePath(); ctx.fill();
+
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(220,80,80,0.85)';
+    ctx.font = 'bold 13px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, ax, ay - 18);
+}
+
+// ── Overlay text ────────────────────────────
+function editorUpdateOverlay() {
+    const ov = document.getElementById('editor-overlay');
+    if (!ov) return;
+    const labels = { mountain:'⛰ Góra', lake:'💧 Jezioro', forest:'🌲 Las', eraser:'🧹 Gumka' };
+    ov.innerText = labels[editorState.tool] + ' · LMB maluj · przeciągnij';
+}
+
+// ── Save / Load / Clear ─────────────────────
+function editorSaveMap() {
+    const name = (document.getElementById('ed-mapname').value || '').trim();
+    if (!name) { logTerminal('Podaj nazwę mapy!'); return; }
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    maps[name] = {
+        terrain: editorState.terrain,
+        spawnDir: editorState.spawnDir,
+        editorMap: true
+    };
+    localStorage.setItem('outpost_maps', JSON.stringify(maps));
+    logTerminal('Zapisano: ' + name);
+    editorRefreshSavedList();
+    populateMapSelector();
+}
+
+function editorClearMap() {
+    editorState.terrain = { hills: [], lakes: [], forests: [] };
+}
+
+function editorLoadMap(name) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    if (!maps[name]) return;
+    editorState.terrain = JSON.parse(JSON.stringify(maps[name].terrain));
+    if (maps[name].spawnDir) {
+        setSpawnDir(maps[name].spawnDir);
+    }
+    document.getElementById('ed-mapname').value = name;
+    logTerminal('Wczytano: ' + name);
+}
+
+function editorDeleteMap(name) {
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    delete maps[name];
+    localStorage.setItem('outpost_maps', JSON.stringify(maps));
+    editorRefreshSavedList();
+    populateMapSelector();
+    logTerminal('Usunięto: ' + name);
+}
+
+function editorRefreshSavedList() {
+    const container = document.getElementById('ed-saved-list');
+    if (!container) return;
+    const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
+    const names = Object.keys(maps);
+    if (!names.length) {
+        container.innerHTML = '<div style="font-size:10px;color:var(--text-dim);padding:4px 0;">Brak zapisanych map</div>';
+        return;
+    }
+    container.innerHTML = names.map(n =>
+        '<div class="saved-map-item">' +
+            '<span class="saved-map-name">' + n + '</span>' +
+            '<button class="saved-map-load" onclick="editorLoadMap(\'' + n.replace(/'/g,"\\'") + '\')">Wczytaj</button>' +
+            '<button class="saved-map-del"  onclick="editorDeleteMap(\'' + n.replace(/'/g,"\\'") + '\')">✕</button>' +
+        '</div>'
+    ).join('');
+}
+
 
 function showPanel(name) {
     document.getElementById('panel-base').classList.remove('active');
@@ -1759,7 +2893,9 @@ function toggleDebug() {
 
 function onMapChange(sel) {
     game.selectedCustomMap = sel.value || null;
-    logTerminal(game.selectedCustomMap ? `Mapa: ${game.selectedCustomMap}` : 'Losowa mapa');
+    const rms = document.getElementById('random-map-section');
+    if (rms) rms.style.display = game.selectedCustomMap ? 'none' : 'flex';
+    logTerminal(game.selectedCustomMap ? 'Mapa: ' + game.selectedCustomMap : 'Losowa mapa');
 }
 
 // ══════════════════════════════════════════════
@@ -1774,24 +2910,21 @@ function buildTowerList(containerId) {
         const item = CONFIG.DEFENSE[k];
         const btn = document.createElement('button');
         btn.className = 'tower-btn' + (game.selected === k ? ' selected' : '');
-        
-        const dot = `<span class="t-color-dot" style="background:${item.color}"></span>`;
-        let stats = '';
-        if (item.range) stats += `RNG:${item.range} `;
-        if (item.dmg) stats += `DMG:${item.dmg} `;
-        if (item.hp) stats += `HP:${item.hp}`;
-        
-        btn.innerHTML = `
-            <span class="t-name">${dot}${item.name}</span>
-            <span class="t-cost">$${item.cost}</span>
-            <span class="t-stats">${stats}</span>
-            <span></span>`;
+        let stats = [];
+        if (item.range) stats.push('RNG ' + item.range);
+        if (item.dmg) stats.push('DMG ' + item.dmg);
+        if (item.slowMult) stats.push('SLOW ' + Math.round((1-item.slowMult)*100) + '%');
+        if (item.rof) stats.push('ROF ' + item.rof + 'ms');
+        if (item.hp) stats.push('HP ' + item.hp);
+        btn.innerHTML =
+            '<span class="t-name"><span class="t-dot" style="background:' + item.color + '"></span>' + item.name + '</span>' +
+            '<span class="t-cost">$' + item.cost + '</span>' +
+            '<span class="t-stats">' + stats.join('  ') + '</span>' +
+            '<span></span>';
         btn.onclick = () => {
             game.selected = k;
             document.querySelectorAll('.tower-btn').forEach(b => b.classList.remove('selected'));
-            document.querySelectorAll('.tower-btn').forEach(b => {
-                if (b.querySelector('.t-name') && b.querySelector('.t-name').textContent.includes(item.name)) b.classList.add('selected');
-            });
+            btn.classList.add('selected');
         };
         container.appendChild(btn);
     }
@@ -1811,15 +2944,17 @@ function buildPrimaryList() {
             const selected = game.player.primaryWeapon === key;
             const btn = document.createElement('button');
             btn.className = 'wpn-btn' + (selected ? ' selected' : '');
+            const stats = `ROF:${wpn.rof}ms  DMG:${wpn.dmg}${wpn.piercing?' PIERCE':''}${wpn.pellets?' x'+wpn.pellets:''}`;
             btn.innerHTML = `
-                <div>
+                <div class="wpn-left">
                     <span class="wpn-name">${wpn.name}</span>
                     <span class="wpn-desc">${wpn.desc}</span>
+                    <span class="wpn-stats">${stats}</span>
                 </div>
-                <span class="wpn-key">${selected ? '▶ LMB' : ''}</span>`;
+                ${selected ? '<span class="wpn-key">LMB ▶</span>' : ''}`;
             btn.onclick = () => {
                 game.player.primaryWeapon = key;
-                logTerminal(`LMB: ${wpn.name}`);
+                logTerminal('LMB: ' + wpn.name);
                 buildPrimaryList();
                 updateStatusBar();
             };
@@ -1837,21 +2972,29 @@ function buildSecondaryList() {
             const wpn = CONFIG.WEAPONS_SECONDARY[key];
             const selected = game.player.secondaryWeapon === key;
             const isMonster = key === 'MONSTER';
+            const isUtil = key === 'HOLOGRAM' || key === 'SHIELD';
+            let cls = 'wpn-btn';
+            if (isMonster) cls += ' monster-btn';
+            if (isUtil) cls += ' util-btn';
+            if (selected) cls += ' selected';
             const btn = document.createElement('button');
-            btn.className = 'wpn-btn' + (isMonster ? ' monster-btn' : '') + (selected ? ' selected' : '');
-            let extra = '';
-            if (isMonster) extra = `<span class="wpn-desc" style="color:#005533">HP:${wpn.monsterHp} DMG:${wpn.monsterDmg} • STUNS</span>`;
-            else if (wpn.blastRadius) extra = `<span class="wpn-desc">BLAST:${wpn.blastRadius} CD:${(wpn.cooldown/1000).toFixed(1)}s</span>`;
-            btn.innerHTML = `
-                <div>
-                    <span class="wpn-name">${wpn.name}</span>
-                    <span class="wpn-desc">${wpn.desc}</span>
-                    ${extra}
-                </div>
-                <span class="wpn-key">${selected ? '▶ RMB' : ''}</span>`;
+            btn.className = cls;
+            // Build stats line
+            let statsStr = 'CD:' + (wpn.cooldown/1000).toFixed(0) + 's';
+            if (wpn.blastRadius) statsStr += '  BLAST:' + wpn.blastRadius;
+            if (wpn.monsterHp) statsStr += '  HP:' + wpn.monsterHp + '  DMG:' + wpn.monsterDmg;
+            if (wpn.range) statsStr += '  RNG:' + wpn.range;
+            if (wpn.duration) statsStr += '  ' + (wpn.duration/60).toFixed(0) + 's aktywny';
+            btn.innerHTML =
+                '<div class="wpn-left">' +
+                '<span class="wpn-name">' + wpn.name + '</span>' +
+                '<span class="wpn-desc">' + wpn.desc + '</span>' +
+                '<span class="wpn-stats">' + statsStr + '</span>' +
+                '</div>' +
+                (selected ? '<span class="wpn-key">RMB ▶</span>' : '');
             btn.onclick = () => {
                 game.player.secondaryWeapon = key;
-                logTerminal(`RMB: ${wpn.name}`);
+                logTerminal('RMB: ' + wpn.name);
                 buildSecondaryList();
                 updateStatusBar();
             };
@@ -1868,23 +3011,25 @@ function buildUpgradeGrid(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
-    [['SPD','Prędkość'], ['ROF','Ogień'], ['DMG','Obrażenia']].forEach(([s, label]) => {
+    [['SPD','Prędkość'], ['ROF','Szybkość'], ['DMG','Obrażenia']].forEach(([s, label]) => {
         const lk = s.toLowerCase() + 'Lv';
         const lv = game.player[lk];
         const cost = lv * 300;
         const btn = document.createElement('button');
         btn.className = 'upg-btn';
-        btn.innerHTML = `<span class="upg-type">${s}</span><span>LV${lv}</span><span class="upg-cost">$${cost}</span>`;
-        btn.title = label;
+        btn.innerHTML =
+            '<span class="upg-type">' + s + '</span>' +
+            '<span class="upg-lv">' + label + ' · Lv' + lv + '</span>' +
+            '<span class="upg-cost">$' + cost + '</span>';
         btn.onclick = () => {
             if (game.money >= cost) {
                 game.money -= cost;
                 game.player[lk]++;
-                logTerminal(`ULEPSZ: ${s} → LV${game.player[lk]}`);
+                logTerminal('Ulepszono: ' + s + ' Lv' + game.player[lk]);
                 buildUpgradeGrid(containerId);
                 updateStatusBar();
             } else {
-                logTerminal(`Za mało kredytów: ${s}`);
+                logTerminal('Za mało kredytów: ' + s);
             }
         };
         container.appendChild(btn);
@@ -1947,7 +3092,7 @@ function updateCombatIntel() {
 
 function updateStatusBar() {
     const setEl = (id, val) => { const e = document.getElementById(id); if(e) e.innerText = val; };
-    setEl('ui-money', '$' + Math.floor(game.money));
+    setEl('ui-money', Math.floor(game.money));
     setEl('ui-wave', game.wave || '—');
     
     const hpPct = Math.max(0, Math.ceil((game.hp / 6000) * 100));
@@ -1990,13 +3135,17 @@ function populateMapSelector() {
 
 // full UI init for each phase
 function initPrepUI() {
+    generateMercRoster();
+    buildMercRosterUI();
+    const wl = document.getElementById('merc-wave-label');
+    if (wl) wl.innerText = game.wave;
     buildTowerList('tower-list-prep');
     buildPrimaryList();
     buildSecondaryList();
     buildUpgradeGrid('upg-grid-prep');
     updateIntelDisplay();
     showPanel('prep');
-    switchTab('prep', 'weapons');
+    switchTab('prep', 'mercs');
 }
 
 function initCombatUI() {
@@ -2015,6 +3164,22 @@ function logTerminal(t) {
 
 window.handleAction = handleAction;
 window.throwGrenade = throwGrenade;
+window.onSlider = onSlider;
+window.applyPreset = applyPreset;
+window.toggleChaos = toggleChaos;
+window.onMapChange = onMapChange;
+window.hireMerc = hireMerc;
+window.enterEditor = enterEditor;
+window.exitEditor = exitEditor;
+window.setEditorTool = setEditorTool;
+window.setSpawnDir = setSpawnDir;
+window.editorSaveMap = editorSaveMap;
+window.editorClearMap = editorClearMap;
+window.editorLoadMap = editorLoadMap;
+window.editorDeleteMap = editorDeleteMap;
+window.switchTab = switchTab;
+window.toggleMapView = toggleMapView;
+window.toggleDebug = toggleDebug;
 
 init();
 </script>
