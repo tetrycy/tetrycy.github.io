@@ -980,13 +980,7 @@ function updateMonsters() {
                         }
                     });
                     
-                    // Attack flash effect
-                    game.explosions.push({
-                        x: monster.x, y: monster.y,
-                        radius: 0, maxRadius: monster.attackRange,
-                        damage: 0, frame: 0, maxFrames: 10,
-                        hasDealtDamage: true, color: 'monster_attack'
-                    });
+                    // Attack flash — just hitF on hit enemies, no explosion ring
                 }
             }
         } else {
@@ -2111,7 +2105,7 @@ const MERC_WEAPONS = [
     { id: 'MINIGUN',  name: 'Minigun',            dmg: 8,   rof: 5,   range: 220, projectile: true,  color: '#ff9020' },
     { id: 'SHOTGUN',  name: 'Shotgun',            dmg: 12,  rof: 45,  range: 140, pellets: 5, projectile: true, color: '#e08040' },
     { id: 'ROCKET',   name: 'Rakietnica',         dmg: 120, rof: 90,  range: 380, blast: 80,  projectile: false, color: '#ff4040' },
-    { id: 'FLAMER',   name: 'Miotacz ognia',      dmg: 4,   rof: 3,   range: 130, dot: true,  projectile: false, color: '#ff6010' },
+    { id: 'FLAMER',   name: 'Miotacz ognia',      dmg: 6,   rof: 20,  range: 130, dot: true,  projectile: false, color: '#ff6010' },
     { id: 'SNIPER',   name: 'Snajper',            dmg: 200, rof: 150, range: 500, projectile: true,  color: '#60d0ff' },
 ];
 
@@ -2198,11 +2192,10 @@ function updateMercs() {
             // Hit enemies
             let hit = false;
             game.enemies.forEach(e => {
-                if (Math.hypot(e.x - p.x, e.y - p.y) < e.size + 4) {
-                    e.hp -= p.dmg; e.hitF = 5;
-                    if (p.blast) {
-                        game.explosions.push({ x: p.x, y: p.y, radius: 0, maxRadius: p.blast, damage: p.dmg * 0.5, frame: 0, maxFrames: 15, hasDealtDamage: false, color: '#f84' });
-                    }
+                if (hit) return;
+                const hitR = p.blast ? Math.min(p.blast, 60) : e.size + 5;
+                if (Math.hypot(e.x - p.x, e.y - p.y) < hitR) {
+                    e.hp -= p.dmg; e.hitF = 3;
                     hit = true;
                 }
             });
@@ -2275,19 +2268,16 @@ function fireMercWeapon(m, target) {
     const wpn = m.weapon;
 
     if (wpn.id === 'FLAMER') {
-        // Burn zone
-        game.burnZones = game.burnZones || [];
-        for (let i = 0; i < 3; i++) {
-            const spread = (Math.random()-0.5)*0.4;
-            const dist = 40 + Math.random()*wpn.range;
-            game.burnZones.push({
-                x: m.x + Math.cos(ang+spread)*dist,
-                y: m.y + Math.sin(ang+spread)*dist,
-                radius: 20, damage: wpn.dmg,
-                frame: 0, maxFrames: 40, hasDealtDamage: false,
-                color: '#f60'
-            });
-        }
+        // Single burn zone per shot — no spam
+        const spread = (Math.random()-0.5)*0.35;
+        const dist = 30 + Math.random()*wpn.range;
+        game.burnZones.push({
+            x: m.x + Math.cos(ang+spread)*dist,
+            y: m.y + Math.sin(ang+spread)*dist,
+            radius: 18, damage: wpn.dmg,
+            frame: 0, maxFrames: 20, hasDealtDamage: false,
+            color: '#f60'
+        });
         return;
     }
 
@@ -2302,7 +2292,7 @@ function fireMercWeapon(m, target) {
                 x: m.x, y: m.y,
                 vx: Math.cos(ang+spread)*speed,
                 vy: Math.sin(ang+spread)*speed,
-                dmg: wpn.dmg, life: 120,
+                dmg: wpn.dmg, life: Math.ceil(wpn.range / speed),
                 blast: wpn.blast || 0,
                 color: wpn.color
             });
@@ -2315,7 +2305,7 @@ function fireMercWeapon(m, target) {
     for (let i = 0; i < count; i++) {
         const spread = wpn.id === 'SHOTGUN' ? (Math.random()-0.5)*0.5 : (Math.random()-0.5)*0.04;
         const speed = wpn.id === 'SNIPER' ? 22 : 14;
-        const maxLife = Math.ceil(wpn.range / speed) + 10;
+        const maxLife = Math.ceil(wpn.range / speed);
         m.projectiles.push({
             x: m.x, y: m.y,
             vx: Math.cos(ang+spread)*speed,
