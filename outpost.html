@@ -154,7 +154,7 @@
         .ed-sec-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
 
         /* Tool buttons */
-        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
         .tool-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 8px 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; color: var(--text-dim); text-align: center; transition: all 0.12s; display: flex; flex-direction: column; align-items: center; gap: 3px; }
         .tool-btn:hover { border-color: #4a4a6a; color: var(--text); }
         .tool-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(91,155,213,0.08); }
@@ -162,6 +162,8 @@
         .tool-btn.active.lake     { border-color: #4080c0; color: #60a0e0; background: rgba(64,128,192,0.08); }
         .tool-btn.active.forest   { border-color: #408040; color: #60a060; background: rgba(64,128,64,0.08); }
         .tool-btn.active.eraser   { border-color: var(--danger); color: var(--danger); background: rgba(224,80,80,0.08); }
+        .tool-btn.active.blocked  { border-color: #e0e0e0; color: #f0f0f0; background: rgba(220,220,220,0.08); }
+        .tool-btn.active.river    { border-color: #4080e0; color: #70b0ff; background: rgba(64,128,220,0.1); }
         .tool-icon { font-size: 18px; line-height: 1; }
         .tool-label { font-size: 10px; }
 
@@ -288,7 +290,6 @@
         </div>
 
         <!-- Skróty -->
-        <button class="ed-btn" style="border-color:var(--accent2);color:var(--accent2);font-size:11px;" onclick="enterEditor()">✏ Edytor mapy</button>
         <button class="ed-btn" style="border-color:var(--accent2);color:var(--accent2);font-size:11px;padding:8px;" onclick="enterEditor()">✏ Edytor mapy</button>
         <div class="hint-box">
             <span class="hk">WASD</span> ruch &nbsp;
@@ -312,6 +313,8 @@
                     <button class="tool-btn lake" id="tool-lake" onclick="setEditorTool('lake')"><span class="tool-icon">💧</span><span class="tool-label">Jezioro</span></button>
                     <button class="tool-btn forest" id="tool-forest" onclick="setEditorTool('forest')"><span class="tool-icon">🌲</span><span class="tool-label">Las</span></button>
                     <button class="tool-btn eraser" id="tool-eraser" onclick="setEditorTool('eraser')"><span class="tool-icon">🧹</span><span class="tool-label">Gumka</span></button>
+                    <button class="tool-btn blocked" id="tool-blocked" onclick="setEditorTool('blocked')"><span class="tool-icon">⬜</span><span class="tool-label">Mur</span></button>
+                    <button class="tool-btn river" id="tool-river" onclick="setEditorTool('river')"><span class="tool-icon">〰</span><span class="tool-label">Rzeka</span></button>
                 </div>
             </div>
             <div class="ed-section">
@@ -328,6 +331,13 @@
                     <label>Wysoki</label>
                     <span class="sv" id="ed-int-val">8</span>
                 </div>
+                <div class="ed-slider-row" style="margin-top:6px;display:none;" id="river-width-row">
+                    <label>Wąska</label>
+                    <input type="range" min="10" max="120" value="30" id="ed-river-width" oninput="editorState.riverWidth=+this.value;document.getElementById('ed-rw-val').innerText=this.value">
+                    <label>Szeroka</label>
+                    <span class="sv" id="ed-rw-val">30</span>
+                </div>
+                <div id="river-hint" style="font-size:10px;color:var(--accent2);display:none;padding-top:4px;">Klikaj punkty · Podwójny klik = zakończ · ESC = anuluj</div>
             </div>
             <div class="ed-section">
                 <span class="ed-sec-label">Kierunek ataku wrogów</span>
@@ -360,8 +370,10 @@
             <button class="tab active" onclick="switchTab('prep','towers')" id="tab-prep-towers">🏗 WIEŻE</button>
             <button class="tab" onclick="switchTab('prep','weapons')" id="tab-prep-weapons">🔫 BROŃ</button>
             <button class="tab" onclick="switchTab('prep','mercs')" id="tab-prep-mercs">🪖 NAJEMN.</button>
+            <button class="tab" onclick="switchTab('prep','monsters')" id="tab-prep-monsters">🧟 POTWORY</button>
             <button class="tab" onclick="switchTab('prep','upgrades')" id="tab-prep-upgrades">⬆ ULG</button>
             <button class="tab" onclick="switchTab('prep','intel')" id="tab-prep-intel">📡 INTEL</button>
+            <button class="tab" onclick="switchTab('prep','mines')" id="tab-prep-mines">💣 MINY</button>
         </div>
 
         <!-- Tab: Towers -->
@@ -377,6 +389,16 @@
                 <span class="t-name">DEBUG PATHFIND: <span id="debug-label">OFF</span></span>
                 <span class="t-stats">flow field overlay</span>
             </button>
+        </div>
+
+        <!-- Tab: Monsters -->
+        <div class="tab-content" id="tc-prep-monsters">
+            <div class="sec-hdr">DOSTĘPNE POTWORY — FALA <span id="monster-wave-label">1</span></div>
+            <div id="monster-roster"></div>
+            <div style="font-size:10px;color:var(--text-dim);padding:6px 0;line-height:1.6;">
+                Wezwany potwór ląduje w miejscu rzutu Monster Throwera.<br>
+                Każdy typ ma unikalną zdolność specjalną.
+            </div>
         </div>
 
         <!-- Tab: Mercs -->
@@ -403,6 +425,16 @@
             <div class="upg-grid" id="upg-grid-prep"></div>
         </div>
 
+        <!-- Tab: Mines -->
+        <div class="tab-content" id="tc-prep-mines">
+            <div class="sec-hdr">PUŁAPKI I MINY</div>
+            <div id="mine-list-prep"></div>
+            <div style="font-size:10px;color:var(--text-dim);padding:6px 0;line-height:1.6;">
+                Miny aktywują się automatycznie.<br>
+                Wilczy dół ma cooldown 15s po aktywacji.
+            </div>
+        </div>
+
         <!-- Tab: Intel -->
         <div class="tab-content" id="tc-prep-intel">
             <div class="intel-box" id="intel-display">
@@ -423,6 +455,9 @@
 
     <!-- ═══ PANEL: COMBAT ═══ -->
     <div id="panel-combat">
+        <button onclick="if(game.mode==='COMBAT'){game.paused=!game.paused;logTerminal(game.paused?'⏸ PAUZA — SPACJA by wznowić':'▶ WZNOWIONO');}" 
+                style="width:100%;margin-bottom:6px;padding:6px;background:#1a2a1a;border:1px solid #3a5a3a;color:#aaffaa;font-family:monospace;font-size:12px;cursor:pointer;letter-spacing:1px;"
+                id="pause-btn">⏸ PAUZA (SPACJA)</button>
         <div class="tab-bar">
             <button class="tab active" onclick="switchTab('combat','primary')" id="tab-combat-primary">🔫 LMB</button>
             <button class="tab" onclick="switchTab('combat','secondary')" id="tab-combat-secondary">💣 RMB</button>
@@ -523,11 +558,20 @@ const CONFIG = {
         MONSTER: { name: "MONSTER THROWER", cost: 0, cooldown: 8000, range: 500, monsterHp: 400, monsterDmg: 45, monsterDuration: 600, desc: "Releases mutant ally!" },
         HOLOGRAM: { name: "HOLOGRAM DECOY", cost: 0, cooldown: 10000, range: 900, duration: 300, desc: "Attracts all enemies for 5s" },
         SHIELD: { name: "COMBAT SHIELD", cost: 0, cooldown: 12000, radius: 220, duration: 240, slowMult: 0.2, desc: "Slows enemies 80% for 4s" }
-    }
+    },
+
+    MINES: {
+        MINE_STD:     { id:'MINE_STD',     name:'MINA',          cost:80,  color:'#cc4400', triggerR:18, desc:'Eksplozja AoE przy kontakcie' },
+        MINE_CLUSTER: { id:'MINE_CLUSTER', name:'KASETOWA',       cost:140, color:'#ff8800', triggerR:20, desc:'Eksplozja + 7 odłamków' },
+        MINE_ACID:    { id:'MINE_ACID',    name:'KWASOWA',        cost:120, color:'#44ff44', triggerR:18, desc:'Plama kwasu 8s po eksplozji' },
+        MINE_FRAG:    { id:'MINE_FRAG',    name:'ODŁAMKOWA',      cost:100, color:'#ffcc00', triggerR:16, desc:'Stożek odłamków w kierunku spawnu' },
+        MINE_FIRE:    { id:'MINE_FIRE',    name:'OGNIOWA',        cost:110, color:'#ff4400', triggerR:18, desc:'Płonący teren 5s po eksplozji' },
+        WOLF_PIT:     { id:'WOLF_PIT',     name:'WILCZY DÓŁ',     cost:90,  color:'#885500', triggerR:22, desc:'Unieruchamia 4s, cooldown 15s' },
+    },
 };
 
 let game = {
-    money: 800, hp: 6000, wave: 0, mode: 'BASE',
+    money: 800, hp: 6000, wave: 0, mode: 'BASE', paused: false, selectedMerc: null, drawingZone: null,
     buildings: [], entities: [], enemies: [], projectiles: [],
     grenades: [], explosions: [], burnZones: [], rockets: [], towerGrenades: [],
     poisonClouds: [],
@@ -556,6 +600,7 @@ let game = {
     mapSettings: { mountains: 2, lakes: 2, forests: 2, chaos: false },
     mercs: [],          // active mercenaries on field
     mercRoster: [],     // 3 random mercs available to hire this wave
+    monsterRoster: [],  // 3 random monsters available to summon this wave
     shields: []      // { x, y, frame, duration, radius, slowMult }
 };
 
@@ -596,12 +641,16 @@ function handleAction() {
         game.entities = [];
         game.corePlaced = false;
         game.monsters = [];
+        game.mines = [];
+        game.acidPools = [];
+        game.firePools = [];
         game.holograms = [];
         game.shields = [];
         game.mercs = [];
         
         if (game.selectedCustomMap) loadCustomMap(game.selectedCustomMap);
         else generateStrategicMap();
+        cacheLakeAABBs();
         
         spawnWaveLogic();
         initPrepUI();
@@ -624,20 +673,38 @@ function handleAction() {
 
 function getTerrainCost(x, y, moveType, entityRadius = 0) {
     if (!game.terrain) return 1.0;
+    // Blocked terrain — impassable for everyone
+    if (game.terrain.blocked) {
+        const r = Math.max(entityRadius, 1);
+        for (const b of game.terrain.blocked) {
+            if (x + r > b.x && x - r < b.x + b.w && y + r > b.y && y - r < b.y + b.h) return 999999;
+        }
+    }
     let cost = 1.0;
+    // Rivers — slow land units heavily, fast for swimmers
+    if (game.terrain.rivers) {
+        for (const rv of game.terrain.rivers) {
+            const d = distToRiver(x, y, rv);
+            if (d < rv.width * 0.5) {
+                if (moveType === 'SWIM') return 0.4;
+                if (moveType === 'FLY')  { /* no effect */ }
+                else cost += 80.0 * (1 - d / (rv.width * 0.5));
+            }
+        }
+    }
     let inLake = false;
     let touchesLake = false;
     
-    game.terrain.lakes.forEach(lake => {
-        if (isPointInPolygon(x, y, lake.points)) { inLake = true; }
-        if (entityRadius > 0 && !inLake) {
-            for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-                if (isPointInPolygon(x + Math.cos(angle) * entityRadius, y + Math.sin(angle) * entityRadius, lake.points)) {
-                    touchesLake = true; break;
-                }
-            }
+    for (const lake of game.terrain.lakes) {
+        const bb = lake._aabb || {minX:-9e9,maxX:9e9,minY:-9e9,maxY:9e9};
+        const er = entityRadius || 0;
+        if (x+er < bb.minX || x-er > bb.maxX || y+er < bb.minY || y-er > bb.maxY) continue;
+        const pts = lake.points;
+        if (isPointInPolygon(x, y, pts)) { inLake = true; break; }
+        if (er > 0 && !inLake) {
+            if (isPointInPolygon(x+er,y,pts)||isPointInPolygon(x-er,y,pts)||isPointInPolygon(x,y+er,pts)||isPointInPolygon(x,y-er,pts)) touchesLake = true;
         }
-    });
+    }
     
     if (inLake || touchesLake) {
         if (moveType === 'LAND') { cost = 10000.0; }
@@ -681,20 +748,60 @@ function getTerrainCost(x, y, moveType, entityRadius = 0) {
 }
 
 function willCollideWithLake(x, y, dirX, dirY, size, moveType) {
-    if (moveType !== 'LAND') return false;
-    if (!game.terrain || !game.terrain.lakes || game.terrain.lakes.length === 0) return false;
-    const steps = 3;
-    for (let step = 1; step <= steps; step++) {
-        const t = step / steps;
-        const checkX = x + dirX * t;
-        const checkY = y + dirY * t;
-        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
-            for (let lake of game.terrain.lakes) {
-                if (isPointInPolygon(checkX + Math.cos(angle) * size, checkY + Math.sin(angle) * size, lake.points)) return true;
-            }
+    // Check blocked terrain for ALL move types
+    if (game.terrain && game.terrain.blocked && game.terrain.blocked.length > 0) {
+        const nx = x + dirX, ny = y + dirY;
+        for (const b of game.terrain.blocked) {
+            if (nx + size > b.x && nx - size < b.x + b.w && ny + size > b.y && ny - size < b.y + b.h) return true;
         }
     }
+    // Rivers block land units
+    if (moveType === 'LAND' && game.terrain && game.terrain.rivers) {
+        const nx = x + dirX, ny = y + dirY;
+        for (const rv of game.terrain.rivers) {
+            if (distToRiver(nx, ny, rv) < rv.width * 0.5 - size * 0.3) return true;
+        }
+    }
+    if (moveType !== 'LAND') return false;
+    if (!game.terrain || !game.terrain.lakes || game.terrain.lakes.length === 0) return false;
+    // Fast AABB pre-check then single center + 4-point check
+    const nx = x + dirX, ny = y + dirY;
+    for (let lake of game.terrain.lakes) {
+        const bb = lake._aabb || {minX:-9e9,maxX:9e9,minY:-9e9,maxY:9e9};
+        if (nx+size < bb.minX || nx-size > bb.maxX || ny+size < bb.minY || ny-size > bb.maxY) continue;
+        const pts = lake.points;
+        // 5-point check: center + 4 cardinal
+        if (isPointInPolygon(nx, ny, pts)) return true;
+        if (isPointInPolygon(nx+size, ny, pts)) return true;
+        if (isPointInPolygon(nx-size, ny, pts)) return true;
+        if (isPointInPolygon(nx, ny+size, pts)) return true;
+        if (isPointInPolygon(nx, ny-size, pts)) return true;
+    }
     return false;
+}
+
+// Cache lake AABBs for fast collision pre-checks
+function cacheLakeAABBs() {
+    if (!game.terrain || !game.terrain.lakes) return;
+    game.terrain.lakes.forEach(lake => {
+        if (lake._aabb) return;
+        const pts = lake.points;
+        let minX=pts[0].x,maxX=pts[0].x,minY=pts[0].y,maxY=pts[0].y;
+        for (let i=1;i<pts.length;i++){
+            if(pts[i].x<minX)minX=pts[i].x; if(pts[i].x>maxX)maxX=pts[i].x;
+            if(pts[i].y<minY)minY=pts[i].y; if(pts[i].y>maxY)maxY=pts[i].y;
+        }
+        lake._aabb = {minX, maxX, minY, maxY};
+    });
+}
+
+function distToRiver(x, y, rv) {
+    // Minimum distance from point to any segment of river polyline
+    let minD = Infinity;
+    for (let i = 0; i < rv.points.length - 1; i++) {
+        minD = Math.min(minD, distanceToSegment(x, y, rv.points[i].x, rv.points[i].y, rv.points[i+1].x, rv.points[i+1].y));
+    }
+    return minD;
 }
 
 function distanceToSegment(x, y, x1, y1, x2, y2) {
@@ -763,6 +870,8 @@ function loadCustomMap(mapName) {
     const maps = JSON.parse(localStorage.getItem('outpost_maps') || '{}');
     if (maps[mapName]) {
         game.terrain = JSON.parse(JSON.stringify(maps[mapName].terrain));
+        if (!game.terrain.blocked) game.terrain.blocked = [];
+        if (!game.terrain.rivers) game.terrain.rivers = [];
         if (maps[mapName].spawnDir) game.spawnDir = maps[mapName].spawnDir;
         const isEditorMap = maps[mapName].editorMap;
         const scaleX = isEditorMap ? 1 : CONFIG.WIDTH / 1200;
@@ -825,7 +934,7 @@ function terrainAddForest(terrain, centerX, centerY, radius, density) {
 
 function generateStrategicMap() {
     game.spawnDir = ['NORTH', 'SOUTH', 'EAST', 'WEST'][Math.floor(Math.random() * 4)];
-    game.terrain = { hills: [], lakes: [], forests: [] };
+    game.terrain = { hills: [], lakes: [], forests: [], blocked: [], rivers: [] };
     const S = 1;
     
     // use global terrainAddMountain
@@ -939,6 +1048,26 @@ function spawnWaveLogic() {
         pool -= regenHp;
     }
 
+    // Spawn special enemy types (wave 2+)
+    if (game.wave >= 2) {
+        const specials = [
+            { type: 'WITCH_DOCTOR', chance: 0.12, hp: 200 + game.wave * 30, cost: 300 },
+            { type: 'ARMORED',      chance: 0.15, hp: 800 + game.wave * 80, cost: 900 },
+            { type: 'BOMBER',       chance: 0.10, hp: 300 + game.wave * 20, cost: 400 },
+            { type: 'CARRIER',      chance: 0.10, hp: 600 + game.wave * 40, cost: 700 },
+            { type: 'INVINCIBLE',   chance: 0.12, hp: 400 + game.wave * 30, cost: 500 },
+            { type: 'REGENERATOR',  chance: 0.14, hp: 150 + game.wave * 15, cost: 200 },
+        ];
+        specials.forEach(sp => {
+            if (Math.random() < sp.chance && pool > sp.cost) {
+                const e = createEnemyTyped(sp.type, sp.hp, 'LAND');
+                game.enemies.push(e);
+                game.intel.totalHP += sp.hp;
+                pool -= sp.cost;
+            }
+        });
+    }
+
     while (pool > 0) {
         const r = Math.random();
         let moveType = 'FLY';
@@ -952,6 +1081,129 @@ function spawnWaveLogic() {
         pool -= hp;
     }
 }
+
+
+// ══════════════════════════════════════════════
+//  ENEMY TYPES — definicje
+// ══════════════════════════════════════════════
+
+const ENEMY_TYPES = {
+    BASIC:       { id: 'BASIC' },
+    REGENERATOR: { id: 'REGENERATOR' },
+    WITCH_DOCTOR:{ id: 'WITCH_DOCTOR', color: '#6600cc', auraColor: 'rgba(120,0,255,0.18)', auraRadius: 130 },
+    ARMORED:     { id: 'ARMORED',      color: '#888888' },
+    BOMBER:      { id: 'BOMBER',       color: '#cc2200' },
+    CARRIER:     { id: 'CARRIER',      color: '#557733' },
+    INVINCIBLE:  { id: 'INVINCIBLE',   color: '#ffcc00' },
+};
+
+function createEnemyTyped(type, hp, moveType) {
+    const base = createEnemy(hp, moveType);
+    base.enemyType = type;
+
+    if (type === 'REGENERATOR') {
+        base.moveType = 'FLY';
+        base.color = '#ffffff';
+        base.speed = 2.2;
+        base.isRegenerator = true;
+        base.regenRadius = 140;
+        base.regenAmount = 2;
+        base.hp = 150 + Math.random() * 100;
+        base.maxHp = base.hp;
+        // Star shape
+        base.vertices = [];
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            const r = i % 2 === 0 ? base.size * 1.4 : base.size * 0.5;
+            base.vertices.push({ x: Math.cos(a)*r, y: Math.sin(a)*r, bD: r });
+        }
+        base.noHQTarget = true; // krąży, nie idzie do HQ
+
+    } else if (type === 'WITCH_DOCTOR') {
+        base.color = '#6600cc';
+        base.speed = 0.9;
+        base.auraRadius = 130;
+        base.auraAngle = 0;
+        // Sześciokąt z wypustkami
+        base.vertices = [];
+        for (let i = 0; i < 12; i++) {
+            const a = (i / 12) * Math.PI * 2;
+            const r = i % 2 === 0 ? base.size * 1.3 : base.size * 0.7;
+            base.vertices.push({ x: Math.cos(a)*r, y: Math.sin(a)*r, bD: r });
+        }
+
+    } else if (type === 'ARMORED') {
+        base.color = '#888888';
+        base.speed = 0.6;
+        base.size = 28 + Math.random() * 6;
+        base.hp = 800 + Math.random() * 1000;
+        base.maxHp = base.hp;
+        base.shootCooldown = 0;
+        base.shootRange = 280;
+        base.shootDmg = 40;
+        // Kwadrat z liniami pancerza
+        const s = base.size;
+        base.vertices = [
+            {x:-s,y:-s,bD:s},{x:s,y:-s,bD:s},{x:s,y:s,bD:s},{x:-s,y:s,bD:s}
+        ];
+
+    } else if (type === 'BOMBER') {
+        base.color = '#cc2200';
+        base.moveType = 'FLY';
+        base.speed = 2.8;
+        base.hp = 300 + Math.random() * 200;
+        base.maxHp = base.hp;
+        base.bomberPhase = 'HUNT'; // HUNT → BOMB → HQ
+        base.bombsDropped = 0;
+        base.bombTarget = null;
+        base.bombTimer = 0;
+        // Strzałka/romb wydłużony
+        const s = base.size;
+        base.vertices = [
+            {x:s*1.8,y:0,bD:s},{x:-s*0.6,y:-s*0.7,bD:s},{x:-s*0.3,y:0,bD:s},{x:-s*0.6,y:s*0.7,bD:s}
+        ];
+
+    } else if (type === 'CARRIER') {
+        base.color = '#557733';
+        base.moveType = 'FLY';
+        base.speed = 0.5;
+        base.hp = 600 + Math.random() * 400;
+        base.maxHp = base.hp;
+        base.spawnTimer = 0;
+        base.spawnInterval = 480; // 8 sekund
+        base.spawnsLeft = 3 + Math.floor(Math.random() * 2);
+        base.isCharging = false;
+        base.chargeTimer = 0;
+        // Długi prostokąt
+        const s = base.size;
+        base.vertices = [
+            {x:-s*2,y:-s*0.5,bD:s},{x:s*2,y:-s*0.5,bD:s},
+            {x:s*2,y:s*0.5,bD:s},{x:-s*2,y:s*0.5,bD:s}
+        ];
+
+    } else if (type === 'INVINCIBLE') {
+        base.color = '#ffcc00';
+        base.speed = 1.4;
+        base.hp = 400 + Math.random() * 300;
+        base.maxHp = base.hp;
+        base.invCycle = 0;        // klatki w cyklu
+        base.invActive = false;   // czy niezniszczalny
+        base.invDuration = 180;   // 3s niezniszczalny
+        base.invCooldown = 240;   // 4s normalny
+        base.lightningCooldown = 0;
+        base.lightningTarget = null;
+        base.lightningFlash = 0;
+        // Oktagon
+        base.vertices = [];
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + Math.PI/8;
+            base.vertices.push({ x: Math.cos(a)*base.size*1.1, y: Math.sin(a)*base.size*1.1, bD: base.size*1.1 });
+        }
+    }
+
+    return base;
+}
+
 
 function createEnemy(hp, moveType) {
     let x, y, off = 300;
@@ -986,30 +1238,22 @@ function createEnemy(hp, moveType) {
 // =================== NEW: MONSTER THROWER ===================
 
 function spawnMonster(targetX, targetY) {
-    const weapon = CONFIG.WEAPONS_SECONDARY.MONSTER;
-    // Create a mutant ally at the target position
-    const monster = {
-        x: targetX,
-        y: targetY,
-        hp: weapon.monsterHp,
-        maxHp: weapon.monsterHp,
-        dmg: weapon.monsterDmg,
-        size: 18,
-        speed: 2.8,
-        lifetime: weapon.monsterDuration,
-        frame: 0,
-        lastAttack: 0,
-        attackCooldown: 60,  // frames between attacks
-        attackRange: 55,
-        target: null,
-        isAttacking: false,
-        attackTimer: 0,
-        pulsePhase: Math.random() * Math.PI * 2,
-        // Wobble vertices for organic look
-        vertices: generateMonsterVerts(18)
-    };
-    game.monsters.push(monster);
-    logTerminal(`MUTANT DEPLOYED! HP:${weapon.monsterHp}`);
+    // Pick random type from roster if available, else full random
+    const available = game.monsterRoster
+        ? game.monsterRoster.filter(e => !e.summoned)
+        : [];
+    let type;
+    if (available.length > 0) {
+        const entry = available[Math.floor(Math.random() * available.length)];
+        entry.summoned = true;
+        type = entry.type;
+        buildMonsterRosterUI();
+    } else {
+        const types = Object.values(MONSTER_TYPES);
+        type = types[Math.floor(Math.random() * types.length)];
+    }
+    spawnMonsterType(targetX, targetY, type);
+    logTerminal('MUTANT: ' + type.name + ' wezwany!');
 }
 
 function generateMonsterVerts(size) {
@@ -1038,7 +1282,12 @@ function updateMonsters() {
                 damage: 0, frame: 0, maxFrames: 15,
                 hasDealtDamage: true, color: 'monster_death'
             });
-            logTerminal(`MUTANT KIA`);
+            // Plague — poison cloud on death
+            if (monster.monsterType && monster.monsterType.special === 'dot') {
+                game.poisonClouds.push({ x: monster.x, y: monster.y, radius: 100, damage: 4, duration: 180, frame: 0 });
+                game.explosions.push({ x: monster.x, y: monster.y, radius: 0, maxRadius: 100, damage: 30, frame: 0, maxFrames: 20, hasDealtDamage: false, color: 'poison' });
+            }
+            logTerminal((monster.monsterType ? monster.monsterType.name : 'MUTANT') + ' KIA');
             return false;
         }
         
@@ -1051,148 +1300,352 @@ function updateMonsters() {
             v.y = Math.sin(a) * d;
         });
         
-        // Find nearest enemy
+        // Find nearest enemy + trigger aggro
         let nearestEnemy = null;
         let nearestDist = Infinity;
-        game.enemies.forEach(e => {
-            const dist = Math.hypot(e.x - monster.x, e.y - monster.y);
-            if (dist < nearestDist) { nearestDist = dist; nearestEnemy = e; }
-        });
+        const monsterAggroR2 = 180 * 180;
+        for (const e of game.enemies) {
+            const dx = e.x - monster.x, dy = e.y - monster.y;
+            const d2 = dx*dx + dy*dy;
+            if (d2 < nearestDist) { nearestDist = d2; nearestEnemy = e; }
+            // Aggro — wróg w zasięgu 180px atakuje potwora
+            if (game.frame % 4 === 0 && d2 < monsterAggroR2 && e.moveType !== 'FLY') {
+                e._monsterTarget = monster;
+                delete e._mercTarget; // potwór ma priorytet nad najemnikiem gdy bliżej
+            }
+        }
+        nearestDist = nearestEnemy ? Math.sqrt(nearestDist) : Infinity;
         
         monster.target = nearestEnemy;
+        const mType = monster.monsterType || MONSTER_TYPES.BLOB;
+        const mMove = monster.moveType || 'LAND';
         
         if (nearestEnemy) {
             if (nearestDist > monster.attackRange) {
-                // Move toward nearest enemy
                 monster.isAttacking = false;
                 const ang = Math.atan2(nearestEnemy.y - monster.y, nearestEnemy.x - monster.x);
                 let dirX = Math.cos(ang), dirY = Math.sin(ang);
-                
-                // Lake avoidance for monster (it's a LAND type creature)
-                if (willCollideWithLake(monster.x, monster.y, dirX * monster.speed, dirY * monster.speed, monster.size, 'LAND')) {
+                let spd = monster.speed;
+
+                // ── Per-type movement personality ──────────
+                if (mType.id === 'BLOB') {
+                    // Lazy sinusoidal wobble — drifts sideways as it advances
+                    monster.movePhase += 0.04;
+                    const wobble = Math.sin(monster.movePhase) * 0.55;
+                    dirX = Math.cos(ang + wobble);
+                    dirY = Math.sin(ang + wobble);
+
+                } else if (mType.id === 'SPIDER') {
+                    // Sprints then pauses — nervous jerky movement
+                    monster.sprintTimer--;
+                    if (monster.sprintTimer <= 0) {
+                        monster.sprintActive = !monster.sprintActive;
+                        monster.sprintTimer = monster.sprintActive
+                            ? 15 + Math.floor(Math.random() * 12)   // sprint 15-27 frames
+                            : 8  + Math.floor(Math.random() * 8);   // pause  8-16 frames
+                    }
+                    spd = monster.sprintActive ? monster.speed * 2.2 : 0;
+                    // Also jitter direction slightly
+                    if (monster.sprintActive) {
+                        monster.movePhase += 0.15;
+                        dirX = Math.cos(ang + Math.sin(monster.movePhase) * 0.3);
+                        dirY = Math.sin(ang + Math.sin(monster.movePhase) * 0.3);
+                    }
+
+                } else if (mType.id === 'GOLEM') {
+                    // Slow straight charge, periodic stomp-pause
+                    monster.stompTimer++;
+                    if (monster.stompTimer > 90) {
+                        monster.stompPause = true;
+                        monster.stompTimer = 0;
+                    }
+                    if (monster.stompPause) {
+                        spd = 0;
+                        monster.moveTimer++;
+                        if (monster.moveTimer > 20) {
+                            monster.stompPause = false;
+                            monster.moveTimer = 0;
+                            // Stomp shockwave — stun nearby enemies
+                            game.enemies.forEach(e => {
+                                if (Math.hypot(e.x - monster.x, e.y - monster.y) < 120) {
+                                    e.stunned = true; e.stunTimer = 30;
+                                    e.originalSpeed = e.speed; e.speed = 0;
+                                }
+                            });
+                        }
+                    }
+                    // No direction deviation — straight line
+
+                } else if (mType.id === 'GHOST') {
+                    // Smooth sine wave up/down while advancing
+                    monster.movePhase += 0.06;
+                    monster.driftY = Math.sin(monster.movePhase) * 60;
+                    const targetWithDrift = {
+                        x: nearestEnemy.x,
+                        y: nearestEnemy.y + monster.driftY
+                    };
+                    const driftAng = Math.atan2(targetWithDrift.y - monster.y, targetWithDrift.x - monster.x);
+                    dirX = Math.cos(driftAng);
+                    dirY = Math.sin(driftAng);
+
+                } else if (mType.id === 'PLAGUE') {
+                    // Spirals inward — orbits target while closing distance
+                    monster.orbitAngle += 0.045;
+                    const targetDist = nearestDist;
+                    const desiredOrbitDist = Math.max(monster.attackRange * 1.2, targetDist * 0.7);
+                    const orbitX = nearestEnemy.x + Math.cos(monster.orbitAngle) * desiredOrbitDist;
+                    const orbitY = nearestEnemy.y + Math.sin(monster.orbitAngle) * desiredOrbitDist;
+                    const orbitAng = Math.atan2(orbitY - monster.y, orbitX - monster.x);
+                    dirX = Math.cos(orbitAng);
+                    dirY = Math.sin(orbitAng);
+                }
+
+                if (mMove === 'LAND' && willCollideWithLake(monster.x, monster.y, dirX * spd, dirY * spd, monster.size, 'LAND')) {
                     const perpDirs = [{dx:-dirY,dy:dirX},{dx:dirY,dy:-dirX}];
                     for (let alt of perpDirs) {
-                        if (!willCollideWithLake(monster.x, monster.y, alt.dx * monster.speed, alt.dy * monster.speed, monster.size, 'LAND')) {
+                        if (!willCollideWithLake(monster.x, monster.y, alt.dx * spd, alt.dy * spd, monster.size, 'LAND')) {
                             dirX = alt.dx; dirY = alt.dy; break;
                         }
                     }
                 }
-                
-                monster.x += dirX * monster.speed;
-                monster.y += dirY * monster.speed;
+
+                monster.x += dirX * spd;
+                monster.y += dirY * spd;
             } else {
-                // Attack!
                 monster.isAttacking = true;
                 monster.attackTimer++;
                 
                 if (monster.attackTimer >= monster.attackCooldown) {
                     monster.attackTimer = 0;
                     
-                    // Deal damage to nearby enemies
                     game.enemies.forEach(e => {
                         const dist = Math.hypot(e.x - monster.x, e.y - monster.y);
                         if (dist < monster.attackRange + 10) {
                             e.hp -= monster.dmg;
                             e.hitF = 8;
-                            
-                            // STUN the attacked enemy
-                            if (!e.stunned) {
-                                e.stunned = true;
-                                e.stunTimer = 40;  // ~0.7 seconds at 60fps
-                                e.originalSpeed = e.speed;
-                                e.speed = 0;
+
+                            const sp = mType.special;
+                            if (sp === 'stun' && !e.stunned) {
+                                e.stunned = true; e.stunTimer = 40;
+                                e.originalSpeed = e.speed; e.speed = 0;
+                            } else if (sp === 'knockback') {
+                                const ang = Math.atan2(e.y - monster.y, e.x - monster.x);
+                                e.x += Math.cos(ang) * 60; e.y += Math.sin(ang) * 60;
+                            } else if (sp === 'confuse') {
+                                e._confuseTimer = (e._confuseTimer || 0) + 80;
+                            } else if (sp === 'dot') {
+                                e._poison = (e._poison || 0) + 5;
+                                e._poisonTimer = 120;
                             }
                         }
                     });
-                    
-                    // Attack flash — just hitF on hit enemies, no explosion ring
+
+                    // Spider web shot — ranged slow projectile
+                    if (mType.special === 'web') {
+                        const ang = Math.atan2(nearestEnemy.y - monster.y, nearestEnemy.x - monster.x);
+                        monster.webShots = monster.webShots || [];
+                        monster.webShots.push({ x: monster.x, y: monster.y, vx: Math.cos(ang)*6, vy: Math.sin(ang)*6, life: 40 });
+                    }
                 }
             }
         } else {
             monster.isAttacking = false;
         }
-        
+
+        // Update web shots
+        if (monster.webShots) {
+            monster.webShots = monster.webShots.filter(w => {
+                w.x += w.vx; w.y += w.vy; w.life--;
+                game.enemies.forEach(e => {
+                    if (Math.hypot(e.x - w.x, e.y - w.y) < e.size + 6) {
+                        if (!e.webbed) { e.webbed = true; e.webbedTimer = 90; e._savedSpeed = e.speed; e.speed *= 0.25; }
+                        w.life = 0;
+                    }
+                });
+                return w.life > 0;
+            });
+        }
+
         return true;
     });
+
+    // Status ticks — single pass for all effects
+    for (const e of game.enemies) {
+        if (e._confuseTimer > 0) { e._confuseTimer--; if (e._confuseTimer % 20 === 0) e._confuseAngle = Math.random() * Math.PI * 2; }
+        if (e.webbed) { e.webbedTimer--; if (e.webbedTimer <= 0) { e.webbed = false; e.speed = e._savedSpeed || e.speed; } }
+        if (e._poisonTimer > 0) { e._poisonTimer--; e.hp -= e._poison * 0.05; e.hitF = 2; }
+    }
+
 }
 
 function renderMonsters() {
     game.monsters.forEach(monster => {
         const lifeRatio = 1 - (monster.frame / monster.lifetime);
-        
-        // Pulsing attack ring when attacking
-        if (monster.isAttacking) {
-            const pulse = Math.sin(monster.frame * 0.3) * 0.5 + 0.5;
-            ctx.strokeStyle = `rgba(0, 255, 100, ${pulse * 0.7})`;
-            ctx.lineWidth = 3;
-            ctx.setLineDash([5, 3]);
+        const mType = monster.monsterType || MONSTER_TYPES.BLOB;
+        const mc  = mType.color;
+        const mc2 = mType.altColor;
+        const mx  = monster.x, my = monster.y, ms = monster.size;
+
+        // Web shots (Spider)
+        if (monster.webShots) {
+            monster.webShots.forEach(w => {
+                ctx.strokeStyle = 'rgba(200,160,255,0.8)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(w.x, w.y, 4, 0, Math.PI*2); ctx.stroke();
+            });
+        }
+
+        // Type-specific body
+        ctx.save();
+        ctx.globalAlpha = 0.85 * lifeRatio + 0.15;
+
+        if (mType.id === 'BLOB') {
+            // Original blob with wobble
+            ctx.fillStyle = mc2; ctx.beginPath(); ctx.arc(mx, my, ms+6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = mc; ctx.strokeStyle = '#80ffb0'; ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(monster.x, monster.y, monster.attackRange, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.moveTo(mx + monster.vertices[0].x, my + monster.vertices[0].y);
+            monster.vertices.forEach((v,i) => { if(i>0) ctx.lineTo(mx+v.x, my+v.y); });
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        } else if (mType.id === 'SPIDER') {
+            // 8 legs + body
+            ctx.strokeStyle = mc; ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                const wobble = Math.sin(monster.frame * 0.2 + i) * 0.3;
+                const lx = mx + Math.cos(a + wobble) * ms * 2;
+                const ly = my + Math.sin(a + wobble) * ms * 1.4;
+                ctx.beginPath(); ctx.moveTo(mx + Math.cos(a)*ms*0.5, my + Math.sin(a)*ms*0.5);
+                ctx.lineTo(lx, ly); ctx.stroke();
+            }
+            ctx.fillStyle = mc;
+            ctx.beginPath(); ctx.ellipse(mx, my, ms*0.9, ms*0.6, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = mc2;
+            ctx.beginPath(); ctx.ellipse(mx, my-ms*0.5, ms*0.5, ms*0.4, 0, 0, Math.PI*2); ctx.fill();
+
+        } else if (mType.id === 'GOLEM') {
+            // Rocky square body
+            ctx.fillStyle = mc2;
+            ctx.fillRect(mx - ms - 4, my - ms - 4, (ms+4)*2, (ms+4)*2);
+            ctx.fillStyle = mc; ctx.strokeStyle = '#d0d0d0'; ctx.lineWidth = 3;
+            ctx.fillRect(mx - ms, my - ms, ms*2, ms*2);
+            ctx.strokeRect(mx - ms, my - ms, ms*2, ms*2);
+            // Crack lines
+            ctx.strokeStyle = mc2; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(mx-ms*0.3, my-ms); ctx.lineTo(mx+ms*0.1, my+ms*0.5); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mx+ms*0.5, my-ms*0.5); ctx.lineTo(mx-ms*0.2, my+ms); ctx.stroke();
+
+        } else if (mType.id === 'GHOST') {
+            // Wispy floating shape
+            const drift = Math.sin(monster.frame * 0.05) * 5;
+            ctx.fillStyle = mc;
+            ctx.beginPath();
+            ctx.arc(mx, my - 4 + drift, ms, 0, Math.PI);
+            ctx.lineTo(mx + ms, my + ms*0.5 + drift);
+            for (let i = 3; i >= 0; i--) {
+                const wx = mx + ms - (i * ms*0.67);
+                const wy = my + ms*0.5 + Math.sin(monster.frame*0.15 + i)*6 + drift;
+                ctx.quadraticCurveTo(wx, wy + ms*0.4, wx - ms*0.33, wy);
+            }
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#c0e8ff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        } else if (mType.id === 'PLAGUE') {
+            // Pulsing toxic orb with spores
+            const pulse = 1 + Math.sin(monster.frame * 0.15) * 0.15;
+            ctx.fillStyle = mc2; ctx.beginPath(); ctx.arc(mx, my, ms*1.3*pulse, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = mc; ctx.beginPath(); ctx.arc(mx, my, ms*pulse, 0, Math.PI*2); ctx.fill();
+            // Spore dots
+            for (let i = 0; i < 5; i++) {
+                const a = (i/5)*Math.PI*2 + monster.frame*0.04;
+                ctx.fillStyle = 'rgba(180,255,40,0.7)';
+                ctx.beginPath(); ctx.arc(mx+Math.cos(a)*ms*1.5, my+Math.sin(a)*ms*1.5, 3, 0, Math.PI*2); ctx.fill();
+            }
         }
-        
-        // Body glow
-        const glowAlpha = 0.3 + Math.sin(monster.frame * 0.1 + monster.pulsePhase) * 0.2;
-        ctx.fillStyle = `rgba(0, 255, 80, ${glowAlpha * lifeRatio})`;
-        ctx.beginPath();
-        ctx.arc(monster.x, monster.y, monster.size + 6, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Main body - organic blob shape
-        ctx.fillStyle = `rgba(20, 200, 60, ${0.9 * lifeRatio})`;
-        ctx.strokeStyle = `rgba(100, 255, 120, ${lifeRatio})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(monster.x + monster.vertices[0].x, monster.y + monster.vertices[0].y);
-        for (let i = 1; i < monster.vertices.length; i++) {
-            ctx.lineTo(monster.x + monster.vertices[i].x, monster.y + monster.vertices[i].y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        // Eyes (two glowing dots)
-        const eyeOffset = 5;
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(monster.x - eyeOffset, monster.y - 4, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(monster.x + eyeOffset, monster.y - 4, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = monster.isAttacking ? '#f00' : '#0f0';
-        ctx.beginPath(); ctx.arc(monster.x - eyeOffset, monster.y - 4, 1.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(monster.x + eyeOffset, monster.y - 4, 1.5, 0, Math.PI * 2); ctx.fill();
-        
+
+
+
+        ctx.globalAlpha = 1;
+        ctx.restore();
+
         // HP bar
-        const barW = 36;
-        ctx.fillStyle = '#030'; ctx.fillRect(monster.x - barW/2, monster.y - monster.size - 14, barW, 5);
-        ctx.fillStyle = `rgb(0, ${Math.floor(200 * monster.hp / monster.maxHp)}, 50)`;
-        ctx.fillRect(monster.x - barW/2, monster.y - monster.size - 14, barW * (monster.hp / monster.maxHp), 5);
-        
+        const barW = ms * 2 + 6;
+        const bx = mx - barW/2, by = my - ms - 16;
+        ctx.fillStyle = '#111'; ctx.fillRect(bx, by, barW, 4);
+        ctx.fillStyle = mType.color;
+        ctx.fillRect(bx, by, barW * Math.max(0, monster.hp / monster.maxHp), 4);
+
         // Lifetime bar
-        ctx.fillStyle = '#333'; ctx.fillRect(monster.x - barW/2, monster.y - monster.size - 8, barW, 3);
-        ctx.fillStyle = `rgba(0, 200, 200, 0.7)`;
-        ctx.fillRect(monster.x - barW/2, monster.y - monster.size - 8, barW * lifeRatio, 3);
+        ctx.fillStyle = '#222'; ctx.fillRect(bx, by+5, barW, 3);
+        ctx.fillStyle = 'rgba(0,200,200,0.6)';
+        ctx.fillRect(bx, by+5, barW * lifeRatio, 3);
+
+        // Name tag
+        ctx.fillStyle = 'rgba(200,200,200,0.75)';
+        ctx.font = '9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(mType.name, mx, by - 2);
     });
 }
 
 // =================== END MONSTER THROWER ===================
 
 function gameLoop() {
+    game.frame = (game.frame || 0) + 1;
     ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+    if (game.mode === 'COMBAT' && game.paused) {
+        // Render bez update
+        renderTacticalMap();
+        renderMines();
+        renderBurnZones();
+        renderPoisonClouds();
+        renderMonsters();
+        renderMercs();
+        renderMercZones();
+        renderEntities();
+        renderAnomalies();
+        renderPlayerUnit();
+        renderGhost();
+        renderGrenades();
+        renderRockets();
+        renderTowerGrenades();
+        renderExplosions();
+        renderProjectiles();
+        renderEnemies();
+        // Overlay pauzy
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 28px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⏸ PAUZA', CONFIG.WIDTH/2, CONFIG.HEIGHT/2 - 18);
+        ctx.font = '13px monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText('SPACJA — wznów', CONFIG.WIDTH/2, CONFIG.HEIGHT/2 + 16);
+        ctx.textAlign = 'left';
+        requestAnimationFrame(gameLoop);
+        return;
+    }
     if (game.mode === 'BASE') renderBaseGrid();
     else {
         renderTacticalMap();
+        renderMines();
         renderBurnZones();
         renderPoisonClouds();
         if (game.mode === 'COMBAT') {
             updateCombat();
             updateMonsters();
             updateMercs();
+            updateMines();
             updateHolograms();
             updateShields();
             updateCombatIntel();
         }
         renderMonsters();
         renderMercs();
+        renderMercZones();
         renderEntities();
         renderAnomalies();
         if (game.corePlaced) renderPlayerUnit();
@@ -1206,6 +1659,192 @@ function gameLoop() {
     updateStatusBar();
     requestAnimationFrame(gameLoop);
 }
+
+
+// ══════════════════════════════════════════════
+//  ENEMY SPECIAL BEHAVIORS — wywoływane w updateCombat
+// ══════════════════════════════════════════════
+
+function updateEnemySpecials(e, i, deadEnemyIndices, core) {
+    const t = e.enemyType;
+    if (!t || t === 'BASIC') return;
+
+    // ── WITCH DOCTOR — aura niezniszczalności ──
+    if (t === 'WITCH_DOCTOR') {
+        e.auraAngle = (e.auraAngle || 0) + 0.02;
+        if (game.frame % 3 === 0) {
+            const ar2 = e.auraRadius * e.auraRadius;
+            for (const ally of game.enemies) {
+                if (ally === e) continue;
+                const dx = ally.x - e.x, dy = ally.y - e.y;
+                if (dx*dx + dy*dy < ar2) ally._witchShield = 6; // 6 klatek grace (bo sprawdzamy co 3)
+            }
+        }
+    }
+
+    // ── REGENERATOR v2 — lata i leczy, nie idzie do HQ ──
+    if (t === 'REGENERATOR') {
+        // Jedna pętla: centroid (300px) + leczenie (regenRadius)
+        let cx = 0, cy = 0, count = 0;
+        const rr2 = e.regenRadius * e.regenRadius;
+        for (const ally of game.enemies) {
+            if (ally === e) continue;
+            const dx = ally.x - e.x, dy = ally.y - e.y;
+            const d2 = dx*dx + dy*dy;
+            if (d2 < 90000) { cx += ally.x; cy += ally.y; count++; } // 300^2
+            if (d2 < rr2) ally.hp = Math.min(ally.maxHp, ally.hp + e.regenAmount);
+        }
+        e._skipFlowField = true; // Regenerator zarządza własnym ruchem
+        if (count > 0) {
+            cx /= count; cy /= count;
+            e._orbitAngle = (e._orbitAngle || Math.random() * Math.PI * 2) + 0.03;
+            const orbitX = cx + Math.cos(e._orbitAngle) * 120;
+            const orbitY = cy + Math.sin(e._orbitAngle) * 120;
+            const ang = Math.atan2(orbitY - e.y, orbitX - e.x);
+            e.x += Math.cos(ang) * e.speed;
+            e.y += Math.sin(ang) * e.speed;
+        } else if (core) {
+            const ang = Math.atan2(core.y - e.y, core.x - e.x);
+            e.x += Math.cos(ang) * e.speed * 0.5;
+            e.y += Math.sin(ang) * e.speed * 0.5;
+        }
+    }
+
+    // ── ARMORED — strzela do wieżyczek po drodze ──
+    if (t === 'ARMORED') {
+        e.shootCooldown = (e.shootCooldown || 0) - 1;
+        if (e.shootCooldown <= 0) {
+            // Znajdź najbliższą wieżyczkę w zasięgu
+            let nearTower = null, nearDist = Infinity;
+            for (const ent of game.entities) {
+                if (ent.type !== 'tower') continue;
+                const dx = ent.x-e.x, dy = ent.y-e.y, d2 = dx*dx+dy*dy;
+                if (d2 < e.shootRange*e.shootRange && d2 < nearDist) { nearDist = d2; nearTower = ent; }
+            }
+            if (nearTower) {
+                e.shootCooldown = 60;
+                const ang = Math.atan2(nearTower.y - e.y, nearTower.x - e.x);
+                game.projectiles.push({
+                    x: e.x, y: e.y,
+                    vx: Math.cos(ang) * 10, vy: Math.sin(ang) * 10,
+                    dmg: e.shootDmg, life: 40, color: '#aaaaaa',
+                    isFriendly: false, targetsTowers: true,
+                    _towerTarget: nearTower
+                });
+            }
+        }
+    }
+
+    // ── BOMBER — fazowe zachowanie ──
+    if (t === 'BOMBER') {
+        if (e.bomberPhase === 'HUNT') {
+            // Szuka wieżyczki
+            let best = null, bestD = Infinity;
+            for (const ent of game.entities) {
+                if (ent.type !== 'tower') continue;
+                const dx = ent.x-e.x, dy = ent.y-e.y, d2 = dx*dx+dy*dy;
+                if (d2 < bestD) { bestD = d2; best = ent; }
+            }
+            if (best) {
+                e.bombTarget = best;
+                e.bomberPhase = 'APPROACH';
+            } else {
+                e.bomberPhase = 'HQ'; // brak wieżyczek
+            }
+        } else if (e.bomberPhase === 'APPROACH') {
+            if (!e.bombTarget || !game.entities.includes(e.bombTarget)) {
+                e.bomberPhase = 'HUNT'; return;
+            }
+            const ang = Math.atan2(e.bombTarget.y - e.y, e.bombTarget.x - e.x);
+            e.x += Math.cos(ang) * e.speed;
+            e.y += Math.sin(ang) * e.speed;
+            if (Math.hypot(e.x - e.bombTarget.x, e.y - e.bombTarget.y) < 20) {
+                // Zrzuć bombę
+                game.explosions.push({
+                    x: e.bombTarget.x, y: e.bombTarget.y,
+                    radius: 0, maxRadius: 80, damage: 120,
+                    frame: 0, maxFrames: 20, hasDealtDamage: false, color: 'bomb'
+                });
+                e.bombTarget.curHP = 0; // zniszcz wieżyczkę
+                e.bombsDropped++;
+                e.bomberPhase = e.bombsDropped >= 2 ? 'HQ' : 'HUNT';
+            }
+        } else if (e.bomberPhase === 'HQ') {
+            if (core) {
+                const ang = Math.atan2(core.y - e.y, core.x - e.x);
+                e.x += Math.cos(ang) * e.speed;
+                e.y += Math.sin(ang) * e.speed;
+                if (Math.hypot(e.x - core.x, e.y - core.y) < 30) {
+                    game.explosions.push({ x: core.x, y: core.y, radius: 0, maxRadius: 100, damage: 200, frame: 0, maxFrames: 25, hasDealtDamage: false, color: 'bomb' });
+                    deadEnemyIndices.add(i);
+                }
+            }
+        }
+        // Bombowiec sam zarządza ruchem — pomiń flow field
+        e._skipFlowField = true;
+    }
+
+    // ── CARRIER — zatrzymuje się i spawnuje ──
+    if (t === 'CARRIER') {
+        if (e.isCharging) {
+            e.chargeTimer++;
+            e._skipFlowField = true; // stoi w miejscu
+            if (e.chargeTimer >= 180) { // 3 sekundy
+                // Spawnuj rój
+                const count = 4 + Math.floor(Math.random() * 3);
+                for (let k = 0; k < count; k++) {
+                    const sp = createEnemy(40 + Math.random() * 40, 'LAND');
+                    sp.x = e.x + (Math.random()-0.5)*40;
+                    sp.y = e.y + (Math.random()-0.5)*40;
+                    game.enemies.push(sp);
+                }
+                e.isCharging = false;
+                e.chargeTimer = 0;
+                e.spawnsLeft--;
+                if (e.spawnsLeft <= 0) e.speed = 1.2; // przyspiesza po wyczerpaniu
+            }
+        } else {
+            e.spawnTimer++;
+            if (e.spawnTimer >= e.spawnInterval && e.spawnsLeft > 0) {
+                e.isCharging = true;
+                e.spawnTimer = 0;
+            }
+        }
+    }
+
+    // ── INVINCIBLE — cykl + pioruny w wieżyczki ──
+    if (t === 'INVINCIBLE') {
+        e.invCycle++;
+        const cycleLen = e.invDuration + e.invCooldown;
+        const pos = e.invCycle % cycleLen;
+        e.invActive = pos < e.invDuration;
+        if (e.invActive) e._witchShield = 2; // niezniszczalny przez własny cykl
+
+        // Atakuje najpierw wieżyczki złotymi piorunami
+        e.lightningCooldown = (e.lightningCooldown || 0) - 1;
+        if (e.lightningCooldown <= 0 && !e.invActive) {
+            let target = null, bestD = Infinity;
+            for (const ent of game.entities) {
+                if (ent.type !== 'tower') continue;
+                const dx = ent.x-e.x, dy = ent.y-e.y, d2 = dx*dx+dy*dy;
+                if (d2 < 62500 && d2 < bestD) { bestD = d2; target = ent; }
+            }
+            if (!target && core) target = { x: core.x, y: core.y, _isCore: true };
+            if (target) {
+                e.lightningTarget = { x: target.x, y: target.y, flash: 12 };
+                e.lightningFlash = 12;
+                if (target._isCore) {
+                    game.hp = Math.max(0, game.hp - 30);
+                } else {
+                    target.curHP -= 60;
+                }
+                e.lightningCooldown = 90;
+            }
+        }
+        if (e.lightningFlash > 0) e.lightningFlash--;
+    }
+}
+
 
 function updateCombat() {
     let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
@@ -1263,6 +1902,7 @@ function updateCombat() {
             }
         }
         
+        if (e._skipFlowField) { e._skipFlowField = false; return; }
         let flowField = null;
         if (e.moveType === 'LAND') flowField = game.flowField.land;
         else if (e.moveType === 'SWIM') flowField = game.flowField.swim;
@@ -1270,8 +1910,17 @@ function updateCombat() {
         
         let dirX, dirY;
 
+        // Monster aggro — atakuje potwory
+        if (e._monsterTarget && game.monsters.includes(e._monsterTarget) && e._monsterTarget.hp > 0) {
+            const mt = e._monsterTarget;
+            const ang = Math.atan2(mt.y - e.y, mt.x - e.x);
+            dirX = Math.cos(ang); dirY = Math.sin(ang);
+            if (Math.hypot(mt.x - e.x, mt.y - e.y) < e.size + mt.size + 8) {
+                mt.hp -= e.dmg || 8;
+                if (mt.hp <= 0) { delete e._monsterTarget; }
+            }
         // Merc aggro override — enemy is targeting a mercenary
-        if (e._mercTarget && game.mercs.includes(e._mercTarget)) {
+        } else if (e._mercTarget && game.mercs.includes(e._mercTarget)) {
             const mt = e._mercTarget;
             const ang = Math.atan2(mt.y - e.y, mt.x - e.x);
             dirX = Math.cos(ang); dirY = Math.sin(ang);
@@ -1293,7 +1942,10 @@ function updateCombat() {
             const ang = Math.atan2(core.y - e.y, core.x - e.x); dirX = Math.cos(ang); dirY = Math.sin(ang);
         }
         
-        const cost = getTerrainCost(e.x, e.y, e.moveType, e.size);
+        if (e.hp <= 0) return;
+        // Cache terrain cost — expensive, recalculate every 6 frames
+        if (!e._terrainCost || game.frame % 6 === 0) e._terrainCost = getTerrainCost(e.x, e.y, e.moveType, e.size);
+        const cost = e._terrainCost;
         let terrainMult = 1.0 / cost;
         
         if (e.moveType === 'LAND' && willCollideWithLake(e.x, e.y, dirX * e.speed * terrainMult, dirY * e.speed * terrainMult, e.size, e.moveType)) {
@@ -1312,15 +1964,8 @@ function updateCombat() {
         e.x += dirX * e.speed * terrainMult;
         e.y += dirY * e.speed * terrainMult;
 
-        // REGENERATOR: heal nearby allies
-        if (e.isRegenerator && !e.stunned) {
-            game.enemies.forEach(ally => {
-                if (ally === e) return;
-                if (Math.hypot(ally.x - e.x, ally.y - e.y) < e.regenRadius) {
-                    ally.hp = Math.min(ally.maxHp, ally.hp + e.regenAmount);
-                }
-            });
-        }
+        // ENEMY SPECIALS (new types handle their own logic)
+        updateEnemySpecials(e, i, deadEnemyIndices, core);
         
         e.vertices.forEach(v => {
             const jitter = (Math.random()-0.5)*2.5;
@@ -1351,7 +1996,7 @@ function updateCombat() {
     // --- Tower fire ---
     game.entities.forEach(u => {
         if (u.type === 'tower' && now - u.lastFire > u.rof) {
-            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range);
+            const target = game.enemies.find(e => Math.hypot(e.x - u.x, e.y - u.y) < u.range && !e._witchShield);
             if (target) {
                 if (u.name === 'GRENADE TURRET') {
                     game.towerGrenades.push({ x: u.x, y: u.y, targetX: target.x, targetY: target.y, startX: u.x, startY: u.y, progress: 0, speed: 0.04, damage: u.dmg, blastRadius: u.blastRadius });
@@ -1372,6 +2017,7 @@ function updateCombat() {
                 } else if (u.name === 'CRYO TURRET') {
                     // Slow all enemies in range
                     game.enemies.forEach(target => {
+                    if (target._witchShield > 0) { target._witchShield--; return; }
                         if (Math.hypot(target.x - u.x, target.y - u.y) < u.range) {
                             if (!target._cryo) {
                                 target._cryoOrigSpeed = target._cryoOrigSpeed || target.speed;
@@ -1435,6 +2081,133 @@ function isPointInPolygon(x, y, points) {
 }
 
 function renderAnomalies() {
+
+function renderEnemySpecial(e) {
+    const t = e.enemyType;
+    if (!t || t === 'BASIC') return;
+
+    // ── WITCH DOCTOR — pulsująca aura ──
+    if (t === 'WITCH_DOCTOR') {
+        const pulse = 0.15 + Math.abs(Math.sin(Date.now() * 0.003)) * 0.25;
+        // Wypełnienie aury
+        ctx.fillStyle = `rgba(120,0,255,${pulse * 0.4})`;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.auraRadius, 0, Math.PI*2); ctx.fill();
+        // Obwódka
+        ctx.strokeStyle = `rgba(180,50,255,${0.5 + pulse})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 5]);
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.auraRadius, 0, Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
+        // Obracające się symbole
+        for (let k = 0; k < 6; k++) {
+            const a = e.auraAngle + (k / 6) * Math.PI * 2;
+            const sx = e.x + Math.cos(a) * e.auraRadius;
+            const sy = e.y + Math.sin(a) * e.auraRadius;
+            ctx.fillStyle = `rgba(220,100,255,${0.6 + pulse})`;
+            ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    // ── REGENERATOR v2 — biała poświata ──
+    if (t === 'REGENERATOR') {
+        const pulse = 0.2 + Math.abs(Math.sin(Date.now() * 0.005)) * 0.3;
+        ctx.fillStyle = `rgba(255,255,255,${pulse * 0.3})`;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.regenRadius, 0, Math.PI*2); ctx.fill();
+        // Deterministyczne cząsteczki (bez Math.random w renderze)
+        const t2 = Date.now() * 0.002;
+        for (let p = 0; p < 3; p++) {
+            const a = t2 + p * 2.094; // 2π/3
+            const d = e.regenRadius * (0.3 + 0.5 * ((p * 0.37 + t2 * 0.3) % 1));
+            ctx.fillStyle = `rgba(255,255,255,0.25)`;
+            ctx.beginPath(); ctx.arc(e.x + Math.cos(a)*d, e.y + Math.sin(a)*d, 1.5, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    // ── CARRIER — miganie przed spawnem ──
+    if (t === 'CARRIER' && e.isCharging) {
+        const blink = Math.floor(Date.now() / 150) % 2 === 0;
+        ctx.fillStyle = blink ? 'rgba(255,140,0,0.5)' : 'rgba(255,200,0,0.2)';
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size * 2.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = blink ? '#ff8800' : '#ffcc00';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size * 2.5, 0, Math.PI*2); ctx.stroke();
+        // Licznik
+        const pct = e.chargeTimer / 180;
+        ctx.strokeStyle = '#ffaa00';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size * 3, -Math.PI/2, -Math.PI/2 + pct * Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // ── INVINCIBLE — tarcza + piorun ──
+    if (t === 'INVINCIBLE') {
+        if (e.invActive) {
+            // Obracająca się tarcza
+            const shieldAngle = Date.now() * 0.004;
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 8, shieldAngle, shieldAngle + Math.PI * 1.6); ctx.stroke();
+            ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 8, shieldAngle + Math.PI, shieldAngle + Math.PI * 2.6); ctx.stroke();
+            ctx.setLineDash([]);
+        } else {
+            // Timer — łuk pokazujący ile do niezniszczalności
+            const cycleLen = e.invDuration + e.invCooldown;
+            const pos = e.invCycle % cycleLen;
+            const pct = 1 - (pos / e.invCooldown); // maleje do 0
+            ctx.strokeStyle = 'rgba(255,200,0,0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size + 6, -Math.PI/2, -Math.PI/2 + pct * Math.PI * 2);
+            ctx.stroke();
+        }
+        // Piorun
+        if (e.lightningFlash > 0 && e.lightningTarget) {
+            const steps = 6;
+            ctx.strokeStyle = `rgba(255,220,0,${e.lightningFlash / 12})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(e.x, e.y);
+            for (let s = 1; s <= steps; s++) {
+                const t2 = s / steps;
+                const lx = e.x + (e.lightningTarget.x - e.x) * t2 + (Math.random()-0.5)*16;
+                const ly = e.y + (e.lightningTarget.y - e.y) * t2 + (Math.random()-0.5)*16;
+                ctx.lineTo(lx, ly);
+            }
+            ctx.stroke();
+            // Biały rdzeń
+            ctx.strokeStyle = `rgba(255,255,255,${e.lightningFlash / 12})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(e.x, e.y);
+            ctx.lineTo(e.lightningTarget.x, e.lightningTarget.y); ctx.stroke();
+        }
+    }
+
+    // ── ARMORED — linie pancerza ──
+    if (t === 'ARMORED') {
+        const s = e.size;
+        ctx.strokeStyle = 'rgba(180,180,180,0.5)';
+        ctx.lineWidth = 1;
+        // Płyty pancerza
+        ctx.beginPath(); ctx.moveTo(e.x - s, e.y); ctx.lineTo(e.x + s, e.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(e.x, e.y - s); ctx.lineTo(e.x, e.y + s); ctx.stroke();
+    }
+
+    // ── BOMBER — podświetlenie gdy celuje ──
+    if (t === 'BOMBER' && e.bomberPhase === 'APPROACH' && e.bombTarget) {
+        ctx.strokeStyle = 'rgba(255,80,0,0.6)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y);
+        ctx.lineTo(e.bombTarget.x, e.bombTarget.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+}
+
+
     game.enemies.forEach(e => {
         // REGENERATOR: pulsing heal aura
         if (e.isRegenerator) {
@@ -1447,14 +2220,13 @@ function renderAnomalies() {
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Heal particles drifting outward
+            // Heal particles — deterministic
+            const tp = Date.now() * 0.0015;
             for (let p = 0; p < 4; p++) {
-                const a = Math.random() * Math.PI * 2;
-                const d = Math.random() * e.regenRadius;
-                ctx.fillStyle = `rgba(0, 255, 160, ${Math.random() * 0.5})`;
-                ctx.beginPath();
-                ctx.arc(e.x + Math.cos(a)*d, e.y + Math.sin(a)*d, 2, 0, Math.PI*2);
-                ctx.fill();
+                const a = tp + p * 1.571; // π/2
+                const d = e.regenRadius * (0.2 + 0.6 * ((p * 0.25 + tp * 0.2) % 1));
+                ctx.fillStyle = 'rgba(0,255,160,0.3)';
+                ctx.beginPath(); ctx.arc(e.x + Math.cos(a)*d, e.y + Math.sin(a)*d, 2, 0, Math.PI*2); ctx.fill();
             }
 
             // Inner glow
@@ -1464,7 +2236,12 @@ function renderAnomalies() {
             ctx.fill();
         }
 
-        ctx.fillStyle = e.hitF > 0 ? "#fff" : e.color;
+        renderEnemySpecial(e);
+
+        // Niezniszczalny — biały fill
+        const fillCol = (e.invActive || (e._witchShield > 0 && e.enemyType !== 'WITCH_DOCTOR'))
+            ? '#ffffff' : (e.hitF > 0 ? '#fff' : e.color);
+        ctx.fillStyle = fillCol;
         ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
         ctx.closePath(); ctx.fill();
@@ -1541,6 +2318,58 @@ function renderTacticalMap() {
         }
     });
     
+    // Rivers — blue wavy lines with width
+    if (game.terrain.rivers && game.terrain.rivers.length > 0) {
+        game.terrain.rivers.forEach(rv => {
+            if (rv.points.length < 2) return;
+            // Fill (wide)
+            ctx.strokeStyle = 'rgba(60,120,220,0.55)';
+            ctx.lineWidth = rv.width;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(rv.points[0].x, rv.points[0].y);
+            for (let i = 1; i < rv.points.length; i++) {
+                // Smooth curve through points
+                if (i < rv.points.length - 1) {
+                    const mx = (rv.points[i].x + rv.points[i+1].x) / 2;
+                    const my = (rv.points[i].y + rv.points[i+1].y) / 2;
+                    ctx.quadraticCurveTo(rv.points[i].x, rv.points[i].y, mx, my);
+                } else {
+                    ctx.lineTo(rv.points[i].x, rv.points[i].y);
+                }
+            }
+            ctx.stroke();
+            // Highlight edge
+            ctx.strokeStyle = 'rgba(100,180,255,0.4)';
+            ctx.lineWidth = rv.width * 0.25;
+            ctx.beginPath();
+            ctx.moveTo(rv.points[0].x, rv.points[0].y);
+            for (let i = 1; i < rv.points.length; i++) {
+                if (i < rv.points.length - 1) {
+                    const mx = (rv.points[i].x + rv.points[i+1].x) / 2;
+                    const my = (rv.points[i].y + rv.points[i+1].y) / 2;
+                    ctx.quadraticCurveTo(rv.points[i].x, rv.points[i].y, mx, my);
+                } else {
+                    ctx.lineTo(rv.points[i].x, rv.points[i].y);
+                }
+            }
+            ctx.stroke();
+            ctx.lineCap = 'butt';
+        });
+    }
+
+    // Blocked terrain — white/light solid rectangles
+    if (game.terrain.blocked && game.terrain.blocked.length > 0) {
+        game.terrain.blocked.forEach(b => {
+            ctx.fillStyle = 'rgba(240,240,240,0.85)';
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(b.x, b.y, b.w, b.h);
+        });
+    }
+
     ctx.strokeStyle = "#f44"; ctx.lineWidth = 2; ctx.setLineDash([15, 8]);
     let sz = {x:0,y:0,w:0,h:0};
     if(game.spawnDir==='NORTH') sz={x:0,y:0,w:CONFIG.WIDTH,h:180};
@@ -1734,10 +2563,51 @@ function renderEntities() {
 }
 
 function handleInput() {
+    // Pauza — zaznaczanie najemników i rysowanie stref
+    if (game.mode === 'COMBAT' && game.paused) {
+        const mx = game.mouse.x, my = game.mouse.y;
+        // Sprawdź czy kliknięto najemnika
+        let clickedMerc = null;
+        for (const m of game.mercs) {
+            if (Math.hypot(m.x - mx, m.y - my) < 20) { clickedMerc = m; break; }
+        }
+        if (clickedMerc) {
+            game.selectedMerc = clickedMerc;
+            game.drawingZone = null;
+            logTerminal('Wybrany: ' + clickedMerc.name + ' — kliknij mapę by wyznaczyć strefę');
+        } else if (game.selectedMerc) {
+            // Zacznij rysowanie strefy
+            if (!game.drawingZone) {
+                game.drawingZone = { x1: mx, y1: my, x2: mx, y2: my, merc: game.selectedMerc };
+            } else {
+                // Zatwierdź strefę
+                const z = game.drawingZone;
+                z.x2 = mx; z.y2 = my;
+                const minX = Math.min(z.x1, z.x2), maxX = Math.max(z.x1, z.x2);
+                const minY = Math.min(z.y1, z.y2), maxY = Math.max(z.y1, z.y2);
+                game.selectedMerc.zone = { x: minX, y: minY, w: maxX-minX, h: maxY-minY, cx: (minX+maxX)/2, cy: (minY+maxY)/2 };
+                game.selectedMerc.mode = 'PATROL';
+                logTerminal(game.selectedMerc.name + ': strefa wyznaczona (' + Math.round(maxX-minX) + '×' + Math.round(maxY-minY) + 'px)');
+                game.drawingZone = null;
+                game.selectedMerc = null;
+            }
+        }
+        return;
+    }
     if (game.mode === 'BASE' && game.selected) {
         const gx = Math.floor((game.mouse.x - 150) / 50), gy = Math.floor((game.mouse.y - 150) / 50);
         if(gx>=0 && gx<12 && gy>=0 && gy<12) { game.buildings.push({ gx, gy, cfg: CONFIG.BUILDINGS[game.selected] }); game.money -= CONFIG.BUILDINGS[game.selected].cost; updateStatsUI(); }
     } else if (game.mode === 'PREP' && game.selected) {
+        // Mine placement
+        if (CONFIG.MINES && CONFIG.MINES[game.selected]) {
+            const mcfg = CONFIG.MINES[game.selected];
+            if (game.money >= mcfg.cost) {
+                game.mines.push({ ...mcfg, x: game.mouse.x, y: game.mouse.y, triggered: false, cooldown: 0, angle: Math.atan2(game.mouse.y - CONFIG.HEIGHT/2, game.mouse.x - CONFIG.WIDTH/2) });
+                game.money -= mcfg.cost;
+                updateStatsUI();
+            }
+            return;
+        }
         const cfg = CONFIG.DEFENSE[game.selected];
         if (cfg.type === 'core' && game.corePlaced) return;
         if (game.money >= cfg.cost) {
@@ -1762,17 +2632,28 @@ function renderProjectiles() {
         else if (p.type === 'railgun') { ctx.fillStyle = "#0ff"; ctx.shadowBlur=10; ctx.shadowColor="#0ff"; ctx.fillRect(p.x-3,p.y-3,6,6); ctx.shadowBlur=0; }
         else { ctx.fillStyle = "#fff"; ctx.fillRect(p.x,p.y,3,3); }
         
+        // Enemy projectile targeting towers
+        if (p.targetsTowers && p.isFriendly === false) {
+            ctx.fillStyle = '#aaaaaa';
+            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+            const towerHit = game.entities.find(ent =>
+                ent.type === 'tower' && Math.hypot(ent.x - p.x, ent.y - p.y) < 20
+            );
+            if (towerHit) { towerHit.curHP -= p.dmg; toRemove.add(i); }
+            if (p.x < 0 || p.x > CONFIG.WIDTH || p.y < 0 || p.y > CONFIG.HEIGHT) toRemove.add(i);
+            return;
+        }
         if (p.piercing) {
             p.hitEnemies = p.hitEnemies || [];
             game.enemies.forEach(e => {
-                if (!p.hitEnemies.includes(e) && Math.hypot(e.x-p.x, e.y-p.y) < e.size) {
+                if (!p.hitEnemies.includes(e) && !e._witchShield && Math.hypot(e.x-p.x, e.y-p.y) < e.size) {
                     e.hp -= p.dmg; e.hitF = 5;
                     p.hitEnemies.push(e);
                     ctx.fillStyle = "rgba(0,255,255,0.7)"; ctx.beginPath(); ctx.arc(e.x,e.y,e.size+10,0,Math.PI*2); ctx.fill();
                 }
             });
         } else {
-            const hit = game.enemies.find(e => Math.hypot(e.x-p.x, e.y-p.y) < e.size);
+            const hit = game.enemies.find(e => Math.hypot(e.x-p.x, e.y-p.y) < e.size && !e._witchShield);
             if (hit) {
                 hit.hp -= p.dmg; hit.hitF = 3;
                 if (p.knockback) { const angle = Math.atan2(p.vy,p.vx); hit.x += Math.cos(angle)*p.knockback; hit.y += Math.sin(angle)*p.knockback; }
@@ -1900,7 +2781,7 @@ function renderBurnZones() {
     game.burnZones.forEach((z, i) => {
         z.frame++;
         if (z.frame % 10 === 0) {
-            game.enemies.forEach(enemy => { if (Math.hypot(enemy.x-z.x,enemy.y-z.y) < z.radius) { enemy.hp -= z.damage; enemy.hitF = 2; } });
+            game.enemies.forEach(enemy => { if (!enemy._witchShield && Math.hypot(enemy.x-z.x,enemy.y-z.y) < z.radius) { enemy.hp -= z.damage; enemy.hitF = 2; } });
         }
         const alpha = 1 - (z.frame / z.duration);
         for (let p = 0; p < 30; p++) {
@@ -1920,7 +2801,7 @@ function renderPoisonClouds() {
     game.poisonClouds.forEach((z, i) => {
         z.frame++;
         if (z.frame % 10 === 0) {
-            game.enemies.forEach(enemy => { if (Math.hypot(enemy.x-z.x,enemy.y-z.y) < z.radius) { enemy.hp -= z.damage; enemy.hitF = 2; } });
+            game.enemies.forEach(enemy => { if (!enemy._witchShield && Math.hypot(enemy.x-z.x,enemy.y-z.y) < z.radius) { enemy.hp -= z.damage; enemy.hitF = 2; } });
         }
         const alpha = 1 - (z.frame / z.duration);
         for (let p = 0; p < 40; p++) {
@@ -1965,7 +2846,7 @@ function renderExplosions() {
         if (e.frame === Math.floor(e.maxFrames/2) && !e.hasDealtDamage) {
             game.enemies.forEach(enemy => {
                 const dist = Math.hypot(enemy.x-e.x, enemy.y-e.y);
-                if (dist < e.maxRadius) { enemy.hp -= e.damage * (1 - dist/e.maxRadius); enemy.hitF = 5; }
+                if (dist < e.maxRadius && !enemy._witchShield) { enemy.hp -= e.damage * (1 - dist/e.maxRadius); enemy.hitF = 5; }
             });
             e.hasDealtDamage = true;
         }
@@ -2004,7 +2885,16 @@ function renderBaseGrid() {
 }
 
 function renderGhost() {
+    if (CONFIG.MINES && CONFIG.MINES[game.selected]) {
+        const mcfg = CONFIG.MINES[game.selected];
+        ctx.strokeStyle = `rgba(255,200,0,0.4)`;
+        ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, mcfg.triggerR, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = `rgba(255,200,0,0.15)`;
+        ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, mcfg.triggerR, 0, Math.PI*2); ctx.fill();
+        return;
+    }
     const cfg = CONFIG.DEFENSE[game.selected];
+    if (!cfg) return;
     ctx.strokeStyle = "rgba(255,255,255,0.3)";
     if (cfg.range) { ctx.beginPath(); ctx.arc(game.mouse.x, game.mouse.y, cfg.range, 0, Math.PI*2); ctx.stroke(); }
     ctx.strokeRect(game.mouse.x-10, game.mouse.y-10, 20, 20);
@@ -2221,6 +3111,155 @@ function toggleChaos() {
     updateSliderDisplay();
 }
 
+
+// ══════════════════════════════════════════════
+//  MONSTER TYPES — definicje i roster
+// ══════════════════════════════════════════════
+
+const MONSTER_TYPES = {
+    BLOB: {
+        id: 'BLOB', name: 'Mutant', icon: '🟢',
+        color: '#30e060', altColor: '#10a030',
+        size: 18, speed: 2.8, hp: 400, dmg: 45,
+        attackRange: 55, attackCooldown: 60,
+        lifetime: 600, moveType: 'LAND',
+        special: 'stun',       // ogłusza trafione jednostki
+        desc: 'Klasyczny mutant. Ogłusza wrogów.',
+        shape: 'blob'
+    },
+    SPIDER: {
+        id: 'SPIDER', name: 'Pająk', icon: '🕷',
+        color: '#30e060', altColor: '#10a030',
+        size: 14, speed: 4.2, hp: 200, dmg: 20,
+        attackRange: 140, attackCooldown: 45,
+        lifetime: 500, moveType: 'LAND',
+        special: 'web',        // strzela pajęczyną — spowalnia wroga
+        desc: 'Szybki. Pajęczyna spowalnia wrogów.',
+        shape: 'spider'
+    },
+    GOLEM: {
+        id: 'GOLEM', name: 'Golem', icon: '🗿',
+        color: '#30e060', altColor: '#10a030',
+        size: 26, speed: 1.4, hp: 1200, dmg: 80,
+        attackRange: 50, attackCooldown: 90,
+        lifetime: 700, moveType: 'LAND',
+        special: 'knockback',  // knockback na ataku
+        desc: 'Wolny, ale niezniszczalny. Odpycha wrogów.',
+        shape: 'golem'
+    },
+    GHOST: {
+        id: 'GHOST', name: 'Duch', icon: '👻',
+        color: '#30e060', altColor: '#10a030',
+        size: 16, speed: 3.0, hp: 180, dmg: 30,
+        attackRange: 80, attackCooldown: 50,
+        lifetime: 550, moveType: 'FLY',
+        special: 'confuse',    // dezorientuje — wróg losowo zmienia kierunek
+        desc: 'Lata przez przeszkody. Dezorientuje wrogów.',
+        shape: 'ghost'
+    },
+    PLAGUE: {
+        id: 'PLAGUE', name: 'Zaraza', icon: '☣',
+        color: '#30e060', altColor: '#10a030',
+        size: 20, speed: 2.0, hp: 300, dmg: 15,
+        attackRange: 70, attackCooldown: 30,
+        lifetime: 480, moveType: 'LAND',
+        special: 'dot',        // przy śmierci eksploduje z DOT na pobliskich
+        desc: 'Zaraża wrogów. Eksploduje śmiercią z trucizną.',
+        shape: 'plague'
+    }
+};
+
+function generateMonsterRoster() {
+    const types = Object.values(MONSTER_TYPES);
+    // Shuffle and pick 3
+    const shuffled = types.sort(() => Math.random() - 0.5).slice(0, 3);
+    game.monsterRoster = shuffled.map(t => ({
+        type: t,
+        summoned: false
+    }));
+}
+
+function summonMonster(idx) {
+    const entry = game.monsterRoster[idx];
+    if (!entry || entry.summoned) return;
+    entry.summoned = true;
+
+    // Spawn near HQ core
+    const core = game.entities.find(e => e.type === 'core');
+    const baseX = core ? core.x : game.player.x;
+    const baseY = core ? core.y : game.player.y;
+    const x = baseX + (Math.random()-0.5)*80;
+    const y = baseY + (Math.random()-0.5)*80;
+    spawnMonsterType(x, y, entry.type);
+    logTerminal('WEZWANO: ' + entry.type.name + '!');
+    buildMonsterRosterUI();
+}
+
+function spawnMonsterType(targetX, targetY, type) {
+    const t = type || MONSTER_TYPES.BLOB;
+    const monster = {
+        x: targetX, y: targetY,
+        hp: t.hp, maxHp: t.hp,
+        dmg: t.dmg,
+        size: t.size,
+        speed: t.speed,
+        lifetime: t.lifetime,
+        frame: 0,
+        attackCooldown: t.attackCooldown,
+        attackRange: t.attackRange,
+        target: null,
+        isAttacking: false,
+        attackTimer: 0,
+        pulsePhase: Math.random() * Math.PI * 2,
+        moveType: t.moveType,
+        special: t.special,
+        monsterType: t,
+        vertices: generateMonsterVerts(t.size),
+        webShots: [],
+        // Per-type movement personality
+        movePhase: Math.random() * Math.PI * 2,  // individual phase offset
+        moveTimer: 0,                             // general timer for movement state
+        sprintTimer: 0,                           // SPIDER: frames until next sprint
+        sprintActive: false,                      // SPIDER: currently sprinting
+        orbitAngle: Math.random() * Math.PI * 2, // PLAGUE: current orbit angle
+        stompTimer: 0,                            // GOLEM: stomp cooldown
+        stompPause: false,                        // GOLEM: paused to stomp
+        driftY: 0,                                // GHOST: vertical drift offset
+    };
+    game.monsters.push(monster);
+}
+
+function buildMonsterRosterUI() {
+    const container = document.getElementById('monster-roster');
+    if (!container) return;
+    container.innerHTML = '';
+
+    game.monsterRoster.forEach((entry, idx) => {
+        const t = entry.type;
+        const div = document.createElement('div');
+        div.className = 'merc-card' + (entry.summoned ? ' hired' : '');
+        div.innerHTML =
+            '<div class="merc-top">' +
+                '<span class="merc-icon">' + t.icon + '</span>' +
+                '<div class="merc-info">' +
+                    '<span class="merc-name">' + t.name + '</span>' +
+                    '<span class="merc-spec">' + t.desc + '</span>' +
+                '</div>' +
+                (!entry.summoned
+                    ? '<button class="merc-hire-btn" onclick="summonMonster(' + idx + ')">WEZWIJ</button>'
+                    : '<span class="merc-hired-badge">✓ AKTYWNY</span>') +
+            '</div>' +
+            '<div class="merc-stats">' +
+                '<span>HP <b>' + t.hp + '</b></span>' +
+                '<span>SPD <b>' + t.speed.toFixed(1) + '</b></span>' +
+                '<span>DMG <b>' + t.dmg + '</b></span>' +
+                '<span>RNG <b>' + t.attackRange + '</b></span>' +
+            '</div>';
+        container.appendChild(div);
+    });
+}
+
+
 // ══════════════════════════════════════════════
 //  MERCENARIES — definicje, losowanie, AI, render
 // ══════════════════════════════════════════════
@@ -2259,10 +3298,18 @@ function generateMercRoster() {
 
         const hp = 200 + Math.floor(Math.random() * 400);
         const speed = (1.2 + Math.random() * 0.8) * spec.speedMult;
+        const courage = Math.round((0.1 + Math.random() * 0.85) * 100) / 100;
+
+        // ~33% chance of dual weapons — pick a different second weapon
+        let weapon2 = null;
+        if (Math.random() < 0.33) {
+            const others = MERC_WEAPONS.filter(w => w.id !== weapon.id);
+            weapon2 = others[Math.floor(Math.random() * others.length)];
+        }
 
         game.mercRoster.push({
             id: 'merc_' + i + '_' + Date.now(),
-            name, spec, weapon, hp, maxHp: hp, speed,
+            name, spec, weapon, weapon2, hp, maxHp: hp, speed, courage,
             hired: false
         });
     }
@@ -2273,11 +3320,14 @@ function hireMerc(idx) {
     if (!entry || entry.hired) return;
     entry.hired = true;
 
-    // Spawn near player
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = 80 + Math.random() * 60;
-    const mx = (game.player.x || CONFIG.WIDTH/2) + Math.cos(angle) * dist;
-    const my = (game.player.y || CONFIG.HEIGHT/2) + Math.sin(angle) * dist;
+    // Spawn near HQ core, not player
+    const core = game.entities.find(e => e.type === 'core');
+    const baseX = core ? core.x : CONFIG.WIDTH / 2;
+    const baseY = core ? core.y : CONFIG.HEIGHT / 2;
+    const angle = (idx / 3) * Math.PI * 2 + Math.random() * 0.5;
+    const dist  = 60 + idx * 35;
+    const mx = baseX + Math.cos(angle) * dist;
+    const my = baseY + Math.sin(angle) * dist;
 
     const merc = {
         x: mx, y: my,
@@ -2286,16 +3336,21 @@ function hireMerc(idx) {
         moveType: entry.spec.moveType,
         spec: entry.spec,
         weapon: entry.weapon,
+        weapon2: entry.weapon2 || null,
         name: entry.name,
         size: 14,
         fireCooldown: 0,
+        fireCooldown2: 0,
         target: null,
-        // projectiles fired by this merc
         projectiles: [],
-        burnZones: [],
         facing: 0,
         hitF: 0,
-        dead: false
+        dead: false,
+        courage: entry.courage,
+        fleeing: false,
+        fleeAngle: 0,
+        orbitOffset: idx * (Math.PI * 2 / 3),
+        preferDist: 80 + idx * 40
     };
     game.mercs.push(merc);
     logTerminal(entry.name + ' (' + entry.spec.name + ') dołączył!');
@@ -2309,6 +3364,34 @@ function updateMercs() {
     game.mercs.forEach((m, mi) => {
         if (m.dead) { toRemove.add(mi); return; }
         if (m.hitF > 0) m.hitF--;
+
+        // Flee check — trigger when HP drops below courage threshold
+        if (!m.fleeing && m.hp < m.courage * m.maxHp) {
+            m.fleeing = true;
+            // Pick escape angle: away from nearest enemy, toward map edge
+            const nearestForFlee = game.enemies.reduce((best, e) => {
+                const d = Math.hypot(e.x - m.x, e.y - m.y);
+                return (!best || d < best.d) ? {e, d} : best;
+            }, null);
+            const awayAng = nearestForFlee
+                ? Math.atan2(m.y - nearestForFlee.e.y, m.x - nearestForFlee.e.x)
+                : Math.random() * Math.PI * 2;
+            m.fleeAngle = awayAng;
+            logTerminal(m.name + ' ucieka! (odwaga: ' + Math.round(m.courage * 100) + '%)');
+        }
+
+        // Fleeing — run to map edge and despawn
+        if (m.fleeing) {
+            const dx = Math.cos(m.fleeAngle), dy = Math.sin(m.fleeAngle);
+            m.x += dx * m.speed * 1.6;  // panic boost
+            m.y += dy * m.speed * 1.6;
+            m.facing = m.fleeAngle;
+            // Off-map = gone
+            if (m.x < -30 || m.x > CONFIG.WIDTH + 30 || m.y < -30 || m.y > CONFIG.HEIGHT + 30) {
+                m.dead = true; toRemove.add(mi);
+            }
+            return;
+        }
 
         // Update own projectiles
         m.projectiles = m.projectiles.filter(p => {
@@ -2327,49 +3410,99 @@ function updateMercs() {
             return !hit;
         });
 
-        // Find nearest enemy
+        // Find nearest enemy (w strefie lub globalnie)
         let nearest = null, nearestDist = Infinity;
-        game.enemies.forEach(e => {
+        const hasZone = m.zone && m.mode === 'PATROL';
+        for (const e of game.enemies) {
             const d = Math.hypot(e.x - m.x, e.y - m.y);
-            if (d < nearestDist) { nearestDist = d; nearest = e; }
-        });
+            if (d < nearestDist) {
+                // W trybie PATROL atakuj tylko wrogów w strefie lub w zasięgu broni
+                if (hasZone) {
+                    const inZone = e.x >= m.zone.x && e.x <= m.zone.x+m.zone.w &&
+                                   e.y >= m.zone.y && e.y <= m.zone.y+m.zone.h;
+                    const inRange = d <= m.weapon.range * 1.2;
+                    if (!inZone && !inRange) continue;
+                }
+                nearestDist = d; nearest = e;
+            }
+        }
         m.target = nearest;
+
+        // Strefa — wróć do centrum gdy brak celów lub za daleko
+        if (hasZone && !nearest) {
+            const dz = Math.hypot(m.x - m.zone.cx, m.y - m.zone.cy);
+            if (dz > 30) {
+                const ang = Math.atan2(m.zone.cy - m.y, m.zone.cx - m.x);
+                m.x += Math.cos(ang) * m.speed * 0.8;
+                m.y += Math.sin(ang) * m.speed * 0.8;
+                m.facing = ang;
+            }
+        }
 
         if (nearest) {
             m.facing = Math.atan2(nearest.y - m.y, nearest.x - m.x);
 
-            // Move toward enemy if out of range
-            if (nearestDist > m.weapon.range * 0.85) {
-                const ang = m.facing;
-                let dx = Math.cos(ang), dy = Math.sin(ang);
-                if (willCollideWithLake(m.x, m.y, dx * m.speed, dy * m.speed, m.size, m.moveType)) {
-                    const perps = [{dx:-dy,dy:dx},{dx:dy,dy:-dx}];
-                    for (const alt of perps) {
-                        if (!willCollideWithLake(m.x, m.y, alt.dx*m.speed, alt.dy*m.speed, m.size, m.moveType)) {
-                            dx = alt.dx; dy = alt.dy; break;
+            // Strefa — nie wychodź poza granice nawet za wrogiem
+            const preferDist = m.preferDist || 80;
+            const engageRange = m.weapon.range * 0.75;
+            const targetDist = Math.min(preferDist, engageRange);
+
+            if (nearestDist > targetDist + 20) {
+                const orbitAng = m.facing + Math.PI + m.orbitOffset;
+                const destX = nearest.x + Math.cos(orbitAng) * targetDist * 0.3;
+                const destY = nearest.y + Math.sin(orbitAng) * targetDist * 0.3;
+                // W strefie — sprawdź czy dest jest w strefie
+                let canMove = true;
+                if (hasZone) {
+                    canMove = destX >= m.zone.x && destX <= m.zone.x+m.zone.w &&
+                              destY >= m.zone.y && destY <= m.zone.y+m.zone.h;
+                }
+                if (canMove) {
+                    const toDestAng = Math.atan2(destY - m.y, destX - m.x);
+                    let dx = Math.cos(toDestAng), dy = Math.sin(toDestAng);
+                    if (willCollideWithLake(m.x, m.y, dx * m.speed, dy * m.speed, m.size, m.moveType)) {
+                        const perps = [{dx:-dy,dy:dx},{dx:dy,dy:-dx}];
+                        for (const alt of perps) {
+                            if (!willCollideWithLake(m.x, m.y, alt.dx*m.speed, alt.dy*m.speed, m.size, m.moveType)) {
+                                dx = alt.dx; dy = alt.dy; break;
+                            }
                         }
                     }
+                    m.x += dx * m.speed;
+                    m.y += dy * m.speed;
                 }
-                m.x += dx * m.speed;
-                m.y += dy * m.speed;
             }
 
-            // Fire
+            // Fire — both weapons independently
             m.fireCooldown--;
             if (m.fireCooldown <= 0 && nearestDist <= m.weapon.range) {
                 m.fireCooldown = m.weapon.rof;
-                fireMercWeapon(m, nearest);
+                fireMercWeapon(m, nearest, m.weapon);
+            }
+            if (m.weapon2) {
+                m.fireCooldown2--;
+                if (m.fireCooldown2 <= 0 && nearestDist <= m.weapon2.range) {
+                    m.fireCooldown2 = m.weapon2.rof;
+                    fireMercWeapon(m, nearest, m.weapon2);
+                }
             }
         }
 
-        // Enemies aggro toward mercs — every enemy within 350px has 30% chance to redirect
-        game.enemies.forEach(e => {
-            if (e.moveType === 'FLY') return;
-            const d = Math.hypot(e.x - m.x, e.y - m.y);
-            if (d < 350 && Math.random() < 0.008) {
-                e._mercTarget = m;
+        // Enemies aggro toward mercs — deterministic, every 4 frames
+        if (game.frame % 4 === 0) {
+            const ar2 = 220 * 220; // 220px aggro range
+            for (const e of game.enemies) {
+                if (e.hp <= 0) continue;
+                if (e.moveType === 'FLY') continue; // latające ignorują naziemnych
+                const dx = e.x - m.x, dy = e.y - m.y;
+                if (dx*dx + dy*dy < ar2) {
+                    // Przełącz cel tylko jeśli brak celu lub ten najemnik jest bliżej
+                    if (!e._mercTarget || Math.hypot(e.x-m.x,e.y-m.y) < Math.hypot(e.x-e._mercTarget.x,e.y-e._mercTarget.y)) {
+                        e._mercTarget = m;
+                    }
+                }
             }
-        });
+        }
 
         // Clamp to map
         m.x = Math.max(30, Math.min(CONFIG.WIDTH-30, m.x));
@@ -2379,18 +3512,15 @@ function updateMercs() {
     game.mercs = game.mercs.filter((_, i) => !toRemove.has(i));
 
     // Apply merc-targeted enemy movement
-    game.enemies.forEach(e => {
-        if (e._mercTarget) {
-            if (e._mercTarget.dead || !game.mercs.includes(e._mercTarget)) {
-                delete e._mercTarget;
-            }
-        }
-    });
+    for (const e of game.enemies) {
+        if (e._mercTarget && (e._mercTarget.dead || !game.mercs.includes(e._mercTarget))) delete e._mercTarget;
+        if (e._monsterTarget && (!game.monsters.includes(e._monsterTarget) || e._monsterTarget.hp <= 0)) delete e._monsterTarget;
+    }
 }
 
-function fireMercWeapon(m, target) {
+function fireMercWeapon(m, target, wpn) {
+    wpn = wpn || m.weapon;
     const ang = Math.atan2(target.y - m.y, target.x - m.x);
-    const wpn = m.weapon;
 
     if (wpn.id === 'FLAMER') {
         // Single burn zone per shot — no spam
@@ -2444,70 +3574,63 @@ function fireMercWeapon(m, target) {
 // ── RENDER ──────────────────────────────────────
 function renderMercs() {
     game.mercs.forEach(m => {
-        // Draw own projectiles
+        // Projectiles
         m.projectiles.forEach(p => {
             ctx.fillStyle = p.color;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, m.weapon.id === 'ROCKET' ? 5 : 3, 0, Math.PI*2);
+            ctx.arc(p.x, p.y, p.blast ? 5 : 2.5, 0, Math.PI*2);
             ctx.fill();
         });
 
-        const hit = m.hitF > 0;
+        const hit  = m.hitF > 0;
+        const col  = m.fleeing
+            ? (Math.floor(Date.now() / 120) % 2 === 0 ? '#ffdd00' : '#ff8800')
+            : hit ? '#ffffff' : '#7090c0';
+        const s    = m.size;
+
         ctx.save();
         ctx.translate(m.x, m.y);
-
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.beginPath();
-        ctx.ellipse(3, 6, m.size*0.7, m.size*0.3, 0, 0, Math.PI*2);
-        ctx.fill();
-
-        // Body — humanoid shape
-        const col = hit ? '#fff' : m.spec.color;
-
-        // Legs
-        ctx.fillStyle = hit ? '#fff' : '#404050';
-        ctx.fillRect(-5, 6, 4, 10);
-        ctx.fillRect(2, 6, 4, 10);
-
-        // Torso
-        ctx.fillStyle = col;
-        ctx.fillRect(-7, -4, 14, 12);
-
-        // Head
-        ctx.beginPath();
-        ctx.arc(0, -10, 6, 0, Math.PI*2);
-        ctx.fill();
-
-        // Weapon barrel (pointing toward target)
-        ctx.save();
         ctx.rotate(m.facing);
-        ctx.fillStyle = '#303040';
-        const blen = m.weapon.id === 'SNIPER' ? 18 : m.weapon.id === 'ROCKET' ? 14 : 10;
-        ctx.fillRect(4, -2, blen, 3);
-        ctx.restore();
 
-        // Spec icon above head
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(m.spec.icon, 0, -20);
+        // Single shape — circle with flat bottom (helmet silhouette)
+        ctx.fillStyle   = col;
+        ctx.strokeStyle = hit ? '#fff' : 'rgba(255,255,255,0.45)';
+        ctx.lineWidth   = 1.5;
+
+        ctx.beginPath();
+        ctx.arc(0, 0, s, Math.PI * 0.15, Math.PI * 0.85);
+        ctx.lineTo(-s * 0.7, s * 0.5);
+        ctx.lineTo( s * 0.7, s * 0.5);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Weapon barrel(s)
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        const blen = m.weapon.id === 'SNIPER' ? s * 1.4 : m.weapon.id === 'ROCKET' ? s * 1.1 : s * 0.9;
+        ctx.fillRect(s * 0.5, -2, blen, 4);
+        if (m.weapon2) {
+            // Second barrel offset slightly
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            const blen2 = m.weapon2.id === 'SNIPER' ? s * 1.4 : m.weapon2.id === 'ROCKET' ? s * 1.1 : s * 0.9;
+            ctx.fillRect(s * 0.5, 3, blen2, 3);
+        }
 
         ctx.restore();
 
         // HP bar
-        const bw = 30, bh = 4;
-        const bx = m.x - bw/2, by = m.y - m.size - 18;
-        ctx.fillStyle = '#1a1a1a';
+        const bw = 28, bh = 3;
+        const bx = m.x - bw/2, by = m.y - s - 14;
+        ctx.fillStyle = '#111';
         ctx.fillRect(bx, by, bw, bh);
         const pct = Math.max(0, m.hp / m.maxHp);
         ctx.fillStyle = pct > 0.5 ? '#50c050' : pct > 0.25 ? '#c0a030' : '#c03030';
-        ctx.fillRect(bx, by, bw*pct, bh);
+        ctx.fillRect(bx, by, bw * pct, bh);
 
-        // Name
-        ctx.fillStyle = 'rgba(220,220,220,0.85)';
-        ctx.font = 'bold 10px sans-serif';
+        // Name label
+        ctx.fillStyle = 'rgba(210,210,210,0.8)';
+        ctx.font = '9px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(m.name, m.x, m.y - m.size - 22);
+        ctx.fillText(m.name, m.x, m.y - s - 17);
     });
 }
 
@@ -2522,12 +3645,15 @@ function buildMercRosterUI() {
         div.className = 'merc-card' + (entry.hired ? ' hired' : '');
 
         const hpBar = Math.round((entry.hp / 600) * 100);
+        const courageLabel = entry.courage >= 0.8 ? 'Berserker' : entry.courage >= 0.55 ? 'Odważny' : entry.courage >= 0.3 ? 'Ostrożny' : 'Tchórz';
+        const courageColor = entry.courage >= 0.8 ? '#e06030' : entry.courage >= 0.55 ? '#50c050' : entry.courage >= 0.3 ? '#c0a030' : '#a03030';
         div.innerHTML =
             '<div class="merc-top">' +
                 '<span class="merc-icon">' + entry.spec.icon + '</span>' +
                 '<div class="merc-info">' +
                     '<span class="merc-name">' + entry.name + '</span>' +
-                    '<span class="merc-spec">' + entry.spec.name + ' · ' + entry.weapon.name + '</span>' +
+                    '<span class="merc-spec">' + entry.spec.name + ' · ' + entry.weapon.name + (entry.weapon2 ? ' + ' + entry.weapon2.name : '') + '</span>' +
+                    '<span class="merc-spec" style="color:' + courageColor + '">⚡ ' + courageLabel + ' — ucieka przy ' + Math.round(entry.courage * 100) + '% HP</span>' +
                 '</div>' +
                 (!entry.hired ? '<button class="merc-hire-btn" onclick="hireMerc(' + idx + ')">WERBUJ</button>'
                               : '<span class="merc-hired-badge">✓ NA POLU</span>') +
@@ -2550,19 +3676,22 @@ function buildMercRosterUI() {
 
 const editorState = {
     active: false,
-    tool: 'mountain',       // mountain | lake | forest | eraser
+    tool: 'mountain',
     brushSize: 80,
     intensity: 8,
+    riverWidth: 30,
     painting: false,
     spawnDir: 'NORTH',
-    terrain: null,          // working copy while editing
+    terrain: null,
     lastPaintX: -999, lastPaintY: -999,
-    minPaintDist: 40        // min px between brush strokes while dragging
+    minPaintDist: 60,
+    riverPoints: [],    // points being placed for current river
+    riverDrawing: false // true while in river path mode
 };
 
 function enterEditor() {
     editorState.active = true;
-    editorState.terrain = { hills: [], lakes: [], forests: [] };
+    editorState.terrain = { hills: [], lakes: [], forests: [], blocked: [], rivers: [] };
     editorState.spawnDir = 'NORTH';
     // Show panel
     document.querySelectorAll('#sidebar > div[id^="panel-"]').forEach(p => p.classList.remove('active'));
@@ -2574,6 +3703,7 @@ function enterEditor() {
     canvas.addEventListener('mousemove', editorMouseMove);
     canvas.addEventListener('mouseup',   editorMouseUp);
     canvas.addEventListener('mouseleave',editorMouseUp);
+    canvas.addEventListener('keydown',   editorKeyDown);
     // Overlay
     const ov = document.getElementById('editor-overlay');
     if (ov) ov.classList.add('visible');
@@ -2589,6 +3719,7 @@ function exitEditor() {
     canvas.removeEventListener('mousemove', editorMouseMove);
     canvas.removeEventListener('mouseup',   editorMouseUp);
     canvas.removeEventListener('mouseleave',editorMouseUp);
+    canvas.removeEventListener('keydown',   editorKeyDown);
     canvas.style.cursor = 'default';
     const ov = document.getElementById('editor-overlay');
     if (ov) ov.classList.remove('visible');
@@ -2597,11 +3728,20 @@ function exitEditor() {
 
 // ── Tool selection ──────────────────────────
 function setEditorTool(tool) {
+    // Cancel in-progress river if switching away
+    if (editorState.riverDrawing && tool !== 'river') {
+        editorFinishRiver();
+    }
     editorState.tool = tool;
-    ['mountain','lake','forest','eraser'].forEach(t => {
+    ['mountain','lake','forest','eraser','blocked','river'].forEach(t => {
         const btn = document.getElementById('tool-' + t);
         if (btn) btn.classList.toggle('active', t === tool);
     });
+    // Show river-specific UI
+    const rwr = document.getElementById('river-width-row');
+    const rh  = document.getElementById('river-hint');
+    if (rwr) rwr.style.display = tool === 'river' ? 'flex' : 'none';
+    if (rh)  rh.style.display  = tool === 'river' ? 'block' : 'none';
     editorUpdateOverlay();
 }
 
@@ -2611,6 +3751,18 @@ function setSpawnDir(dir) {
         const btn = document.getElementById('spawn-' + d);
         if (btn) btn.classList.toggle('active', d === dir);
     });
+}
+
+function editorKeyDown(e) {
+    if (e.code === 'Escape' && editorState.riverDrawing) {
+        editorState.riverDrawing = false;
+        editorState.riverPoints = [];
+        editorUpdateOverlay();
+    }
+    if (e.code === 'Enter' && editorState.riverDrawing) {
+        editorFinishRiver();
+        editorUpdateOverlay();
+    }
 }
 
 // ── Canvas coordinate conversion ───────────
@@ -2627,10 +3779,26 @@ function editorCanvasCoords(e) {
 // ── Mouse events ────────────────────────────
 function editorMouseDown(e) {
     if (!editorState.active) return;
+    const {x, y} = editorCanvasCoords(e);
+
+    if (editorState.tool === 'river') {
+        if (e.detail === 2) {
+            // Double click — finish river
+            editorFinishRiver();
+        } else {
+            // Single click — add point
+            if (!editorState.riverDrawing) {
+                editorState.riverDrawing = true;
+                editorState.riverPoints = [];
+            }
+            editorState.riverPoints.push({x, y});
+        }
+        return;
+    }
+
     editorState.painting = true;
     editorState.lastPaintX = -999;
     editorState.lastPaintY = -999;
-    const {x, y} = editorCanvasCoords(e);
     editorApplyBrush(x, y);
 }
 
@@ -2649,6 +3817,17 @@ function editorMouseMove(e) {
 
 function editorMouseUp() {
     editorState.painting = false;
+}
+
+function editorFinishRiver() {
+    if (editorState.riverPoints.length >= 2) {
+        editorState.terrain.rivers.push({
+            points: [...editorState.riverPoints],
+            width: editorState.riverWidth
+        });
+    }
+    editorState.riverDrawing = false;
+    editorState.riverPoints = [];
 }
 
 // ── Core brush logic ────────────────────────
@@ -2672,6 +3851,27 @@ function editorApplyBrush(x, y) {
             return Math.hypot(cx - x, cy - y) > r * 0.8;
         });
         t.forests  = t.forests.filter(f => Math.hypot(f.centerX - x, f.centerY - y) > r * 0.8);
+        // Also erase blocked rects overlapping eraser circle
+        if (t.blocked) {
+            t.blocked = t.blocked.filter(b => {
+                const bcx = b.x + b.w/2, bcy = b.y + b.h/2;
+                return Math.hypot(bcx - x, bcy - y) > r * 0.6;
+            });
+        }
+        // Erase river segments near eraser
+        if (t.rivers) {
+            t.rivers = t.rivers.filter(rv => {
+                // Remove whole river if any point is within eraser
+                return !rv.points.some(p => Math.hypot(p.x - x, p.y - y) < r * 0.8);
+            });
+        }
+        return;
+    }
+
+    if (editorState.tool === 'blocked') {
+        if (!t.blocked) t.blocked = [];
+        const half = r * 0.5;
+        t.blocked.push({ x: x - half, y: y - half, w: half * 2, h: half * 2 });
         return;
     }
 
@@ -2693,45 +3893,65 @@ function editorRenderLoop() {
 }
 
 function editorDraw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Swap game state for rendering
+    const savedTerrain  = game.terrain;
+    const savedSpawnDir = game.spawnDir;
+    const savedMode     = game.mapView;
+    game.terrain  = editorState.terrain;
+    game.spawnDir = editorState.spawnDir;
+    game.mapView  = 'DETAILED';
 
-    // Background
-    ctx.fillStyle = '#0d1008';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    renderTacticalMap();   // draws background + terrain + spawn zone
+    if (editorState.riverDrawing) editorUpdateOverlay();
 
-    // Grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    for (let gx = 0; gx < canvas.width; gx += 100) {
-        ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,canvas.height); ctx.stroke();
+    // Restore
+    game.terrain  = savedTerrain;
+    game.spawnDir = savedSpawnDir;
+    game.mapView  = savedMode;
+
+    // River in-progress preview
+    if (editorState.riverDrawing && editorState.riverPoints.length > 0) {
+        const pts = editorState.riverPoints;
+        ctx.strokeStyle = 'rgba(80,150,255,0.8)';
+        ctx.lineWidth = editorState.riverWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        // Line to cursor
+        if (editorState.cursorX !== undefined) ctx.lineTo(editorState.cursorX, editorState.cursorY);
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+        // Dot on each placed point
+        ctx.fillStyle = 'rgba(180,220,255,0.9)';
+        pts.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
+        });
     }
-    for (let gy = 0; gy < canvas.height; gy += 100) {
-        ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(canvas.width,gy); ctx.stroke();
-    }
 
-    // Render terrain preview using existing render functions
-    // temporarily swap game.terrain
-    const savedTerrain = game.terrain;
-    game.terrain = editorState.terrain;
-    renderTerrain();
-    game.terrain = savedTerrain;
-
-    // Spawn direction indicator
-    editorDrawSpawnArrow();
-
-    // Brush cursor
-    if (editorState.cursorX !== undefined) {
-        const col = editorState.tool === 'mountain' ? 'rgba(160,128,80,0.5)'
-                  : editorState.tool === 'lake'     ? 'rgba(64,128,220,0.5)'
-                  : editorState.tool === 'forest'   ? 'rgba(64,160,64,0.5)'
-                  : 'rgba(220,80,80,0.4)';
+    // Brush cursor ring — hidden during river drawing
+    if (editorState.cursorX !== undefined && !editorState.riverDrawing && editorState.tool !== 'river') {
+        const col = editorState.tool === 'mountain' ? 'rgba(200,160,80,0.7)'
+                  : editorState.tool === 'lake'     ? 'rgba(80,160,240,0.7)'
+                  : editorState.tool === 'forest'   ? 'rgba(80,180,80,0.7)'
+                  : 'rgba(220,80,80,0.6)';
         ctx.strokeStyle = col;
         ctx.lineWidth = 2;
-        ctx.setLineDash([5,4]);
+        ctx.setLineDash([6, 4]);
         ctx.beginPath();
-        ctx.arc(editorState.cursorX, editorState.cursorY, editorState.brushSize, 0, Math.PI*2);
+        ctx.arc(editorState.cursorX, editorState.cursorY, editorState.brushSize, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
+        // Small crosshair at center
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(editorState.cursorX - 8, editorState.cursorY);
+        ctx.lineTo(editorState.cursorX + 8, editorState.cursorY);
+        ctx.moveTo(editorState.cursorX, editorState.cursorY - 8);
+        ctx.lineTo(editorState.cursorX, editorState.cursorY + 8);
+        ctx.stroke();
     }
 }
 
@@ -2766,8 +3986,10 @@ function editorDrawSpawnArrow() {
 function editorUpdateOverlay() {
     const ov = document.getElementById('editor-overlay');
     if (!ov) return;
-    const labels = { mountain:'⛰ Góra', lake:'💧 Jezioro', forest:'🌲 Las', eraser:'🧹 Gumka' };
-    ov.innerText = labels[editorState.tool] + ' · LMB maluj · przeciągnij';
+    const labels = { mountain:'⛰ Góra', lake:'💧 Jezioro', forest:'🌲 Las', eraser:'🧹 Gumka', blocked:'⬜ Mur', river:'〰 Rzeka — klikaj punkty · 2× klik = zakończ' };
+    ov.innerText = editorState.riverDrawing
+        ? ('〰 Rzeka — ' + editorState.riverPoints.length + ' pkt · 2× klik = zakończ')
+        : (labels[editorState.tool] || editorState.tool);
 }
 
 // ── Save / Load / Clear ─────────────────────
@@ -2787,7 +4009,7 @@ function editorSaveMap() {
 }
 
 function editorClearMap() {
-    editorState.terrain = { hills: [], lakes: [], forests: [] };
+    editorState.terrain = { hills: [], lakes: [], forests: [], blocked: [] };
 }
 
 function editorLoadMap(name) {
@@ -3134,12 +4356,327 @@ function populateMapSelector() {
 }
 
 // full UI init for each phase
+
+// ══════════════════════════════════════════════
+//  MINES — update + render
+// ══════════════════════════════════════════════
+
+function spawnExplosion(x, y, radius, damage, color) {
+    game.explosions.push({ x, y, radius: 0, maxRadius: radius, damage, frame: 0, maxFrames: 18, hasDealtDamage: false, color });
+}
+
+function triggerMine(mine, enemyIdx) {
+    const e = game.enemies[enemyIdx];
+    if (!e) return;
+    mine.triggered = true;
+
+    if (mine.id === 'MINE_STD') {
+        // Standardowa — AoE 70px, 120 dmg
+        spawnExplosion(mine.x, mine.y, 70, 120, '#ff6600');
+
+    } else if (mine.id === 'MINE_CLUSTER') {
+        // Kasetowa — mała eksplozja + 7 odłamków
+        spawnExplosion(mine.x, mine.y, 35, 60, '#ff8800');
+        for (let k = 0; k < 7; k++) {
+            const a = (k / 7) * Math.PI * 2;
+            const fx = mine.x + Math.cos(a) * 80;
+            const fy = mine.y + Math.sin(a) * 80;
+            setTimeout(() => spawnExplosion(fx, fy, 30, 50, '#ffaa00'), 150 + k * 40);
+        }
+
+    } else if (mine.id === 'MINE_ACID') {
+        // Kwasowa — eksplozja + pula kwasu
+        spawnExplosion(mine.x, mine.y, 50, 60, '#44ff44');
+        game.acidPools.push({ x: mine.x, y: mine.y, radius: 55, life: 480, maxLife: 480, dps: 8 });
+
+    } else if (mine.id === 'MINE_FRAG') {
+        // Odłamkowa — stożek w kierunku spawnu (angle = od spawnu do centrum)
+        const coneAngle = Math.PI * 0.4; // 72 stopnie
+        const spawnAng = Math.atan2(mine.y - CONFIG.HEIGHT/2, mine.x - CONFIG.WIDTH/2);
+        // Kierunek do spawnu (odwrotny od centrum)
+        const fragDir = spawnAng + Math.PI;
+        for (const enemy of game.enemies) {
+            const ea = Math.atan2(enemy.y - mine.y, enemy.x - mine.x);
+            let diff = ea - fragDir;
+            while (diff > Math.PI) diff -= Math.PI*2;
+            while (diff < -Math.PI) diff += Math.PI*2;
+            const d = Math.hypot(enemy.x - mine.x, enemy.y - mine.y);
+            if (Math.abs(diff) < coneAngle && d < 200) {
+                enemy.hp -= 180;
+                enemy.hitF = 8;
+            }
+        }
+        spawnExplosion(mine.x, mine.y, 30, 0, '#ffcc00');
+
+    } else if (mine.id === 'MINE_FIRE') {
+        // Ogniowa — eksplozja + płonący teren
+        spawnExplosion(mine.x, mine.y, 45, 70, '#ff4400');
+        game.firePools.push({ x: mine.x, y: mine.y, radius: 50, life: 300, maxLife: 300, dps: 12 });
+
+    } else if (mine.id === 'WOLF_PIT') {
+        // Wilczy dół — unieruchamia wrogów, nie niszczy
+        mine.triggered = false; // wielorazowy
+        mine.cooldown = 900; // 15s
+        const r2 = mine.triggerR * mine.triggerR * 4;
+        for (const enemy of game.enemies) {
+            const dx = enemy.x - mine.x, dy = enemy.y - mine.y;
+            if (dx*dx + dy*dy < r2) {
+                enemy.stunned = true;
+                enemy.stunTimer = 240; // 4s
+                enemy.originalSpeed = enemy.originalSpeed || enemy.speed;
+            }
+        }
+    }
+}
+
+
+function updateMines() {
+    if (!game.mines) return;
+    for (const mine of game.mines) {
+        if (mine.cooldown > 0) { mine.cooldown--; continue; }
+        if (mine.triggered) continue;
+        const r2 = mine.triggerR * mine.triggerR;
+        for (let i = 0; i < game.enemies.length; i++) {
+            const e = game.enemies[i];
+            const dx = e.x - mine.x, dy = e.y - mine.y;
+            if (dx*dx + dy*dy < r2) {
+                triggerMine(mine, i);
+                break;
+            }
+        }
+    }
+    // Usuń zużyte miny (nie wilcze doły)
+    game.mines = game.mines.filter(m => !m.triggered || m.id === 'WOLF_PIT');
+
+    // Acid pools — DOT
+    if (game.acidPools) {
+        for (const pool of game.acidPools) {
+            pool.life--;
+            const r2 = pool.radius * pool.radius;
+            for (const e of game.enemies) {
+                const dx = e.x - pool.x, dy = e.y - pool.y;
+                if (dx*dx + dy*dy < r2) { e.hp -= pool.dps / 60; e.hitF = 2; }
+            }
+        }
+        game.acidPools = game.acidPools.filter(p => p.life > 0);
+    }
+
+    // Fire pools — DOT + glow
+    if (game.firePools) {
+        for (const pool of game.firePools) {
+            pool.life--;
+            const r2 = pool.radius * pool.radius;
+            for (const e of game.enemies) {
+                const dx = e.x - pool.x, dy = e.y - pool.y;
+                if (dx*dx + dy*dy < r2) { e.hp -= pool.dps / 60; e.hitF = 2; }
+            }
+        }
+        game.firePools = game.firePools.filter(p => p.life > 0);
+    }
+}
+
+
+function renderMercZones() {
+    if (game.mode !== 'COMBAT') return;
+    const now = Date.now();
+
+    // Rysuj strefy wszystkich najemników
+    for (const m of game.mercs) {
+        if (!m.zone) continue;
+        const z = m.zone;
+        const isSelected = game.selectedMerc === m;
+        const alpha = game.paused ? 0.35 : 0.15;
+
+        // Wypełnienie strefy
+        ctx.fillStyle = `rgba(100,180,100,${alpha})`;
+        ctx.fillRect(z.x, z.y, z.w, z.h);
+
+        // Obramowanie
+        ctx.strokeStyle = isSelected ? '#ffffff' : 'rgba(100,220,100,0.7)';
+        ctx.lineWidth = isSelected ? 2 : 1;
+        ctx.setLineDash(game.paused ? [] : [5, 5]);
+        ctx.strokeRect(z.x, z.y, z.w, z.h);
+        ctx.setLineDash([]);
+
+        // Linia od najemnika do centrum strefy (tylko podczas pauzy)
+        if (game.paused) {
+            ctx.strokeStyle = 'rgba(150,255,150,0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(m.x, m.y);
+            ctx.lineTo(z.cx, z.cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Krzyżyk w centrum
+            ctx.strokeStyle = 'rgba(150,255,150,0.8)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(z.cx-6, z.cy); ctx.lineTo(z.cx+6, z.cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(z.cx, z.cy-6); ctx.lineTo(z.cx, z.cy+6); ctx.stroke();
+        }
+
+        // Nazwa najemnika przy strefie
+        if (game.paused) {
+            ctx.fillStyle = 'rgba(150,255,150,0.9)';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(m.name.split(' ')[0], z.x + 3, z.y + 12);
+        }
+    }
+
+    // Podgląd rysowanej strefy
+    if (game.drawingZone) {
+        const z = game.drawingZone;
+        const x1 = Math.min(z.x1, z.x2), y1 = Math.min(z.y1, z.y2);
+        const x2 = Math.max(z.x1, z.x2), y2 = Math.max(z.y1, z.y2);
+        ctx.fillStyle = 'rgba(100,200,100,0.2)';
+        ctx.fillRect(x1, y1, x2-x1, y2-y1);
+        ctx.strokeStyle = '#88ff88';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 3]);
+        ctx.strokeRect(x1, y1, x2-x1, y2-y1);
+        ctx.setLineDash([]);
+        // Wymiary
+        ctx.fillStyle = '#88ff88';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(Math.round(x2-x1) + '×' + Math.round(y2-y1), (x1+x2)/2, y1-4);
+    }
+
+    // Zaznaczony najemnik — pulsująca biała obwódka
+    if (game.selectedMerc && game.paused) {
+        const m = game.selectedMerc;
+        const pulse = 0.5 + Math.abs(Math.sin(now * 0.008)) * 0.5;
+        ctx.strokeStyle = `rgba(255,255,255,${pulse})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.size + 8, 0, Math.PI*2); ctx.stroke();
+        // Etykieta
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.name, m.x, m.y - m.size - 14);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '9px monospace';
+        ctx.fillText(game.drawingZone ? 'KLIKNIJ → 2. narożnik' : 'KLIKNIJ → wyznacz strefę', m.x, m.y - m.size - 4);
+    }
+
+    ctx.textAlign = 'left';
+}
+
+function renderMines() {
+    if (!game.mines) return;
+    const now = Date.now();
+
+    // Acid pools
+    if (game.acidPools) {
+        for (const pool of game.acidPools) {
+            const alpha = (pool.life / pool.maxLife) * 0.5;
+            ctx.fillStyle = `rgba(50,255,50,${alpha})`;
+            ctx.beginPath(); ctx.arc(pool.x, pool.y, pool.radius, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = `rgba(100,255,100,${alpha * 1.5})`;
+            ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(pool.x, pool.y, pool.radius, 0, Math.PI*2); ctx.stroke();
+        }
+    }
+    // Fire pools
+    if (game.firePools) {
+        for (const pool of game.firePools) {
+            const alpha = (pool.life / pool.maxLife) * 0.6;
+            const flicker = 0.7 + Math.sin(now * 0.01) * 0.3;
+            ctx.fillStyle = `rgba(255,80,0,${alpha * flicker})`;
+            ctx.beginPath(); ctx.arc(pool.x, pool.y, pool.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = `rgba(255,200,0,${alpha * 0.5})`;
+            ctx.beginPath(); ctx.arc(pool.x, pool.y, pool.radius * 0.5, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    // Miny
+    for (const mine of game.mines) {
+        const pulse = 0.5 + Math.sin(now * 0.005) * 0.3;
+        const onCooldown = mine.cooldown > 0;
+        const col = onCooldown ? '#555555' : mine.color;
+
+        if (mine.id === 'WOLF_PIT') {
+            // Wilczy dół — brązowy okrąg z kreskami
+            ctx.strokeStyle = onCooldown ? '#333' : '#885500';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(mine.x, mine.y, mine.triggerR, 0, Math.PI*2); ctx.stroke();
+            ctx.fillStyle = onCooldown ? 'rgba(50,30,0,0.4)' : 'rgba(120,80,0,0.3)';
+            ctx.beginPath(); ctx.arc(mine.x, mine.y, mine.triggerR, 0, Math.PI*2); ctx.fill();
+            // Kreski jak kolce
+            for (let k = 0; k < 6; k++) {
+                const a = (k/6) * Math.PI*2;
+                ctx.strokeStyle = onCooldown ? '#333' : '#aa7700';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(mine.x + Math.cos(a)*8, mine.y + Math.sin(a)*8);
+                ctx.lineTo(mine.x + Math.cos(a)*mine.triggerR, mine.y + Math.sin(a)*mine.triggerR);
+                ctx.stroke();
+            }
+            // Cooldown łuk
+            if (onCooldown) {
+                const pct = 1 - mine.cooldown / 900;
+                ctx.strokeStyle = '#885500';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(mine.x, mine.y, mine.triggerR + 4, -Math.PI/2, -Math.PI/2 + pct*Math.PI*2); ctx.stroke();
+            }
+        } else {
+            // Wszystkie inne miny — koło z symbolem
+            ctx.fillStyle = `rgba(0,0,0,0.6)`;
+            ctx.beginPath(); ctx.arc(mine.x, mine.y, 9, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(mine.x, mine.y, 9, 0, Math.PI*2); ctx.stroke();
+            // Pulsujący trigger radius
+            ctx.strokeStyle = `${col.replace(')', `,${pulse * 0.4})`).replace('rgb', 'rgba')}`;
+            if (!col.startsWith('#')) {
+                ctx.strokeStyle = `rgba(255,150,0,${pulse * 0.3})`;
+            } else {
+                ctx.strokeStyle = `rgba(255,150,0,${pulse * 0.35})`;
+            }
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath(); ctx.arc(mine.x, mine.y, mine.triggerR, 0, Math.PI*2); ctx.stroke();
+            ctx.setLineDash([]);
+            // Symbol w środku
+            ctx.fillStyle = col;
+            ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const sym = mine.id === 'MINE_CLUSTER' ? 'K' : mine.id === 'MINE_ACID' ? 'A' :
+                        mine.id === 'MINE_FRAG' ? 'F' : mine.id === 'MINE_FIRE' ? 'O' : 'M';
+            ctx.fillText(sym, mine.x, mine.y);
+        }
+    }
+}
+
+function buildMineList(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el || !CONFIG.MINES) return;
+    el.innerHTML = '';
+    Object.values(CONFIG.MINES).forEach(mcfg => {
+        const btn = document.createElement('button');
+        btn.className = 'tower-btn' + (game.selected === mcfg.id ? ' selected' : '');
+        btn.innerHTML = `<span class="t-name" style="color:${mcfg.color}">${mcfg.name}</span><span class="t-stats">$${mcfg.cost} · ${mcfg.desc}</span>`;
+        btn.onclick = () => {
+            game.selected = mcfg.id;
+            document.querySelectorAll('.tower-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        };
+        el.appendChild(btn);
+    });
+}
+
 function initPrepUI() {
     generateMercRoster();
     buildMercRosterUI();
+    generateMonsterRoster();
+    buildMonsterRosterUI();
     const wl = document.getElementById('merc-wave-label');
     if (wl) wl.innerText = game.wave;
+    const ml = document.getElementById('monster-wave-label');
+    if (ml) ml.innerText = game.wave;
     buildTowerList('tower-list-prep');
+    buildMineList('mine-list-prep');
     buildPrimaryList();
     buildSecondaryList();
     buildUpgradeGrid('upg-grid-prep');
@@ -3169,6 +4706,8 @@ window.applyPreset = applyPreset;
 window.toggleChaos = toggleChaos;
 window.onMapChange = onMapChange;
 window.hireMerc = hireMerc;
+window.summonMonster = summonMonster;
+window.buildMineList = buildMineList;
 window.enterEditor = enterEditor;
 window.exitEditor = exitEditor;
 window.setEditorTool = setEditorTool;
@@ -3177,6 +4716,7 @@ window.editorSaveMap = editorSaveMap;
 window.editorClearMap = editorClearMap;
 window.editorLoadMap = editorLoadMap;
 window.editorDeleteMap = editorDeleteMap;
+window.editorFinishRiver = editorFinishRiver;
 window.switchTab = switchTab;
 window.toggleMapView = toggleMapView;
 window.toggleDebug = toggleDebug;
