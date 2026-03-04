@@ -455,7 +455,7 @@
 
     <!-- ═══ PANEL: COMBAT ═══ -->
     <div id="panel-combat">
-        <button onclick="if(game.mode==='COMBAT'){game.paused=!game.paused;logTerminal(game.paused?'⏸ PAUZA — SPACJA by wznowić':'▶ WZNOWIONO');}" 
+        <button onclick="if(game.mode==='COMBAT'){game.paused=!game.paused;logTerminal(game.paused?'⏸ PAUZA — SPACJA by wznowić':'▶ WZNOWIONO');buildMercMiniPanel();}" 
                 style="width:100%;margin-bottom:6px;padding:6px;background:#1a2a1a;border:1px solid #3a5a3a;color:#aaffaa;font-family:monospace;font-size:12px;cursor:pointer;letter-spacing:1px;"
                 id="pause-btn">⏸ PAUZA (SPACJA)</button>
         <div class="tab-bar">
@@ -525,7 +525,10 @@ const CONFIG = {
     WIDTH: 2400, HEIGHT: 1800,
     GRID_SIZE: 60,
     DEFENSE: {
-        CORE: { name: "HQ BUNKER", cost: 0, hp: 6000, type: 'core', color: '#0ff' },
+        CORE:         { name: "HQ BUNKER",   cost: 0, hp: 6000, type: 'core', color: '#0ff',  coreType: 'standard', desc: 'Standardowe HQ' },
+        CORE_MEDICAL: { name: "HQ LAZARET",  cost: 0, hp: 4500, type: 'core', color: '#0f8',  coreType: 'medical',  healRadius: 120, healRate: 0.08, desc: 'Leczy najemników w pobliżu' },
+        CORE_FORTRESS:{ name: "HQ FORTECA",  cost: 0, hp: 9000, type: 'core', color: '#fa0',  coreType: 'fortress', desc: 'Bardzo wytrzymałe HQ' },
+        CORE_SUPPLY:  { name: "HQ MAGAZYN",  cost: 0, hp: 4000, type: 'core', color: '#f0f',  coreType: 'supply',   healRadius: 80, healRate: 0.15, healOnCall: true, desc: 'Leczy najemników na żądanie' },
         WALL: { name: "HEAVY WALL", cost: 0, hp: 1500, type: 'wall', color: '#666' },
         SENTRY: { name: "AUTO-TURRET", cost: 0, range: 250, dmg: 12, rof: 250, hp: 400, type: 'tower', color: '#ff0' },
         BATTERY: { name: "LR BATTERY", cost: 0, range: 600, dmg: 100, rof: 1000, hp: 600, type: 'tower', color: '#f80' },  // range: 420->600
@@ -545,7 +548,13 @@ const CONFIG = {
         SHOTGUN: { name: "COMBAT SHOTGUN", cost: 0, rof: 600, dmg: 15, pellets: 8, spread: 0.25, knockback: 18, velocity: 20, desc: "Spread damage + knockback" },
         SNIPER: { name: "SNIPER RIFLE", cost: 0, rof: 1200, dmg: 150, spread: 0, velocity: 35, desc: "High damage, slow fire" },
         FLAMETHROWER: { name: "FLAMETHROWER", cost: 0, rof: 50, dmg: 3, range: 200, continuous: true, desc: "Continuous cone damage" },
-        RAILGUN: { name: "RAILGUN", cost: 0, rof: 2000, dmg: 250, spread: 0, velocity: 50, piercing: true, desc: "Pierces all enemies" }
+        RAILGUN: { name: "RAILGUN", cost: 0, rof: 2000, dmg: 250, spread: 0, velocity: 50, piercing: true, desc: "Pierces all enemies" },
+        MINIGUN2: { name: "ULTRA MINIGUN", cost: 0, rof: 18, dmg: 12, spread: 0.22, velocity: 28, desc: "Insane ROF, spray & pray" },
+        LINK_GUN: { name: "LINK GUN", cost: 0, rof: 3, dmg: 6, spread: 0, velocity: 0, beam: true, beamRange: 9999, desc: "Continuous beam across entire map" },
+        CHAINSAW: { name: "CHAINSAW", cost: 0, rof: 4, dmg: 8, spread: 0, velocity: 0, melee: true, range: 80, coneAngle: 0.7, desc: "Hold — cone melee damage" },
+        FREEZE_RAY: { name: "FREEZE RAY", cost: 0, rof: 120, dmg: 5, spread: 0.04, velocity: 18, freeze: true, freezeTime: 180, desc: "Freezes enemies 3s" },
+        GRAVITY_GUN: { name: "GRAVITY GUN", cost: 0, rof: 300, dmg: 0, spread: 0, velocity: 0, gravity: true, gravRadius: 250, gravForce: 6, desc: "Pulls enemies toward you" },
+        BFG: { name: "BFG 9000", cost: 0, rof: 3000, dmg: 400, spread: 0, velocity: 8, bfg: true, bfgRadius: 300, desc: "Slow ball — explodes with rays" }
     },
     WEAPONS_SECONDARY: {
         GRENADE: { name: "FRAG GRENADE", cost: 0, cooldown: 2500, damage: 100, blastRadius: 120, range: 450, desc: "Standard explosive" },
@@ -556,22 +565,25 @@ const CONFIG = {
         EMP: { name: "EMP BLAST", cost: 0, cooldown: 4500, damage: 0, blastRadius: 200, range: 450, stunTime: 60, desc: "Stuns enemies" },
         BANANA: { name: "BANANA GRENADE", cost: 0, cooldown: 5000, damage: 80, blastRadius: 100, range: 450, bananas: 7, desc: "Splits into 7 bananas!" },
         MONSTER: { name: "MONSTER THROWER", cost: 0, cooldown: 8000, range: 500, monsterHp: 400, monsterDmg: 45, monsterDuration: 600, desc: "Releases mutant ally!" },
+        FLAK: { name: "FLAK CANNON", cost: 0, cooldown: 1800, damage: 40, pellets: 12, spread: 0.5, velocity: 22, blastRadius: 0, range: 350, desc: "12 shards in wide cone" },
+        PORTAL_GUN: { name: "PORTAL GUN", cost: 0, cooldown: 5000, range: 500, portalRadius: 100, portalDuration: 180, desc: "Vortex pulls enemies 3s" },
+        REDEEMER: { name: "REDEEMER", cost: 0, cooldown: 12000, damage: 800, blastRadius: 350, range: 9999, velocity: 4, redeemer: true, desc: "Steerable nuke — click to detonate" },
         HOLOGRAM: { name: "HOLOGRAM DECOY", cost: 0, cooldown: 10000, range: 900, duration: 300, desc: "Attracts all enemies for 5s" },
         SHIELD: { name: "COMBAT SHIELD", cost: 0, cooldown: 12000, radius: 220, duration: 240, slowMult: 0.2, desc: "Slows enemies 80% for 4s" }
     },
 
     MINES: {
-        MINE_STD:     { id:'MINE_STD',     name:'MINA',          cost:80,  color:'#cc4400', triggerR:18, desc:'Eksplozja AoE przy kontakcie' },
-        MINE_CLUSTER: { id:'MINE_CLUSTER', name:'KASETOWA',       cost:140, color:'#ff8800', triggerR:20, desc:'Eksplozja + 7 odłamków' },
-        MINE_ACID:    { id:'MINE_ACID',    name:'KWASOWA',        cost:120, color:'#44ff44', triggerR:18, desc:'Plama kwasu 8s po eksplozji' },
-        MINE_FRAG:    { id:'MINE_FRAG',    name:'ODŁAMKOWA',      cost:100, color:'#ffcc00', triggerR:16, desc:'Stożek odłamków w kierunku spawnu' },
-        MINE_FIRE:    { id:'MINE_FIRE',    name:'OGNIOWA',        cost:110, color:'#ff4400', triggerR:18, desc:'Płonący teren 5s po eksplozji' },
-        WOLF_PIT:     { id:'WOLF_PIT',     name:'WILCZY DÓŁ',     cost:90,  color:'#885500', triggerR:22, desc:'Unieruchamia 4s, cooldown 15s' },
+        MINE_STD:     { id:'MINE_STD',     name:'MINA',          cost:0,  color:'#cc4400', triggerR:18, desc:'Eksplozja AoE przy kontakcie' },
+        MINE_CLUSTER: { id:'MINE_CLUSTER', name:'KASETOWA',       cost:0, color:'#ff8800', triggerR:20, desc:'Eksplozja + 7 odłamków' },
+        MINE_ACID:    { id:'MINE_ACID',    name:'KWASOWA',        cost:0, color:'#44ff44', triggerR:18, desc:'Plama kwasu 8s po eksplozji' },
+        MINE_FRAG:    { id:'MINE_FRAG',    name:'ODŁAMKOWA',      cost:0, color:'#ffcc00', triggerR:16, desc:'Stożek odłamków w kierunku spawnu' },
+        MINE_FIRE:    { id:'MINE_FIRE',    name:'OGNIOWA',        cost:0, color:'#ff4400', triggerR:18, desc:'Płonący teren 5s po eksplozji' },
+        WOLF_PIT:     { id:'WOLF_PIT',     name:'WILCZY DÓŁ',     cost:0,  color:'#885500', triggerR:22, desc:'Unieruchamia 4s, cooldown 15s' },
     },
 };
 
 let game = {
-    money: 800, hp: 6000, wave: 0, mode: 'BASE', paused: false, selectedMerc: null, drawingZone: null,
+    money: 800, hp: 6000, wave: 0, mode: 'BASE', paused: false, selectedMerc: null, drawingZone: null, coreType: 'standard', coreHealRadius: 0, coreHealRate: 0,
     buildings: [], entities: [], enemies: [], projectiles: [],
     grenades: [], explosions: [], burnZones: [], rockets: [], towerGrenades: [],
     poisonClouds: [],
@@ -581,7 +593,7 @@ let game = {
     mouse: { x:0, y:0, down: false, rightDown: false },
     keys: {},
     player: { 
-        x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, 
+        x: 1200, y: 900, spd: 3.5, spdLv: 1, rofLv: 1, dmgLv: 1, canFly: false, flyActive: false, dualWield: false, secondaryPrimary: 'SHOTGUN', lastShot2: 0, 
         lastShot: 0, lastGrenade: 0,
         primaryWeapon: 'RIFLE',
         secondaryWeapon: 'GRENADE',
@@ -608,21 +620,79 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function init() {
-    window.addEventListener('keydown', e => game.keys[e.code] = true);
+    window.addEventListener('keydown', e => {
+        game.keys[e.code] = true;
+        if (e.code === 'Space' && game.mode === 'COMBAT') {
+            e.preventDefault();
+            game.paused = !game.paused;
+            logTerminal(game.paused ? '⏸ PAUZA' : '▶ WZNOWIONO');
+            buildMercMiniPanel();
+        }
+    });
     window.addEventListener('keyup', e => game.keys[e.code] = false);
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
         game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
         game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
     });
-    canvas.addEventListener('mousedown', (e) => { 
-        if (e.button === 0) { game.mouse.down = true; handleInput(); } 
+    canvas.addEventListener('mousedown', (e) => {
+        // Pauza + LMB + wybrany najemnik = start drag strefy
+        if (e.button === 0 && game.mode === 'COMBAT' && game.paused && game.selectedMerc) {
+            let onMerc = false;
+            for (const m of game.mercs) { if (Math.hypot(m.x-game.mouse.x, m.y-game.mouse.y) < 22) { onMerc = true; break; } }
+            if (!onMerc) {
+                game.drawingZone = { x1: game.mouse.x, y1: game.mouse.y, x2: game.mouse.x, y2: game.mouse.y, dragging: true };
+                e.preventDefault(); return;
+            }
+        }
+        if (e.button === 0) { game.mouse.down = true; handleInput(); }
         else if (e.button === 2) {
+            // Pauza — prawy klik usuwa strefę najemnika pod kursorem
+            if (game.mode === 'COMBAT' && game.paused) {
+                game.drawingZone = null;
+                game.selectedMerc = null;
+                for (const m of game.mercs) {
+                    if (Math.hypot(m.x - game.mouse.x, m.y - game.mouse.y) < 22) {
+                        delete m.zone; m.mode = 'FREE';
+                        logTerminal(m.name + ': strefa usunięta');
+                        break;
+                    }
+                }
+                buildMercMiniPanel();
+                return;
+            }
             game.mouse.rightDown = true;
             if (game.mode === 'COMBAT' && game.corePlaced) throwGrenade();
         }
     });
     canvas.addEventListener('mouseup', (e) => {
+        if (e.button === 0 && game.drawingZone && game.drawingZone.dragging && game.selectedMerc) {
+            const z = game.drawingZone;
+            const minX = Math.min(z.x1,z.x2), maxX = Math.max(z.x1,z.x2);
+            const minY = Math.min(z.y1,z.y2), maxY = Math.max(z.y1,z.y2);
+            const w = maxX-minX, h = maxY-minY;
+            if (w > 20 && h > 20) {
+                game.selectedMerc.zone = { x:minX, y:minY, w, h, cx:(minX+maxX)/2, cy:(minY+maxY)/2 };
+                game.selectedMerc.mode = 'PATROL';
+                logTerminal(game.selectedMerc.name + ': strefa ' + Math.round(w) + '×' + Math.round(h) + 'px');
+            }
+            game.drawingZone = null;
+            game.selectedMerc = null;
+            buildMercMiniPanel();
+        }
+        // Gravity Gun — wyrzut po zwolnieniu
+        if (e.button === 0 && game.player.primaryWeapon === 'GRAVITY_GUN' && game.player._gravPulled && game.player._gravPulled.length > 0) {
+            const throwAngle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
+            const throwForce = 18;
+            for (const grav_e of game.player._gravPulled) {
+                grav_e._gravHeld = false;
+                grav_e._gravVx = Math.cos(throwAngle) * throwForce;
+                grav_e._gravVy = Math.sin(throwAngle) * throwForce;
+                grav_e._gravFrames = 25; // klatek lotu
+                grav_e.hitF = 8;
+            }
+            game.player._gravPulled = [];
+        }
         if (e.button === 0) game.mouse.down = false;
         if (e.button === 2) game.mouse.rightDown = false;
     });
@@ -1638,6 +1708,11 @@ function gameLoop() {
             updateCombat();
             updateMonsters();
             updateMercs();
+            // Usuń wrogów zabitych przez najemników/potwory (hp zredukowane poza głównym filtrem)
+            game.enemies = game.enemies.filter(e => {
+                if (e.hp <= 0) { game.money += 15; return false; }
+                return true;
+            });
             updateMines();
             updateHolograms();
             updateShields();
@@ -1847,9 +1922,18 @@ function updateEnemySpecials(e, i, deadEnemyIndices, core) {
 
 
 function updateCombat() {
+    // Przełącz lot klawiszem F
+    if (game.keys['KeyF'] && game.player.canFly) {
+        if (!game.player._flyToggled) { game.player.flyActive = !game.player.flyActive; game.player._flyToggled = true; logTerminal(game.player.flyActive ? '🚁 LOT' : '👟 ZIEMIA'); }
+    } else { game.player._flyToggled = false; }
+
     let pSpd = game.player.spd * (1 + (game.player.spdLv-1)*0.2);
-    const terrainCost = getTerrainCost(game.player.x, game.player.y, 'LAND', 12);
-    pSpd *= 1.0 / terrainCost;
+    if (game.player.flyActive) {
+        pSpd *= 1.4; // lot szybszy
+    } else {
+        const terrainCost = getTerrainCost(game.player.x, game.player.y, 'LAND', 12);
+        pSpd *= 1.0 / terrainCost;
+    }
     
     let moveX = 0, moveY = 0;
     if (game.keys['KeyW']) moveY -= pSpd;
@@ -1857,7 +1941,7 @@ function updateCombat() {
     if (game.keys['KeyA']) moveX -= pSpd;
     if (game.keys['KeyD']) moveX += pSpd;
     
-    if ((moveX !== 0 || moveY !== 0) && willCollideWithLake(game.player.x, game.player.y, moveX, moveY, 12, 'LAND')) {
+    if (!game.player.flyActive && (moveX !== 0 || moveY !== 0) && willCollideWithLake(game.player.x, game.player.y, moveX, moveY, 12, 'LAND')) {
         if (moveX !== 0 && !willCollideWithLake(game.player.x, game.player.y, moveX, 0, 12, 'LAND')) { moveY = 0; }
         else if (moveY !== 0 && !willCollideWithLake(game.player.x, game.player.y, 0, moveY, 12, 'LAND')) { moveX = 0; }
         else { moveX = 0; moveY = 0; }
@@ -2407,6 +2491,18 @@ function renderPlayerUnit() {
         ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 20, 0, Math.PI*2); ctx.stroke();
         ctx.setLineDash([]);
     }
+    // Efekt lotu — aureola i cień
+    if (game.player.flyActive) {
+        const flyBob = Math.sin(Date.now() * 0.004) * 3;
+        // Cień pod graczem
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(game.player.x, game.player.y+14+flyBob, 10, 5, 0, 0, Math.PI*2); ctx.fill();
+        // Aureola rotująca
+        ctx.strokeStyle = 'rgba(100,200,255,0.6)'; ctx.lineWidth=1.5;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath(); ctx.arc(game.player.x, game.player.y+flyBob, 18, 0, Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
+    }
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(game.player.x,game.player.y-12); ctx.lineTo(game.player.x+12,game.player.y); ctx.lineTo(game.player.x,game.player.y+12); ctx.lineTo(game.player.x-12,game.player.y); ctx.closePath(); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 2, 0, Math.PI*2); ctx.fill();
@@ -2490,11 +2586,141 @@ function playerShoot() {
         ctx.strokeStyle = "rgba(0,255,255,0.9)"; ctx.lineWidth = 3; ctx.shadowBlur = 15; ctx.shadowColor = "#0ff";
         ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(game.player.x+Math.cos(baseAngle)*2000, game.player.y+Math.sin(baseAngle)*2000); ctx.stroke();
         ctx.shadowBlur = 0;
+
+    } else if (game.player.primaryWeapon === 'MINIGUN2') {
+        for (let i = 0; i < 2; i++) {
+            const angle = baseAngle + (Math.random()-0.5)*weapon.spread;
+            game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle)*weapon.velocity, vy: Math.sin(angle)*weapon.velocity, dmg, type: 'minigun' });
+        }
+
+    } else if (game.player.primaryWeapon === 'CHAINSAW') {
+        // Stożek melee — bez lastShot cooldown-u bo rof=4
+        const coneAngle = weapon.coneAngle;
+        for (const e of game.enemies) {
+            const d = Math.hypot(e.x-game.player.x, e.y-game.player.y);
+            if (d > weapon.range) continue;
+            let diff = Math.atan2(e.y-game.player.y, e.x-game.player.x) - baseAngle;
+            while (diff > Math.PI) diff -= Math.PI*2;
+            while (diff < -Math.PI) diff += Math.PI*2;
+            if (Math.abs(diff) < coneAngle) { e.hp -= dmg; e.hitF = 2; }
+        }
+        // Efekt wizualny — czerwony stożek
+        ctx.save(); ctx.globalAlpha = 0.45;
+        ctx.fillStyle = '#ff2200';
+        ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y);
+        ctx.arc(game.player.x, game.player.y, weapon.range, baseAngle-coneAngle, baseAngle+coneAngle);
+        ctx.closePath(); ctx.fill();
+        // Zęby piły
+        ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 1.5;
+        for (let i = -3; i <= 3; i++) {
+            const a = baseAngle + i*(coneAngle/3.5);
+            ctx.beginPath(); ctx.moveTo(game.player.x+Math.cos(a)*weapon.range*0.7, game.player.y+Math.sin(a)*weapon.range*0.7);
+            ctx.lineTo(game.player.x+Math.cos(a)*weapon.range, game.player.y+Math.sin(a)*weapon.range);
+            ctx.stroke();
+        }
+        ctx.restore();
+
+    } else if (game.player.primaryWeapon === 'FREEZE_RAY') {
+        const angle = baseAngle + (Math.random()-0.5)*weapon.spread;
+        game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle)*weapon.velocity, vy: Math.sin(angle)*weapon.velocity, dmg, type: 'freeze', freezeTime: weapon.freezeTime });
+        // Efekt — błękitna smuga
+        ctx.strokeStyle = 'rgba(100,200,255,0.6)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y);
+        ctx.lineTo(game.player.x+Math.cos(angle)*60, game.player.y+Math.sin(angle)*60); ctx.stroke();
+
+    } else if (game.player.primaryWeapon === 'GRAVITY_GUN') {
+        // Trzymasz LMB = przyciągasz wrogów, zwolnij = wyrzucasz w kierunku myszy
+        const gr2 = weapon.gravRadius * weapon.gravRadius;
+        if (!game.player._gravPulled) game.player._gravPulled = [];
+        // Przyciągaj
+        for (const e of game.enemies) {
+            const dx = game.player.x - e.x, dy = game.player.y - e.y;
+            const d2 = dx*dx + dy*dy;
+            if (d2 < gr2 && d2 > 1) {
+                const d = Math.sqrt(d2);
+                e.x += (dx/d) * weapon.gravForce;
+                e.y += (dy/d) * weapon.gravForce;
+                e._gravHeld = true;
+                if (!game.player._gravPulled.includes(e)) game.player._gravPulled.push(e);
+            }
+        }
+        // Fala grawitacyjna
+        ctx.strokeStyle = 'rgba(180,100,255,0.5)'; ctx.lineWidth = 2;
+        const gPulse = (Date.now() % 400) / 400;
+        ctx.beginPath(); ctx.arc(game.player.x, game.player.y, weapon.gravRadius * gPulse, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = 'rgba(180,100,255,0.2)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(game.player.x, game.player.y, weapon.gravRadius, 0, Math.PI*2); ctx.stroke();
+
+    } else if (game.player.primaryWeapon === 'LINK_GUN') {
+        // Stała wiązka przez całą planszę — rysuj i zadaj obrażenia
+        const bx2 = game.player.x + Math.cos(baseAngle) * 9999;
+        const by2 = game.player.y + Math.sin(baseAngle) * 9999;
+        // Obrażenia wszystkim wrogom przeciętym wiązką
+        for (const e of game.enemies) {
+            // Odległość punktu od linii
+            const dx = bx2-game.player.x, dy = by2-game.player.y;
+            const len2 = dx*dx+dy*dy;
+            const t = Math.max(0, Math.min(1, ((e.x-game.player.x)*dx+(e.y-game.player.y)*dy)/len2));
+            const nearX = game.player.x+t*dx, nearY = game.player.y+t*dy;
+            if (Math.hypot(e.x-nearX, e.y-nearY) < e.size+4 && !e._witchShield) {
+                e.hp -= dmg; e.hitF = 2;
+            }
+        }
+        // Render — zielona wiązka UT-style
+        const grad = ctx.createLinearGradient(game.player.x, game.player.y, game.player.x+Math.cos(baseAngle)*600, game.player.y+Math.sin(baseAngle)*600);
+        grad.addColorStop(0, 'rgba(80,255,80,0.95)');
+        grad.addColorStop(0.3, 'rgba(0,200,50,0.7)');
+        grad.addColorStop(1, 'rgba(0,100,20,0.1)');
+        ctx.shadowBlur = 12; ctx.shadowColor = '#00ff44';
+        ctx.strokeStyle = grad; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(bx2, by2); ctx.stroke();
+        // Wewnętrzna jasna linia
+        ctx.strokeStyle = 'rgba(200,255,200,0.9)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(bx2, by2); ctx.stroke();
+        ctx.shadowBlur = 0;
+
+    } else if (game.player.primaryWeapon === 'BFG') {
+        // Wolny, wielki pocisk BFG — zielona kula
+        game.projectiles.push({
+            x: game.player.x, y: game.player.y,
+            vx: Math.cos(baseAngle)*weapon.velocity,
+            vy: Math.sin(baseAngle)*weapon.velocity,
+            dmg, type: 'bfg', bfgRadius: weapon.bfgRadius,
+            size: 24
+        });
+
     } else {
         game.projectiles.push({ x: game.player.x, y: game.player.y, vx: Math.cos(baseAngle)*weapon.velocity, vy: Math.sin(baseAngle)*weapon.velocity, dmg, type: game.player.primaryWeapon === 'SNIPER' ? 'sniper' : 'rifle' });
     }
     
     game.player.lastShot = now;
+
+    // DUAL WIELD — druga broń strzelała z RMB (lub auto z lewej)
+    if (game.player.dualWield) {
+        const w2 = CONFIG.WEAPONS_PRIMARY[game.player.secondaryPrimary];
+        if (w2 && now - game.player.lastShot2 >= w2.rof) {
+            const angle2 = baseAngle + (Math.random()-0.5)*(w2.spread||0.1);
+            const dmg2 = w2.dmg * (1 + (game.player.dmgLv-1)*0.5);
+            if (w2.melee) {
+                for (const e of game.enemies) {
+                    if (Math.hypot(e.x-game.player.x,e.y-game.player.y)>w2.range) continue;
+                    let d = Math.atan2(e.y-game.player.y,e.x-game.player.x)-baseAngle;
+                    while(d>Math.PI)d-=Math.PI*2; while(d<-Math.PI)d+=Math.PI*2;
+                    if (Math.abs(d)<(w2.coneAngle||0.7)) { e.hp-=dmg2; e.hitF=2; }
+                }
+            } else if (!w2.beam && !w2.gravity) {
+                const spread = (w2.pellets||1);
+                for (let p=0;p<spread;p++) {
+                    const a = angle2 + (w2.spread||0)*(Math.random()-0.5);
+                    game.projectiles.push({ x:game.player.x+10, y:game.player.y, vx:Math.cos(a)*(w2.velocity||20), vy:Math.sin(a)*(w2.velocity||20), dmg:dmg2, type:'rifle' });
+                }
+            }
+            game.player.lastShot2 = now;
+            // Muzzle flash druga ręka
+            ctx.fillStyle='rgba(255,200,0,0.5)';
+            ctx.beginPath(); ctx.arc(game.player.x+8,game.player.y-8,5,0,Math.PI*2); ctx.fill();
+        }
+    }
 }
 
 function throwGrenade() {
@@ -2540,6 +2766,48 @@ function throwGrenade() {
         return;
     }
     
+    if (game.player.secondaryWeapon === 'FLAK') {
+        // 12 odłamków w szerokim stożku
+        const ang = Math.atan2(targetY-game.player.y, targetX-game.player.x);
+        for (let i = 0; i < weapon.pellets; i++) {
+            const a = ang + (Math.random()-0.5)*weapon.spread;
+            const v = weapon.velocity * (0.8 + Math.random()*0.4);
+            game.projectiles.push({ x:game.player.x, y:game.player.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, dmg:weapon.damage, type:'flak', life: 35 });
+        }
+        game.player.lastGrenade = now;
+        return;
+    }
+
+    if (game.player.secondaryWeapon === 'PORTAL_GUN') {
+        // Teleportuje gracza w kliknięte miejsce
+        const oldX = game.player.x, oldY = game.player.y;
+        game.player.x = targetX;
+        game.player.y = targetY;
+        // Efekt wizualny — błysk w starym i nowym miejscu
+        game.explosions.push({ x: oldX, y: oldY, radius:0, maxRadius:40, damage:0, frame:0, maxFrames:12, hasDealtDamage:true, color:'emp' });
+        game.explosions.push({ x: targetX, y: targetY, radius:0, maxRadius:40, damage:0, frame:0, maxFrames:12, hasDealtDamage:true, color:'emp' });
+        logTerminal('TELEPORT!');
+        game.player.lastGrenade = now;
+        return;
+    }
+
+    if (game.player.secondaryWeapon === 'REDEEMER') {
+        // Powolna sterowalna rakieta nuklearna
+        const ang = Math.atan2(targetY-game.player.y, targetX-game.player.x);
+        game.rockets.push({
+            x: game.player.x, y: game.player.y,
+            vx: Math.cos(ang)*weapon.velocity,
+            vy: Math.sin(ang)*weapon.velocity,
+            damage: weapon.damage,
+            blastRadius: weapon.blastRadius,
+            trail: [], isRedeemer: true,
+            steerable: true
+        });
+        logTerminal('REDEEMER wystrzelony — kliknij by detonować!');
+        game.player.lastGrenade = now;
+        return;
+    }
+
     if (game.player.secondaryWeapon === 'ROCKET') {
         const angle = Math.atan2(targetY - game.player.y, targetX - game.player.x);
         game.rockets.push({ x: game.player.x, y: game.player.y, vx: Math.cos(angle)*weapon.velocity, vy: Math.sin(angle)*weapon.velocity, damage: weapon.damage, blastRadius: weapon.blastRadius, trail: [] });
@@ -2554,7 +2822,18 @@ function throwGrenade() {
 function renderEntities() {
     game.entities.forEach(ent => {
         ctx.strokeStyle = ent.color; ctx.lineWidth = 2;
-        if (ent.type === 'core') ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
+        if (ent.type === 'core') {
+            ctx.strokeRect(ent.x-15, ent.y-15, 30, 30);
+            // Aura leczenia dla HQ medical/supply
+            if (game.coreHealRadius && game.frame % 2 === 0) {
+                const pulse = 0.15 + Math.abs(Math.sin(Date.now()*0.002))*0.15;
+                ctx.strokeStyle = `rgba(0,255,100,${pulse})`;
+                ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+                ctx.beginPath(); ctx.arc(ent.x, ent.y, game.coreHealRadius, 0, Math.PI*2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = ent.color; ctx.lineWidth = 2;
+            }
+        }
         else if (ent.type === 'wall') ctx.strokeRect(ent.x-10, ent.y-10, 20, 20);
         else { ctx.beginPath(); ctx.arc(ent.x, ent.y, 10, 0, Math.PI*2); ctx.stroke(); }
         ctx.fillStyle = "#20ff20";
@@ -2563,34 +2842,18 @@ function renderEntities() {
 }
 
 function handleInput() {
-    // Pauza — zaznaczanie najemników i rysowanie stref
+    // Pauza — klik na najemnika go zaznacza (rysowanie strefy przez drag)
     if (game.mode === 'COMBAT' && game.paused) {
         const mx = game.mouse.x, my = game.mouse.y;
-        // Sprawdź czy kliknięto najemnika
         let clickedMerc = null;
         for (const m of game.mercs) {
-            if (Math.hypot(m.x - mx, m.y - my) < 20) { clickedMerc = m; break; }
+            if (Math.hypot(m.x - mx, m.y - my) < 22) { clickedMerc = m; break; }
         }
         if (clickedMerc) {
-            game.selectedMerc = clickedMerc;
+            game.selectedMerc = (game.selectedMerc === clickedMerc) ? null : clickedMerc;
             game.drawingZone = null;
-            logTerminal('Wybrany: ' + clickedMerc.name + ' — kliknij mapę by wyznaczyć strefę');
-        } else if (game.selectedMerc) {
-            // Zacznij rysowanie strefy
-            if (!game.drawingZone) {
-                game.drawingZone = { x1: mx, y1: my, x2: mx, y2: my, merc: game.selectedMerc };
-            } else {
-                // Zatwierdź strefę
-                const z = game.drawingZone;
-                z.x2 = mx; z.y2 = my;
-                const minX = Math.min(z.x1, z.x2), maxX = Math.max(z.x1, z.x2);
-                const minY = Math.min(z.y1, z.y2), maxY = Math.max(z.y1, z.y2);
-                game.selectedMerc.zone = { x: minX, y: minY, w: maxX-minX, h: maxY-minY, cx: (minX+maxX)/2, cy: (minY+maxY)/2 };
-                game.selectedMerc.mode = 'PATROL';
-                logTerminal(game.selectedMerc.name + ': strefa wyznaczona (' + Math.round(maxX-minX) + '×' + Math.round(maxY-minY) + 'px)');
-                game.drawingZone = null;
-                game.selectedMerc = null;
-            }
+            if (game.selectedMerc) logTerminal('Wybrany: ' + game.selectedMerc.name + ' — przeciągnij mapę by wyznaczyć strefę');
+            buildMercMiniPanel();
         }
         return;
     }
@@ -2612,7 +2875,14 @@ function handleInput() {
         if (cfg.type === 'core' && game.corePlaced) return;
         if (game.money >= cfg.cost) {
             game.entities.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 });
-            if (cfg.type === 'core') { game.corePlaced = true; game.player.x = game.mouse.x; game.player.y = game.mouse.y; }
+            if (cfg.type === 'core') {
+                game.corePlaced = true;
+                game.player.x = game.mouse.x; game.player.y = game.mouse.y;
+                game.hp = cfg.hp; // HP zależy od wybranego HQ
+                game.coreType = cfg.coreType || 'standard';
+                game.coreHealRadius = cfg.healRadius || 0;
+                game.coreHealRate = cfg.healRate || 0;
+            }
             else game.money -= cfg.cost;
             updateStatsUI();
         }
@@ -2625,11 +2895,19 @@ function renderProjectiles() {
     const toRemove = new Set();
     game.projectiles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy;
+        if (p.life !== undefined) { p.life--; if (p.life <= 0) { toRemove.add(i); return; } }
         
         if (p.type === 'minigun') { ctx.fillStyle = "#ffa500"; ctx.fillRect(p.x-1,p.y-1,3,3); }
         else if (p.type === 'shotgun') { ctx.fillStyle = "#ff4444"; ctx.fillRect(p.x-1,p.y-1,4,4); }
         else if (p.type === 'sniper') { ctx.fillStyle = "#ff0"; ctx.shadowBlur=5; ctx.shadowColor="#ff0"; ctx.fillRect(p.x-2,p.y-2,5,5); ctx.shadowBlur=0; }
         else if (p.type === 'railgun') { ctx.fillStyle = "#0ff"; ctx.shadowBlur=10; ctx.shadowColor="#0ff"; ctx.fillRect(p.x-3,p.y-3,6,6); ctx.shadowBlur=0; }
+        else if (p.type === 'freeze') { ctx.fillStyle = "#88eeff"; ctx.shadowBlur=6; ctx.shadowColor="#88eeff"; ctx.fillRect(p.x-2,p.y-2,5,5); ctx.shadowBlur=0; }
+        else if (p.type === 'flak') { ctx.fillStyle = "#ffcc44"; ctx.fillRect(p.x-1,p.y-1,3,3); }
+        else if (p.type === 'bfg') {
+            ctx.fillStyle = "#00ff44"; ctx.shadowBlur=20; ctx.shadowColor="#00ff44";
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size||14, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur=0;
+        }
         else { ctx.fillStyle = "#fff"; ctx.fillRect(p.x,p.y,3,3); }
         
         // Enemy projectile targeting towers
@@ -2926,6 +3204,22 @@ function updateHolograms() {
     game.holograms.forEach((h, i) => {
         h.frame++;
 
+        // Portal — wciąga + zadaje obrażenia przy kontakcie
+        if (h.isPortal) {
+            const pr2 = h.portalRadius * h.portalRadius;
+            for (const e of game.enemies) {
+                const dx = h.x - e.x, dy = h.y - e.y;
+                const d2 = dx*dx + dy*dy;
+                if (d2 < pr2 * 9) { // zasięg przyciągania = 3x promień
+                    const d = Math.sqrt(d2) || 1;
+                    const force = h.pullForce * (1 - d/(h.portalRadius*3));
+                    e.x += (dx/d) * force;
+                    e.y += (dy/d) * force;
+                    e._skipFlowField = true;
+                }
+                if (d2 < pr2) { e.hp -= 2; e.hitF = 2; } // obrażenia w centrum
+            }
+        } else {
         // While active, redirect nearby enemies toward hologram
         game.enemies.forEach(e => {
             if (e.moveType === 'FLY') return; // Flying units ignore ground decoys
@@ -2936,11 +3230,35 @@ function updateHolograms() {
                 e._holoOverride = { dx: Math.cos(ang), dy: Math.sin(ang) };
             }
         });
+        }
 
         // Render: flickering cyan pillar
         const alpha = 1 - (h.frame / h.duration);
         const flicker = 0.6 + Math.sin(h.frame * 0.3) * 0.4;
 
+        if (h.isPortal) {
+            // Portal — fioletowy wir
+            const pr = h.portalRadius;
+            ctx.strokeStyle = `rgba(180,0,255,${alpha*flicker})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(h.x, h.y, pr, 0, Math.PI*2); ctx.stroke();
+            // Spirala
+            ctx.strokeStyle = `rgba(220,80,255,${alpha*flicker*0.6})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(h.x, h.y, pr*1.8, 0, Math.PI*2); ctx.stroke();
+            ctx.fillStyle = `rgba(100,0,180,${alpha*0.35})`;
+            ctx.beginPath(); ctx.arc(h.x, h.y, pr, 0, Math.PI*2); ctx.fill();
+            // Obracający się strzałki wciągające
+            const rot = h.frame * 0.08;
+            for (let k = 0; k < 6; k++) {
+                const a = rot + k*(Math.PI/3);
+                const x1 = h.x + Math.cos(a)*pr*0.5, y1 = h.y + Math.sin(a)*pr*0.5;
+                const x2 = h.x + Math.cos(a+0.4)*pr*0.2, y2 = h.y + Math.sin(a+0.4)*pr*0.2;
+                ctx.strokeStyle = `rgba(255,100,255,${alpha*flicker*0.8})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+            }
+        } else {
         // Outer ring pulse
         ctx.strokeStyle = `rgba(0, 220, 255, ${alpha * flicker * 0.5})`;
         ctx.lineWidth = 2;
@@ -2967,6 +3285,7 @@ function updateHolograms() {
         ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.6})`;
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(h.x - 14, scanY); ctx.lineTo(h.x + 14, scanY); ctx.stroke();
+        } // end hologram else (not portal)
 
         if (h.frame >= h.duration) toRemove.add(i);
     });
@@ -3501,6 +3820,46 @@ function updateMercs() {
                         e._mercTarget = m;
                     }
                 }
+            }
+        }
+
+        // RECALL — wróć do HQ i lecz się
+        if (m._recalling) {
+            const rt = m._recallTarget;
+            if (rt) {
+                const dx = rt.x - m.x, dy = rt.y - m.y;
+                const d = Math.hypot(dx, dy);
+                if (d > 20) {
+                    m.x += (dx/d) * m.speed * 1.4;
+                    m.y += (dy/d) * m.speed * 1.4;
+                } else {
+                    // Przy HQ — lecz co klatkę
+                    const healAmt = game.coreHealRate || 0.1;
+                    m.hp = Math.min(m.maxHp, m.hp + healAmt);
+                    // Efekt wizualny leczenia
+                    if (game.frame % 20 === 0) {
+                        game.explosions.push({ x: m.x + (Math.random()-0.5)*20, y: m.y + (Math.random()-0.5)*20, radius:0, maxRadius:12, damage:0, frame:0, maxFrames:10, hasDealtDamage:true, color:'poison' });
+                    }
+                    // Pełne HP — koniec recallu
+                    if (m.hp >= m.maxHp * 0.95) {
+                        m._recalling = false;
+                        delete m._recallTarget;
+                        logTerminal(m.name + ': wyleczony, gotowy do walki');
+                        buildMercMiniPanel();
+                    }
+                }
+            }
+            // Podczas recall — nie atakuj
+            m.x = Math.max(30, Math.min(CONFIG.WIDTH-30, m.x));
+            m.y = Math.max(30, Math.min(CONFIG.HEIGHT-30, m.y));
+            return;
+        }
+
+        // Pasywne leczenie w zasięgu HQ LAZARET / MAGAZYN
+        if (game.coreHealRadius && m.hp < m.maxHp) {
+            const core = game.entities.find(e => e.type === 'core');
+            if (core && Math.hypot(m.x-core.x, m.y-core.y) < game.coreHealRadius) {
+                m.hp = Math.min(m.maxHp, m.hp + (game.coreHealRate || 0.05));
             }
         }
 
@@ -4233,29 +4592,68 @@ function buildUpgradeGrid(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
-    [['SPD','Prędkość'], ['ROF','Szybkość'], ['DMG','Obrażenia']].forEach(([s, label]) => {
-        const lk = s.toLowerCase() + 'Lv';
-        const lv = game.player[lk];
-        const cost = lv * 300;
+
+    const upgrades = [
+        { id:'spdLv',    label:'SZYBKOŚĆ',     icon:'⚡', desc:'Prędkość ruchu', max:10 },
+        { id:'rofLv',    label:'ROF',           icon:'🔫', desc:'Szybkostrzelność', max:10 },
+        { id:'dmgLv',    label:'OBRAŻENIA',     icon:'💥', desc:'Siła strzałów', max:10 },
+        { id:'canFly',   label:'LOT',           icon:'🚁', desc:'Klawisz F — lataj ponad terenem', toggle:true },
+        { id:'dualWield',label:'DUAL WIELD',    icon:'🤜', desc:'Dwie bronie primary naraz', toggle:true },
+        { id:'armor',    label:'PANCERZ',       icon:'🛡', desc:'+50% max HP', max:5 },
+    ];
+
+    upgrades.forEach(upg => {
         const btn = document.createElement('button');
         btn.className = 'upg-btn';
-        btn.innerHTML =
-            '<span class="upg-type">' + s + '</span>' +
-            '<span class="upg-lv">' + label + ' · Lv' + lv + '</span>' +
-            '<span class="upg-cost">$' + cost + '</span>';
-        btn.onclick = () => {
-            if (game.money >= cost) {
-                game.money -= cost;
-                game.player[lk]++;
-                logTerminal('Ulepszono: ' + s + ' Lv' + game.player[lk]);
+
+        if (upg.toggle) {
+            const active = game.player[upg.id];
+            btn.style.borderColor = active ? '#44ff44' : '';
+            btn.innerHTML =
+                '<span class="upg-type">' + upg.icon + ' ' + upg.label + '</span>' +
+                '<span class="upg-lv">' + upg.desc + '</span>' +
+                '<span class="upg-cost" style="color:' + (active?'#44ff44':'#888') + '">' + (active?'ON':'OFF') + '</span>';
+            btn.onclick = () => {
+                game.player[upg.id] = !game.player[upg.id];
+                logTerminal(upg.label + ': ' + (game.player[upg.id]?'WŁĄCZONO':'WYŁĄCZONO'));
                 buildUpgradeGrid(containerId);
-                updateStatusBar();
-            } else {
-                logTerminal('Za mało kredytów: ' + s);
-            }
-        };
+                updateStatsUI();
+            };
+        } else {
+            const lv = game.player[upg.id] || 1;
+            const cost = 0; // darmowe
+            const maxed = upg.max && lv >= upg.max;
+            btn.innerHTML =
+                '<span class="upg-type">' + upg.icon + ' ' + upg.label + '</span>' +
+                '<span class="upg-lv">' + upg.desc + ' · Lv' + lv + '</span>' +
+                '<span class="upg-cost">' + (maxed ? 'MAX' : 'ULEPSZ') + '</span>';
+            btn.onclick = () => {
+                if (maxed) return;
+                game.player[upg.id] = lv + 1;
+                // Pancerz — zwiększ max HP
+                if (upg.id === 'armor') game.hp = Math.min(game.hp + 500, 6000 + (game.player.armor||1)*500);
+                logTerminal(upg.label + ' Lv' + game.player[upg.id]);
+                buildUpgradeGrid(containerId);
+                updateStatsUI();
+            };
+        }
         container.appendChild(btn);
     });
+
+    // Selector drugiej broni dla dual wield
+    if (game.player.dualWield) {
+        const sel = document.createElement('select');
+        sel.style.cssText = 'width:100%;margin-top:4px;background:#0a1a0a;color:#88ff88;border:1px solid #2a4a2a;font-family:monospace;font-size:10px;padding:3px;';
+        Object.entries(CONFIG.WEAPONS_PRIMARY).forEach(([k, w]) => {
+            if (k === game.player.primaryWeapon) return;
+            const opt = document.createElement('option');
+            opt.value = k; opt.textContent = w.name;
+            if (k === game.player.secondaryPrimary) opt.selected = true;
+            sel.appendChild(opt);
+        });
+        sel.onchange = () => { game.player.secondaryPrimary = sel.value; logTerminal('2. broń: ' + CONFIG.WEAPONS_PRIMARY[sel.value].name); };
+        container.appendChild(sel);
+    }
 }
 
 // ══════════════════════════════════════════════
@@ -4475,6 +4873,103 @@ function updateMines() {
     }
 }
 
+
+function buildMercMiniPanel() {
+    // Buduje lub aktualizuje minipanel najemników nad canvasem
+    let panel = document.getElementById('merc-mini-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'merc-mini-panel';
+        panel.style.cssText = `
+            position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
+            display:flex; gap:4px; z-index:200; pointer-events:all;
+            background:rgba(0,8,0,0.92); border:1px solid #2a4a2a;
+            padding:5px 8px; border-radius:3px; font-family:monospace;
+            box-shadow:0 0 12px rgba(0,100,0,0.4);
+        `;
+        const viewport = document.getElementById('viewport');
+        if (viewport) {
+            if (window.getComputedStyle(viewport).position === 'static') viewport.style.position = 'relative';
+            viewport.appendChild(panel);
+        } else {
+            document.body.appendChild(panel);
+        }
+    }
+    panel.innerHTML = '';
+
+    if (!game.paused || game.mode !== 'COMBAT' || game.mercs.length === 0) {
+        panel.style.display = 'none';
+        return;
+    }
+    panel.style.display = 'flex';
+
+    // Nagłówek
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'color:#4a8a4a;font-size:9px;align-self:center;margin-right:4px;writing-mode:vertical-lr;transform:rotate(180deg);letter-spacing:1px;';
+    hdr.textContent = 'NAJEMNICY';
+    panel.appendChild(hdr);
+
+    game.mercs.forEach((m, idx) => {
+        const btn = document.createElement('button');
+        const isSelected = game.selectedMerc === m;
+        const hasZone = !!m.zone;
+        btn.style.cssText = `
+            background:${isSelected ? '#1a3a1a' : '#0a1a0a'};
+            border:${isSelected ? '2px solid #aaffaa' : '1px solid ' + (hasZone ? '#4a8a4a' : '#2a4a2a')};
+            color:${isSelected ? '#ffffff' : '#88cc88'};
+            padding:4px 7px; cursor:pointer; font-family:monospace; font-size:10px;
+            min-width:70px; text-align:center; border-radius:2px;
+            position:relative;
+        `;
+        const hpPct = Math.round((m.hp / m.maxHp) * 100);
+        const hpColor = hpPct > 60 ? '#44ff44' : hpPct > 30 ? '#ffaa00' : '#ff4444';
+        btn.innerHTML = `
+            <div style="font-size:9px;color:#aaa;margin-bottom:2px;">${m.spec.icon || '🪖'} ${m.name.split(' ')[0]}</div>
+            <div style="font-size:8px;color:${hpColor};">HP ${hpPct}%</div>
+            <div style="font-size:8px;color:${hasZone ? '#44aa44' : '#555'};">${hasZone ? '⬜ STREFA' : '· WOLNY'}</div>
+        `;
+        btn.onclick = () => {
+            if (game.selectedMerc === m) {
+                game.selectedMerc = null;
+                game.drawingZone = null;
+            } else {
+                game.selectedMerc = m;
+                game.drawingZone = null;
+            }
+            buildMercMiniPanel();
+        };
+        panel.appendChild(btn);
+
+        // Przycisk RECALL — tylko gdy HQ z leczeniem i najemnik ranny
+        if (game.coreHealRadius && hpPct < 90 && !m._recalling) {
+            const recallBtn = document.createElement('button');
+            recallBtn.style.cssText = 'background:#0a1a0a;border:1px solid #2a6a2a;color:#44aa44;padding:3px 5px;cursor:pointer;font-family:monospace;font-size:9px;align-self:center;';
+            recallBtn.textContent = '⛑';
+            recallBtn.title = 'Wezwij do HQ by się podleczył';
+            recallBtn.onclick = (e) => {
+                e.stopPropagation();
+                const core = game.entities.find(e => e.type === 'core');
+                if (core) {
+                    m._recalling = true;
+                    m._recallTarget = { x: core.x, y: core.y };
+                    delete m.zone; m.mode = 'FREE';
+                    logTerminal(m.name + ': wraca do HQ');
+                    buildMercMiniPanel();
+                }
+            };
+            panel.appendChild(recallBtn);
+        }
+    });
+
+    // Przycisk "odznacz wszystkich"
+    if (game.selectedMerc) {
+        const clr = document.createElement('button');
+        clr.style.cssText = 'background:#0a0a0a;border:1px solid #444;color:#888;padding:4px 6px;cursor:pointer;font-family:monospace;font-size:9px;align-self:center;';
+        clr.textContent = '✕';
+        clr.onclick = () => { game.selectedMerc = null; game.drawingZone = null; buildMercMiniPanel(); };
+        panel.appendChild(clr);
+    }
+}
 
 function renderMercZones() {
     if (game.mode !== 'COMBAT') return;
