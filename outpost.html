@@ -445,6 +445,10 @@
                 <div class="intel-row"><span class="il">JEDNOSTKI WODNE</span><span class="iv swim" id="intel-swim">0</span></div>
                 <div class="intel-row"><span class="il">JEDNOSTKI LOTNICZE</span><span class="iv air" id="intel-air">0</span></div>
                 <div class="intel-row"><span class="il">ŁĄCZNE HP</span><span class="iv" id="intel-hp">0</span></div>
+                <div id="intel-specials-block" style="margin-top:6px;display:none;">
+                    <div style="font-size:0.8em;color:#aa4444;margin-bottom:3px;letter-spacing:1px;">⚠ JEDNOSTKI SPECJALNE:</div>
+                    <div id="intel-specials-list" style="font-size:9px;color:#cc8888;line-height:1.7;"></div>
+                </div>
                 <div style="margin-top:8px;">
                     <div style="font-size:0.8em;color:#3a5a3a;margin-bottom:3px;">ZAGROŻENIE:</div>
                     <div class="threat-bar"><div class="threat-bar-fill" id="threat-fill" style="width:0%"></div></div>
@@ -455,7 +459,7 @@
 
     <!-- ═══ PANEL: COMBAT ═══ -->
     <div id="panel-combat">
-        <button onclick="if(game.mode==='COMBAT'){game.paused=!game.paused;logTerminal(game.paused?'⏸ PAUZA — SPACJA by wznowić':'▶ WZNOWIONO');buildMercMiniPanel();}" 
+        <button onclick="if(game.mode==='COMBAT') togglePause();" 
                 style="width:100%;margin-bottom:6px;padding:6px;background:#1a2a1a;border:1px solid #3a5a3a;color:#aaffaa;font-family:monospace;font-size:12px;cursor:pointer;letter-spacing:1px;"
                 id="pause-btn">⏸ PAUZA (SPACJA)</button>
         <div class="tab-bar">
@@ -624,71 +628,53 @@ function init() {
         game.keys[e.code] = true;
         if (e.code === 'Space' && game.mode === 'COMBAT') {
             e.preventDefault();
-            game.paused = !game.paused;
-            logTerminal(game.paused ? '⏸ PAUZA' : '▶ WZNOWIONO');
-            buildMercMiniPanel();
+            togglePause();
         }
     });
-    window.addEventListener('keyup', e => game.keys[e.code] = false);
+    window.addEventListener('keyup', e => {
+        game.keys[e.code] = false;
+    });
     canvas.addEventListener('mousemove', e => {
         const r = canvas.getBoundingClientRect();
         game.mouse.x = (e.clientX - r.left) * (CONFIG.WIDTH / r.width);
         game.mouse.y = (e.clientY - r.top) * (CONFIG.HEIGHT / r.height);
+        // Aktualizuj podgląd rysowanej strefy
+        if (game.drawingZone) {
+            game.drawingZone.x2 = game.mouse.x;
+            game.drawingZone.y2 = game.mouse.y;
+        }
     });
     canvas.addEventListener('mousedown', (e) => {
-        // Pauza + LMB + wybrany najemnik = start drag strefy
-        if (e.button === 0 && game.mode === 'COMBAT' && game.paused && game.selectedMerc) {
-            let onMerc = false;
-            for (const m of game.mercs) { if (Math.hypot(m.x-game.mouse.x, m.y-game.mouse.y) < 22) { onMerc = true; break; } }
-            if (!onMerc) {
-                game.drawingZone = { x1: game.mouse.x, y1: game.mouse.y, x2: game.mouse.x, y2: game.mouse.y, dragging: true };
-                e.preventDefault(); return;
+        if (game.mode === 'COMBAT' && game.paused) {
+            if (e.button === 0) {
+                pauseMouseDown();
+                e.preventDefault();
+            } else if (e.button === 2) {
+                pauseRightClick();
+                e.preventDefault();
             }
+            return;
         }
         if (e.button === 0) { game.mouse.down = true; handleInput(); }
         else if (e.button === 2) {
-            // Pauza — prawy klik usuwa strefę najemnika pod kursorem
-            if (game.mode === 'COMBAT' && game.paused) {
-                game.drawingZone = null;
-                game.selectedMerc = null;
-                for (const m of game.mercs) {
-                    if (Math.hypot(m.x - game.mouse.x, m.y - game.mouse.y) < 22) {
-                        delete m.zone; m.mode = 'FREE';
-                        logTerminal(m.name + ': strefa usunięta');
-                        break;
-                    }
-                }
-                buildMercMiniPanel();
-                return;
-            }
             game.mouse.rightDown = true;
             if (game.mode === 'COMBAT' && game.corePlaced) throwGrenade();
         }
     });
     canvas.addEventListener('mouseup', (e) => {
-        if (e.button === 0 && game.drawingZone && game.drawingZone.dragging && game.selectedMerc) {
-            const z = game.drawingZone;
-            const minX = Math.min(z.x1,z.x2), maxX = Math.max(z.x1,z.x2);
-            const minY = Math.min(z.y1,z.y2), maxY = Math.max(z.y1,z.y2);
-            const w = maxX-minX, h = maxY-minY;
-            if (w > 20 && h > 20) {
-                game.selectedMerc.zone = { x:minX, y:minY, w, h, cx:(minX+maxX)/2, cy:(minY+maxY)/2 };
-                game.selectedMerc.mode = 'PATROL';
-                logTerminal(game.selectedMerc.name + ': strefa ' + Math.round(w) + '×' + Math.round(h) + 'px');
-            }
-            game.drawingZone = null;
-            game.selectedMerc = null;
-            buildMercMiniPanel();
+        if (e.button === 0 && game.mode === 'COMBAT' && game.paused && game.drawingZone) {
+            pauseMouseUp();
+            e.preventDefault();
+            return;
         }
         // Gravity Gun — wyrzut po zwolnieniu
         if (e.button === 0 && game.player.primaryWeapon === 'GRAVITY_GUN' && game.player._gravPulled && game.player._gravPulled.length > 0) {
             const throwAngle = Math.atan2(game.mouse.y - game.player.y, game.mouse.x - game.player.x);
-            const throwForce = 18;
             for (const grav_e of game.player._gravPulled) {
                 grav_e._gravHeld = false;
-                grav_e._gravVx = Math.cos(throwAngle) * throwForce;
-                grav_e._gravVy = Math.sin(throwAngle) * throwForce;
-                grav_e._gravFrames = 25; // klatek lotu
+                grav_e._gravVx = Math.cos(throwAngle) * 18;
+                grav_e._gravVy = Math.sin(throwAngle) * 18;
+                grav_e._gravFrames = 25;
                 grav_e.hitF = 8;
             }
             game.player._gravPulled = [];
@@ -1089,7 +1075,7 @@ function generateStrategicMap() {
 
 function spawnWaveLogic() {
     game.enemies = [];
-    game.intel = { land: 0, swim: 0, air: 0, totalHP: 0 };
+    game.intel = { land: 0, swim: 0, air: 0, totalHP: 0, specials: {} };
     let pool = 3000 + (game.wave * 4000);
     const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
     const total = r1+r2+r3;
@@ -1130,9 +1116,18 @@ function spawnWaveLogic() {
         ];
         specials.forEach(sp => {
             if (Math.random() < sp.chance && pool > sp.cost) {
-                const e = createEnemyTyped(sp.type, sp.hp, 'LAND');
+                // Ustaw moveType według typu
+                const flyTypes = ['REGENERATOR', 'BOMBER', 'CARRIER'];
+                const moveType = flyTypes.includes(sp.type) ? 'FLY' : 'LAND';
+                const e = createEnemyTyped(sp.type, sp.hp, moveType);
                 game.enemies.push(e);
                 game.intel.totalHP += sp.hp;
+                // Zlicz do odpowiedniej kategorii
+                if (moveType === 'FLY') game.intel.air++;
+                else game.intel.land++;
+                // Zlicz specjalne typy osobno
+                if (!game.intel.specials) game.intel.specials = {};
+                game.intel.specials[sp.type] = (game.intel.specials[sp.type] || 0) + 1;
                 pool -= sp.cost;
             }
         });
@@ -1458,6 +1453,20 @@ function updateMonsters() {
                     dirX = Math.cos(driftAng);
                     dirY = Math.sin(driftAng);
 
+                } else if (mType.id === 'DRAGON') {
+                    // Smok krąży wokół celu na optymalnej odległości do oddechu
+                    monster.movePhase += 0.025;
+                    monster._breathAngle = ang; // zawsze celuj w stronę wroga
+                    const optDist = mType.fireRange * 0.7; // 196px
+                    if (nearestDist > optDist + 40) {
+                        dirX = Math.cos(ang); dirY = Math.sin(ang);
+                    } else if (nearestDist < optDist - 40) {
+                        dirX = -Math.cos(ang); dirY = -Math.sin(ang);
+                    } else {
+                        const orbitAng = ang + Math.PI*0.5 + Math.sin(monster.movePhase)*0.3;
+                        dirX = Math.cos(orbitAng); dirY = Math.sin(orbitAng);
+                    }
+
                 } else if (mType.id === 'PLAGUE') {
                     // Spirals inward — orbits target while closing distance
                     monster.orbitAngle += 0.045;
@@ -1511,7 +1520,33 @@ function updateMonsters() {
                     });
 
                     // Spider web shot — ranged slow projectile
-                    if (mType.special === 'web') {
+                    // SMOK — zionięcie ogniem z daleka (zanim dotrze do wroga)
+                if (mType.special === 'fire_breath') {
+                    if (monster.attackTimer > 0) monster.attackTimer--;
+                    if (nearestDist < mType.fireRange && monster.attackTimer <= 0) {
+                        const fireAng = Math.atan2(nearestEnemy.y - monster.y, nearestEnemy.x - monster.x);
+                        const cone = mType.fireConeAngle;
+                        for (const fe of game.enemies) {
+                            if (fe._witchShield > 0) continue; // respektuj tarczę
+                            const fdx = fe.x - monster.x, fdy = fe.y - monster.y;
+                            const fd = Math.sqrt(fdx*fdx + fdy*fdy);
+                            if (fd > mType.fireRange) continue;
+                            let diff = Math.atan2(fdy, fdx) - fireAng;
+                            while (diff > Math.PI) diff -= Math.PI*2;
+                            while (diff < -Math.PI) diff += Math.PI*2;
+                            if (Math.abs(diff) < cone) {
+                                fe.hp -= mType.fireDmg;
+                                fe.hitF = 3;
+                                fe._burning = 60;
+                                fe._burnDmg = 4;
+                            }
+                        }
+                        monster.attackTimer = mType.attackCooldown;
+                        monster._breathFrame = 12;
+                    }
+                }
+
+                if (mType.special === 'web') {
                         const ang = Math.atan2(nearestEnemy.y - monster.y, nearestEnemy.x - monster.x);
                         monster.webShots = monster.webShots || [];
                         monster.webShots.push({ x: monster.x, y: monster.y, vx: Math.cos(ang)*6, vy: Math.sin(ang)*6, life: 40 });
@@ -1632,9 +1667,128 @@ function renderMonsters() {
                 ctx.fillStyle = 'rgba(180,255,40,0.7)';
                 ctx.beginPath(); ctx.arc(mx+Math.cos(a)*ms*1.5, my+Math.sin(a)*ms*1.5, 3, 0, Math.PI*2); ctx.fill();
             }
-        }
 
+        } else if (mType.id === 'DRAGON') {
+            // *** SMOK ***
+            const t = monster.frame * 0.06;
+            const facingAng = monster._breathAngle || 0;
 
+            ctx.save();
+            ctx.translate(mx, my);
+            ctx.rotate(facingAng);
+
+            // Ogon — seria maliejących kół za smokiem
+            for (let i = 5; i >= 1; i--) {
+                const tx = -ms * 0.5 * i;
+                const ty = Math.sin(t + i * 0.7) * ms * 0.35;
+                const tr = ms * (0.25 + (5-i) * 0.06);
+                ctx.fillStyle = i % 2 === 0 ? mc : mc2;
+                ctx.globalAlpha = alpha * 0.7;
+                ctx.beginPath(); ctx.arc(tx, ty, tr, 0, Math.PI*2); ctx.fill();
+            }
+
+            // Tułów — duży owal
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = mc2;
+            ctx.beginPath(); ctx.ellipse(0, 0, ms * 1.3, ms * 0.85, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = mc;
+            ctx.beginPath(); ctx.ellipse(0, 0, ms * 1.1, ms * 0.7, 0, 0, Math.PI*2); ctx.fill();
+
+            // Skrzydła — dwa trójkąty
+            ctx.fillStyle = mc2;
+            ctx.globalAlpha = alpha * 0.75;
+            // Lewe
+            ctx.beginPath();
+            ctx.moveTo(-ms*0.3, 0);
+            ctx.lineTo(-ms*0.1, -ms*1.6);
+            ctx.lineTo(ms*0.5, -ms*0.3);
+            ctx.closePath(); ctx.fill();
+            // Prawe
+            ctx.beginPath();
+            ctx.moveTo(-ms*0.3, 0);
+            ctx.lineTo(-ms*0.1, ms*1.6);
+            ctx.lineTo(ms*0.5, ms*0.3);
+            ctx.closePath(); ctx.fill();
+            // Żebra skrzydeł
+            ctx.strokeStyle = mc; ctx.lineWidth = 1; ctx.globalAlpha = alpha * 0.5;
+            for (let w = 0; w < 3; w++) {
+                const wy = w === 0 ? 0 : (w === 1 ? -ms*0.8 : ms*0.8);
+                const wsy = w === 0 ? 0 : (w === 1 ? -ms*1.6 : ms*1.6);
+                ctx.beginPath(); ctx.moveTo(-ms*0.2, wy*0.3); ctx.lineTo(ms*0.2, wsy*0.6); ctx.stroke();
+            }
+
+            // Głowa — przedłużony owal + szczęka
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = mc2;
+            ctx.beginPath(); ctx.ellipse(ms*1.05, 0, ms*0.55, ms*0.42, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = mc;
+            ctx.beginPath(); ctx.ellipse(ms*1.05, 0, ms*0.4, ms*0.3, 0, 0, Math.PI*2); ctx.fill();
+            // Oko
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath(); ctx.arc(ms*1.2, -ms*0.1, ms*0.1, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(ms*1.22, -ms*0.1, ms*0.05, 0, Math.PI*2); ctx.fill();
+            // Zęby
+            ctx.fillStyle = '#ffffcc';
+            for (let ti = 0; ti < 3; ti++) {
+                const ty2 = (ti - 1) * ms * 0.15;
+                ctx.beginPath();
+                ctx.moveTo(ms*1.4, ty2-ms*0.06);
+                ctx.lineTo(ms*1.55, ty2);
+                ctx.lineTo(ms*1.4, ty2+ms*0.06);
+                ctx.closePath(); ctx.fill();
+            }
+
+            ctx.restore();
+
+            // *** ODDECH OGNIA ***
+            if (monster._breathFrame > 0) {
+                monster._breathFrame--;
+                const fireAng = monster._breathAngle || 0;
+                const cone = mType.fireConeAngle || 0.45;
+                const range = mType.fireRange || 280;
+                const bf = monster._breathFrame;
+
+                // Główna wiązka ognia — gradient stożkowy
+                ctx.save();
+                ctx.globalAlpha = alpha * (bf / 12) * 0.85;
+
+                // Zewnętrzny stożek (pomarańcz)
+                const grad = ctx.createRadialGradient(mx, my, ms, mx + Math.cos(fireAng)*range*0.7, my + Math.sin(fireAng)*range*0.7, range*0.3);
+                grad.addColorStop(0, 'rgba(255,140,0,0.9)');
+                grad.addColorStop(0.4, 'rgba(255,60,0,0.6)');
+                grad.addColorStop(1, 'rgba(255,20,0,0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(mx, my);
+                ctx.arc(mx, my, range, fireAng - cone, fireAng + cone);
+                ctx.closePath(); ctx.fill();
+
+                // Wewnętrzna jaśniejsza struga
+                ctx.globalAlpha = alpha * (bf / 12) * 0.7;
+                const grad2 = ctx.createRadialGradient(mx, my, ms*0.5, mx + Math.cos(fireAng)*range*0.5, my + Math.sin(fireAng)*range*0.5, range*0.2);
+                grad2.addColorStop(0, 'rgba(255,255,150,0.95)');
+                grad2.addColorStop(0.5, 'rgba(255,120,0,0.5)');
+                grad2.addColorStop(1, 'rgba(255,0,0,0)');
+                ctx.fillStyle = grad2;
+                ctx.beginPath();
+                ctx.moveTo(mx, my);
+                ctx.arc(mx, my, range * 0.65, fireAng - cone*0.5, fireAng + cone*0.5);
+                ctx.closePath(); ctx.fill();
+
+                // Iskry — losowe punkty w stożku
+                ctx.globalAlpha = alpha * (bf / 12);
+                for (let sp = 0; sp < 8; sp++) {
+                    const sa = fireAng + (Math.random()-0.5)*cone*1.8;
+                    const sd = ms + Math.random() * range * 0.9;
+                    const sr = 2 + Math.random()*4;
+                    ctx.fillStyle = Math.random() > 0.5 ? '#ffff88' : '#ff8800';
+                    ctx.beginPath(); ctx.arc(mx+Math.cos(sa)*sd, my+Math.sin(sa)*sd, sr, 0, Math.PI*2); ctx.fill();
+                }
+                ctx.restore();
+            }
+
+        } // end DRAGON
 
         ctx.globalAlpha = 1;
         ctx.restore();
@@ -1660,6 +1814,88 @@ function renderMonsters() {
 }
 
 // =================== END MONSTER THROWER ===================
+
+
+// ══════════════════════════════════════════════
+//  PAUZA — toggle i obsługa wejścia
+// ══════════════════════════════════════════════
+
+function togglePause() {
+    game.paused = !game.paused;
+    logTerminal(game.paused ? '⏸ PAUZA' : '▶ WZNOWIONO');
+    if (!game.paused) {
+        // Wznowienie — wyczyść stan rysowania
+        game.drawingZone = null;
+        game.selectedMerc = null;
+    }
+    buildMercMiniPanel();
+    // Zaktualizuj przycisk
+    const btn = document.getElementById('pause-btn');
+    if (btn) btn.textContent = game.paused ? '▶ WZNÓW (SPACJA)' : '⏸ PAUZA (SPACJA)';
+}
+
+function pauseMouseDown() {
+    const mx = game.mouse.x, my = game.mouse.y;
+    // Sprawdź czy kliknięto najemnika
+    for (const m of game.mercs) {
+        if (Math.hypot(m.x - mx, m.y - my) < 24) {
+            if (game.selectedMerc === m) {
+                // Drugi klik na tym samym — odznacz
+                game.selectedMerc = null;
+                game.drawingZone = null;
+            } else {
+                game.selectedMerc = m;
+                game.drawingZone = null;
+                logTerminal(m.name + ' — zaznaczony. Przeciągnij by wyznaczyć strefę.');
+            }
+            buildMercMiniPanel();
+            return;
+        }
+    }
+    // Kliknięto mapę — jeśli najemnik wybrany, zacznij rysować strefę
+    if (game.selectedMerc) {
+        game.drawingZone = { x1: mx, y1: my, x2: mx, y2: my };
+    }
+}
+
+function pauseRightClick() {
+    // Prawy klik: anuluj rysowanie lub usuń strefę najemnika pod kursorem
+    if (game.drawingZone) {
+        game.drawingZone = null;
+        return;
+    }
+    game.selectedMerc = null;
+    for (const m of game.mercs) {
+        if (Math.hypot(m.x - game.mouse.x, m.y - game.mouse.y) < 24) {
+            delete m.zone;
+            m.mode = 'FREE';
+            logTerminal(m.name + ': strefa usunięta');
+            break;
+        }
+    }
+    buildMercMiniPanel();
+}
+
+function pauseMouseUp() {
+    if (!game.drawingZone || !game.selectedMerc) {
+        game.drawingZone = null;
+        return;
+    }
+    const z = game.drawingZone;
+    const minX = Math.min(z.x1, z.x2), maxX = Math.max(z.x1, z.x2);
+    const minY = Math.min(z.y1, z.y2), maxY = Math.max(z.y1, z.y2);
+    const w = maxX - minX, h = maxY - minY;
+    if (w > 30 && h > 30) {
+        game.selectedMerc.zone = { x: minX, y: minY, w, h, cx: (minX+maxX)/2, cy: (minY+maxY)/2 };
+        game.selectedMerc.mode = 'PATROL';
+        logTerminal(game.selectedMerc.name + ': strefa ' + Math.round(w) + '×' + Math.round(h) + 'px');
+    } else {
+        logTerminal('Strefa za mała — przeciągnij dalej');
+    }
+    game.drawingZone = null;
+    game.selectedMerc = null;
+    buildMercMiniPanel();
+}
 
 function gameLoop() {
     game.frame = (game.frame || 0) + 1;
@@ -1730,6 +1966,7 @@ function gameLoop() {
         renderTowerGrenades();
         renderExplosions();
     }
+    if (game.mode === 'COMBAT') renderEnemies();
     renderProjectiles();
     updateStatusBar();
     requestAnimationFrame(gameLoop);
@@ -2026,6 +2263,16 @@ function updateCombat() {
             const ang = Math.atan2(core.y - e.y, core.x - e.x); dirX = Math.cos(ang); dirY = Math.sin(ang);
         }
         
+        // DOT palenie (dragon fire breath)
+        if (e._burning > 0) {
+            e._burning--;
+            if (game.frame % 4 === 0) {
+                e.hp -= (e._burnDmg || 3);
+                e.hitF = 2;
+            }
+            if (e._burning <= 0) delete e._burning;
+        }
+
         if (e.hp <= 0) return;
         // Cache terrain cost — expensive, recalculate every 6 frames
         if (!e._terrainCost || game.frame % 6 === 0) e._terrainCost = getTerrainCost(e.x, e.y, e.moveType, e.size);
@@ -2165,6 +2412,8 @@ function isPointInPolygon(x, y, points) {
 }
 
 function renderAnomalies() {
+    // anomalies not implemented
+}
 
 function renderEnemySpecial(e) {
     const t = e.enemyType;
@@ -2292,6 +2541,7 @@ function renderEnemySpecial(e) {
 }
 
 
+function renderEnemies() {
     game.enemies.forEach(e => {
         // REGENERATOR: pulsing heal aura
         if (e.isRegenerator) {
@@ -2323,8 +2573,11 @@ function renderEnemySpecial(e) {
         renderEnemySpecial(e);
 
         // Niezniszczalny — biały fill
-        const fillCol = (e.invActive || (e._witchShield > 0 && e.enemyType !== 'WITCH_DOCTOR'))
-            ? '#ffffff' : (e.hitF > 0 ? '#fff' : e.color);
+        let fillCol;
+        if (e.invActive || (e._witchShield > 0 && e.enemyType !== 'WITCH_DOCTOR')) fillCol = '#ffffff';
+        else if (e.hitF > 0) fillCol = '#ffffff';
+        else if (e.frozenVisual > 0) { fillCol = '#88eeff'; e.frozenVisual--; }
+        else fillCol = e.color;
         ctx.fillStyle = fillCol;
         ctx.beginPath(); ctx.moveTo(e.x + e.vertices[0].x, e.y + e.vertices[0].y);
         for(let v=1; v<e.vertices.length; v++) ctx.lineTo(e.x + e.vertices[v].x, e.y + e.vertices[v].y);
@@ -2766,6 +3019,14 @@ function throwGrenade() {
         return;
     }
     
+    if (game.player.secondaryWeapon === 'WOLF_PIT') {
+        const pit = CONFIG.MINES.WOLF_PIT;
+        game.mines.push({ ...pit, x: targetX, y: targetY, triggered: false, cooldown: 0, angle: 0 });
+        logTerminal('WILCZY DÓŁ ustawiony!');
+        game.player.lastGrenade = now;
+        return;
+    }
+
     if (game.player.secondaryWeapon === 'FLAK') {
         // 12 odłamków w szerokim stożku
         const ang = Math.atan2(targetY-game.player.y, targetX-game.player.x);
@@ -2842,21 +3103,7 @@ function renderEntities() {
 }
 
 function handleInput() {
-    // Pauza — klik na najemnika go zaznacza (rysowanie strefy przez drag)
-    if (game.mode === 'COMBAT' && game.paused) {
-        const mx = game.mouse.x, my = game.mouse.y;
-        let clickedMerc = null;
-        for (const m of game.mercs) {
-            if (Math.hypot(m.x - mx, m.y - my) < 22) { clickedMerc = m; break; }
-        }
-        if (clickedMerc) {
-            game.selectedMerc = (game.selectedMerc === clickedMerc) ? null : clickedMerc;
-            game.drawingZone = null;
-            if (game.selectedMerc) logTerminal('Wybrany: ' + game.selectedMerc.name + ' — przeciągnij mapę by wyznaczyć strefę');
-            buildMercMiniPanel();
-        }
-        return;
-    }
+    // Pauza obsługiwana przez pauseMouseDown()
     if (game.mode === 'BASE' && game.selected) {
         const gx = Math.floor((game.mouse.x - 150) / 50), gy = Math.floor((game.mouse.y - 150) / 50);
         if(gx>=0 && gx<12 && gy>=0 && gy<12) { game.buildings.push({ gx, gy, cfg: CONFIG.BUILDINGS[game.selected] }); game.money -= CONFIG.BUILDINGS[game.selected].cost; updateStatsUI(); }
@@ -2934,6 +3181,13 @@ function renderProjectiles() {
             const hit = game.enemies.find(e => Math.hypot(e.x-p.x, e.y-p.y) < e.size && !e._witchShield);
             if (hit) {
                 hit.hp -= p.dmg; hit.hitF = 3;
+                if (p.type === 'freeze' && p.freezeTime) {
+                    hit.stunned = true;
+                    hit.stunTimer = p.freezeTime;
+                    hit.frozenVisual = p.freezeTime;
+                    hit.originalSpeed = hit.originalSpeed || hit.speed;
+                    hit.speed = 0;
+                }
                 if (p.knockback) { const angle = Math.atan2(p.vy,p.vx); hit.x += Math.cos(angle)*p.knockback; hit.y += Math.sin(angle)*p.knockback; }
                 toRemove.add(i);
             }
@@ -3486,6 +3740,18 @@ const MONSTER_TYPES = {
         desc: 'Zaraża wrogów. Eksploduje śmiercią z trucizną.',
         shape: 'plague'
     }
+,
+    DRAGON: {
+        id: 'DRAGON', name: 'Smok', icon: '🐉',
+        color: '#cc2200', altColor: '#ff6600',
+        size: 32, speed: 1.6, hp: 2200, dmg: 12,
+        attackRange: 280, attackCooldown: 4,
+        lifetime: 900, moveType: 'FLY',
+        special: 'fire_breath',
+        fireRange: 280, fireConeAngle: 0.45, fireDmg: 12,
+        desc: 'Potężny smok. Zieje ogniem w szerokim stożku.',
+        shape: 'dragon'
+    }
 };
 
 function generateMonsterRoster() {
@@ -3535,6 +3801,8 @@ function spawnMonsterType(targetX, targetY, type) {
         monsterType: t,
         vertices: generateMonsterVerts(t.size),
         webShots: [],
+        _breathAngle: 0,
+        _breathFrame: 0,
         // Per-type movement personality
         movePhase: Math.random() * Math.PI * 2,  // individual phase offset
         moveTimer: 0,                             // general timer for movement state
@@ -4669,12 +4937,40 @@ function updateIntelDisplay() {
     setEl('intel-air', game.intel.air);
     setEl('intel-hp', Math.floor(game.intel.totalHP));
     setEl('next-wave-num', game.wave + 1);
-    
-    // Threat bar based on total HP
+
+    // Specjalne jednostki
+    const specialNames = {
+        'WITCH_DOCTOR':    '🔮 Znachor — tarcza nieśmiertelności dla sojuszników',
+        'ARMORED':         '🛡 Pancerny — wysoka HP, strzela do wież',
+        'BOMBER':          '💣 Bombowiec — atakuje wieże z powietrza',
+        'CARRIER':         '🚢 Nosiciel — co 8s spawnuje oddział',
+        'INVINCIBLE':      '⚡ Niezniszczalny — cykl tarczy co 4s',
+        'REGENERATOR':     '💊 Regenerator — leczy sojuszników w locie',
+        'REGENERATOR_OLD': '💚 Regenerator — aura leczenia'
+    };
+    const block = document.getElementById('intel-specials-block');
+    const list = document.getElementById('intel-specials-list');
+    const sp = game.intel.specials || {};
+    const keys = Object.keys(sp).filter(k => sp[k] > 0);
+    if (block && list) {
+        if (keys.length > 0) {
+            block.style.display = 'block';
+            list.innerHTML = keys.map(k =>
+                `<div>× ${sp[k]} ${specialNames[k] || k}</div>`
+            ).join('');
+        } else {
+            block.style.display = 'none';
+        }
+    }
+
+    // Threat bar
     const maxExpectedHP = 3000 + game.wave * 4000;
     const fill = Math.min(100, (game.intel.totalHP / maxExpectedHP) * 100);
-    const el = document.getElementById('threat-fill');
-    if (el) el.style.width = fill + '%';
+    const threatFill = document.getElementById('threat-fill');
+    if (threatFill) {
+        threatFill.style.width = fill + '%';
+        threatFill.style.background = fill > 75 ? '#ff2222' : fill > 40 ? '#ff8800' : '#22ff44';
+    }
 }
 
 function updateCombatIntel() {
@@ -4973,91 +5269,81 @@ function buildMercMiniPanel() {
 
 function renderMercZones() {
     if (game.mode !== 'COMBAT') return;
-    const now = Date.now();
 
-    // Rysuj strefy wszystkich najemników
+    // Rysuj zatwierdzone strefy wszystkich najemników
     for (const m of game.mercs) {
         if (!m.zone) continue;
         const z = m.zone;
-        const isSelected = game.selectedMerc === m;
-        const alpha = game.paused ? 0.35 : 0.15;
+        const sel = (game.selectedMerc === m);
 
-        // Wypełnienie strefy
-        ctx.fillStyle = `rgba(100,180,100,${alpha})`;
+        // Wypełnienie
+        ctx.fillStyle = sel ? 'rgba(100,255,100,0.15)' : 'rgba(80,180,80,0.08)';
         ctx.fillRect(z.x, z.y, z.w, z.h);
 
-        // Obramowanie
-        ctx.strokeStyle = isSelected ? '#ffffff' : 'rgba(100,220,100,0.7)';
-        ctx.lineWidth = isSelected ? 2 : 1;
-        ctx.setLineDash(game.paused ? [] : [5, 5]);
+        // Ramka
+        ctx.strokeStyle = sel ? '#aaffaa' : 'rgba(80,180,80,0.5)';
+        ctx.lineWidth = sel ? 2 : 1;
+        ctx.setLineDash(game.paused ? [] : [6, 4]);
         ctx.strokeRect(z.x, z.y, z.w, z.h);
         ctx.setLineDash([]);
 
-        // Linia od najemnika do centrum strefy (tylko podczas pauzy)
-        if (game.paused) {
-            ctx.strokeStyle = 'rgba(150,255,150,0.5)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(m.x, m.y);
-            ctx.lineTo(z.cx, z.cy);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            // Krzyżyk w centrum
-            ctx.strokeStyle = 'rgba(150,255,150,0.8)';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(z.cx-6, z.cy); ctx.lineTo(z.cx+6, z.cy); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(z.cx, z.cy-6); ctx.lineTo(z.cx, z.cy+6); ctx.stroke();
-        }
-
-        // Nazwa najemnika przy strefie
-        if (game.paused) {
-            ctx.fillStyle = 'rgba(150,255,150,0.9)';
-            ctx.font = '10px monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText(m.name.split(' ')[0], z.x + 3, z.y + 12);
-        }
-    }
-
-    // Podgląd rysowanej strefy
-    if (game.drawingZone) {
-        const z = game.drawingZone;
-        const x1 = Math.min(z.x1, z.x2), y1 = Math.min(z.y1, z.y2);
-        const x2 = Math.max(z.x1, z.x2), y2 = Math.max(z.y1, z.y2);
-        ctx.fillStyle = 'rgba(100,200,100,0.2)';
-        ctx.fillRect(x1, y1, x2-x1, y2-y1);
-        ctx.strokeStyle = '#88ff88';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 3]);
-        ctx.strokeRect(x1, y1, x2-x1, y2-y1);
-        ctx.setLineDash([]);
-        // Wymiary
-        ctx.fillStyle = '#88ff88';
+        // Nazwa w rogu
+        ctx.fillStyle = 'rgba(100,220,100,0.8)';
         ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(Math.round(x2-x1) + '×' + Math.round(y2-y1), (x1+x2)/2, y1-4);
+        ctx.textAlign = 'left';
+        ctx.fillText(m.name.split(' ')[0], z.x + 4, z.y + 13);
+        ctx.textAlign = 'left';
     }
 
-    // Zaznaczony najemnik — pulsująca biała obwódka
-    if (game.selectedMerc && game.paused) {
+    // Podgląd AKTUALNIE rysowanej strefy
+    if (game.drawingZone && game.selectedMerc) {
+        const z = game.drawingZone;
+        const x = Math.min(z.x1, z.x2);
+        const y = Math.min(z.y1, z.y2);
+        const w = Math.abs(z.x2 - z.x1);
+        const h = Math.abs(z.y2 - z.y1);
+
+        // Wypełnienie
+        ctx.fillStyle = 'rgba(100,255,100,0.12)';
+        ctx.fillRect(x, y, w, h);
+
+        // Ramka rysowana — biała przerywana
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 3]);
+        ctx.strokeRect(x, y, w, h);
+        ctx.setLineDash([]);
+
+        // Rozmiar w środku
+        if (w > 60 && h > 20) {
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(Math.round(w) + '×' + Math.round(h), x + w/2, y + h/2);
+            ctx.textAlign = 'left';
+        }
+    }
+
+    // Zaznaczony najemnik — pulsująca obwódka
+    if (game.selectedMerc) {
         const m = game.selectedMerc;
-        const pulse = 0.5 + Math.abs(Math.sin(now * 0.008)) * 0.5;
-        ctx.strokeStyle = `rgba(255,255,255,${pulse})`;
+        const pulse = 0.5 + Math.abs(Math.sin(Date.now() * 0.006)) * 0.5;
+        ctx.strokeStyle = 'rgba(255,255,255,' + pulse + ')';
         ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(m.x, m.y, m.size + 8, 0, Math.PI*2); ctx.stroke();
-        // Etykieta
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(m.name, m.x, m.y - m.size - 14);
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '9px monospace';
-        ctx.fillText(game.drawingZone ? 'KLIKNIJ → 2. narożnik' : 'KLIKNIJ → wyznacz strefę', m.x, m.y - m.size - 4);
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.size + 8, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Instrukcja
+        if (!game.drawingZone) {
+            ctx.fillStyle = 'rgba(200,255,200,0.9)';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('PRZECIĄGNIJ → strefa', m.x, m.y - m.size - 12);
+            ctx.textAlign = 'left';
+        }
     }
-
-    ctx.textAlign = 'left';
 }
-
 function renderMines() {
     if (!game.mines) return;
     const now = Date.now();
@@ -5203,6 +5489,7 @@ window.onMapChange = onMapChange;
 window.hireMerc = hireMerc;
 window.summonMonster = summonMonster;
 window.buildMineList = buildMineList;
+window.togglePause = togglePause;
 window.enterEditor = enterEditor;
 window.exitEditor = exitEditor;
 window.setEditorTool = setEditorTool;
