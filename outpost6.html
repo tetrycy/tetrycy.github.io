@@ -703,6 +703,14 @@ function handleAction() {
         game.holograms = [];
         game.shields = [];
         game.mercs = [];
+        game.enemies = [];
+        game.projectiles = [];
+        game.grenades = [];
+        game.rockets = [];
+        game.towerGrenades = [];
+        game.explosions = [];
+        game.burnZones = [];
+        game.poisonClouds = [];
         
         if (game.selectedCustomMap) loadCustomMap(game.selectedCustomMap);
         else generateStrategicMap();
@@ -1081,57 +1089,35 @@ function spawnWaveLogic() {
     const total = r1+r2+r3;
 
     // Spawn 1-2 regenerators from wave 2 onwards
-    const regenCount = game.wave >= 2 ? 1 + (game.wave >= 5 ? 1 : 0) : 0;
-    for (let i = 0; i < regenCount; i++) {
-        const regenHp = 300 + game.wave * 80;
-        const regen = createEnemy(regenHp, 'LAND');
-        regen.isRegenerator = true;
-        regen.regenRadius = 160;
-        regen.regenAmount = 1.5 + game.wave * 0.3; // HP per frame to nearby allies
-        regen.regenCooldown = 0;
-        regen.color = '#00ffaa';
-        // Rounder shape for regenerator
-        regen.vertices = [];
-        const pts = 12;
-        for (let j = 0; j < pts; j++) {
-            const a = (j / pts) * Math.PI * 2;
-            const d = regen.size * (1.1 + Math.sin(j * 2.3) * 0.15);
-            regen.vertices.push({ x: Math.cos(a)*d, y: Math.sin(a)*d, bD: d });
-        }
-        game.enemies.push(regen);
-        game.intel.land++;
-        game.intel.totalHP += regenHp;
-        pool -= regenHp;
-    }
+    // (Regeneratory są teraz w bloku specials poniżej)
 
-    // Spawn special enemy types (wave 2+)
-    if (game.wave >= 2) {
-        const specials = [
-            { type: 'WITCH_DOCTOR', chance: 0.12, hp: 200 + game.wave * 30, cost: 300 },
-            { type: 'ARMORED',      chance: 0.15, hp: 800 + game.wave * 80, cost: 900 },
-            { type: 'BOMBER',       chance: 0.10, hp: 300 + game.wave * 20, cost: 400 },
-            { type: 'CARRIER',      chance: 0.10, hp: 600 + game.wave * 40, cost: 700 },
-            { type: 'INVINCIBLE',   chance: 0.12, hp: 400 + game.wave * 30, cost: 500 },
-            { type: 'REGENERATOR',  chance: 0.14, hp: 150 + game.wave * 15, cost: 200 },
-        ];
-        specials.forEach(sp => {
-            if (Math.random() < sp.chance && pool > sp.cost) {
-                // Ustaw moveType według typu
-                const flyTypes = ['REGENERATOR', 'BOMBER', 'CARRIER'];
-                const moveType = flyTypes.includes(sp.type) ? 'FLY' : 'LAND';
-                const e = createEnemyTyped(sp.type, sp.hp, moveType);
-                game.enemies.push(e);
-                game.intel.totalHP += sp.hp;
-                // Zlicz do odpowiedniej kategorii
-                if (moveType === 'FLY') game.intel.air++;
-                else game.intel.land++;
-                // Zlicz specjalne typy osobno
-                if (!game.intel.specials) game.intel.specials = {};
-                game.intel.specials[sp.type] = (game.intel.specials[sp.type] || 0) + 1;
-                pool -= sp.cost;
-            }
-        });
-    }
+    // Spawn special enemy types — od fali 1, szanse rosną z falą
+    // wave 1: tylko lżejsze typy; wave 3+: cięższe; wave 5+: INVINCIBLE
+    const w = game.wave;
+    const specials = [
+        // lekkie — pojawiają się od fali 1
+        { type: 'REGENERATOR', minWave: 1, chance: Math.min(0.55, 0.20 + w * 0.08), hp: 150 + w * 15,  cost: 200, moveType: 'FLY'  },
+        { type: 'WITCH_DOCTOR',minWave: 1, chance: Math.min(0.50, 0.18 + w * 0.07), hp: 200 + w * 30,  cost: 300, moveType: 'LAND' },
+        { type: 'BOMBER',      minWave: 1, chance: Math.min(0.45, 0.15 + w * 0.06), hp: 300 + w * 20,  cost: 400, moveType: 'FLY'  },
+        // średnie — od fali 2
+        { type: 'CARRIER',     minWave: 2, chance: Math.min(0.45, 0.10 + w * 0.07), hp: 600 + w * 40,  cost: 700, moveType: 'FLY'  },
+        { type: 'ARMORED',     minWave: 2, chance: Math.min(0.50, 0.12 + w * 0.08), hp: 800 + w * 80,  cost: 900, moveType: 'LAND' },
+        // ciężkie — od fali 3
+        { type: 'INVINCIBLE',  minWave: 3, chance: Math.min(0.40, 0.05 + w * 0.06), hp: 400 + w * 30,  cost: 500, moveType: 'LAND' },
+    ];
+    specials.forEach(sp => {
+        if (w < sp.minWave) return;
+        if (Math.random() < sp.chance && pool > sp.cost) {
+            const e = createEnemyTyped(sp.type, sp.hp, sp.moveType);
+            game.enemies.push(e);
+            game.intel.totalHP += sp.hp;
+            if (sp.moveType === 'FLY') game.intel.air++;
+            else game.intel.land++;
+            if (!game.intel.specials) game.intel.specials = {};
+            game.intel.specials[sp.type] = (game.intel.specials[sp.type] || 0) + 1;
+            pool -= sp.cost;
+        }
+    });
 
     while (pool > 0) {
         const r = Math.random();
@@ -1983,6 +1969,9 @@ function gameLoop() {
         stack.forEach((l,i) => ctx.fillText(l.trim().slice(0,80), CONFIG.WIDTH/2, CONFIG.HEIGHT/2 + 40 + i*24));
         ctx.textAlign = 'left';
         logTerminal('CRASH: ' + err.message);
+        ctx.globalAlpha = 1.0; // reset po crashu
+        ctx.textAlign = 'left';
+        ctx.setLineDash([]);
     }
     requestAnimationFrame(gameLoop);
 }
@@ -2226,15 +2215,16 @@ function updateCombat() {
         if (e.stunned) {
             e.stunTimer = (e.stunTimer || 0) - 1;
             if (e.stunTimer <= 0) { e.stunned = false; e.speed = e.originalSpeed || e.speed; }
-            
-            ctx.strokeStyle = "rgba(0,200,255,0.7)";
-            ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.stroke();
-            for (let s = 0; s < 3; s++) {
-                const angle = Math.random() * Math.PI * 2;
-                const dist = e.size + Math.random() * 10;
-                ctx.fillStyle = "rgba(100,200,255,0.8)";
-                ctx.fillRect(e.x + Math.cos(angle)*dist - 1, e.y + Math.sin(angle)*dist - 1, 2, 2);
+            if (e.hp > 0) {
+                ctx.strokeStyle = "rgba(0,200,255,0.7)";
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(e.x, e.y, e.size + 5, 0, Math.PI * 2); ctx.stroke();
+                for (let s = 0; s < 3; s++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = e.size + Math.random() * 10;
+                    ctx.fillStyle = "rgba(100,200,255,0.8)";
+                    ctx.fillRect(e.x + Math.cos(angle)*dist - 1, e.y + Math.sin(angle)*dist - 1, 2, 2);
+                }
             }
         }
         
@@ -2431,6 +2421,7 @@ function renderAnomalies() {
 }
 
 function renderEnemySpecial(e) {
+    if (e.hp <= 0) return;
     const t = e.enemyType;
     if (!t || t === 'BASIC') return;
 
@@ -2558,6 +2549,7 @@ function renderEnemySpecial(e) {
 
 function renderEnemies() {
     game.enemies.forEach(e => {
+        if (e.hp <= 0) return; // nie renderuj martwych
         // REGENERATOR: pulsing heal aura
         if (e.isRegenerator) {
             const pulse = 0.3 + Math.sin(Date.now() * 0.004) * 0.25;
@@ -3136,17 +3128,28 @@ function handleInput() {
             return;
         }
         const cfg = CONFIG.DEFENSE[game.selected];
-        if (!cfg) return; // selected may be a weapon or unknown key
+        if (!cfg) {
+            if (!game.selected) logTerminal('Wybierz strukturę z listy TOWERS');
+            return;
+        }
         if (cfg.type === 'core' && game.corePlaced) return;
         if (game.money >= cfg.cost) {
             game.entities.push({ ...cfg, x: game.mouse.x, y: game.mouse.y, curHP: cfg.hp, lastFire: 0 });
             if (cfg.type === 'core') {
                 game.corePlaced = true;
                 game.player.x = game.mouse.x; game.player.y = game.mouse.y;
-                game.hp = cfg.hp; // HP zależy od wybranego HQ
+                game.hp = cfg.hp;
                 game.coreType = cfg.coreType || 'standard';
                 game.coreHealRadius = cfg.healRadius || 0;
                 game.coreHealRate = cfg.healRate || 0;
+                logTerminal('HQ postawione! Teraz wieżyczki lub START.');
+                // Auto-select SENTRY po postawieniu HQ
+                game.selected = 'SENTRY';
+                setTimeout(() => {
+                    document.querySelectorAll('.tower-btn').forEach(b => b.classList.remove('selected'));
+                    const btns = document.querySelectorAll('#tower-list-prep .tower-btn');
+                    if (btns[1]) btns[1].classList.add('selected'); // SENTRY jest drugi
+                }, 0);
             }
             else game.money -= cfg.cost;
             updateStatsUI();
@@ -3901,9 +3904,10 @@ function generateMercRoster() {
         do { name = MERC_NAMES[Math.floor(Math.random() * MERC_NAMES.length)]; } while (usedNames.has(name));
         usedNames.add(name);
 
-        const hp = 200 + Math.floor(Math.random() * 400);
+        const waveMult = 1 + (game.wave || 0) * 0.18;
+        const hp = Math.floor((250 + Math.floor(Math.random() * 350)) * waveMult);
         const speed = (1.2 + Math.random() * 0.8) * spec.speedMult;
-        const courage = Math.round((0.1 + Math.random() * 0.85) * 100) / 100;
+        const courage = Math.round((0.08 + Math.random() * 0.27) * 100) / 100; // 8-35% HP threshold
 
         // ~33% chance of dual weapons — pick a different second weapon
         let weapon2 = null;
@@ -4047,16 +4051,22 @@ function updateMercs() {
         if (nearest) {
             m.facing = Math.atan2(nearest.y - m.y, nearest.x - m.x);
 
-            // Strefa — nie wychodź poza granice nawet za wrogiem
-            const preferDist = m.preferDist || 80;
-            const engageRange = m.weapon.range * 0.75;
-            const targetDist = Math.min(preferDist, engageRange);
+            // Preferowana odległość walki: 80% zasięgu broni (kiting)
+            const weapRange = m.weapon.range;
+            const preferDist = weapRange * 0.80;
+            const tooClose   = weapRange * 0.45; // jeśli wróg bliżej — cofaj się
 
-            if (nearestDist > targetDist + 20) {
+            let dx = 0, dy = 0;
+            if (nearestDist < tooClose) {
+                // Za blisko — wycofaj się od wroga
+                const awayAng = m.facing + Math.PI;
+                dx = Math.cos(awayAng);
+                dy = Math.sin(awayAng);
+            } else if (nearestDist > preferDist + 25) {
+                // Za daleko — podejdź bliżej po orbicie
                 const orbitAng = m.facing + Math.PI + m.orbitOffset;
-                const destX = nearest.x + Math.cos(orbitAng) * targetDist * 0.3;
-                const destY = nearest.y + Math.sin(orbitAng) * targetDist * 0.3;
-                // W strefie — sprawdź czy dest jest w strefie
+                const destX = nearest.x + Math.cos(orbitAng) * preferDist;
+                const destY = nearest.y + Math.sin(orbitAng) * preferDist;
                 let canMove = true;
                 if (hasZone) {
                     canMove = destX >= m.zone.x && destX <= m.zone.x+m.zone.w &&
@@ -4064,19 +4074,33 @@ function updateMercs() {
                 }
                 if (canMove) {
                     const toDestAng = Math.atan2(destY - m.y, destX - m.x);
-                    let dx = Math.cos(toDestAng), dy = Math.sin(toDestAng);
-                    if (willCollideWithLake(m.x, m.y, dx * m.speed, dy * m.speed, m.size, m.moveType)) {
-                        const perps = [{dx:-dy,dy:dx},{dx:dy,dy:-dx}];
-                        for (const alt of perps) {
-                            if (!willCollideWithLake(m.x, m.y, alt.dx*m.speed, alt.dy*m.speed, m.size, m.moveType)) {
-                                dx = alt.dx; dy = alt.dy; break;
-                            }
+                    dx = Math.cos(toDestAng);
+                    dy = Math.sin(toDestAng);
+                }
+            } else {
+                // W zasięgu — strafuj bokiem żeby nie stać w miejscu
+                const strafeAng = m.facing + Math.PI * 0.5 + m.orbitOffset;
+                dx = Math.cos(strafeAng) * 0.4;
+                dy = Math.sin(strafeAng) * 0.4;
+            }
+
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                dx /= len; dy /= len;
+                if (willCollideWithLake(m.x, m.y, dx * m.speed, dy * m.speed, m.size, m.moveType)) {
+                    const perps = [{dx:-dy,dy:dx},{dx:dy,dy:-dx}];
+                    for (const alt of perps) {
+                        if (!willCollideWithLake(m.x, m.y, alt.dx*m.speed, alt.dy*m.speed, m.size, m.moveType)) {
+                            dx = alt.dx; dy = alt.dy; break;
                         }
                     }
-                    m.x += dx * m.speed;
-                    m.y += dy * m.speed;
                 }
+                m.x += dx * m.speed;
+                m.y += dy * m.speed;
             }
+
+            // Mała regeneracja HP (2 HP/s)
+            if (game.frame % 60 === 0 && m.hp < m.maxHp) m.hp = Math.min(m.maxHp, m.hp + 2);
 
             // Fire — both weapons independently
             m.fireCooldown--;
@@ -4219,6 +4243,7 @@ function fireMercWeapon(m, target, wpn) {
 // ── RENDER ──────────────────────────────────────
 function renderMercs() {
     game.mercs.forEach(m => {
+        if (m.dead) return; // nie renderuj zabitych
         // Projectiles
         m.projectiles.forEach(p => {
             ctx.fillStyle = p.color;
@@ -5482,7 +5507,14 @@ function initPrepUI() {
     buildUpgradeGrid('upg-grid-prep');
     updateIntelDisplay();
     showPanel('prep');
-    switchTab('prep', 'mercs');
+    switchTab('prep', 'towers');
+    // Auto-select HQ BUNKER żeby gracz mógł od razu klikać na mapę
+    game.selected = 'CORE';
+    // Podświetl button
+    setTimeout(() => {
+        const firstBtn = document.querySelector('#tower-list-prep .tower-btn');
+        if (firstBtn) firstBtn.classList.add('selected');
+    }, 0);
 }
 
 function initCombatUI() {
