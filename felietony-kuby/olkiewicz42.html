@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jak co środę... JAKUB OLKIEWICZ #42</title>
+  <meta name="description" content="Felieton o barażach i ich marginalizacji" />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Jak co środę... JAKUB OLKIEWICZ #42">
+  <meta property="og:description" content="Jak co środę... JAKUB OLKIEWICZ #42">
+  <meta property="og:url" content="Jak co środę... JAKUB OLKIEWICZ #42">
+  <meta property="og:site_name" content="Jak co środę... JAKUB OLKIEWICZ #42">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111111; --muted:#6e6e6e; --link:#1a1a1a; --accent:#b4162a;
+      --maxw: 700px;
+      --space-1: .5rem; --space-2: 1rem; --space-3: 1.5rem; --space-4: 2rem; --radius: 10px;
+    }
+
+    html{ color-scheme: light dark; }
+    body{
+      margin:0;
+      background:var(--bg); color:var(--fg);
+      font-family: "Libre Baskerville", serif;
+      line-height:1.75;
+      font-size: clamp(16px, 1.4vw + 0.5rem, 19px);
+    }
+
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding: var(--space-4) var(--space-2); }
+
+    /* Skip link */
+    .skip{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
+    .skip:focus{ left: var(--space-2); top: var(--space-2); width:auto; height:auto; background:#ffd; padding:.5rem .75rem; outline:2px solid #000; }
+
+    nav{
+      display:flex; gap: .75rem; justify-content:center; flex-wrap:wrap;
+      margin-bottom: var(--space-4);
+    }
+    nav a{
+      text-decoration:none; color:var(--link);
+      padding:.25rem .5rem; border-radius:.4rem;
+      outline-offset:3px;
+    }
+    nav a:hover, nav a:focus{ text-decoration:underline; }
+    nav a[aria-current="page"]{ font-weight:700; }
+
+    h1{ font-size: clamp(1.8rem, 2.8vw + 1rem, 2.6rem); line-height:1.2; margin: 0 0 .3em; text-align:center; }
+    time{ display:block; color:var(--muted); margin-bottom: var(--space-2); font-size:.95em; text-align:center; }
+
+    p{ margin: 0 0 1.2em; }
+
+    /* Audio player */
+    .audio-player{ 
+      text-align:center; 
+      margin: var(--space-2) 0 var(--space-3); 
+    }
+
+    .audio-player audio{
+      max-width: 100%;
+      width: 500px;
+      outline-color: var(--accent);
+    }
+    /* Ukryj timer audio */
+    .audio-player audio::-webkit-media-controls-current-time-display,
+    .audio-player audio::-webkit-media-controls-time-remaining-display {
+      display: none;
+    }
+
+    /* CTA (opcjonalnie) */
+    .cta{ text-align:center; margin: var(--space-4) 0 var(--space-3); }
+    .cta a{
+      display:inline-block; padding: .9rem 1.1rem; border-radius: .6rem;
+      border:2px solid var(--accent); color: var(--accent); font-weight:700; font-size: clamp(1.05rem, 1.2vw + .6rem, 1.35rem);
+      text-decoration:none; transition: transform .08s ease, background .2s ease, color .2s ease;
+    }
+    .cta a:hover, .cta a:focus{ background: var(--accent); color:#fff; transform: translateY(-1px); }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0f0f10; --fg:#f2f2f2; --muted:#aaaaaa; --link:#e6e6e6; --accent:#ff4d5a; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Przejdź do treści</a>
+
+  <div class="wrap">
+
+    <main id="main" role="main">
+      <article itemscope itemtype="https://schema.org/Article">
+        <header>
+          <h1 itemprop="headline">Jak co środę... JAKUB OLKIEWICZ #42</h1>
+          <time itemprop="datePublished" datetime="2026-05-13">13.05.2026</time>
+          
+          <!-- Audio player -->
+          <div class="audio-player">
+            <audio controls preload="metadata">
+              <source src="olkiaudio30.mp3" type="audio/mpeg">
+              Twoja przeglądarka nie obsługuje odtwarzacza audio.
+            </audio>
+          </div>
+        </header>
+
+        <div itemprop="articleBody">
+          <p>Miarą dojrzałości kibica klubów z I i II ligi jest jego podejście do tematu meczów barażowych.</p>
+          <p>Będąc jeszcze dość młodym, bo jakoś 32-letnim fanem Łódzkiego Klubu Sportowego, nienawidzłem meczów barażowych, a nienawidziłem ich tym bardziej, im więcej powtórek wbiegającego w pole karne Serhija Krykuna serwowały wszystkie dostępne telewizje. Biorąc pod uwagę, że sensacyjną domową porażkę ŁKS-u media trawiły przez dobrych kilka chwil, zanim zaczęły kręcić materiały o niespodziewanym beniaminku z Łęcznej, nienawiść rosła do niespotykanych rozmiarów i zapewniałem w duchu sam siebie, że prędzej uwierzę w czysty sezon piłkarski w latach dziewięćdziesiątych niż w to, że baraże mają sens.</p>
+          <p>Ale potem się przyzwyczaiłem, tak jak każdy człowiek potrafi szybko przyzwyczaić się do towarzyszącego mu otoczenia. To absolutna klasyka, siedź w totalnych ciemnościach, a z czasem zaczniesz widzieć kształty, siedź w niewyobrażalnym przepychu, a zacznie ci odwalać korba, siedź w sektorze gości trzy godziny po końcowym gwizdku, a nawet i najspokojniejszemu sympatykowi dobrego futbolu pisuar zacznie się wydawać dziwnie prowokacyjny. Ja więc, a w ślad za mną pewnie też spore grono kibiców ŁKS-u, Wisły Kraków czy Miedzi Legnica, przegryzłem się z ideą barażowych spotkań. Zresztą, trudno było się z tą wizją nie oswoić, gdy cały czas dostępny był scenariusz rzeszowski.</p>
+          <p>Rzeszów bowiem w pewnym momencie był świadkiem tego, co nazwałbym doznaniem granicznym w życiu piłkarskim. Doszło do finału baraży o awans do I ligi - to jeszcze nazwałbym czymś w miarę strawnym dla wyćwiczonego organizmu. Ale doszło też w tym finale baraży do meczu derbowego między Stalą a Resovią. Co więcej, w tym meczu derbowym doszło do dogrywki, a potem do rzutów karnych. W starciu o prymat w mieście, doszła jeszcze stawka całego długiego sezonu, który mógł pójść w diabły za sprawą jednej niepoprawnie wykonanej jedenastki. Wydawało się wówczas, że gra toczy się nie o awans do I ligi, ale o losy całych pokoleń, o losy Rzeszowa, o to, czy pięć pokoleń w przód dzieci będą jeszcze pamiętać, że był ktoś taki, jak przegrany w tym boju, czy jednak przyszłe generacje będą znać jedynie zwycięzców, pokonanych grzebiąc gdzieś w zaginionych almanachach bukmacherskich.</p>
+          <p>Gdy śledziłem tamtą radość kibiców Resovii i tamten dramat kibiców Stali, pomyślałem sobie, że baraże w takiej formie to jakiś koszmar. Przecież Stal się już z tego nigdy nie dźwignie, a Resovia po czymś takim już na stale odfrunie w kierunku Ligi Mistrzów, a może i Pucharu Interkontynentalnego.</p>
+          <p>A gówno.</p>
+          <p>Dziś Stal jest poukładanym pierwszoligowcem, a Resovia od dłuższego czasu boryka się z problemami, których nie mogła nawet przewidywać, świętując na murawie derbowe zwycięstwo wieńczące sezon promocją do I ligi. Oczywiście poziom niżej, bo jakżeby inaczej.</p>
+          <p>Wtedy uświadomiłem sobie, że przegrane baraże istotnie wypalają dziurę w sercu na cale życie, powodują trwający kilkadziesiąt miesięcy ból duszy, skracają życie wszystkich fanatyków o czas liczony w miesiącach, a niektóre kluby są w stanie rozłożyć na długie lata. Ale jednak: baraże nie kończą świata. Jest po barażach życie, ba, jest po przegranych barażach nawet awans do Ekstraklasy, czego sam byłem świadkiem. Słynna w Łodzi jest historia spisana w genialny sposób przez Remka Piotrowskiego o koszulkach "REPREZENTACJA ŁODZI W EKSTRAKLASIE" przygotowanych na świętowanie wygranego barażu z Górnikiem Łęczna. Trzy lata leżały w szafie. Ale potem je wyjęliśmy, gdy wracając z Gdyni najweselszym pociągiem w historii PKP świętowaliśmy powrót do elity.</p>
+          <p>A skoro baraże jednak nie kończą żadnej historii, no to obiektywnie: są piekielnie mocną przyprawą do sezonu, a już na pewno do jego ostatniej części. Pół ligi przez 85% rozgrywek może się łudzić, że psim swędem wkradnie się na odległe szóste miejsce, a przecież z odległego szóstego miejsca można nawet awansować, spytajcie Krykuna, spytajcie Górnika Łęczna. Ostatnie kolejki, nawet gdy na czele wyścigu jest już rozstrzygnięta pierwsza dwójka, to wciąż potężne emocje związane choćby z rozstawieniami. Co ważne - szczebel ligowy nie jest nawet jakiś bardzo istotny, przecież te pamiętne derby Rzeszowa toczyły się na finiszu II ligi, a nie zaplecza Ekstraklasy. Poza tym duże marki w Polsce są tak liczne, że jak dobrze pocelujesz kamieniem - trafisz w jedną niezależnie od miejsca, z którego rzucasz. Weźmy nawet nadchodzące scenariusze - KSZO Ostrowiec Świętokrzyski grające z Zagłębiem Sosnowiec? A może Zawisza Bydgoszcz, krzyżujący miecze z Resovią? Nie wspominam już oczywiście o tym, że bardzo realny przez dużą część sezonu pozostawał baraż Śląsk - Ruch na stadionie we Wrocławiu, gdzie z powodzeniem mogłby przyjść 40 tysięcy ludzi, oglądać jak jedni dołączają do krajowej elity, a drudzy zagrzebują się w I-ligowym czyśćcu.</p>
+          <p>Argumentów na obronę baraży znajdziemy więcej, gdy wyściubimy nos poza Polskę - to co wydarzyło się na totalnie ogórkowym poziomie National League z udziałem Rochdale to przecież czyste czary. A w Anglii takie czyste czary dzieją się praktycznie co roku, jeśli nie w Championship, to w League Two, jeśli nie w League Two, to właśnie w jakiejś Vanarama South.</p>
+          <p>Moim marzeniem, gdy już oczywiście oswoiłem się z bliznami po golu Krykuna, było budowanie prestiżu meczów barażowych na modłę znaną z pucharowej majówki. Ten 2 maja, stały termin, Stadion Narodowy - to wszystko zyskało już swój czar, to ma już swoją tradycję, są już memy, są już charakterystyczne odzywki typu: "no to w tym roku majówka wolna". Wyobrażałem sobie, że PZPN i telewizje zaangażowane w transmitowanie niższych lig z barażowych starć zrobią sobie taki "Puchar Polski Forte", gdzie może nie uda się zrobić show na kilkadziesiąt tysięcy widzów na żywo, ale jednak - wspólnie zbudujemy coś naprawdę uroczego i wyczekiwanego przez fanów dotkniętych kryzysem bezekstraklasowości.</p>
+          <p>Napisać, że "tak się jednak nie stało", to właściwie nie napisać nic. Rozumiem, że sytuacja nie zawsze sprzyja - o ile nie było absolutnie żadnych problemów ze sprzedażą samograja, jakim było starcie Wisły Kraków z Puszczą Niepołomice z pamiętnymi dwiema asystami Kevina Komara, o tyle ściągnąć ludzi na KKS Kalisz ze Stalą Stalowa Wola nie udało się nawet władzom samego KKS-u. Wiem zresztą doskonale, że ryzyko w tym wypadku jest o wiele większe, niż w przypadku Pucharu Polski. Niech obecnie finałową parę w walce o Ekstraklasę stworzą Wieczysta z Puszczą, a zamiast wynajmować Stadion Narodowy można byłoby pomyśleć o bocznym boisku Antalyasporu już w trakcie tureckiego zgrupowania przyszłych klubów Ekstraklasy.</p>
+          <p>Ale mimo wszystko liczyłem na choćby strzępy szacunku. Terminarz barażowy to tymczasem wielkie upychanie kolanem w ciasnym terminarzu przedmundialowym. Najnormalniej tutaj wygląda kwestia półfinałów barażu o Ekstraklasę: wielu kibiców narzeka, że czwartek o 17.30 to godziny szczytu i wielu fanatyków na mecz dotrze w połowie, natomiast rozumiem, że musimy się zmieścić w dość wąskim okienku pomiędzy końcem ligi, a początkiem przygotowan do Ekstraklasy. Gdzieś po drodze dzieje się jeszcze mundial z rekordową liczbą spotkań, uznajmy, że nie ma się do czego przyczepić. Ale już finał grany jako przystawka do meczu reprezentacji Polski? Od początku dziwiłem się, że kadra wyjdzie na boisku już 31 maja, zdziwiłem się jeszcze bardziej, że o 17.30. Ale gdy dokładamy do tego baraż o 20.45? Jak rozumiem - władze związkowe zostawiły sobie bufor, żeby przelecieć z jednego meczu na drugi, ale kurczę, co z kibicami? Naprawdę nie było innej możliwości? Naprawdę nie było opcji, by dać finalistom walki o Ekstraklasę tę chwilę wyłącznie dla nich, zamiast formuły "a jak komuś mało kadry, to tu jest jeszcze ochłap z niższej ligi"? Całe szczęście, że ten Śląsk Wrocław już awansował - bo tam dochodzi jeszcze kwestia dostępności stadionu, wstępnie ewentualny finał baraży we Wrocławiu był planowany na poniedziałek (!) o godzinie 15.00 (!!!).</p>
+          <p>W II lidze z kolei już nawet nie ma robienia dobrej miny do złej gry. Sandecja, która kręci obecnie ekstraklasowe frekwencje na swoim wyczekiwanym, nowym stadionie, może być zmuszona do rozegrania meczów w tzw. "prime time", o ile przez "prime time" rozumiemy najlepszy czas dla emerytów, pacjentów szpitali i dzieciaków po wystawieniu ocen. Półfinały baraży o Betlcic I ligę zaplanowano na wtorek, pierwszy o godzinie 13.00, drugi o 16.00. Trzeba się streszczać, bo dzień później Polska gra z Nigerią i jak znam życie - trzeba po prostu już we wtorek ugościć nigeryjską delegację w Warszawie. Finał? 6 czerwca, sobota, godzina 13.45. Optymista powie: cały wieczór do świętowania. Pesymista powie: kurde, serio?</p>
+          <p>Już nawet argument świateł średnio przekonuje - przecież to będzie czerwiec, słoneczko pewnie do 20.30 przynajmniej. Sami, bez przymusu, bez wyraźnych przyczyn pakujemy najważniejsze mecze w sezonie na takie terminy, gdzie i frekwencja będzie dużo niższa, i zainteresowanie mediów. Wiem: to mogą być paździerze, w dodatku zdaję sobie sprawę, że finał Podhale Nowy Targ - rezerwy Śląska Wrocław to nie jest spełnienie marzeń każdego europejskiego groundhoppera. Ale nawet te mniejsze kluby i mniejsze firmy zasługują na minimalne ułatwienia, zamiast kłód rzucanych pod nogi. Rozumiem, że jest mundial, że są dwa mecze reprezentacji Polski, że jest ciasno z terminami, ciasno z transmisjami, że Cezary Kulesza nie może jednocześnie budować mostów między polskim i nigeryjskim futbolem oraz wręczać nagród pocieszenia dla spadkowiczów z II ligi. Ale jestem niemal pewny, że zadecydowała po prostu bardzo, bardzo niska pozycja na liście związkowych priorytetów.</p>
+          <p>- Hej, Kuba, ale wszyscy mają to w dupie.</p>
+          <p>Być może! Ale ja tu jestem właśnie po to, by pamiętać, że gospodarzem barażowych spotkań może być wielka firma, jaką jest Ruch Chorzów, że może do nich (choć nie na Stadion Śląski) pojechać Polonia Warszawa, że w II lidze Sandecja może być gospodarzem we wtorek o 13.00, że w barażach o awans do Betclic II ligi, które jeszcze nawet teminarza nie mają, mogą grać takie marki jak Zagłębie Sosnowiec, Zawisza Bydgoszcz, KSZO lub Avia. Możemy założyć, że im się od życia nic nie należy, niech awansują do Ekstraklasy, to nie będą grać we wtorki o 13.00. Ale przecież piękno naszej piłki to własnie to rozdrobnienie, właśnie ten fakt, że nie mamy tylko Slavii i Sparty, tylko Zvezdy i Partizana, ale 16. drużynę tabeli wszech czasów, która spędziła 36 sezonów w elicie, a teraz modli się o baraż o utrzymanie w II lidze.</p>
+          <p>Moglibyśmy to pielęgnować, ale ewidentnie ważniejsza jest kolacja z nigeryjskimi działaczami przed towarzyskim meczem Polaków. Nie powiem, żebym zapłakał jak ŁKS odprawiany z kwitkiem przez Krykuna w tamtym pamiętnym meczu. Ale jest mi trochę smutno. Marnujemy okazję, by zbudować coś naprawdę fajnego, dając po drodze sporo frajdy w miejscach, gdzie frajda jest towarem luksusowym.</p>
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
