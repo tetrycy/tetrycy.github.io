@@ -6,12 +6,8 @@
     <title>Piszpad</title>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background: #f3f4f6;
@@ -21,7 +17,7 @@
             align-items: flex-start;
             justify-content: center;
         }
-        
+
         .editor-container {
             min-height: 600px;
             width: 100%;
@@ -29,12 +25,12 @@
             background: white;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
             overflow: hidden;
         }
-        
+
         .toolbar {
             border-bottom: 1px solid #e5e7eb;
             padding: 0.5rem 0.75rem;
@@ -42,8 +38,9 @@
             align-items: center;
             gap: 0.5rem;
             background: #f9fafb;
+            flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 0.5rem;
             background: transparent;
@@ -55,28 +52,16 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .btn:hover {
-            background: #e5e7eb;
-        }
-        
-        .btn.active {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-        
-        .btn svg {
-            width: 16px;
-            height: 16px;
-        }
-        
+        .btn:hover { background: #e5e7eb; }
+        .btn.active { background: #dbeafe; color: #2563eb; }
+        .btn svg { width: 16px; height: 16px; }
+
         .separator {
-            width: 1px;
-            height: 1.5rem;
+            width: 1px; height: 1.5rem;
             background: #d1d5db;
             margin: 0 0.25rem;
         }
-        
+
         .select {
             padding: 0.25rem 0.5rem;
             border: 1px solid #d1d5db;
@@ -84,13 +69,26 @@
             font-size: 0.875rem;
             background: white;
         }
-        
+
+        .toolbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
         .filename {
-            margin-left: 1rem;
             font-size: 0.875rem;
             color: #6b7280;
         }
-        
+
+        .wordcount {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        /* Panel wyszukiwania */
         .search-panel {
             border-bottom: 1px solid #e5e7eb;
             padding: 0.5rem 0.75rem;
@@ -99,11 +97,8 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
-        .search-panel.show {
-            display: flex;
-        }
-        
+        .search-panel.show { display: flex; }
+
         .search-input {
             padding: 0.25rem 0.5rem;
             border: 1px solid #d1d5db;
@@ -112,7 +107,7 @@
             flex: 1;
             max-width: 20rem;
         }
-        
+
         .search-btn {
             padding: 0.25rem 0.75rem;
             border: none;
@@ -121,30 +116,14 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        
-        .search-btn.primary {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .search-btn.primary:hover {
-            background: #2563eb;
-        }
-        
-        .search-btn.secondary {
-            background: #6b7280;
-            color: white;
-        }
-        
-        .search-btn.secondary:hover {
-            background: #4b5563;
-        }
-        
-        .editor-area {
-            flex: 1;
-            padding: 1.5rem;
-        }
-        
+        .search-btn.primary { background: #3b82f6; color: white; }
+        .search-btn.primary:hover { background: #2563eb; }
+        .search-btn.secondary { background: #6b7280; color: white; }
+        .search-btn.secondary:hover { background: #4b5563; }
+        .search-count { font-size: 0.8rem; color: #6b7280; }
+
+        /* Edytor */
+        .editor-area { flex: 1; padding: 1.5rem; }
         .editor {
             min-height: 100%;
             outline: none;
@@ -152,11 +131,52 @@
             line-height: 1.5;
         }
 
-        /* ============ TRYB FOCUS ============ */
+        /* Podświetlenie wyników wyszukiwania */
+        .search-highlight {
+            background: #fde68a;
+            border-radius: 2px;
+        }
+        .search-highlight.current {
+            background: #f59e0b;
+            color: white;
+        }
 
+        /* Modal potwierdzenia */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 8000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 22rem;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .modal p { font-size: 0.875rem; color: #6b7280; margin-bottom: 1.25rem; }
+        .modal-btns { display: flex; gap: 0.5rem; justify-content: flex-end; }
+        .modal-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        .modal-btn.danger { background: #ef4444; color: white; }
+        .modal-btn.danger:hover { background: #dc2626; }
+        .modal-btn.cancel { background: #e5e7eb; }
+        .modal-btn.cancel:hover { background: #d1d5db; }
+
+        /* ============ TRYB FOCUS ============ */
         .focus-overlay {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: #1a1a1a;
             z-index: 9999;
             display: none;
@@ -167,16 +187,9 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
+        .focus-overlay::-webkit-scrollbar { display: none; }
+        .focus-overlay.active { display: flex; }
 
-        .focus-overlay::-webkit-scrollbar {
-            display: none;
-        }
-
-        .focus-overlay.active {
-            display: flex;
-        }
-
-        /* contenteditable w trybie focus */
         .focus-editor {
             width: 100%;
             max-width: 50rem;
@@ -185,32 +198,69 @@
             border: none;
             outline: none;
             color: #e5e5e5;
-            font-size: 18px;
             line-height: 1.8;
             padding: 4rem 2rem 8rem;
             caret-color: #e5e5e5;
         }
 
-        /* Podpowiedź Escape w rogu */
+        /* dziedziczenie kolorów w focus editorze */
+        .focus-editor * { color: inherit; }
+
         .focus-hint {
             position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
+            bottom: 1.5rem; right: 1.5rem;
             color: #444;
             font-size: 0.8rem;
             font-family: system-ui, sans-serif;
             pointer-events: none;
-            transition: opacity 0.3s;
         }
 
-        .hidden {
-            display: none;
+        .focus-wordcount {
+            position: fixed;
+            bottom: 1.5rem; left: 1.5rem;
+            color: #444;
+            font-size: 0.8rem;
+            font-family: system-ui, sans-serif;
+            pointer-events: none;
+        }
+
+        .hidden { display: none; }
+
+        .focus-toolbar {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .focus-tool-btn {
+            background: transparent;
+            border: 1px solid #444;
+            border-radius: 0.25rem;
+            color: #888;
+            cursor: pointer;
+            padding: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .focus-tool-btn:hover {
+            color: #ccc;
+            border-color: #888;
+        }
+        .focus-tool-btn.active {
+            color: #60a5fa;
+            border-color: #60a5fa;
         }
     </style>
 </head>
 <body>
     <div class="editor-container" id="mainContainer">
         <div class="toolbar">
+            <!-- Nowy -->
             <button class="btn" id="newBtn" title="Nowy (Ctrl+N)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
@@ -220,14 +270,14 @@
                     <polyline points="10,9 9,9 8,9"/>
                 </svg>
             </button>
-            
+            <!-- Otwórz -->
             <button class="btn" id="openBtn" title="Otwórz (Ctrl+O)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14,2 14,8 20,8"/>
                 </svg>
             </button>
-            
+            <!-- Zapisz -->
             <button class="btn" id="saveBtn" title="Zapisz (Ctrl+S)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -235,30 +285,31 @@
                     <polyline points="7,3 7,8 15,8"/>
                 </svg>
             </button>
-            
+            <!-- Cofnij -->
             <button class="btn" id="undoBtn" title="Cofnij (Ctrl+Z)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 7v6h6"/>
                     <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
                 </svg>
             </button>
-            
+
             <div class="separator"></div>
-            
+
+            <!-- Focus -->
             <button class="btn" id="focusBtn" title="Tryb Focus (F11)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
             </button>
-            
+
             <div class="separator"></div>
-            
+
             <select class="select" id="fontSelect" title="Czcionka">
                 <option value="Libre Baskerville" selected>Libre Baskerville</option>
                 <option value="Times New Roman">Times New Roman</option>
             </select>
-            
-            <select class="select" id="fontSizeSelect" title="Rozmiar" style="width: 4rem;">
+
+            <select class="select" id="fontSizeSelect" title="Rozmiar" style="width:4rem;">
                 <option value="8">8</option>
                 <option value="9">9</option>
                 <option value="10">10</option>
@@ -273,42 +324,50 @@
                 <option value="32">32</option>
                 <option value="36">36</option>
             </select>
-            
-            <select class="select" id="speechRateSelect" title="Szybkość czytania" style="width: 4rem;">
+
+            <select class="select" id="speechRateSelect" title="Szybkość czytania" style="width:4rem;">
                 <option value="0.75">0.75x</option>
                 <option value="1.0" selected>1.0x</option>
                 <option value="1.25">1.25x</option>
                 <option value="1.5">1.5x</option>
                 <option value="2.0">2.0x</option>
             </select>
-            
+
             <div class="separator"></div>
-            
-            <button class="btn" id="readBtn" title="Czytaj od miejsca kursora (Ctrl+R)">
+
+            <!-- Czytaj -->
+            <button class="btn" id="readBtn" title="Czytaj od kursora (Ctrl+R)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 </svg>
             </button>
-            
+
             <div class="separator"></div>
-            
+
+            <!-- Szukaj -->
             <button class="btn" id="searchBtn" title="Wyszukaj (Ctrl+F)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/>
                     <path d="m21 21-4.35-4.35"/>
                 </svg>
             </button>
-            
-            <div class="filename" id="fileName">dokument.rtf</div>
+
+            <div class="toolbar-right">
+                <span class="wordcount" id="wordCount">0 słów · 0 znaków</span>
+                <span class="filename" id="fileName">dokument.rtf</span>
+            </div>
         </div>
-        
+
+        <!-- Panel wyszukiwania -->
         <div class="search-panel" id="searchPanel">
             <input type="text" class="search-input" id="searchInput" placeholder="Wyszukaj...">
-            <button class="search-btn primary" id="findBtn">Znajdź</button>
+            <button class="search-btn primary" id="findPrevBtn">↑</button>
+            <button class="search-btn primary" id="findNextBtn">↓ Znajdź</button>
+            <span class="search-count" id="searchCount"></span>
             <button class="search-btn secondary" id="closeSearchBtn">Zamknij</button>
         </div>
-        
+
         <div class="editor-area">
             <div class="editor" id="editor" contenteditable="true">
                 <p>Windows 11 pozbawił mnie Wordpada, postanowiłem więc napisać swojego.</p>
@@ -316,68 +375,115 @@
                 <p>Z czym Piszpad ma problemy, to z otwieraniem plików nienapisanych w nim. Na razie lepiej skopiować tekst i mu wkleić ręcznie.</p>
             </div>
         </div>
-        
+
         <input type="file" class="hidden" id="fileInput" accept=".rtf">
     </div>
 
-    <!-- TRYB FOCUS — contenteditable, poza głównym kontenerem -->
+    <!-- TRYB FOCUS -->
     <div class="focus-overlay" id="focusOverlay">
         <div class="focus-editor" id="focusEditor" contenteditable="true" spellcheck="true"></div>
         <div class="focus-hint">Esc — wyjdź z trybu Focus</div>
+        <div class="focus-wordcount" id="focusWordCount"></div>
+        <div class="focus-toolbar" id="focusToolbar">
+            <button class="focus-tool-btn" id="focusReadBtn" title="Czytaj od kursora (Ctrl+R)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal potwierdzenia -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3 id="confirmTitle">Nowy dokument</h3>
+            <p id="confirmMsg">Niezapisane zmiany zostaną utracone. Kontynuować?</p>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" id="confirmCancel">Anuluj</button>
+                <button class="modal-btn danger" id="confirmOk">Kontynuuj</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        var editor, fileNameEl, isReading, fontFamily, fontSize, speechRate, isFocusMode;
+    (function() {
+        /* ===== Stan globalny ===== */
+        var editor, fileNameEl, wordCountEl, focusWordCountEl;
+        var isReading   = false;
+        var fontFamily  = 'Libre Baskerville';
+        var fontSize    = 12;
+        var speechRate  = 1.0;
+        var isFocusMode = false;
         var undoHistory = [], historyIndex = -1;
-        var fullscreenListeners = [];
+        var fsListeners = [];   // fullscreen listeners — zawsze tylko jeden zestaw
+        var voicesReady = false;
+        var cachedVoice = null;
 
+        /* wyszukiwanie */
+        var searchMatches  = [];
+        var searchCurrent  = -1;
+
+        /* ===== Init ===== */
         function init() {
-            editor    = document.getElementById('editor');
-            fileNameEl = document.getElementById('fileName');
-            isReading  = false;
-            fontFamily = 'Libre Baskerville';
-            fontSize   = 12;
-            speechRate = 1.0;
-            isFocusMode = false;
+            editor         = document.getElementById('editor');
+            fileNameEl     = document.getElementById('fileName');
+            wordCountEl    = document.getElementById('wordCount');
+            focusWordCountEl = document.getElementById('focusWordCount');
 
             saveState();
+            updateWordCount();
 
-            document.getElementById('newBtn').onclick    = newDoc;
+            document.getElementById('newBtn').onclick    = confirmNewDoc;
             document.getElementById('openBtn').onclick   = openDoc;
             document.getElementById('saveBtn').onclick   = saveDoc;
             document.getElementById('undoBtn').onclick   = undo;
+            document.getElementById('focusBtn').onclick  = toggleFocusMode;
             document.getElementById('searchBtn').onclick = toggleSearch;
             document.getElementById('readBtn').onclick   = toggleReading;
-            document.getElementById('focusBtn').onclick  = toggleFocusMode;
 
             document.getElementById('fontSelect').onchange = function() {
-                fontFamily = this.value;
-                updateStyle();
+                fontFamily = this.value; updateStyle();
             };
             document.getElementById('fontSizeSelect').onchange = function() {
-                fontSize = parseInt(this.value);
-                updateStyle();
+                fontSize = parseInt(this.value); updateStyle();
             };
             document.getElementById('speechRateSelect').onchange = function() {
                 speechRate = parseFloat(this.value);
             };
 
-            document.getElementById('findBtn').onclick       = doSearch;
+            document.getElementById('findNextBtn').onclick = function() { searchStep(1); };
+            document.getElementById('findPrevBtn').onclick = function() { searchStep(-1); };
             document.getElementById('closeSearchBtn').onclick = closeSearch;
-            document.getElementById('searchInput').onkeydown = function(e) {
-                if (e.key === 'Enter') doSearch();
-            };
+            document.getElementById('searchInput').addEventListener('input', function() {
+                buildSearchMatches();
+            });
+            document.getElementById('searchInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.shiftKey ? searchStep(-1) : searchStep(1); }
+                if (e.key === 'Escape') { closeSearch(); }
+            });
 
             document.getElementById('fileInput').onchange = loadFile;
             document.addEventListener('keydown', keyHandler);
 
-            editor.addEventListener('input', saveState);
+            editor.addEventListener('input', function() {
+                saveState();
+                updateWordCount();
+                if (document.getElementById('searchPanel').classList.contains('show')) {
+                    buildSearchMatches();
+                }
+            });
+
+            /* Wczytaj głosy TTS — Chrome ładuje je asynchronicznie */
+            if (window.speechSynthesis) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+                loadVoices(); // od razu jeśli już dostępne (Firefox/Safari)
+            }
 
             updateStyle();
         }
 
-        /* ---- Historia undo ---- */
-
+        /* ===== Historia undo ===== */
         function saveState() {
             var current = editor.innerHTML;
             if (undoHistory.length === 0 || undoHistory[historyIndex] !== current) {
@@ -397,38 +503,86 @@
                 editor.innerHTML = undoHistory[historyIndex];
                 editor.focus();
                 placeCursorAtEnd(editor);
+                updateWordCount();
             }
         }
 
-        /* ---- Skróty klawiszowe ---- */
+        /* ===== Licznik słów ===== */
+        function countText(el) {
+            var text = el.innerText || el.textContent || '';
+            var words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            var chars = text.length;
+            return { words: words, chars: chars };
+        }
 
+        function updateWordCount() {
+            var c = countText(editor);
+            wordCountEl.textContent = c.words + ' słów · ' + c.chars + ' znaków';
+        }
+
+        function updateFocusWordCount() {
+            var focusEditor = document.getElementById('focusEditor');
+            var c = countText(focusEditor);
+            focusWordCountEl.textContent = c.words + ' słów · ' + c.chars + ' znaków';
+        }
+
+        /* ===== Skróty klawiszowe ===== */
         function keyHandler(e) {
             if (e.key === 'Escape') {
                 if (isFocusMode) { exitFocusMode(); return; }
-                closeSearch();
+                if (document.getElementById('searchPanel').classList.contains('show')) {
+                    closeSearch(); return;
+                }
                 if (isReading) stopReading();
             }
             if (e.key === 'F11') {
-                e.preventDefault();
-                toggleFocusMode();
-                return;
+                e.preventDefault(); toggleFocusMode(); return;
             }
             if (e.ctrlKey) {
-                if (e.key === 'n') { e.preventDefault(); newDoc(); }
+                if (e.key === 'n') { e.preventDefault(); confirmNewDoc(); }
                 if (e.key === 's') { e.preventDefault(); saveDoc(); }
                 if (e.key === 'o') { e.preventDefault(); openDoc(); }
                 if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
-                if (e.key === 'r') { e.preventDefault(); toggleReading(); }
+                if (e.key === 'r') { e.preventDefault(); isFocusMode ? toggleFocusReading() : toggleReading(); }
                 if (e.key === 'z') { e.preventDefault(); undo(); }
             }
         }
 
-        /* ---- Operacje na dokumencie ---- */
+        /* ===== Modal potwierdzenia ===== */
+        function showConfirm(title, msg, onOk) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMsg').textContent   = msg;
+            var modal = document.getElementById('confirmModal');
+            modal.classList.add('show');
+
+            var okBtn     = document.getElementById('confirmOk');
+            var cancelBtn = document.getElementById('confirmCancel');
+
+            function close() {
+                modal.classList.remove('show');
+                okBtn.onclick     = null;
+                cancelBtn.onclick = null;
+            }
+            okBtn.onclick     = function() { close(); onOk(); };
+            cancelBtn.onclick = close;
+        }
+
+        /* ===== Operacje na dokumencie ===== */
+        function confirmNewDoc() {
+            var hasContent = (editor.innerText || '').trim().length > 0;
+            if (!hasContent) { newDoc(); return; }
+            showConfirm(
+                'Nowy dokument',
+                'Niezapisane zmiany zostaną utracone. Kontynuować?',
+                newDoc
+            );
+        }
 
         function newDoc() {
             editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
             fileNameEl.textContent = 'dokument.rtf';
             undoHistory = []; historyIndex = -1; saveState();
+            updateWordCount();
         }
 
         function openDoc() {
@@ -436,7 +590,7 @@
         }
 
         function saveDoc() {
-            var rtf = toRTF(editor.innerHTML);
+            var rtf  = toRTF(editor.innerHTML);
             var blob = new Blob([rtf], { type: 'application/rtf' });
             var url  = URL.createObjectURL(blob);
             var a    = document.createElement('a');
@@ -454,12 +608,14 @@
             reader.onload = function(ev) {
                 editor.innerHTML = fromRTF(ev.target.result);
                 undoHistory = []; historyIndex = -1; saveState();
+                updateWordCount();
             };
             reader.readAsText(file);
+            // reset input żeby można było wczytać ten sam plik ponownie
+            e.target.value = '';
         }
 
-        /* ---- Wyszukiwanie ---- */
-
+        /* ===== Wyszukiwanie (własna implementacja, bez window.find) ===== */
         function toggleSearch() {
             var panel = document.getElementById('searchPanel');
             if (panel.classList.contains('show')) { closeSearch(); }
@@ -471,17 +627,104 @@
         }
 
         function closeSearch() {
+            clearSearchHighlights();
             document.getElementById('searchPanel').classList.remove('show');
             document.getElementById('searchBtn').classList.remove('active');
+            document.getElementById('searchCount').textContent = '';
+            searchMatches = []; searchCurrent = -1;
         }
 
-        function doSearch() {
+        function clearSearchHighlights() {
+            // Zamień wszystkie <mark class="search-highlight..."> z powrotem na text
+            var marks = editor.querySelectorAll('mark.search-highlight');
+            if (marks.length === 0) return;
+            var savedHistoryIndex = historyIndex;
+            marks.forEach(function(mark) {
+                var parent = mark.parentNode;
+                parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                parent.normalize();
+            });
+            historyIndex = savedHistoryIndex;
+        }
+
+        function buildSearchMatches() {
+            clearSearchHighlights();
+            searchMatches = []; searchCurrent = -1;
+            document.getElementById('searchCount').textContent = '';
+
             var term = document.getElementById('searchInput').value;
-            if (term && window.find) window.find(term, false, false, true);
+            if (!term) return;
+
+            var termLower = term.toLowerCase();
+
+            // Przejdź przez węzły tekstowe edytora i oznacz trafienia
+            var walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+            var nodesToMark = [];
+            var node;
+            while ((node = walker.nextNode())) {
+                var idx = node.nodeValue.toLowerCase().indexOf(termLower);
+                if (idx !== -1) nodesToMark.push(node);
+            }
+
+            // Zapamiętaj aktualny indeks historii — modyfikacja DOM edytora
+            // przez wstawianie <mark> nie powinna wpływać na undo
+            var savedHistoryIndex = historyIndex;
+
+            nodesToMark.forEach(function(textNode) {
+                var remaining = textNode.nodeValue;
+                var parent    = textNode.parentNode;
+                var fragment  = document.createDocumentFragment();
+                var lterm     = term.toLowerCase();
+
+                while (true) {
+                    var pos = remaining.toLowerCase().indexOf(lterm);
+                    if (pos === -1) {
+                        fragment.appendChild(document.createTextNode(remaining));
+                        break;
+                    }
+                    if (pos > 0) fragment.appendChild(document.createTextNode(remaining.slice(0, pos)));
+                    var mark = document.createElement('mark');
+                    mark.className = 'search-highlight';
+                    mark.textContent = remaining.slice(pos, pos + term.length);
+                    fragment.appendChild(mark);
+                    searchMatches.push(mark);
+                    remaining = remaining.slice(pos + term.length);
+                }
+                parent.replaceChild(fragment, textNode);
+            });
+
+            // Przywróć indeks historii — wstawianie <mark> nie jest edycją użytkownika
+            historyIndex = savedHistoryIndex;
+
+            if (searchMatches.length > 0) {
+                searchStep(1, true);
+            } else {
+                document.getElementById('searchCount').textContent = 'Brak wyników';
+            }
         }
 
-        /* ---- Styl ---- */
+        function searchStep(dir, fresh) {
+            if (searchMatches.length === 0) return;
 
+            if (searchCurrent >= 0 && searchCurrent < searchMatches.length) {
+                searchMatches[searchCurrent].classList.remove('current');
+            }
+
+            if (fresh) {
+                searchCurrent = 0;
+            } else {
+                searchCurrent = (searchCurrent + dir + searchMatches.length) % searchMatches.length;
+            }
+
+            var current = searchMatches[searchCurrent];
+            current.classList.add('current');
+            current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+            document.getElementById('searchCount').textContent =
+                (searchCurrent + 1) + ' / ' + searchMatches.length;
+        }
+
+        /* ===== Styl edytora ===== */
         function updateStyle() {
             var family = fontFamily === 'Times New Roman'
                 ? 'Times New Roman, serif'
@@ -490,20 +733,50 @@
             editor.style.fontSize   = fontSize + 'pt';
         }
 
-        /* ---- TTS ---- */
+        function getFocusFontSize() {
+            // Skaluj rozmiar focus relatywnie: bazowy 12pt → 18px, proporcja ~1.5
+            return Math.round(fontSize * 1.5) + 'px';
+        }
 
-        function getCursor() {
+        /* ===== TTS — głosy ===== */
+        function loadVoices() {
+            if (voicesReady) return;
+            var voices = speechSynthesis.getVoices();
+            if (voices.length === 0) return;
+            voicesReady = true;
+
+            // Priorytet: Paulina (macOS) → dowolny pl-PL → pl → brak
+            cachedVoice = null;
+            for (var i = 0; i < voices.length; i++) {
+                var v = voices[i];
+                if (v.name.toLowerCase().includes('paulina')) { cachedVoice = v; break; }
+            }
+            if (!cachedVoice) {
+                for (var j = 0; j < voices.length; j++) {
+                    if (voices[j].lang === 'pl-PL') { cachedVoice = voices[j]; break; }
+                }
+            }
+            if (!cachedVoice) {
+                for (var k = 0; k < voices.length; k++) {
+                    if (voices[k].lang.startsWith('pl')) { cachedVoice = voices[k]; break; }
+                }
+            }
+        }
+
+        function getCursorOffset() {
             var sel = window.getSelection();
             if (!sel.rangeCount) return 0;
             var range = sel.getRangeAt(0);
-            var pre   = range.cloneRange();
+            // Upewnij się że kursor jest wewnątrz głównego edytora
+            if (!editor.contains(range.startContainer)) return 0;
+            var pre = range.cloneRange();
             pre.selectNodeContents(editor);
             pre.setEnd(range.startContainer, range.startOffset);
             return pre.toString().length;
         }
 
         function getTextFromCursor() {
-            return (editor.innerText || '').substring(getCursor());
+            return (editor.innerText || '').substring(getCursorOffset());
         }
 
         function toggleReading() {
@@ -511,44 +784,114 @@
         }
 
         function startReading() {
-            if (!window.speechSynthesis) { alert('Brak obsługi czytania.'); return; }
+            if (!window.speechSynthesis) { alert('Brak obsługi TTS w tej przeglądarce.'); return; }
             var text = getTextFromCursor();
             if (!text.trim()) { alert('Brak tekstu do czytania od pozycji kursora.'); return; }
 
-            var utt  = new SpeechSynthesisUtterance(text);
+            // Upewnij się, że głosy są załadowane
+            if (!voicesReady) loadVoices();
+
+            var utt   = new SpeechSynthesisUtterance(text);
             utt.lang  = 'pl-PL';
             utt.rate  = speechRate;
             utt.pitch = 1;
-
-            var voices = speechSynthesis.getVoices();
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
-                    utt.voice = voices[i]; break;
-                }
-            }
+            if (cachedVoice) utt.voice = cachedVoice;
 
             var btn = document.getElementById('readBtn');
             utt.onstart = function() {
                 isReading = true;
                 btn.classList.add('active');
-                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+                    + '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>'
+                    + '<line x1="23" y1="9" x2="17" y2="15"/>'
+                    + '<line x1="17" y1="9" x2="23" y2="15"/></svg>';
             };
             utt.onend   = stopReading;
-            utt.onerror = function() { stopReading(); alert('Błąd podczas czytania.'); };
+            utt.onerror = function(e) {
+                stopReading();
+                if (e.error !== 'interrupted') alert('Błąd TTS: ' + e.error);
+            };
 
             speechSynthesis.speak(utt);
         }
 
         function stopReading() {
-            if (speechSynthesis.speaking) speechSynthesis.cancel();
+            if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
             isReading = false;
             var btn = document.getElementById('readBtn');
             btn.classList.remove('active');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+                + '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>'
+                + '<path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
         }
 
-        /* ============ TRYB FOCUS ============ */
+        /* ===== TTS w trybie focus ===== */
+        function getFocusCursorOffset() {
+            var focusEditor = document.getElementById('focusEditor');
+            var sel = window.getSelection();
+            if (!sel.rangeCount) return 0;
+            var range = sel.getRangeAt(0);
+            if (!focusEditor.contains(range.startContainer)) return 0;
+            var pre = range.cloneRange();
+            pre.selectNodeContents(focusEditor);
+            pre.setEnd(range.startContainer, range.startOffset);
+            return pre.toString().length;
+        }
 
+        function toggleFocusReading() {
+            if (isReading) {
+                stopFocusReading();
+            } else {
+                startFocusReading();
+            }
+        }
+
+        function startFocusReading() {
+            if (!window.speechSynthesis) { alert('Brak obsługi TTS w tej przeglądarce.'); return; }
+            var focusEditor = document.getElementById('focusEditor');
+            var fullText = focusEditor.innerText || '';
+            var offset = getFocusCursorOffset();
+            var text = fullText.substring(offset);
+            if (!text.trim()) { alert('Brak tekstu do czytania od pozycji kursora.'); return; }
+
+            if (!voicesReady) loadVoices();
+
+            var utt   = new SpeechSynthesisUtterance(text);
+            utt.lang  = 'pl-PL';
+            utt.rate  = speechRate;
+            utt.pitch = 1;
+            if (cachedVoice) utt.voice = cachedVoice;
+
+            var btn = document.getElementById('focusReadBtn');
+            utt.onstart = function() {
+                isReading = true;
+                btn.classList.add('active');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">'
+                    + '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>'
+                    + '<line x1="23" y1="9" x2="17" y2="15"/>'
+                    + '<line x1="17" y1="9" x2="23" y2="15"/></svg>';
+            };
+            utt.onend   = stopFocusReading;
+            utt.onerror = function(e) {
+                stopFocusReading();
+                if (e.error !== 'interrupted') alert('Błąd TTS: ' + e.error);
+            };
+
+            speechSynthesis.speak(utt);
+        }
+
+        function stopFocusReading() {
+            if (window.speechSynthesis && speechSynthesis.speaking) speechSynthesis.cancel();
+            isReading = false;
+            var btn = document.getElementById('focusReadBtn');
+            if (!btn) return;
+            btn.classList.remove('active');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">'
+                + '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>'
+                + '<path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+        }
+
+        /* ===== TRYB FOCUS ===== */
         function toggleFocusMode() {
             isFocusMode ? exitFocusMode() : enterFocusMode();
         }
@@ -559,31 +902,31 @@
             var overlay     = document.getElementById('focusOverlay');
             var focusEditor = document.getElementById('focusEditor');
 
-            // Skopiuj HTML 1:1 — zachowuje formatowanie bold/italic/etc.
+            // Kopiuj HTML 1:1 — zachowuje bold/italic/etc.
             focusEditor.innerHTML = editor.innerHTML;
 
-            // Czcionka taka sama jak główny edytor
+            // Czcionka i rozmiar zgodne z głównym edytorem
             var family = fontFamily === 'Times New Roman'
                 ? 'Times New Roman, serif'
                 : 'Libre Baskerville, serif';
             focusEditor.style.fontFamily = family;
+            focusEditor.style.fontSize   = getFocusFontSize();
 
-            // Pokaż overlay
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
 
-            // Fullscreen
-            var el = document.documentElement;
-            var fsReq = el.requestFullscreen || el.webkitRequestFullscreen
-                     || el.mozRequestFullScreen || el.msRequestFullscreen;
-            if (fsReq) {
-                fsReq.call(el).catch(function() {});
-            }
+            updateFocusWordCount();
 
-            // Focus i kursor na początku
+            // Fullscreen
+            var el    = document.documentElement;
+            var fsReq = el.requestFullscreen || el.webkitRequestFullscreen
+                      || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (fsReq) fsReq.call(el).catch(function() {});
+
+            // Kursor na początku
             setTimeout(function() {
                 focusEditor.focus();
-                var sel = window.getSelection();
+                var sel   = window.getSelection();
                 var range = document.createRange();
                 range.setStart(focusEditor, 0);
                 range.collapse(true);
@@ -592,30 +935,38 @@
                 overlay.scrollTop = 0;
             }, 100);
 
-            // Synchronizacja focus → main (bez pętli — używamy flagi)
-            focusEditor._syncing = false;
-            focusEditor.oninput = function() {
-                if (focusEditor._syncing) return;
-                focusEditor._syncing = true;
+            // Sync focus → main z debounce — żeby undo-history nie rosła
+            // przy każdej literze, a co ~400ms
+            var syncTimer = null;
+            focusEditor._inputHandler = function() {
                 editor.innerHTML = focusEditor.innerHTML;
-                saveState();
-                focusEditor._syncing = false;
+                updateWordCount();
+                updateFocusWordCount();
+                clearTimeout(syncTimer);
+                syncTimer = setTimeout(function() {
+                    saveState();
+                }, 400);
             };
+            focusEditor._syncTimer = syncTimer;
+            focusEditor.addEventListener('input', focusEditor._inputHandler);
 
-            // Nasłuchuj wyjście z fullscreen (tylko JEDEN listener — trzymamy ref)
-            if (fullscreenListeners.length === 0) {
-                var handler = function() {
+            // Przycisk TTS w trybie focus
+            document.getElementById('focusReadBtn').onclick = toggleFocusReading;
+
+            // Fullscreen change — tylko jeden zestaw listenerów
+            if (fsListeners.length === 0) {
+                var fsHandler = function() {
                     var isFs = !!(document.fullscreenElement
                         || document.webkitFullscreenElement
                         || document.mozFullScreenElement
                         || document.msFullscreenElement);
                     if (!isFs && isFocusMode) exitFocusMode();
                 };
-                fullscreenListeners.push(handler);
-                document.addEventListener('fullscreenchange', handler);
-                document.addEventListener('webkitfullscreenchange', handler);
-                document.addEventListener('mozfullscreenchange', handler);
-                document.addEventListener('MSFullscreenChange', handler);
+                fsListeners.push(fsHandler);
+                document.addEventListener('fullscreenchange', fsHandler);
+                document.addEventListener('webkitfullscreenchange', fsHandler);
+                document.addEventListener('mozfullscreenchange', fsHandler);
+                document.addEventListener('MSFullscreenChange', fsHandler);
             }
         }
 
@@ -626,40 +977,50 @@
             var overlay     = document.getElementById('focusOverlay');
             var focusEditor = document.getElementById('focusEditor');
 
-            // Ostateczna synchronizacja focus → main
+            // Ostateczna synchronizacja
             editor.innerHTML = focusEditor.innerHTML;
             saveState();
+            updateWordCount();
 
-            // Ukryj overlay
+            // Usuń input listener i wyczyść ewentualny timer
+            if (focusEditor._inputHandler) {
+                focusEditor.removeEventListener('input', focusEditor._inputHandler);
+                focusEditor._inputHandler = null;
+            }
+            if (focusEditor._syncTimer) {
+                clearTimeout(focusEditor._syncTimer);
+                focusEditor._syncTimer = null;
+            }
+
+            // Zatrzymaj TTS jeśli grał w trybie focus
+            if (isReading) stopReading();
+            document.getElementById('focusReadBtn').onclick = null;
+
             overlay.classList.remove('active');
             document.body.style.overflow = '';
 
-            // Wyczyść listener input
-            focusEditor.oninput = null;
-
-            // Wyjdź z fullscreen
-            var fsExit = document.exitFullscreen || document.webkitExitFullscreen
-                      || document.mozCancelFullScreen || document.msExitFullscreen;
-            if (fsExit && (document.fullscreenElement || document.webkitFullscreenElement
-                        || document.mozFullScreenElement || document.msFullscreenElement)) {
-                fsExit.call(document).catch(function() {});
+            // Wyjdź z fullscreen tylko jeśli aktualnie w fullscreen
+            var inFs = !!(document.fullscreenElement || document.webkitFullscreenElement
+                       || document.mozFullScreenElement || document.msFullscreenElement);
+            if (inFs) {
+                var fsExit = document.exitFullscreen || document.webkitExitFullscreen
+                           || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (fsExit) fsExit.call(document).catch(function() {});
             }
 
             // Usuń fullscreen listenery
-            fullscreenListeners.forEach(function(h) {
+            fsListeners.forEach(function(h) {
                 document.removeEventListener('fullscreenchange', h);
                 document.removeEventListener('webkitfullscreenchange', h);
                 document.removeEventListener('mozfullscreenchange', h);
                 document.removeEventListener('MSFullscreenChange', h);
             });
-            fullscreenListeners = [];
+            fsListeners = [];
 
-            // Przywróć focus
             setTimeout(function() { editor.focus(); }, 150);
         }
 
-        /* ---- Pomocnicze ---- */
-
+        /* ===== Pomocnicze ===== */
         function placeCursorAtEnd(el) {
             var range = document.createRange();
             var sel   = window.getSelection();
@@ -669,24 +1030,28 @@
             sel.addRange(range);
         }
 
-        /* ---- RTF konwersja ---- */
+        /* ===== RTF eksport ===== */
+        // Przetwarza węzeł DOM rekurencyjnie, zachowując zagnieżdżone formatowanie
+        function nodeToRTF(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return escapeRTF(node.nodeValue);
+            }
+            var tag  = node.tagName ? node.tagName.toLowerCase() : '';
+            var inner = '';
+            node.childNodes.forEach(function(child) { inner += nodeToRTF(child); });
 
-        function toRTF(html) {
-            var font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
-            var rtf  = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
+            if (tag === 'b' || tag === 'strong') return '{\\b ' + inner + '}';
+            if (tag === 'i' || tag === 'em')     return '{\\i ' + inner + '}';
+            if (tag === 'u')                      return '{\\ul ' + inner + '}';
+            if (tag === 'br')                     return '\\line ';
+            if (tag === 'p')                      return inner + '\\par ';
+            return inner;
+        }
 
-            var clean = html
-                .replace(/<br\s*\/?>/gi, '\\line ')
-                .replace(/<\/p>/gi, '\\par ')
-                .replace(/<p[^>]*>/gi, '')
-                .replace(/<b[^>]*>(.*?)<\/b>/gi, '{\\b $1}')
-                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '{\\b $1}')
-                .replace(/<i[^>]*>(.*?)<\/i>/gi, '{\\i $1}')
-                .replace(/<em[^>]*>(.*?)<\/em>/gi, '{\\i $1}')
-                .replace(/<u[^>]*>(.*?)<\/u>/gi, '{\\ul $1}')
-                .replace(/<[^>]+>/g, '');
-
-            clean = clean
+        function escapeRTF(text) {
+            return text
+                .replace(/\\/g, '\\\\')
+                .replace(/\{/g, '\\{').replace(/\}/g, '\\}')
                 .replace(/ą/g,"\\'b1").replace(/Ą/g,"\\'a1")
                 .replace(/ć/g,"\\'e6").replace(/Ć/g,"\\'c6")
                 .replace(/ę/g,"\\'ea").replace(/Ę/g,"\\'ca")
@@ -695,9 +1060,33 @@
                 .replace(/ó/g,"\\'f3").replace(/Ó/g,"\\'d3")
                 .replace(/ś/g,"\\'9c").replace(/Ś/g,"\\'8c")
                 .replace(/ź/g,"\\'9f").replace(/Ź/g,"\\'8f")
-                .replace(/ż/g,"\\'bf").replace(/Ż/g,"\\'af");
+                .replace(/ż/g,"\\'bf").replace(/Ż/g,"\\'af")
+                .replace(/\u201c/g,"\\'84").replace(/\u201d/g,"\\'94")
+                .replace(/\u2013/g,"\\'96").replace(/\u2014/g,"\\'97");
+        }
 
-            return rtf + clean + '}';
+        function toRTF(html) {
+            var font   = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
+            var header = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
+
+            // Parsuj HTML przez DOM (nie przez regex)
+            var tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            var body = '';
+            tmp.childNodes.forEach(function(child) { body += nodeToRTF(child); });
+
+            return header + body + '}';
+        }
+
+        /* ===== RTF import ===== */
+        function stripRTFGroups(rtf) {
+            // Usuwa zagnieżdżone grupy iteracyjnie
+            var prev = '';
+            while (prev !== rtf) {
+                prev = rtf;
+                rtf = rtf.replace(/\{[^{}]*\}/g, '');
+            }
+            return rtf;
         }
 
         function fromRTF(rtf) {
@@ -706,9 +1095,12 @@
             }
 
             var text = rtf;
-            text = text.replace(/\\par\s*/g,  '|||PAR|||');
-            text = text.replace(/\\line\s*/g, '|||BR|||');
 
+            // Oznacz akapity i łamanie linii przed usunięciem znaczników
+            text = text.replace(/\\par\b\s*/g,  '|||PAR|||');
+            text = text.replace(/\\line\b\s*/g, '|||BR|||');
+
+            // Dekoduj polskie znaki i interpunkcję
             text = text
                 .replace(/\\'b1/g,'ą').replace(/\\'a1/g,'Ą')
                 .replace(/\\'e6/g,'ć').replace(/\\'c6/g,'Ć')
@@ -719,31 +1111,35 @@
                 .replace(/\\'9c/g,'ś').replace(/\\'8c/g,'Ś')
                 .replace(/\\'9f/g,'ź').replace(/\\'8f/g,'Ź')
                 .replace(/\\'bf/g,'ż').replace(/\\'af/g,'Ż')
-                .replace(/\\'84/g,'"').replace(/\\'94/g,'"')
-                .replace(/\\'96/g,'–').replace(/\\'97/g,'—');
+                .replace(/\\'84/g,'\u201e').replace(/\\'94/g,'\u201d')
+                .replace(/\\'96/g,'\u2013').replace(/\\'97/g,'\u2014')
+                .replace(/\\'[0-9a-fA-F]{2}/g, '');  // usuń nieznane sekwencje hex
 
-            text = text.replace(/^\{\\rtf[^{}]*/, '');
-            text = text.replace(/\}$/, '');
-            text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
-            text = text.replace(/\{[^}]*\}/g, '');
-            text = text.replace(/\\/g, '');
+            // Usuń nagłówek RTF i wszystkie zagnieżdżone grupy
+            text = stripRTFGroups(text);
+
+            // Usuń pozostałe kody sterujące
+            text = text.replace(/\\[a-zA-Z]+[-]?\d*\s?/g, ' ');
+            text = text.replace(/[{}\\]/g, '');
             text = text.replace(/\s+/g, ' ').trim();
 
+            // Zbuduj HTML z markerów
             var paragraphs = text.split('|||PAR|||');
             var html = '';
-            for (var i = 0; i < paragraphs.length; i++) {
-                var para = paragraphs[i].trim();
-                if (para && para.length > 3) {
+            paragraphs.forEach(function(para) {
+                para = para.trim();
+                if (para.length > 0) {
                     para = para.replace(/\|\|\|BR\|\|\|/g, '<br>');
                     html += '<p>' + para + '</p>';
                 }
-            }
+            });
 
-            if (!html) html = '<p>' + text + '</p>';
-            return html;
+            return html || '<p>' + text + '</p>';
         }
 
+        /* ===== Start ===== */
         document.addEventListener('DOMContentLoaded', init);
+    })();
     </script>
 </body>
 </html>
