@@ -12534,7 +12534,7 @@ const TEAMS_DATA = [
       { name: "Zych",          position: "GK",  overall: 83, apps: 19, goals: 0,  starting: false },
 
       { name: "Svarnas",       position: "DEF", overall: 80, apps: 30, goals: 5,  starting: true  },
-      { name: "Racovitan",     position: "DEF", overall:872, apps: 30, goals: 1,  starting: true  },
+      { name: "Racovitan",     position: "DEF", overall: 82, apps: 30, goals: 1,  starting: true  },
       { name: "Konstantopoulos",position:"DEF", overall: 67, apps: 12, goals: 4,  starting: true  },
       { name: "Mosór",         position: "DEF", overall: 63, apps: 11, goals: 3,  starting: true  },
       { name: "Dawidowicz",    position: "DEF", overall: 74, apps: 10, goals: 0,  starting: false },
@@ -13019,6 +13019,1456 @@ const TEAMS_DATA = [
   },
 
 
+ {
+    club: "Legia Warszawa",
+    season: "1994/95",
+    players: [
+      { name: "Szczęsny",        position: "GK",  overall: 87, apps: 22, goals: 0,  starting: true  },
+      { name: "Robakiewicz",       position: "GK",  overall: 84, apps: 12, goals: 0,  starting: false },
+
+      { name: "Zieliński", position: "DEF", overall: 96, apps: 29, goals: 5,  starting: true  },
+      { name: "Jóźwiak",          position: "DEF", overall: 88, apps: 29, goals: 4,  starting: true  },
+      { name: "Ratajczyk",     position: "DEF", overall: 84, apps: 19, goals: 3,  starting: true  },
+      { name: "Mandziejewicz",     position: "DEF", overall: 76, apps: 18, goals: 6,  starting: true  },
+      { name: "Mosór",       position: "DEF", overall: 68, apps: 19, goals: 1,  starting: false },
+      { name: "Kruszankin",       position: "DEF", overall: 76, apps: 11, goals: 2,  starting: false },
+
+      { name: "Bednarz",     position: "MID", overall: 82, apps: 33, goals: 6,  starting: true  },
+      { name: "Pisz",  position: "MID", overall: 98, apps: 33, goals: 6,  starting: true  },
+      { name: "Fedoruk",        position: "MID", overall: 80, apps: 25, goals: 6,  starting: true  },
+      { name: "Michalski",      position: "MID", overall: 88, apps: 28, goals: 4,  starting: true  },
+      { name: "Wędzyński",         position: "MID", overall: 78, apps: 27, goals: 1,  starting: false },
+      { name: "Lewandowski",       position: "MID", overall: 79, apps: 21, goals: 2,  starting: false },
+      { name: "Kacprzak",      position: "MID", overall: 78, apps: 28, goals: 1,  starting: false },
+      { name: "Unton",     position: "MID", overall: 56, apps: 19, goals: 3,  starting: false },
+
+      { name: "Podbrożny",    position: "FWD", overall: 89, apps: 31, goals: 5,  starting: true  },
+      { name: "Mięciel",      position: "FWD", overall: 80, apps: 26, goals: 6,  starting: true  },
+      { name: "Szeląg",      position: "FWD", overall: 77, apps: 26, goals: 6,  starting: false  },
+      { name: "Grzesiak",    position: "FWD", overall: 69, apps: 31, goals: 5,  starting: false  },
+    ]
+  },
+
+{
+    club: "Zagłębie Lubin",
+    season: "1990/91",
+    players: [
+      { name: "Bako",          position: "GK",  overall: 85, apps: 22, goals: 0,  starting: true  },
+      { name: "Koszarski",     position: "GK",  overall: 65, apps: 8,  goals: 0,  starting: false },
+      { name: "Kędziora",      position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+      { name: "Kikowski",      position: "GK",  overall: 52, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kujawa",        position: "DEF", overall: 89, apps: 29, goals: 10, starting: true  },
+      { name: "Wójcik",        position: "DEF", overall: 77, apps: 29, goals: 4,  starting: true  },
+      { name: "Machaj",        position: "DEF", overall: 82, apps: 28, goals: 3,  starting: true  },
+      { name: "Pietrzykowski", position: "DEF", overall: 76, apps: 26, goals: 0,  starting: true  },
+      { name: "Godlewski",     position: "DEF", overall: 74, apps: 21, goals: 2,  starting: false  },
+      { name: "Lewandowski",   position: "DEF", overall: 66, apps: 14, goals: 1,  starting: false },
+      { name: "Chwaliszewski", position: "DEF", overall: 64, apps: 11, goals: 0,  starting: false },
+
+      { name: "Zejer",         position: "MID", overall: 84, apps: 29, goals: 5,  starting: true  },
+      { name: "Szewczyk",      position: "MID", overall: 77, apps: 28, goals: 0,  starting: true  },
+      { name: "Góra",          position: "MID", overall: 85, apps: 26, goals: 7,  starting: true  },
+      { name: "Marciniak",     position: "MID", overall: 76, apps: 24, goals: 6,  starting: true  },
+      { name: "Urbaniak",      position: "MID", overall: 60, apps: 9,  goals: 0,  starting: false },
+      { name: "Ciliński",      position: "MID", overall: 62, apps: 5,  goals: 0,  starting: false },
+      { name: "Grech",         position: "MID", overall: 55, apps: 2,  goals: 0,  starting: false },
+
+      { name: "Kudyba",        position: "FWD", overall: 81, apps: 21, goals: 8,  starting: true  },
+      { name: "Olbiński",      position: "FWD", overall: 72, apps: 18, goals: 1,  starting: true },
+      { name: "Najdek",        position: "FWD", overall: 60, apps: 9,  goals: 0,  starting: false },
+      { name: "Pyc",           position: "FWD", overall: 61, apps: 5,  goals: 0,  starting: false },
+      { name: "Tyszkiewicz",   position: "FWD", overall: 65, apps: 1,  goals: 0,  starting: false },
+      { name: "Jasiński",      position: "FWD", overall: 53, apps: 0,  goals: 0,  starting: false },
+      { name: "Mikłasz",       position: "FWD", overall: 50, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Górnik Zabrze",
+    season: "1990/91",
+    players: [
+      { name: "Bęben",       position: "GK",  overall: 76, apps: 26, goals: 0,  starting: true  },
+      { name: "Klytta",      position: "GK",  overall: 55, apps: 4,  goals: 0,  starting: false },
+      { name: "Byrdy",       position: "GK",  overall: 52, apps: 0,  goals: 0,  starting: false },
+      { name: "Jarkiewicz",  position: "GK",  overall: 52, apps: 0,  goals: 0,  starting: false },
+      { name: "Przewoźnik",  position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+      { name: "Szolc",       position: "GK",  overall: 54, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Jegor",       position: "DEF", overall: 90, apps: 27, goals: 3,  starting: true  },
+      { name: "Grembocki",   position: "DEF", overall: 75, apps: 24, goals: 1,  starting: true  },
+      { name: "Staniek M.",  position: "DEF", overall: 74, apps: 21, goals: 0,  starting: true  },
+      { name: "Wałdoch",     position: "DEF", overall: 84, apps: 19, goals: 2,  starting: true  },
+      { name: "Piotrowicz",  position: "DEF", overall: 71, apps: 13, goals: 0,  starting: false },
+      { name: "Brzoza",      position: "DEF", overall: 65, apps: 8,  goals: 0,  starting: false },
+      { name: "Dziuk",       position: "DEF", overall: 58, apps: 6,  goals: 0,  starting: false },
+
+      { name: "Koseła",      position: "MID", overall: 82, apps: 29, goals: 5,  starting: true  },
+      { name: "Zagórski",    position: "MID", overall: 76, apps: 29, goals: 6,  starting: true  },
+      { name: "Szlezak",     position: "MID", overall: 74, apps: 24, goals: 1,  starting: true  },
+      { name: "Staniek R.",  position: "MID", overall: 89, apps: 22, goals: 3,  starting: true  },
+      { name: "Warzycha",    position: "MID", overall: 80, apps: 11, goals: 2,  starting: false },
+      { name: "Kołaczyk",    position: "MID", overall: 59, apps: 4,  goals: 0,  starting: false },
+      { name: "Lissek",      position: "MID", overall: 62, apps: 0,  goals: 0,  starting: false },
+      { name: "Kompała",     position: "MID", overall: 52, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Cyroń",       position: "FWD", overall: 85, apps: 30, goals: 15, starting: true  },
+      { name: "Golda",       position: "FWD", overall: 72, apps: 24, goals: 1,  starting: true  },
+      { name: "Kraus",       position: "FWD", overall: 81, apps: 22, goals: 16, starting: false },
+      { name: "Bałuszyński", position: "FWD", overall: 68, apps: 11, goals: 0,  starting: false },
+      { name: "Kamiński",    position: "FWD", overall: 60, apps: 6,  goals: 0,  starting: false },
+      { name: "Cygan",       position: "FWD", overall: 65, apps: 3,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Wisła Kraków",
+    season: "1990/91",
+    players: [
+      { name: "Bobrowicz",   position: "GK",  overall: 81, apps: 30, goals: 0,  starting: true  },
+      { name: "Maśnik",      position: "GK",  overall: 54, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Giszka",      position: "DEF", overall: 76, apps: 30, goals: 0,  starting: true  },
+      { name: "Małek",       position: "DEF", overall: 75, apps: 25, goals: 0,  starting: true  },
+      { name: "Jałocha",     position: "DEF", overall: 83, apps: 20, goals: 1,  starting: true  },
+      { name: "Gałuszka",    position: "DEF", overall: 70, apps: 13, goals: 0,  starting: true  },
+      { name: "Szczurek",    position: "DEF", overall: 64, apps: 8,  goals: 0,  starting: false },
+      { name: "Głownia",     position: "DEF", overall: 52, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Marzec",      position: "MID", overall: 78, apps: 30, goals: 6,  starting: true  },
+      { name: "Janik",       position: "MID", overall: 77, apps: 30, goals: 3,  starting: true  },
+      { name: "Lewandowski", position: "MID", overall: 77, apps: 29, goals: 3,  starting: true  },
+      { name: "Wójtowicz",   position: "MID", overall: 76, apps: 29, goals: 2,  starting: true  },
+      { name: "Kulawik",     position: "MID", overall: 71, apps: 11, goals: 2,  starting: false },
+      { name: "Przytuła",    position: "MID", overall: 63, apps: 6,  goals: 0,  starting: false },
+      { name: "Myślewski",   position: "MID", overall: 61, apps: 5,  goals: 0,  starting: false },
+      { name: "Świerkosz",   position: "MID", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Regulski",    position: "MID", overall: 53, apps: 1,  goals: 0,  starting: false },
+      { name: "Sikhosana",   position: "MID", overall: 54, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Dziubiński",  position: "FWD", overall: 89, apps: 29, goals: 21, starting: true  },
+      { name: "Gręda",       position: "FWD", overall: 75, apps: 27, goals: 7,  starting: true  },
+      { name: "Jelonek",     position: "FWD", overall: 73, apps: 20, goals: 3,  starting: false },
+      { name: "Świętek",     position: "FWD", overall: 72, apps: 19, goals: 4,  starting: false },
+      { name: "Barwiołek",   position: "FWD", overall: 58, apps: 3,  goals: 0,  starting: false },
+      { name: "Gościniak",   position: "FWD", overall: 58, apps: 3,  goals: 0,  starting: false },
+      { name: "Bugaj",       position: "FWD", overall: 55, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "GKS Katowice",
+    season: "1990/91",
+    players: [
+      { name: "Dreszer",         position: "GK",  overall: 74, apps: 17, goals: 0,  starting: true  },
+      { name: "Jojko",           position: "GK",  overall: 73, apps: 12, goals: 0,  starting: false },
+      { name: "Franczuk",        position: "GK",  overall: 54, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Świerczewski M.", position: "DEF", overall: 84, apps: 29, goals: 6,  starting: true  },
+      { name: "Lesiak",          position: "DEF", overall: 76, apps: 26, goals: 0,  starting: true  },
+      { name: "Nawrocki",        position: "DEF", overall: 75, apps: 25, goals: 0,  starting: true  },
+      { name: "Książek",         position: "DEF", overall: 71, apps: 15, goals: 0,  starting: true  },
+      { name: "Maciejewski",     position: "DEF", overall: 68, apps: 12, goals: 0,  starting: false },
+      { name: "Nazimek",         position: "DEF", overall: 67, apps: 10, goals: 0,  starting: false },
+      { name: "Duchowski",       position: "DEF", overall: 56, apps: 2,  goals: 0,  starting: false },
+      { name: "Witkowski",       position: "DEF", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Mosór",           position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+      { name: "Razakowski",      position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Szewczyk",        position: "MID", overall: 84, apps: 27, goals: 3,  starting: true  },
+      { name: "Świerczewski P.", position: "MID", overall: 81, apps: 27, goals: 0,  starting: true  },
+      { name: "Grzesik",         position: "MID", overall: 76, apps: 24, goals: 1,  starting: true  },
+      { name: "Rzeźniczek",      position: "MID", overall: 73, apps: 19, goals: 0,  starting: true  },
+      { name: "Coppola",         position: "MID", overall: 66, apps: 8,  goals: 0,  starting: false },
+      { name: "Maślanka",        position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Łacina",          position: "MID", overall: 57, apps: 4,  goals: 0,  starting: false },
+      { name: "Mitwerandu",      position: "MID", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Walczak",         position: "FWD", overall: 77, apps: 27, goals: 7,  starting: true  },
+      { name: "Strojek",         position: "FWD", overall: 75, apps: 24, goals: 2,  starting: true  },
+      { name: "Prabucki",        position: "FWD", overall: 76, apps: 22, goals: 7,  starting: false },
+      { name: "Wołowicz",        position: "FWD", overall: 73, apps: 20, goals: 1,  starting: false },
+      { name: "Kubisztal",       position: "FWD", overall: 74, apps: 15, goals: 4,  starting: false },
+      { name: "Guruli",          position: "FWD", overall: 68, apps: 6,  goals: 1,  starting: false },
+      { name: "Soprych",         position: "FWD", overall: 53, apps: 1,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Hutnik Kraków",
+    season: "1990/91",
+    players: [
+      { name: "Tyrpa",        position: "GK",  overall: 70, apps: 29, goals: 0,  starting: true  },
+      { name: "Dębosz",       position: "GK",  overall: 52, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Walankiewicz", position: "DEF", overall: 83, apps: 30, goals: 5,  starting: true  },
+      { name: "Wesołowski",   position: "DEF", overall: 77, apps: 29, goals: 1,  starting: true  },
+      { name: "Koźmiński",    position: "DEF", overall: 82, apps: 27, goals: 3,  starting: true  },
+      { name: "Węgrzyn",      position: "DEF", overall: 84, apps: 21, goals: 1,  starting: true  },
+      { name: "Romuzga",      position: "DEF", overall: 70, apps: 16, goals: 0,  starting: false },
+      { name: "Fudali",       position: "DEF", overall: 67, apps: 13, goals: 0,  starting: false },
+      { name: "Hajto",        position: "DEF", overall: 65, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Kraczkiewicz", position: "MID", overall: 77, apps: 30, goals: 3,  starting: true  },
+      { name: "Sermak",       position: "MID", overall: 86, apps: 28, goals: 10, starting: true  },
+      { name: "Bukalski",     position: "MID", overall: 81, apps: 28, goals: 2,  starting: true  },
+      { name: "Kowalik",      position: "MID", overall: 75, apps: 27, goals: 3,  starting: true  },
+      { name: "Góra",         position: "MID", overall: 72, apps: 22, goals: 0,  starting: false },
+      { name: "Zięba",        position: "MID", overall: 60, apps: 6,  goals: 0,  starting: false },
+      { name: "Gruchała",     position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+
+      { name: "Waligóra",     position: "FWD", overall: 88, apps: 30, goals: 18, starting: true  },
+      { name: "Popczyński",   position: "FWD", overall: 76, apps: 27, goals: 4,  starting: true  },
+      { name: "Kasperczyk",   position: "FWD", overall: 64, apps: 6,  goals: 2,  starting: false },
+    ]
+  },
+
+{
+    club: "Lech Poznań",
+    season: "1990/91",
+    players: [
+      { name: "Sidorczuk",   position: "GK",  overall: 82, apps: 25, goals: 0,  starting: true  },
+      { name: "Jankowski",   position: "GK",  overall: 68, apps: 4,  goals: 0,  starting: false },
+      { name: "Przybylski",  position: "GK",  overall: 54, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Gębura",      position: "DEF", overall: 84, apps: 30, goals: 11, starting: true  },
+      { name: "Rzepka",      position: "DEF", overall: 76, apps: 28, goals: 0,  starting: true  },
+      { name: "Bereszyński", position: "DEF", overall: 75, apps: 24, goals: 1,  starting: true  },
+      { name: "Kryger",      position: "DEF", overall: 74, apps: 23, goals: 0,  starting: true  },
+      { name: "Jakołcewicz", position: "DEF", overall: 75, apps: 15, goals: 4,  starting: false },
+      { name: "Włosowicz",   position: "DEF", overall: 61, apps: 5,  goals: 0,  starting: false },
+      { name: "Wojtala",     position: "DEF", overall: 60, apps: 5,  goals: 0,  starting: false },
+      { name: "Janeczek",    position: "DEF", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Sangowski",   position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Moskal",      position: "MID", overall: 82, apps: 28, goals: 7,  starting: true  },
+      { name: "Skrzypczak",  position: "MID", overall: 80, apps: 27, goals: 1,  starting: true  },
+      { name: "Bayer",       position: "MID", overall: 76, apps: 27, goals: 1,  starting: true  },
+      { name: "Kofnyt",      position: "MID", overall: 74, apps: 23, goals: 0,  starting: true  },
+      { name: "Łukasik",     position: "MID", overall: 73, apps: 22, goals: 0,  starting: false },
+      { name: "Remień",      position: "MID", overall: 68, apps: 13, goals: 0,  starting: false },
+      { name: "Rodriguez",   position: "MID", overall: 60, apps: 5,  goals: 0,  starting: false },
+
+      { name: "Juskowiak",   position: "FWD", overall: 83, apps: 29, goals: 12, starting: true  },
+      { name: "Trzeciak",    position: "FWD", overall: 81, apps: 28, goals: 9,  starting: true  },
+      { name: "Wołoszczuk",  position: "FWD", overall: 66, apps: 11, goals: 0,  starting: false },
+      { name: "Pachelski",   position: "FWD", overall: 65, apps: 8,  goals: 0,  starting: false },
+      { name: "Reiss",       position: "FWD", overall: 52, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Śląsk Wrocław",
+    season: "1990/91",
+    players: [
+      { name: "Matysek",       position: "GK",  overall: 85, apps: 29, goals: 0,  starting: true  },
+      { name: "Kirsza",        position: "GK",  overall: 54, apps: 1,  goals: 0,  starting: false },
+      { name: "Siemiątkowski", position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Mandziejewicz", position: "DEF", overall: 82, apps: 30, goals: 5,  starting: true  },
+      { name: "Góra",          position: "DEF", overall: 82, apps: 23, goals: 4,  starting: true  },
+      { name: "Brzoza",        position: "DEF", overall: 71, apps: 15, goals: 1,  starting: true  },
+      { name: "Razakowski",    position: "DEF", overall: 70, apps: 15, goals: 0,  starting: true  },
+      { name: "Tęsiorowski",   position: "DEF", overall: 70, apps: 14, goals: 1,  starting: false },
+      { name: "Słowakiewicz",  position: "DEF", overall: 68, apps: 8,  goals: 2,  starting: false },
+      { name: "Walczak",       position: "DEF", overall: 56, apps: 4,  goals: 0,  starting: false },
+      { name: "Psota",         position: "DEF", overall: 56, apps: 4,  goals: 0,  starting: false },
+      { name: "Chodorowski",   position: "DEF", overall: 54, apps: 2,  goals: 0,  starting: false },
+      { name: "Król",          position: "DEF", overall: 54, apps: 2,  goals: 0,  starting: false },
+
+      { name: "Chałaśkiewicz", position: "MID", overall: 79, apps: 29, goals: 6,  starting: true  },
+      { name: "Twardygrosz",   position: "MID", overall: 77, apps: 29, goals: 1,  starting: true  },
+      { name: "Gil",           position: "MID", overall: 76, apps: 27, goals: 4,  starting: true  },
+      { name: "Misztur",       position: "MID", overall: 75, apps: 27, goals: 0,  starting: true  },
+      { name: "Marozzi",       position: "MID", overall: 71, apps: 12, goals: 2,  starting: false },
+      { name: "Ilski",         position: "MID", overall: 66, apps: 12, goals: 0,  starting: false },
+      { name: "Marek",         position: "MID", overall: 63, apps: 8,  goals: 0,  starting: false },
+      { name: "Dziarmaga",     position: "MID", overall: 64, apps: 7,  goals: 1,  starting: false },
+      { name: "Drączkowski",   position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Siekierka",     position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Mazur",         position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Soliński",      position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Wolski",        position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Gałkowski",     position: "FWD", overall: 74, apps: 27, goals: 6,  starting: true  },
+      { name: "Pomorski",      position: "FWD", overall: 68, apps: 13, goals: 0,  starting: true  },
+      { name: "Gretchneev",    position: "FWD", overall: 76, apps: 11, goals: 7,  starting: false },
+      { name: "Haładyn",       position: "FWD", overall: 67, apps: 10, goals: 1,  starting: false },
+      { name: "Sadowski",      position: "FWD", overall: 62, apps: 7,  goals: 0,  starting: false },
+      { name: "Widawski",      position: "FWD", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Walkiewicz",    position: "FWD", overall: 52, apps: 1,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Olimpia Poznań",
+    season: "1990/91",
+    players: [
+      { name: "Stencel",     position: "GK",  overall: 76, apps: 22, goals: 0,  starting: true  },
+      { name: "Szułcik",     position: "GK",  overall: 64, apps: 8,  goals: 0,  starting: false },
+
+      { name: "Soczyński",   position: "DEF", overall: 78, apps: 29, goals: 5,  starting: true  },
+      { name: "Sadzawicki",  position: "DEF", overall: 76, apps: 26, goals: 1,  starting: true  },
+      { name: "Najtkowski",  position: "DEF", overall: 76, apps: 25, goals: 1,  starting: true  },
+      { name: "Motyliński",  position: "DEF", overall: 75, apps: 24, goals: 1,  starting: true  },
+      { name: "Sobkowiak",   position: "DEF", overall: 70, apps: 13, goals: 0,  starting: false },
+      { name: "Molewski R.", position: "DEF", overall: 62, apps: 6,  goals: 1,  starting: false },
+      { name: "Owczarek",    position: "DEF", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Siebert",     position: "DEF", overall: 57, apps: 3,  goals: 0,  starting: false },
+
+      { name: "Brzęczek",    position: "MID", overall: 79, apps: 28, goals: 2,  starting: true  },
+      { name: "Przerada",    position: "MID", overall: 77, apps: 24, goals: 3,  starting: true  },
+      { name: "Borówko",     position: "MID", overall: 72, apps: 14, goals: 1,  starting: true  },
+      { name: "Magowski",    position: "MID", overall: 71, apps: 13, goals: 0,  starting: true  },
+      { name: "Kiłdanowicz", position: "MID", overall: 69, apps: 11, goals: 0,  starting: false },
+      { name: "Bocian",      position: "MID", overall: 68, apps: 11, goals: 0,  starting: false },
+      { name: "Burkhardt",   position: "MID", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Stachowiak",  position: "MID", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Kukuła",      position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Molewski T.", position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Mielcarski",  position: "FWD", overall: 81, apps: 29, goals: 14, starting: true  },
+      { name: "Suchomski",   position: "FWD", overall: 77, apps: 27, goals: 6,  starting: true  },
+      { name: "Mazurkiewicz",position: "FWD", overall: 71, apps: 15, goals: 2,  starting: false },
+      { name: "Kaziów",      position: "FWD", overall: 70, apps: 14, goals: 1,  starting: false },
+      { name: "Krzystolik",  position: "FWD", overall: 69, apps: 14, goals: 0,  starting: false },
+      { name: "Tyszkiewicz", position: "FWD", overall: 67, apps: 9,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Legia Warszawa",
+    season: "1990/91",
+    players: [
+      { name: "Szczęsny",      position: "GK",  overall: 89, apps: 20, goals: 0,  starting: true  },
+      { name: "Robakiewicz",   position: "GK",  overall: 72, apps: 10, goals: 0,  starting: false },
+      { name: "Muszyński",     position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kubicki",       position: "DEF", overall: 85, apps: 27, goals: 0,  starting: true  },
+      { name: "Gmur",          position: "DEF", overall: 76, apps: 25, goals: 1,  starting: true  },
+      { name: "Jóźwiak",       position: "DEF", overall: 77, apps: 24, goals: 0,  starting: true  },
+      { name: "Budka",         position: "DEF", overall: 74, apps: 15, goals: 0,  starting: true  },
+      { name: "Czachowski",    position: "DEF", overall: 75, apps: 12, goals: 0,  starting: false },
+      { name: "Wójcik",        position: "DEF", overall: 66, apps: 8,  goals: 0,  starting: false },
+      { name: "Kupiec",        position: "DEF", overall: 65, apps: 8,  goals: 0,  starting: false },
+      { name: "Modzelewski",   position: "DEF", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Lesiak",        position: "DEF", overall: 56, apps: 3,  goals: 0,  starting: false },
+      { name: "Sobkowiak",     position: "DEF", overall: 52, apps: 0,  goals: 0,  starting: false },
+      { name: "Włódarczyk",    position: "DEF", overall: 52, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Czykier",       position: "MID", overall: 88, apps: 27, goals: 4,  starting: true  },
+      { name: "Pisz",          position: "MID", overall: 91, apps: 25, goals: 3,  starting: true  },
+      { name: "Iwanicki",      position: "MID", overall: 80, apps: 23, goals: 0,  starting: true  },
+      { name: "Łatka",         position: "MID", overall: 75, apps: 21, goals: 3,  starting: true  },
+      { name: "Sobczak",       position: "MID", overall: 71, apps: 12, goals: 0,  starting: false },
+      { name: "Sazonowicz",    position: "MID", overall: 67, apps: 10, goals: 0,  starting: false },
+      { name: "Salamon",       position: "MID", overall: 66, apps: 9,  goals: 0,  starting: false },
+      { name: "Perzyk",        position: "MID", overall: 65, apps: 7,  goals: 0,  starting: false },
+      { name: "Wojciechowski", position: "MID", overall: 56, apps: 2,  goals: 0,  starting: false },
+      { name: "Przała",        position: "MID", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Dąbrowski",     position: "MID", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Cyzio",         position: "FWD", overall: 78, apps: 27, goals: 2,  starting: true  },
+      { name: "Bąk",           position: "FWD", overall: 77, apps: 22, goals: 2,  starting: true  },
+      { name: "Kosecki",       position: "FWD", overall: 82, apps: 13, goals: 4,  starting: false },
+      { name: "Kowalczyk",     position: "FWD", overall: 86, apps: 11, goals: 3,  starting: false },
+      { name: "Świetlik",      position: "FWD", overall: 64, apps: 7,  goals: 1,  starting: false },
+      { name: "Kucharski",     position: "FWD", overall: 59, apps: 4,  goals: 0,  starting: false },
+      { name: "Szeląg",        position: "FWD", overall: 50, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Motor Lublin",
+    season: "1990/91",
+    players: [
+      { name: "Opolski",       position: "GK",  overall: 67, apps: 30, goals: 0,  starting: true  },
+      { name: "Graniczka",     position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Dec",           position: "DEF", overall: 77, apps: 30, goals: 3,  starting: true  },
+      { name: "Żuchnik",       position: "DEF", overall: 76, apps: 28, goals: 1,  starting: true  },
+      { name: "Komor",         position: "DEF", overall: 66, apps: 27, goals: 0,  starting: true  },
+      { name: "Kuraś",         position: "DEF", overall: 75, apps: 25, goals: 0,  starting: true  },
+      { name: "Prokop",        position: "DEF", overall: 70, apps: 14, goals: 1,  starting: false },
+      { name: "Bąk",           position: "DEF", overall: 68, apps: 11, goals: 0,  starting: false },
+      { name: "Mikhailov",     position: "DEF", overall: 67, apps: 10, goals: 1,  starting: false },
+      { name: "Zagrodniczek",  position: "DEF", overall: 60, apps: 4,  goals: 1,  starting: false },
+
+      { name: "Brzeszczyński", position: "MID", overall: 72, apps: 28, goals: 1,  starting: true  },
+      { name: "Wójtowicz",     position: "MID", overall: 71, apps: 27, goals: 3,  starting: true  },
+      { name: "Pisz",          position: "MID", overall: 76, apps: 25, goals: 2,  starting: true  },
+      { name: "Rajt",          position: "MID", overall: 74, apps: 21, goals: 1,  starting: true  },
+      { name: "Gładysiewicz",  position: "MID", overall: 62, apps: 5,  goals: 0,  starting: false },
+      { name: "Oleszczuk",     position: "MID", overall: 56, apps: 3,  goals: 0,  starting: false },
+      { name: "Korczyk",       position: "MID", overall: 54, apps: 2,  goals: 0,  starting: false },
+      { name: "Oryszko",       position: "MID", overall: 54, apps: 2,  goals: 0,  starting: false },
+
+      { name: "Grzesiak",      position: "FWD", overall: 77, apps: 26, goals: 9,  starting: true  },
+      { name: "Zych",          position: "FWD", overall: 70, apps: 26, goals: 5,  starting: true  },
+      { name: "Banaszek",      position: "FWD", overall: 75, apps: 26, goals: 4,  starting: false },
+      { name: "Topczewski",    position: "FWD", overall: 65, apps: 13, goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "ŁKS Łódź",
+    season: "1990/91",
+    players: [
+      { name: "Woźniak",     position: "GK",  overall: 77, apps: 29, goals: 0,  starting: true  },
+      { name: "Bratkowski",  position: "GK",  overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Dziuba",      position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kruszankin",  position: "DEF", overall: 78, apps: 29, goals: 1,  starting: true  },
+      { name: "Leszczyński", position: "DEF", overall: 77, apps: 28, goals: 1,  starting: true  },
+      { name: "Chojnacki",   position: "DEF", overall: 76, apps: 27, goals: 0,  starting: true  },
+      { name: "Ogrodowicz",  position: "DEF", overall: 70, apps: 26, goals: 0,  starting: true  },
+      { name: "Różycki",     position: "DEF", overall: 63, apps: 21, goals: 2,  starting: false },
+      { name: "Wenclewski",  position: "DEF", overall: 73, apps: 21, goals: 2,  starting: false },
+      { name: "Lenart",      position: "DEF", overall: 68, apps: 15, goals: 0,  starting: false },
+      { name: "Gajewski",    position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Wieszczycki", position: "MID", overall: 80, apps: 26, goals: 3,  starting: true  },
+      { name: "Stefański",   position: "MID", overall: 66, apps: 24, goals: 2,  starting: true  },
+      { name: "Nowacki",     position: "MID", overall: 70, apps: 24, goals: 1,  starting: true  },
+      { name: "Podolski",    position: "MID", overall: 78, apps: 21, goals: 4,  starting: true  },
+      { name: "Pawlak",      position: "MID", overall: 65, apps: 9,  goals: 0,  starting: false },
+      { name: "Janczak",     position: "MID", overall: 62, apps: 6,  goals: 1,  starting: false },
+      { name: "Stankiewicz", position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Traczyk",     position: "MID", overall: 58, apps: 3,  goals: 1,  starting: false },
+      { name: "Dziubek",     position: "MID", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Cebula",      position: "FWD", overall: 78, apps: 29, goals: 4,  starting: true  },
+      { name: "Grad",        position: "FWD", overall: 74, apps: 29, goals: 2,  starting: true  },
+      { name: "Michalewicz", position: "FWD", overall: 67, apps: 11, goals: 0,  starting: false },
+      { name: "Terlecki",    position: "FWD", overall: 85, apps: 4,  goals: 1,  starting: false },
+      { name: "Zalewski",    position: "FWD", overall: 54, apps: 2,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Igloopol Dębica",
+    season: "1990/91",
+    players: [
+      { name: "Kłak",         position: "GK",  overall: 77, apps: 28, goals: 0,  starting: true  },
+      { name: "Śliwa",        position: "GK",  overall: 54, apps: 2,  goals: 0,  starting: false },
+      { name: "Szymaszek",    position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Zieliński",    position: "DEF", overall: 86, apps: 21, goals: 1,  starting: true  },
+      { name: "Nalepka",      position: "DEF", overall: 75, apps: 27, goals: 2,  starting: true  },
+      { name: "Bajor",        position: "DEF", overall: 74, apps: 27, goals: 1,  starting: true  },
+      { name: "Jęcek",        position: "DEF", overall: 73, apps: 30, goals: 0,  starting: true  },
+      { name: "Włosowicz",    position: "DEF", overall: 70, apps: 14, goals: 0,  starting: false },
+      { name: "Makuch",       position: "DEF", overall: 68, apps: 16, goals: 0,  starting: false },
+      { name: "Szewczyk",     position: "DEF", overall: 67, apps: 12, goals: 0,  starting: false },
+      { name: "Chłąd",        position: "DEF", overall: 63, apps: 6,  goals: 0,  starting: false },
+      { name: "Szary",        position: "DEF", overall: 60, apps: 20, goals: 2,  starting: false },
+      { name: "Musiał",       position: "DEF", overall: 52, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Podbrożny",    position: "MID", overall: 79, apps: 26, goals: 7,  starting: true  },
+      { name: "Stefanik",     position: "MID", overall: 66, apps: 28, goals: 3,  starting: true  },
+      { name: "Antolak",      position: "MID", overall: 70, apps: 27, goals: 1,  starting: true  },
+      { name: "Kaczówka",     position: "MID", overall: 79, apps: 25, goals: 1,  starting: true  },
+      { name: "Majak",        position: "MID", overall: 76, apps: 21, goals: 3,  starting: false },
+      { name: "Yatshishin",   position: "MID", overall: 65, apps: 3,  goals: 0,  starting: false },
+      { name: "Winek",        position: "MID", overall: 58, apps: 3,  goals: 0,  starting: false },
+      { name: "Zub",          position: "MID", overall: 58, apps: 5,  goals: 0,  starting: false },
+      { name: "Nylec",        position: "MID", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Mitek",        position: "MID", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kucharski",    position: "FWD", overall: 79, apps: 23, goals: 7,  starting: true  },
+      { name: "Wołoszczuk",   position: "FWD", overall: 66, apps: 9,  goals: 1,  starting: true },
+      { name: "Świerad",      position: "FWD", overall: 65, apps: 8,  goals: 0,  starting: false },
+      { name: "Drobot",       position: "FWD", overall: 60, apps: 2,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Ruch Chorzów",
+    season: "1990/91",
+    players: [
+      { name: "Lech",          position: "GK",  overall: 77, apps: 27, goals: 0,  starting: true  },
+      { name: "Kołodziejczyk", position: "GK",  overall: 66, apps: 3,  goals: 0,  starting: false },
+
+      { name: "Fornalik",      position: "DEF", overall: 76, apps: 24, goals: 0,  starting: true  },
+      { name: "Fornalak",      position: "DEF", overall: 75, apps: 27, goals: 2,  starting: true  },
+      { name: "Jaworski",      position: "DEF", overall: 75, apps: 24, goals: 4,  starting: true  },
+      { name: "Waleszczyk",    position: "DEF", overall: 74, apps: 23, goals: 0,  starting: true  },
+      { name: "Bednarz",       position: "DEF", overall: 71, apps: 21, goals: 1,  starting: false },
+      { name: "Wagner",        position: "DEF", overall: 68, apps: 16, goals: 0,  starting: false },
+      { name: "Wleciałowski",  position: "DEF", overall: 66, apps: 8,  goals: 0,  starting: false },
+      { name: "Chorzewski",    position: "DEF", overall: 65, apps: 4,  goals: 0,  starting: false },
+      { name: "Rudek",         position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Szewczyk M.",   position: "MID", overall: 77, apps: 25, goals: 5,  starting: true  },
+      { name: "Mizia",         position: "MID", overall: 75, apps: 21, goals: 3,  starting: true  },
+      { name: "Mosór",         position: "MID", overall: 70, apps: 19, goals: 0,  starting: true  },
+      { name: "Łukasik",       position: "MID", overall: 73, apps: 18, goals: 2,  starting: true  },
+      { name: "Gęsior",        position: "MID", overall: 73, apps: 18, goals: 1,  starting: false },
+      { name: "Probierz",      position: "MID", overall: 68, apps: 17, goals: 0,  starting: false },
+      { name: "Musiał",        position: "MID", overall: 65, apps: 14, goals: 0,  starting: false },
+      { name: "Gawenda",       position: "MID", overall: 64, apps: 9,  goals: 0,  starting: false },
+      { name: "Szuster",       position: "MID", overall: 66, apps: 6,  goals: 0,  starting: false },
+      { name: "Dąbrowski",     position: "MID", overall: 60, apps: 6,  goals: 0,  starting: false },
+
+      { name: "Jaworek",       position: "FWD", overall: 78, apps: 28, goals: 6,  starting: true  },
+      { name: "Klukowski",     position: "FWD", overall: 65, apps: 14, goals: 0,  starting: true },
+      { name: "Bąk",           position: "FWD", overall: 65, apps: 6,  goals: 0,  starting: false },
+      { name: "Boncol",        position: "FWD", overall: 64, apps: 6,  goals: 0,  starting: false },
+      { name: "Baucz",         position: "FWD", overall: 58, apps: 3,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Zawisza Bydgoszcz",
+    season: "1990/91",
+    players: [
+      { name: "Brończyk",    position: "GK",  overall: 66, apps: 21, goals: 0,  starting: true  },
+      { name: "Matuszewski", position: "GK",  overall: 68, apps: 8,  goals: 0,  starting: false },
+      { name: "Onyszko",     position: "GK",  overall: 55, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Pasieka",     position: "DEF", overall: 77, apps: 27, goals: 5,  starting: true  },
+      { name: "Arndt",       position: "DEF", overall: 66, apps: 23, goals: 5,  starting: true  },
+      { name: "Rzepa",       position: "DEF", overall: 75, apps: 26, goals: 1,  starting: true  },
+      { name: "Jarosz",      position: "DEF", overall: 64, apps: 24, goals: 0,  starting: true  },
+      { name: "Kwaśniewski", position: "DEF", overall: 70, apps: 17, goals: 1,  starting: false },
+      { name: "Bierwagen",   position: "DEF", overall: 68, apps: 11, goals: 0,  starting: false },
+      { name: "Wódkiewicz",  position: "DEF", overall: 65, apps: 10, goals: 0,  starting: false },
+      { name: "Szuflita",    position: "DEF", overall: 62, apps: 9,  goals: 0,  starting: false },
+      { name: "Fortuna",     position: "DEF", overall: 58, apps: 7,  goals: 0,  starting: false },
+
+      { name: "Durda",       position: "MID", overall: 67, apps: 30, goals: 2,  starting: true  },
+      { name: "Modracki",    position: "MID", overall: 66, apps: 27, goals: 3,  starting: true  },
+      { name: "Kot",         position: "MID", overall: 70, apps: 27, goals: 5,  starting: true  },
+      { name: "Kwiatkowski", position: "MID", overall: 70, apps: 23, goals: 1,  starting: true  },
+      { name: "Straszewski", position: "MID", overall: 70, apps: 15, goals: 0,  starting: false },
+      { name: "Porbes",      position: "MID", overall: 66, apps: 13, goals: 0,  starting: false },
+      { name: "Wilk",        position: "MID", overall: 65, apps: 9,  goals: 0,  starting: false },
+      { name: "Kołacki",     position: "MID", overall: 55, apps: 8,  goals: 0,  starting: false },
+
+      { name: "Berendt",     position: "FWD", overall: 64, apps: 26, goals: 3,  starting: true  },
+      { name: "Marut",       position: "FWD", overall: 62, apps: 11, goals: 0,  starting: true },
+      { name: "Mazur",       position: "FWD", overall: 58, apps: 3,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Stal Mielec",
+    season: "1990/91",
+    players: [
+      { name: "Wojdyga",     position: "GK",  overall: 73, apps: 30, goals: 0,  starting: true  },
+      { name: "Gajek",       position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Czachowski",  position: "DEF", overall: 75, apps: 15, goals: 0,  starting: true  },
+      { name: "Łętocha",     position: "DEF", overall: 66, apps: 28, goals: 0,  starting: true  },
+      { name: "Porębny",     position: "DEF", overall: 51, apps: 23, goals: 0,  starting: true  },
+      { name: "Tomanek",     position: "DEF", overall: 68, apps: 16, goals: 0,  starting: true  },
+      { name: "Tyburski",    position: "DEF", overall: 67, apps: 13, goals: 0,  starting: false },
+      { name: "Tomczak",     position: "DEF", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Curzytek",    position: "DEF", overall: 52, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Fedoruk",     position: "MID", overall: 77, apps: 30, goals: 6,  starting: true  },
+      { name: "Barnak",      position: "MID", overall: 63, apps: 24, goals: 1,  starting: true  },
+      { name: "Gruszecki",   position: "MID", overall: 62, apps: 23, goals: 1,  starting: true  },
+      { name: "Tułacz",      position: "MID", overall: 71, apps: 24, goals: 1,  starting: true  },
+      { name: "Ruta",        position: "MID", overall: 68, apps: 26, goals: 1,  starting: false },
+      { name: "Dziubel",     position: "MID", overall: 67, apps: 14, goals: 0,  starting: false },
+      { name: "Klich",       position: "MID", overall: 66, apps: 16, goals: 0,  starting: false },
+      { name: "Jaskot",      position: "MID", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Stopa S.",    position: "MID", overall: 56, apps: 3,  goals: 0,  starting: false },
+
+      { name: "Sajdak",      position: "FWD", overall: 74, apps: 26, goals: 9,  starting: true  },
+      { name: "Jędraszczyk", position: "FWD", overall: 62, apps: 22, goals: 5,  starting: true  },
+      { name: "Zagórski",    position: "FWD", overall: 60, apps: 19, goals: 1,  starting: false },
+      { name: "Stopa P.",    position: "FWD", overall: 62, apps: 10, goals: 0,  starting: false },
+      { name: "Bociek",      position: "FWD", overall: 58, apps: 4,  goals: 0,  starting: false },
+      { name: "Hrapkowicz",  position: "FWD", overall: 55, apps: 1,  goals: 0,  starting: false },
+      { name: "Serwon",      position: "FWD", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Żyłka",       position: "FWD", overall: 52, apps: 1,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Zagłębie Sosnowiec",
+    season: "1990/91",
+    players: [
+      { name: "Stanek",       position: "GK",  overall: 66, apps: 18, goals: 0,  starting: true  },
+      { name: "Harasiuk",     position: "GK",  overall: 64, apps: 9,  goals: 0,  starting: false },
+      { name: "Pietrek",      position: "GK",  overall: 63, apps: 6,  goals: 0,  starting: false },
+
+      { name: "Bałaga",       position: "DEF", overall: 70, apps: 30, goals: 0,  starting: true  },
+      { name: "Krupa",        position: "DEF", overall: 69, apps: 27, goals: 0,  starting: true  },
+      { name: "Kordysz",      position: "DEF", overall: 67, apps: 21, goals: 1,  starting: true  },
+      { name: "Kowalski",     position: "DEF", overall: 67, apps: 19, goals: 0,  starting: true  },
+      { name: "Churek",       position: "DEF", overall: 66, apps: 18, goals: 0,  starting: false },
+      { name: "Jadczak",      position: "DEF", overall: 65, apps: 12, goals: 0,  starting: false },
+      { name: "Gałuszka",     position: "DEF", overall: 68, apps: 12, goals: 0,  starting: false },
+      { name: "Pietranek",    position: "DEF", overall: 55, apps: 5,  goals: 0,  starting: false },
+      { name: "Wnuk",         position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Czerwiec",     position: "MID", overall: 78, apps: 29, goals: 6,  starting: true  },
+      { name: "Stachurski",   position: "MID", overall: 73, apps: 29, goals: 5,  starting: true  },
+      { name: "Wencek",       position: "MID", overall: 72, apps: 25, goals: 2,  starting: true  },
+      { name: "Mandrysz",     position: "MID", overall: 71, apps: 24, goals: 2,  starting: true  },
+      { name: "Wykurz",       position: "MID", overall: 68, apps: 19, goals: 1,  starting: false },
+      { name: "Żurawski",     position: "MID", overall: 66, apps: 14, goals: 0,  starting: false },
+      { name: "Miszczak",     position: "MID", overall: 65, apps: 11, goals: 0,  starting: false },
+      { name: "Pawełek",      position: "MID", overall: 62, apps: 8,  goals: 0,  starting: false },
+      { name: "Kulawik",      position: "MID", overall: 60, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Cisowski",     position: "FWD", overall: 70, apps: 24, goals: 4,  starting: true  },
+      { name: "Śmiałek M.",   position: "FWD", overall: 60, apps: 5,  goals: 0,  starting: false },
+      { name: "Cichy",        position: "FWD", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Śmiałek A.",   position: "FWD", overall: 50, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Siarka Tarnobrzeg",
+    season: "1995/96",
+    players: [
+      { name: "Pawlak",      position: "GK",  overall: 65, apps: 16, goals: 0,  starting: true  },
+      { name: "Janowski",    position: "GK",  overall: 63, apps: 11, goals: 0,  starting: false },
+      { name: "Witoń",       position: "GK",  overall: 58, apps: 7,  goals: 0,  starting: false },
+      { name: "Róg",         position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kiełbowicz",  position: "DEF", overall: 70, apps: 34, goals: 0,  starting: true  },
+      { name: "Wilczok",     position: "DEF", overall: 68, apps: 33, goals: 1,  starting: true  },
+      { name: "Adamus",      position: "DEF", overall: 67, apps: 32, goals: 3,  starting: true  },
+      { name: "Złotek",      position: "DEF", overall: 66, apps: 28, goals: 0,  starting: true  },
+      { name: "Żuchnik",     position: "DEF", overall: 65, apps: 19, goals: 0,  starting: false },
+      { name: "Tyburski",    position: "DEF", overall: 64, apps: 15, goals: 3,  starting: false },
+      { name: "Jędraszczyk", position: "DEF", overall: 63, apps: 17, goals: 0,  starting: false },
+      { name: "Ozimek",      position: "DEF", overall: 55, apps: 5,  goals: 0,  starting: false },
+      { name: "Oleniacz",    position: "DEF", overall: 52, apps: 3,  goals: 0,  starting: false },
+
+      { name: "Kukiełka",    position: "MID", overall: 78, apps: 31, goals: 1,  starting: true  },
+      { name: "Podbrożny",   position: "MID", overall: 75, apps: 16, goals: 2,  starting: true  },
+      { name: "Drągowski",   position: "MID", overall: 67, apps: 21, goals: 0,  starting: true  },
+      { name: "Rozmus G.",   position: "MID", overall: 66, apps: 19, goals: 1,  starting: true  },
+      { name: "Kuranty",     position: "MID", overall: 64, apps: 16, goals: 2,  starting: false },
+      { name: "Stefanik",    position: "MID", overall: 63, apps: 11, goals: 0,  starting: false },
+      { name: "Golczyński",  position: "MID", overall: 62, apps: 9,  goals: 1,  starting: false },
+      { name: "Rączkowski",  position: "MID", overall: 58, apps: 6,  goals: 0,  starting: false },
+      { name: "Komada",      position: "MID", overall: 55, apps: 3,  goals: 0,  starting: false },
+      { name: "Winek",       position: "MID", overall: 55, apps: 3,  goals: 0,  starting: false },
+
+      { name: "Zagórski",    position: "FWD", overall: 69, apps: 34, goals: 5,  starting: true  },
+      { name: "Białek",      position: "FWD", overall: 68, apps: 27, goals: 4,  starting: true  },
+      { name: "Rozmus A.",   position: "FWD", overall: 64, apps: 26, goals: 0,  starting: false },
+      { name: "Przypkowski", position: "FWD", overall: 60, apps: 18, goals: 0,  starting: false },
+      { name: "Słomka",      position: "FWD", overall: 58, apps: 6,  goals: 1,  starting: false },
+    ]
+  },
+
+{
+    club: "Stal Mielec",
+    season: "1995/96",
+    players: [
+      { name: "Wyparło",      position: "GK",  overall: 79, apps: 33, goals: 0,  starting: true  },
+      { name: "Petrykowski",  position: "GK",  overall: 55, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Bartkowski",   position: "DEF", overall: 68, apps: 29, goals: 0,  starting: true  },
+      { name: "Piechota",     position: "DEF", overall: 66, apps: 24, goals: 0,  starting: true  },
+      { name: "Tomanek",      position: "DEF", overall: 65, apps: 21, goals: 0,  starting: true  },
+      { name: "Oprzondek",    position: "DEF", overall: 64, apps: 19, goals: 0,  starting: true  },
+      { name: "Jarzynka",     position: "DEF", overall: 63, apps: 14, goals: 0,  starting: false },
+      { name: "Federkiewicz", position: "DEF", overall: 63, apps: 14, goals: 0,  starting: false },
+      { name: "Łętocha",      position: "DEF", overall: 62, apps: 15, goals: 0,  starting: false },
+      { name: "Jegor",        position: "DEF", overall: 68, apps: 8,  goals: 1,  starting: false },
+      { name: "Rycak",        position: "DEF", overall: 61, apps: 13, goals: 0,  starting: false },
+      { name: "Galica",       position: "DEF", overall: 55, apps: 2,  goals: 0,  starting: false },
+      { name: "Murdza",       position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kloc",         position: "MID", overall: 72, apps: 30, goals: 3,  starting: true  },
+      { name: "Kukowski",     position: "MID", overall: 67, apps: 29, goals: 1,  starting: true  },
+      { name: "Wrotoń",       position: "MID", overall: 66, apps: 29, goals: 1,  starting: true  },
+      { name: "Piotrowski",   position: "MID", overall: 65, apps: 25, goals: 1,  starting: true  },
+      { name: "Konopelski",   position: "MID", overall: 63, apps: 19, goals: 1,  starting: false },
+      { name: "Ruta",         position: "MID", overall: 62, apps: 14, goals: 2,  starting: false },
+      { name: "Kaczówka",     position: "MID", overall: 62, apps: 16, goals: 0,  starting: false },
+      { name: "Kolisz",       position: "MID", overall: 58, apps: 7,  goals: 0,  starting: false },
+      { name: "Pancerz",      position: "MID", overall: 55, apps: 4,  goals: 0,  starting: false },
+      { name: "Pszeniczny",   position: "MID", overall: 50, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Cygan",        position: "FWD", overall: 82, apps: 33, goals: 13, starting: true  },
+      { name: "Domarski",     position: "FWD", overall: 71, apps: 27, goals: 3,  starting: true  },
+      { name: "Czyrek",       position: "FWD", overall: 64, apps: 15, goals: 5,  starting: false },
+      { name: "Bociek",       position: "FWD", overall: 63, apps: 9,  goals: 1,  starting: false },
+      { name: "Abramowicz",   position: "FWD", overall: 58, apps: 7,  goals: 1,  starting: false },
+    ]
+  },
+
+{
+    club: "Lechia Gdańsk",
+    season: "1995/96",
+    players: [
+      { name: "Wojdyga",      position: "GK",  overall: 78, apps: 22, goals: 0,  starting: true  },
+      { name: "Gładyś",       position: "GK",  overall: 65, apps: 12, goals: 0,  starting: false },
+      { name: "Kozak",        position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Sadzawicki",   position: "DEF", overall: 70, apps: 31, goals: 1,  starting: true  },
+      { name: "Kozioł",       position: "DEF", overall: 68, apps: 20, goals: 0,  starting: true  },
+      { name: "Mosór",        position: "DEF", overall: 67, apps: 16, goals: 1,  starting: true  },
+      { name: "Rajkiewicz",   position: "DEF", overall: 66, apps: 16, goals: 1,  starting: true  },
+      { name: "Nowak",        position: "DEF", overall: 65, apps: 13, goals: 2,  starting: false },
+      { name: "Janus",        position: "DEF", overall: 64, apps: 15, goals: 1,  starting: false },
+      { name: "Matuk",        position: "DEF", overall: 63, apps: 11, goals: 0,  starting: false },
+      { name: "Grembocki",    position: "DEF", overall: 65, apps: 3,  goals: 0,  starting: false },
+      { name: "Kruszankin",   position: "DEF", overall: 64, apps: 4,  goals: 0,  starting: false },
+      { name: "Chrzonowski",  position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Pawlak M.",    position: "MID", overall: 75, apps: 25, goals: 1,  starting: true  },
+      { name: "Unton",        position: "MID", overall: 79, apps: 21, goals: 5,  starting: true  },
+      { name: "Ciliński",     position: "MID", overall: 70, apps: 26, goals: 3,  starting: true  },
+      { name: "Motyka",       position: "MID", overall: 66, apps: 20, goals: 1,  starting: true  },
+      { name: "Ruta",         position: "MID", overall: 65, apps: 14, goals: 1,  starting: false },
+      { name: "Bąk A.",       position: "MID", overall: 67, apps: 14, goals: 2,  starting: false },
+      { name: "Dawidowski",   position: "MID", overall: 62, apps: 14, goals: 0,  starting: false },
+      { name: "Dąbrowski J.", position: "MID", overall: 61, apps: 12, goals: 1,  starting: false },
+      { name: "Kowalczyk K.", position: "MID", overall: 60, apps: 9,  goals: 0,  starting: false },
+      { name: "Kubsik",       position: "MID", overall: 58, apps: 8,  goals: 0,  starting: false },
+      { name: "Magowski",     position: "MID", overall: 60, apps: 1,  goals: 0,  starting: false },
+      { name: "Kalkowski",    position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Suchomski",    position: "FWD", overall: 70, apps: 29, goals: 6,  starting: true  },
+      { name: "Grad",         position: "FWD", overall: 68, apps: 21, goals: 2,  starting: true  },
+      { name: "Król",         position: "FWD", overall: 66, apps: 30, goals: 2,  starting: false },
+      { name: "Burlikowski",  position: "FWD", overall: 62, apps: 4,  goals: 0,  starting: false },
+      { name: "Aziz",         position: "FWD", overall: 60, apps: 2,  goals: 0,  starting: false },
+      { name: "Głos",         position: "FWD", overall: 52, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Pogoń Szczecin",
+    season: "1995/96",
+    players: [
+      { name: "Majdan",        position: "GK",  overall: 81, apps: 28, goals: 0,  starting: true  },
+      { name: "Tomasiewicz",   position: "GK",  overall: 64, apps: 7,  goals: 0,  starting: false },
+      { name: "Lenczewski",    position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Miązek",        position: "DEF", overall: 79, apps: 34, goals: 0,  starting: true  },
+      { name: "Studziński",    position: "DEF", overall: 68, apps: 32, goals: 0,  starting: true  },
+      { name: "Kaczmarek",     position: "DEF", overall: 67, apps: 26, goals: 0,  starting: true  },
+      { name: "Stolarczyk",    position: "DEF", overall: 67, apps: 17, goals: 1,  starting: true  },
+      { name: "Pokładowski",   position: "DEF", overall: 64, apps: 19, goals: 0,  starting: false },
+      { name: "Jaskulski",     position: "DEF", overall: 76, apps: 15, goals: 1,  starting: false },
+      { name: "Walburg",       position: "DEF", overall: 52, apps: 1,  goals: 0,  starting: false },
+      { name: "Benesz",        position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+      { name: "Gołaszewski",   position: "DEF", overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Faltyński",     position: "MID", overall: 68, apps: 30, goals: 0,  starting: true  },
+      { name: "Rafałowicz",    position: "MID", overall: 77, apps: 27, goals: 3,  starting: true  },
+      { name: "Moskalewicz",   position: "MID", overall: 78, apps: 23, goals: 3,  starting: true  },
+      { name: "Oleszek",       position: "MID", overall: 66, apps: 22, goals: 0,  starting: true  },
+      { name: "Kamiński",      position: "MID", overall: 65, apps: 15, goals: 0,  starting: false },
+      { name: "Adamczuk",      position: "MID", overall: 70, apps: 6,  goals: 0,  starting: false },
+      { name: "Kuras",         position: "MID", overall: 64, apps: 3,  goals: 1,  starting: false },
+      { name: "Krusiewicz",    position: "MID", overall: 60, apps: 8,  goals: 0,  starting: false },
+      { name: "Kseniak",       position: "MID", overall: 58, apps: 6,  goals: 0,  starting: false },
+
+      { name: "Dymkowski",     position: "FWD", overall: 83, apps: 33, goals: 17, starting: true  },
+      { name: "Rycak",         position: "FWD", overall: 77, apps: 29, goals: 4,  starting: true  },
+      { name: "Cyzio",         position: "FWD", overall: 76, apps: 28, goals: 0,  starting: false },
+      { name: "Niciński",      position: "FWD", overall: 65, apps: 23, goals: 1,  starting: false },
+      { name: "Mandrysz",      position: "FWD", overall: 67, apps: 16, goals: 2,  starting: false },
+      { name: "Gutkowski",     position: "FWD", overall: 55, apps: 3,  goals: 0,  starting: false },
+      { name: "Ratajczak",     position: "FWD", overall: 52, apps: 2,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Śląsk Wrocław",
+    season: "1995/96",
+    players: [
+      { name: "Bobel",          position: "GK",  overall: 70, apps: 27, goals: 0,  starting: true  },
+      { name: "Jedynak",        position: "GK",  overall: 65, apps: 7,  goals: 0,  starting: false },
+
+      { name: "Kujawa",         position: "DEF", overall: 90, apps: 34, goals: 8,  starting: true  },
+      { name: "Szymański",      position: "DEF", overall: 68, apps: 33, goals: 0,  starting: true  },
+      { name: "Molewski",       position: "DEF", overall: 67, apps: 21, goals: 0,  starting: true  },
+      { name: "Szczęsny",       position: "DEF", overall: 66, apps: 20, goals: 0,  starting: true  },
+      { name: "Adamczyk",       position: "DEF", overall: 65, apps: 15, goals: 1,  starting: false },
+      { name: "Gajdzis",        position: "DEF", overall: 64, apps: 9,  goals: 0,  starting: false },
+
+      { name: "Góra",           position: "MID", overall: 81, apps: 32, goals: 6,  starting: true  },
+      { name: "Leszczyński",    position: "MID", overall: 68, apps: 23, goals: 0,  starting: true  },
+      { name: "Grech",          position: "MID", overall: 67, apps: 21, goals: 3,  starting: true  },
+      { name: "Kasperek",       position: "MID", overall: 68, apps: 16, goals: 4,  starting: true },
+      { name: "Kowalczyk M.",   position: "MID", overall: 65, apps: 17, goals: 2,  starting: false },
+      { name: "Pawlak",         position: "MID", overall: 64, apps: 14, goals: 0,  starting: false },
+
+      { name: "Kostek",         position: "FWD", overall: 75, apps: 28, goals: 10, starting: true  },
+      { name: "Ilski",          position: "FWD", overall: 67, apps: 24, goals: 1,  starting: true  },
+      { name: "Moskal",         position: "FWD", overall: 66, apps: 24, goals: 0,  starting: false },
+      { name: "Jaworek",        position: "FWD", overall: 67, apps: 16, goals: 1,  starting: false },
+      { name: "Kudyba",         position: "FWD", overall: 68, apps: 12, goals: 2,  starting: false },
+    ]
+  },
+  {
+    club: "GKS Bełchatów",
+    season: "1995/96",
+    players: [
+      { name: "Miller",         position: "GK",  overall: 68, apps: 22, goals: 0,  starting: true  },
+      { name: "Paciorkowski",   position: "GK",  overall: 66, apps: 13, goals: 0,  starting: false },
+
+      { name: "Szkudlarek",     position: "DEF", overall: 79, apps: 31, goals: 1,  starting: true  },
+      { name: "Górski",         position: "DEF", overall: 68, apps: 30, goals: 8,  starting: true  },
+      { name: "Lamch",          position: "DEF", overall: 67, apps: 30, goals: 2,  starting: true  },
+      { name: "Stocki",         position: "DEF", overall: 65, apps: 15, goals: 0,  starting: true  },
+      { name: "Rogovskoy",      position: "DEF", overall: 67, apps: 13, goals: 0,  starting: false },
+      { name: "Pieniążek",      position: "DEF", overall: 64, apps: 12, goals: 0,  starting: false },
+
+      { name: "Berensztajn",    position: "MID", overall: 90, apps: 34, goals: 9,  starting: true  },
+      { name: "Durda",         position: "MID", overall: 70, apps: 29, goals: 0,  starting: true  },
+      { name: "Rogan",         position: "MID", overall: 69, apps: 33, goals: 3,  starting: true  },
+      { name: "Rzeźniczek",    position: "MID", overall: 68, apps: 31, goals: 1,  starting: true  },
+      { name: "Tęsiorowski",   position: "MID", overall: 67, apps: 19, goals: 0,  starting: false },
+      { name: "Nowicki",       position: "MID", overall: 65, apps: 11, goals: 0,  starting: false },
+
+      { name: "Prucheński",     position: "FWD", overall: 74, apps: 27, goals: 7,  starting: true  },
+      { name: "Kukulski",      position: "FWD", overall: 66, apps: 20, goals: 4,  starting: true  },
+      { name: "Chwiałkowski",  position: "FWD", overall: 65, apps: 13, goals: 2,  starting: false },
+    ]
+  },
+  {
+    club: "Górnik Zabrze",
+    season: "1995/96",
+    players: [
+      { name: "Warzecha",      position: "GK",  overall: 69, apps: 18, goals: 0,  starting: true  },
+      { name: "Klytta",        position: "GK",  overall: 67, apps: 16, goals: 0,  starting: true  },
+
+      { name: "Hajto",         position: "DEF", overall: 84, apps: 25, goals: 1,  starting: true  },
+      { name: "Orzeszek",      position: "DEF", overall: 71, apps: 28, goals: 1,  starting: true  },
+      { name: "Dziuk",         position: "DEF", overall: 70, apps: 25, goals: 0,  starting: true  },
+      { name: "Krzętowski",    position: "DEF", overall: 69, apps: 25, goals: 0,  starting: true  },
+      { name: "Kubik",         position: "DEF", overall: 68, apps: 14, goals: 1,  starting: false },
+
+      { name: "Kraczkiewicz",  position: "MID", overall: 77, apps: 33, goals: 1,  starting: true  },
+      { name: "Koseła",        position: "MID", overall: 70, apps: 29, goals: 3,  starting: true  },
+      { name: "Agafon",        position: "MID", overall: 86, apps: 31, goals: 6,  starting: true  },
+      { name: "Gruszka",       position: "MID", overall: 67, apps: 24, goals: 1,  starting: true  },
+      { name: "Bonk",          position: "MID", overall: 66, apps: 21, goals: 1,  starting: false },
+      { name: "Kocyba",        position: "MID", overall: 65, apps: 24, goals: 0,  starting: false },
+
+      { name: "Kuźba",         position: "FWD", overall: 82, apps: 26, goals: 8,  starting: true  },
+      { name: "Szemoński",     position: "FWD", overall: 80, apps: 29, goals: 8,  starting: true  },
+      { name: "Kampka",        position: "FWD", overall: 68, apps: 29, goals: 5,  starting: false },
+      { name: "Nosal",         position: "FWD", overall: 67, apps: 18, goals: 6,  starting: false },
+    ]
+  },
+  {
+    club: "GKS Katowice",
+    season: "1995/96",
+    players: [
+      { name: "Jojko",         position: "GK",  overall: 82, apps: 31, goals: 0,  starting: true  },
+
+      { name: "Węgrzyn",       position: "DEF", overall: 83, apps: 30, goals: 6,  starting: true  },
+      { name: "Widuch",        position: "DEF", overall: 71, apps: 30, goals: 1,  starting: true  },
+      { name: "Szala",         position: "DEF", overall: 69, apps: 26, goals: 0,  starting: true  },
+      { name: "Świerczewski",  position: "DEF", overall: 82, apps: 14, goals: 0,  starting: true  },
+      { name: "Nikodem",       position: "DEF", overall: 66, apps: 12, goals: 0,  starting: false },
+
+      { name: "Ledwoń",        position: "MID", overall: 89, apps: 29, goals: 0,  starting: true  },
+      { name: "Wojciechowski", position: "MID", overall: 91, apps: 26, goals: 4,  starting: true  },
+      { name: "Karwan",        position: "MID", overall: 74, apps: 23, goals: 1,  starting: true  },
+      { name: "Borawski",      position: "MID", overall: 69, apps: 31, goals: 0,  starting: true  },
+      { name: "Bilski",        position: "MID", overall: 68, apps: 24, goals: 2,  starting: false },
+      { name: "Kucz",          position: "MID", overall: 67, apps: 28, goals: 2,  starting: false },
+      { name: "Bała",          position: "MID", overall: 67, apps: 19, goals: 2,  starting: false },
+
+      { name: "Furtok",        position: "FWD", overall: 75, apps: 17, goals: 4,  starting: true  },
+      { name: "Pikuta",        position: "FWD", overall: 69, apps: 16, goals: 3,  starting: true  },
+      { name: "Strojek",       position: "FWD", overall: 68, apps: 26, goals: 2,  starting: false },
+      { name: "Pawłuszek",     position: "FWD", overall: 66, apps: 14, goals: 2,  starting: false },
+    ]
+  },
+
+{
+    club: "Zagłębie Lubin",
+    season: "1995/96",
+    players: [
+      { name: "Dreszer",       position: "GK",  overall: 83, apps: 34, goals: 0,  starting: true  },
+      { name: "Banaszyński",   position: "GK",  overall: 65, apps: 0,  goals: 0,  starting: false },
+      { name: "Kędziora",      position: "GK",  overall: 60, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Machaj",        position: "DEF", overall: 82, apps: 30, goals: 0,  starting: true  },
+      { name: "Przerywacz",    position: "DEF", overall: 71, apps: 30, goals: 0,  starting: true  },
+      { name: "Lewandowski",   position: "DEF", overall: 70, apps: 28, goals: 1,  starting: true  },
+      { name: "Nalepka",       position: "DEF", overall: 70, apps: 26, goals: 0,  starting: true  },
+      { name: "Bubnowicz",     position: "DEF", overall: 69, apps: 22, goals: 0,  starting: false },
+      { name: "Rogovskoy",     position: "DEF", overall: 68, apps: 15, goals: 2,  starting: false },
+      { name: "Boguś",         position: "DEF", overall: 67, apps: 10, goals: 0,  starting: false },
+      { name: "Cecot",         position: "DEF", overall: 65, apps: 5,  goals: 0,  starting: false },
+
+      { name: "Kałużny",       position: "MID", overall: 85, apps: 31, goals: 8,  starting: true  },
+      { name: "Szczypkowski",  position: "MID", overall: 72, apps: 34, goals: 2,  starting: true  },
+      { name: "Górski",        position: "MID", overall: 81, apps: 28, goals: 6,  starting: true  },
+      { name: "Krzyżanowski",  position: "MID", overall: 70, apps: 23, goals: 4,  starting: true  },
+      { name: "Majak",         position: "MID", overall: 72, apps: 17, goals: 2,  starting: false },
+      { name: "Piekarski",     position: "MID", overall: 68, apps: 15, goals: 1,  starting: false },
+      { name: "Dziarmaga",     position: "MID", overall: 66, apps: 13, goals: 0,  starting: false },
+
+      { name: "Szeliga",       position: "FWD", overall: 70, apps: 27, goals: 6,  starting: true  },
+      { name: "Czajkowski",    position: "FWD", overall: 69, apps: 32, goals: 1,  starting: true  },
+      { name: "Wojewódka",     position: "FWD", overall: 67, apps: 12, goals: 0,  starting: false },
+      { name: "Jasiński",      position: "FWD", overall: 65, apps: 9,  goals: 0,  starting: false },
+    ]
+  },
+  {
+    club: "Sokół Tychy",
+    season: "1995/96",
+    players: [
+      { name: "Dudek",         position: "GK",  overall: 90, apps: 15, goals: 0,  starting: true  },
+      { name: "Płaczkiewicz",  position: "GK",  overall: 78, apps: 16, goals: 0,  starting: false },
+      { name: "Jarkiewicz",    position: "GK",  overall: 65, apps: 4,  goals: 0,  starting: false },
+
+      { name: "Nawrocki",      position: "DEF", overall: 71, apps: 31, goals: 0,  starting: true  },
+      { name: "Gorszkow",      position: "DEF", overall: 70, apps: 31, goals: 1,  starting: true  },
+      { name: "Kos",           position: "DEF", overall: 70, apps: 30, goals: 4,  starting: true  },
+      { name: "Piotrowicz",    position: "DEF", overall: 69, apps: 24, goals: 0,  starting: true  },
+      { name: "Bereszyński",   position: "DEF", overall: 68, apps: 17, goals: 0,  starting: false },
+      { name: "Rzepka",        position: "DEF", overall: 68, apps: 17, goals: 1,  starting: false },
+      { name: "Jaskulski",     position: "DEF", overall: 67, apps: 17, goals: 1,  starting: false },
+
+      { name: "Bizacki",       position: "MID", overall: 78, apps: 33, goals: 6,  starting: true  },
+      { name: "Wilk",          position: "MID", overall: 75, apps: 34, goals: 5,  starting: true  },
+      { name: "Konon",         position: "MID", overall: 72, apps: 25, goals: 1,  starting: true  },
+      { name: "Rafałowicz",    position: "MID", overall: 69, apps: 27, goals: 3,  starting: true  },
+      { name: "Konieczko",     position: "MID", overall: 67, apps: 26, goals: 0,  starting: false },
+      { name: "Szwed",         position: "MID", overall: 66, apps: 14, goals: 0,  starting: false },
+      { name: "Matore",        position: "MID", overall: 65, apps: 20, goals: 0,  starting: false },
+
+      { name: "Dymkowski",     position: "FWD", overall: 83, apps: 33, goals: 17, starting: true  },
+      { name: "Moskalewicz",   position: "FWD", overall: 75, apps: 23, goals: 3,  starting: true  },
+      { name: "Niciński",      position: "FWD", overall: 69, apps: 23, goals: 1,  starting: false },
+    ]
+  },
+  {
+    club: "Raków Częstochowa",
+    season: "1995/96",
+    players: [
+      { name: "Matuszek",      position: "GK",  overall: 73, apps: 23, goals: 0,  starting: true  },
+      { name: "Kretek",        position: "GK",  overall: 68, apps: 12, goals: 0,  starting: false },
+
+      { name: "Skrzypek",      position: "DEF", overall: 88, apps: 33, goals: 5,  starting: true  },
+      { name: "Bodzioch",      position: "DEF", overall: 71, apps: 31, goals: 3,  starting: true  },
+      { name: "Wróblewski",    position: "DEF", overall: 75, apps: 31, goals: 0,  starting: true  },
+      { name: "Gwiździel",     position: "DEF", overall: 70, apps: 30, goals: 0,  starting: true  },
+      { name: "Wilk B.",       position: "DEF", overall: 68, apps: 24, goals: 1,  starting: false },
+      { name: "Sieja",         position: "DEF", overall: 67, apps: 22, goals: 0,  starting: false },
+      { name: "Synoradzki",    position: "DEF", overall: 66, apps: 18, goals: 0,  starting: false },
+
+      { name: "Spychalski",    position: "MID", overall: 81, apps: 33, goals: 1,  starting: true  },
+      { name: "Załęski",       position: "MID", overall: 70, apps: 32, goals: 0,  starting: true  },
+      { name: "Skwara",        position: "MID", overall: 72, apps: 25, goals: 5,  starting: true  },
+      { name: "Dziedzic",      position: "MID", overall: 68, apps: 18, goals: 2,  starting: true  },
+      { name: "Magiera",       position: "MID", overall: 67, apps: 16, goals: 2,  starting: false },
+
+      { name: "Stępień",       position: "FWD", overall: 70, apps: 34, goals: 3,  starting: true  },
+      { name: "Mandrysz",      position: "FWD", overall: 71, apps: 14, goals: 5,  starting: true  },
+      { name: "Bański",        position: "FWD", overall: 68, apps: 27, goals: 3,  starting: false },
+      { name: "Szopa",         position: "FWD", overall: 66, apps: 14, goals: 2,  starting: false },
+    ]
+  },
+
+{
+    club: "Lech Poznań",
+    season: "1995/96",
+    players: [
+      { name: "Muzadzi",      position: "GK",  overall: 70, apps: 20, goals: 0,  starting: true  },
+      { name: "Ruciński",     position: "GK",  overall: 65, apps: 7,  goals: 0,  starting: false },
+      { name: "Mioduszewski", position: "GK",  overall: 64, apps: 6,  goals: 0,  starting: false },
+      { name: "Bekas",        position: "GK",  overall: 58, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Wojtala",      position: "DEF", overall: 84, apps: 27, goals: 4,  starting: true  },
+      { name: "Kryger",       position: "DEF", overall: 72, apps: 30, goals: 0,  starting: true  },
+      { name: "Bocian",       position: "DEF", overall: 70, apps: 28, goals: 2,  starting: true  },
+      { name: "Bosacki",      position: "DEF", overall: 69, apps: 26, goals: 0,  starting: true  },
+      { name: "Drame",        position: "DEF", overall: 68, apps: 18, goals: 1,  starting: false },
+      { name: "Urbaniak",     position: "DEF", overall: 67, apps: 21, goals: 0,  starting: false },
+      { name: "Augustyniak",  position: "DEF", overall: 65, apps: 10, goals: 0,  starting: false },
+
+      { name: "Piskuła",      position: "MID", overall: 83, apps: 25, goals: 3,  starting: true  },
+      { name: "Majewski",     position: "MID", overall: 71, apps: 29, goals: 0,  starting: true  },
+      { name: "Ostrowski",    position: "MID", overall: 68, apps: 27, goals: 0,  starting: true  },
+      { name: "Wojciechowski",position: "MID", overall: 67, apps: 13, goals: 0,  starting: false },
+      { name: "Bekas T.",     position: "MID", overall: 65, apps: 8,  goals: 1,  starting: false },
+      { name: "Remień",       position: "MID", overall: 66, apps: 13, goals: 0,  starting: false },
+      { name: "Twardygrosz",  position: "MID", overall: 65, apps: 8,  goals: 0,  starting: false },
+
+      { name: "Dembiński", position: "FWD", overall: 85, apps: 32, goals: 7,  starting: true  },
+      { name: "Reiss",   position: "FWD", overall: 76, apps: 31, goals: 2,  starting: true  },
+      { name: "Wichniarek",       position: "FWD", overall: 68, apps: 26, goals: 0,  starting: false },
+      { name: "Prabucki",       position: "FWD", overall: 78, apps: 26, goals: 0,  starting: false },
+      { name: "Trzeciak",       position: "FWD", overall: 78, apps: 26, goals: 0,  starting: false },
+    ]
+   
+  },
+  {
+    club: "Stomil Olsztyn",
+    season: "1995/96",
+    players: [
+      { name: "Sidorczuk",    position: "GK",  overall: 80, apps: 33, goals: 0,  starting: true  },
+      { name: "Charbicki",    position: "GK",  overall: 60, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Biedrzycki",   position: "DEF", overall: 77, apps: 32, goals: 1,  starting: true  },
+      { name: "Wagner",       position: "DEF", overall: 71, apps: 27, goals: 0,  starting: true  },
+      { name: "Opaliński",    position: "DEF", overall: 70, apps: 27, goals: 0,  starting: true  },
+      { name: "Żukowski",     position: "DEF", overall: 69, apps: 24, goals: 0,  starting: true  },
+      { name: "Chańko",       position: "DEF", overall: 77, apps: 16, goals: 4,  starting: false },
+      { name: "Oblewski",     position: "DEF", overall: 65, apps: 8,  goals: 0,  starting: false },
+
+      { name: "Zejer",        position: "MID", overall: 79, apps: 29, goals: 4,  starting: true  },
+      { name: "Jankowski",    position: "MID", overall: 71, apps: 31, goals: 3,  starting: true  },
+      { name: "Kaczmarczyk",  position: "MID", overall: 76, apps: 28, goals: 1,  starting: true  },
+      { name: "Gadziała",     position: "MID", overall: 69, apps: 23, goals: 2,  starting: true  },
+      { name: "Sokołowski",   position: "MID", overall: 72, apps: 15, goals: 5,  starting: false },
+      { name: "Sinichin",     position: "MID", overall: 68, apps: 17, goals: 2,  starting: false },
+
+      { name: "Czereszewski", position: "FWD", overall: 85, apps: 32, goals: 7,  starting: true  },
+      { name: "Płuciennik",   position: "FWD", overall: 76, apps: 31, goals: 2,  starting: true  },
+      { name: "Klimek",       position: "FWD", overall: 68, apps: 26, goals: 0,  starting: false },
+    ]
+  },
+  {
+    club: "Amica Wronki",
+    season: "1995/96",
+    players: [
+      { name: "Pleśnierowicz", position: "GK",  overall: 71, apps: 24, goals: 0,  starting: true  },
+      { name: "Stróżyński",    position: "GK",  overall: 67, apps: 11, goals: 0,  starting: false },
+
+      { name: "Małachowski",   position: "DEF", overall: 71, apps: 33, goals: 4,  starting: true  },
+      { name: "Wódkiewicz",    position: "DEF", overall: 70, apps: 33, goals: 1,  starting: true  },
+      { name: "Owczarek",      position: "DEF", overall: 69, apps: 26, goals: 1,  starting: true  },
+      { name: "Siara",         position: "DEF", overall: 68, apps: 31, goals: 0,  starting: true  },
+      { name: "Shatalov",      position: "DEF", overall: 67, apps: 24, goals: 1,  starting: false },
+      { name: "Rzepa",         position: "DEF", overall: 67, apps: 17, goals: 1,  starting: false },
+
+      { name: "Biliński",      position: "MID", overall: 70, apps: 34, goals: 0,  starting: true  },
+      { name: "Tomziński",     position: "MID", overall: 69, apps: 27, goals: 3,  starting: true  },
+      { name: "Dubiela",       position: "MID", overall: 68, apps: 27, goals: 0,  starting: true  },
+      { name: "Bąk",           position: "MID", overall: 71, apps: 16, goals: 4,  starting: true  },
+      { name: "Fedoruk",       position: "MID", overall: 72, apps: 16, goals: 2,  starting: false },
+
+      { name: "Kryszałowicz",  position: "FWD", overall: 78, apps: 31, goals: 6,  starting: true  },
+      { name: "Bugaj",         position: "FWD", overall: 77, apps: 27, goals: 8,  starting: true  },
+      { name: "Suwary",        position: "FWD", overall: 67, apps: 27, goals: 3,  starting: false },
+    ]
+  },
+  {
+    club: "Hutnik Kraków",
+    season: "1995/96",
+    players: [
+      { name: "Szypowski",   position: "GK",  overall: 81, apps: 26, goals: 0,  starting: true  },
+      { name: "Bobrowicz",    position: "GK",  overall: 68, apps: 9,  goals: 0,  starting: false },
+
+      { name: "Walankiewicz", position: "DEF", overall: 82, apps: 34, goals: 0,  starting: true  },
+      { name: "Zając",        position: "DEF", overall: 81, apps: 31, goals: 4,  starting: true  },
+      { name: "Wojnecki",     position: "DEF", overall: 70, apps: 29, goals: 3,  starting: true  },
+      { name: "Fudali",       position: "DEF", overall: 69, apps: 33, goals: 0,  starting: true  },
+      { name: "Jamróz",       position: "DEF", overall: 68, apps: 23, goals: 2,  starting: false },
+      { name: "Kaliszan",     position: "DEF", overall: 70, apps: 12, goals: 1,  starting: false },
+
+      { name: "Bukalski",     position: "MID", overall: 92, apps: 32, goals: 11, starting: true  },
+      { name: "Romuzga",      position: "MID", overall: 82, apps: 31, goals: 5,  starting: true  },
+      { name: "Jaskot",       position: "MID", overall: 71, apps: 28, goals: 3,  starting: true  },
+      { name: "Zięba",        position: "MID", overall: 70, apps: 27, goals: 0,  starting: true  },
+      { name: "Kowalik",      position: "MID", overall: 69, apps: 25, goals: 0,  starting: false },
+
+      { name: "Adamczyk",     position: "FWD", overall: 83, apps: 31, goals: 9,  starting: true  },
+      { name: "Lambo",        position: "FWD", overall: 80, apps: 16, goals: 7,  starting: true  },
+    ]
+  },
+
+{
+    club: "ŁKS Łódź",
+    season: "1995/96",
+    players: [
+      { name: "Robakiewicz",   position: "GK",  overall: 73, apps: 34, goals: 0,  starting: true  },
+      { name: "Sławuta",       position: "GK",  overall: 58, apps: 1,  goals: 0,  starting: false },
+      { name: "Kobalczyk",     position: "GK",  overall: 50, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Kłos",          position: "DEF", overall: 84, apps: 31, goals: 4,  starting: true  },
+      { name: "Krysiak",       position: "DEF", overall: 82, apps: 31, goals: 3,  starting: true  },
+      { name: "Kościuk",       position: "DEF", overall: 70, apps: 29, goals: 0,  starting: true  },
+      { name: "Bendkowski",    position: "DEF", overall: 70, apps: 27, goals: 1,  starting: true  },
+      { name: "Chojnacki",     position: "DEF", overall: 69, apps: 25, goals: 0,  starting: false },
+      { name: "Lenart",        position: "DEF", overall: 68, apps: 31, goals: 0,  starting: false },
+      { name: "Myśliński",     position: "DEF", overall: 67, apps: 12, goals: 0,  starting: false },
+
+      { name: "Wędzyński",     position: "MID", overall: 78, apps: 30, goals: 6,  starting: true  },
+      { name: "Czachowski",    position: "MID", overall: 82, apps: 31, goals: 2,  starting: true  },
+      { name: "Niżnik",        position: "MID", overall: 71, apps: 33, goals: 2,  starting: true  },
+      { name: "Terlecki",      position: "MID", overall: 85, apps: 26, goals: 3,  starting: true  },
+      { name: "Cebula",        position: "MID", overall: 69, apps: 4,  goals: 1,  starting: false },
+      { name: "Kupidura",      position: "MID", overall: 65, apps: 7,  goals: 0,  starting: false },
+      { name: "Janczak",       position: "MID", overall: 64, apps: 3,  goals: 0,  starting: false },
+      { name: "Leszczyk",      position: "MID", overall: 62, apps: 2,  goals: 0,  starting: false },
+
+      { name: "Saganowski",    position: "FWD", overall: 85, apps: 29, goals: 11, starting: true  },
+      { name: "Dubicki",       position: "FWD", overall: 71, apps: 33, goals: 4,  starting: true  },
+      { name: "Białas",        position: "FWD", overall: 63, apps: 4,  goals: 0,  starting: false },
+      { name: "Szpak",         position: "FWD", overall: 60, apps: 3,  goals: 0,  starting: false },
+      { name: "Żuberek",       position: "FWD", overall: 55, apps: 0,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Legia Warszawa",
+    season: "1995/96",
+    players: [
+      { name: "Szczęsny",       position: "GK",  overall: 90, apps: 34, goals: 0,  starting: true  },
+      { name: "Szamotulski",    position: "GK",  overall: 70, apps: 0,  goals: 0,  starting: false },
+      { name: "Muszyński",      position: "GK",  overall: 60, apps: 0,  goals: 0,  starting: false },
+      { name: "Borkowski",      position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Zieliński",      position: "DEF", overall: 94, apps: 29, goals: 0,  starting: true  },
+      { name: "Jóźwiak",       position: "DEF", overall: 87, apps: 29, goals: 1,  starting: true  },
+      { name: "Ratajczyk",     position: "DEF", overall: 85, apps: 27, goals: 1,  starting: true  },
+      { name: "Bednarz",       position: "DEF", overall: 84, apps: 28, goals: 2,  starting: true  },
+      { name: "Jałocha",       position: "DEF", overall: 73, apps: 18, goals: 1,  starting: false },
+      { name: "Mandziejewicz",  position: "DEF", overall: 72, apps: 21, goals: 1,  starting: false },
+      { name: "Mosór",         position: "DEF", overall: 68, apps: 7,  goals: 0,  starting: false },
+
+      { name: "Pisz",          position: "MID", overall: 96, apps: 32, goals: 11, starting: true  },
+      { name: "Wieszczycki",   position: "MID", overall: 92, apps: 31, goals: 18, starting: true  },
+      { name: "Podbrożny",     position: "MID", overall: 84, apps: 28, goals: 19, starting: true  },
+      { name: "Michalski",     position: "MID", overall: 88, apps: 28, goals: 2,  starting: true  },
+      { name: "Staniek",       position: "MID", overall: 87, apps: 33, goals: 7,  starting: false  },
+      { name: "Lewandowski",   position: "MID", overall: 74, apps: 26, goals: 1,  starting: false },
+      { name: "Sokołowski",    position: "MID", overall: 73, apps: 16, goals: 1,  starting: false },
+      { name: "Fedoruk",       position: "MID", overall: 72, apps: 15, goals: 5,  starting: false },
+
+      { name: "Kucharski",     position: "FWD", overall: 82, apps: 30, goals: 13, starting: true  },
+      { name: "Mięciel",       position: "FWD", overall: 78, apps: 13, goals: 5,  starting: true  },
+      { name: "Kubica",        position: "FWD", overall: 75, apps: 10, goals: 4,  starting: false },
+      { name: "Aziz",          position: "FWD", overall: 65, apps: 3,  goals: 0,  starting: false },
+      { name: "Oreshchuk",     position: "FWD", overall: 65, apps: 1,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+    club: "Widzew Łódź",
+    season: "1995/96",
+    players: [
+      { name: "Woźniak",       position: "GK",  overall: 93, apps: 32, goals: 0,  starting: true  },
+      { name: "Muchiński",     position: "GK",  overall: 65, apps: 2,  goals: 0,  starting: false },
+      { name: "Ludwikowski",   position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+
+      { name: "Łapiński",      position: "DEF", overall: 95, apps: 28, goals: 2,  starting: true  },
+      { name: "Mykhalchuk",    position: "DEF", overall: 84, apps: 33, goals: 6,  starting: true  },
+      { name: "Siadaczka",     position: "FWD", overall: 80, apps: 33, goals: 9,  starting: true  },
+      { name: "Bajor",         position: "DEF", overall: 76, apps: 27, goals: 0,  starting: true  },
+      { name: "Bogusz",        position: "DEF", overall: 75, apps: 30, goals: 1,  starting: true  },
+      { name: "Jaskulski",     position: "DEF", overall: 70, apps: 16, goals: 0,  starting: false },
+      { name: "Boguś",         position: "DEF", overall: 68, apps: 11, goals: 0,  starting: false },
+
+      { name: "Czerwiec",      position: "MID", overall: 89, apps: 31, goals: 12, starting: true  },
+      { name: "Wyciszkiewicz", position: "MID", overall: 87, apps: 34, goals: 10, starting: true  },
+      { name: "Citko",         position: "MID", overall: 96, apps: 27, goals: 5,  starting: true  },
+      { name: "Miąszkiewicz",  position: "MID", overall: 80, apps: 33, goals: 5,  starting: true  },
+      { name: "Szarpak",       position: "MID", overall: 74, apps: 30, goals: 2,  starting: false  },
+      { name: "Gula",          position: "MID", overall: 70, apps: 10, goals: 1,  starting: false },
+      { name: "Szymkowiak",    position: "MID", overall: 72, apps: 5,  goals: 1,  starting: false },
+      { name: "Podolski",      position: "MID", overall: 68, apps: 14, goals: 0,  starting: false },
+      { name: "Bielecki",      position: "MID", overall: 60, apps: 1,  goals: 0,  starting: false },
+
+      { name: "Koniarek",      position: "FWD", overall: 97, apps: 34, goals: 29, starting: true  },
+      { name: "Kubiak",        position: "FWD", overall: 66, apps: 12, goals: 1,  starting: false },
+      { name: "Pikuta",        position: "FWD", overall: 68, apps: 8,  goals: 0,  starting: false },
+    ]
+  },
+
+{
+  club: "Górnik Zabrze",
+  season: "1986/87",
+  players: [
+    { name: "Wandzik",       position: "GK",  overall: 91, apps: 30, goals: 0,  starting: true  },
+    { name: "Kitel",         position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Szolc",         position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Kostrzewa",     position: "DEF", overall: 82, apps: 30, goals: 2,  starting: true  },
+    { name: "Matysik",       position: "DEF", overall: 90, apps: 30, goals: 1,  starting: true  },
+    { name: "Dankowski",     position: "DEF", overall: 78, apps: 23, goals: 1,  starting: true  },
+    { name: "Grembocki",     position: "DEF", overall: 77, apps: 26, goals: 0,  starting: true  },
+    { name: "Piotrowicz",    position: "DEF", overall: 75, apps: 25, goals: 1,  starting: false },
+    { name: "Klemenz",       position: "DEF", overall: 70, apps: 10, goals: 0,  starting: false },
+
+    { name: "Komornicki",    position: "MID", overall: 85, apps: 24, goals: 6,  starting: true  },
+    { name: "Pałasz",        position: "MID", overall: 84, apps: 22, goals: 6,  starting: true  },
+    { name: "Leśnik",        position: "MID", overall: 74, apps: 21, goals: 2,  starting: true  },
+    { name: "Kołaczyk",      position: "MID", overall: 65, apps: 14, goals: 1,  starting: true },
+    { name: "Szlezak",       position: "MID", overall: 65, apps: 6,  goals: 1,  starting: false },
+    { name: "Kiszka",        position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Ossowski",      position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Polak",         position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Pudło",         position: "MID", overall: 55, apps: 1,  goals: 0,  starting: false },
+
+    { name: "Urban",         position: "FWD", overall: 90, apps: 30, goals: 11, starting: true  },
+    { name: "Iwan",          position: "FWD", overall: 86, apps: 29, goals: 9,  starting: true  },
+    { name: "Majka",         position: "FWD", overall: 82, apps: 25, goals: 9,  starting: false  },
+    { name: "Cyroń",         position: "FWD", overall: 76, apps: 27, goals: 4,  starting: false },
+    { name: "Orzeszek",      position: "FWD", overall: 60, apps: 1,  goals: 0,  starting: false },
+  ]
+},
+
+{
+  club: "Górnik Wałbrzych",
+  season: "1986/87",
+  players: [
+    { name: "Grzywacz",        position: "GK",  overall: 64, apps: 11, goals: 0,  starting: true  },
+    { name: "Widecki",         position: "GK",  overall: 62, apps: 11, goals: 0,  starting: false },
+    { name: "Marszałek",       position: "GK",  overall: 60, apps: 8,  goals: 0,  starting: false },
+
+    { name: "Małachowski",     position: "DEF", overall: 68, apps: 29, goals: 0,  starting: true  },
+    { name: "Wójcik",          position: "DEF", overall: 67, apps: 27, goals: 1,  starting: true  },
+    { name: "Spaczyński",      position: "DEF", overall: 66, apps: 26, goals: 1,  starting: true  },
+    { name: "Dolny",           position: "DEF", overall: 68, apps: 20, goals: 1,  starting: true  },
+    { name: "Przybysz",        position: "DEF", overall: 65, apps: 20, goals: 0,  starting: false },
+    { name: "Ośko",            position: "DEF", overall: 64, apps: 16, goals: 0,  starting: false },
+    { name: "Majewski",        position: "DEF", overall: 63, apps: 14, goals: 0,  starting: false },
+    { name: "Trojak",          position: "DEF", overall: 58, apps: 3,  goals: 0,  starting: false },
+    { name: "Gawryszewski",    position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Kisiel",          position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Warzycha",        position: "MID", overall: 75, apps: 30, goals: 5,  starting: true  },
+    { name: "Kowalik",         position: "MID", overall: 70, apps: 23, goals: 5,  starting: true  },
+    { name: "Truszczyński",    position: "MID", overall: 68, apps: 24, goals: 3,  starting: true  },
+    { name: "Rusiecki",        position: "MID", overall: 67, apps: 20, goals: 1,  starting: true  },
+    { name: "Sobczyk",         position: "MID", overall: 66, apps: 19, goals: 1,  starting: false },
+    { name: "Ciołek",          position: "MID", overall: 811, apps: 11, goals: 4,  starting: false },
+    { name: "Wojtkowiak",      position: "MID", overall: 58, apps: 5,  goals: 0,  starting: false },
+    { name: "Góra",            position: "MID", overall: 65, apps: 3,  goals: 0,  starting: false },
+    { name: "Gębczyński",      position: "MID", overall: 55, apps: 1,  goals: 0,  starting: false },
+    { name: "Boczkowski",      position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Górnisiewicz",    position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Kosowski",        position: "FWD", overall: 68, apps: 23, goals: 4,  starting: true  },
+    { name: "Milewski W.",     position: "FWD", overall: 66, apps: 17, goals: 3,  starting: true  },
+    { name: "Śmietański",      position: "FWD", overall: 64, apps: 14, goals: 1,  starting: false },
+    { name: "Milewski A.",     position: "FWD", overall: 58, apps: 1,  goals: 0,  starting: false },
+    { name: "Michałowski",     position: "FWD", overall: 55, apps: 0,  goals: 0,  starting: false },
+  ]
+},
+
+{
+  club: "Szombierki Bytom",
+  season: "1979/80",
+  players: [
+    { name: "Surlit",          position: "GK",  overall: 85, apps: 30, goals: 0,  starting: true  },
+    { name: "Mika",            position: "GK",  overall: 60, apps: 0,  goals: 0,  starting: false },
+    { name: "Organ",           position: "GK",  overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Wójtowicz",       position: "DEF", overall: 85, apps: 30, goals: 5,  starting: true  },
+    { name: "Mierzwiak",       position: "DEF", overall: 81, apps: 30, goals: 1,  starting: true  },
+    { name: "Sośnica",         position: "DEF", overall: 76, apps: 24, goals: 0,  starting: true  },
+    { name: "Sobol",           position: "DEF", overall: 74, apps: 19, goals: 0,  starting: true  },
+    { name: "Skiba",           position: "DEF", overall: 70, apps: 16, goals: 1,  starting: false },
+    { name: "Włodarczak",      position: "DEF", overall: 68, apps: 10, goals: 0,  starting: false },
+    { name: "Gruszka",         position: "DEF", overall: 65, apps: 6,  goals: 0,  starting: false },
+    { name: "Pietryga",        position: "DEF", overall: 60, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Nagiel",          position: "MID", overall: 87, apps: 29, goals: 10, starting: true  },
+    { name: "Sroka",           position: "MID", overall: 80, apps: 29, goals: 3,  starting: true  },
+    { name: "Byś",             position: "MID", overall: 78, apps: 29, goals: 2,  starting: true  },
+    { name: "Janik",           position: "MID", overall: 77, apps: 29, goals: 2,  starting: true  },
+    { name: "Kwaśniowski",     position: "MID", overall: 76, apps: 27, goals: 2,  starting: false },
+    { name: "Matura",          position: "MID", overall: 60, apps: 1,  goals: 0,  starting: false },
+    { name: "Frankiewicz",     position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Grzywaczewski",   position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Podolski",        position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Ogaza",           position: "FWD", overall: 90, apps: 28, goals: 12, starting: true  },
+    { name: "Herisz",          position: "FWD", overall: 78, apps: 27, goals: 4,  starting: true  },
+    { name: "Rabenda",         position: "FWD", overall: 68, apps: 12, goals: 0,  starting: false },
+    { name: "Wieczorek",       position: "FWD", overall: 65, apps: 4,  goals: 0,  starting: false },
+  ]
+},
+
+{
+  club: "Stal Stalowa Wola",
+  season: "1993/94",
+  players: [
+    { name: "Sejud",          position: "GK",  overall: 78, apps: 33, goals: 0,  starting: true  },
+    { name: "Lis",            position: "GK",  overall: 60, apps: 1,  goals: 0,  starting: false },
+
+    { name: "Piotrowicz",     position: "DEF", overall: 75, apps: 29, goals: 1,  starting: true  },
+    { name: "Wieprzęć",       position: "DEF", overall: 72, apps: 30, goals: 2,  starting: true  },
+    { name: "Rybak",          position: "DEF", overall: 70, apps: 30, goals: 1,  starting: true  },
+    { name: "Boruc",          position: "DEF", overall: 68, apps: 18, goals: 0,  starting: true  },
+    { name: "Mścisz",         position: "DEF", overall: 65, apps: 12, goals: 0,  starting: false },
+    { name: "Pacoń",          position: "DEF", overall: 64, apps: 10, goals: 0,  starting: false },
+    { name: "Błaś",           position: "DEF", overall: 58, apps: 0,  goals: 0,  starting: false },
+    { name: "Kasiak",         position: "DEF", overall: 60, apps: 2,  goals: 0,  starting: false },
+    { name: "Michalak",       position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Kawecki",        position: "MID", overall: 74, apps: 33, goals: 4,  starting: true  },
+    { name: "Zgutczyński",    position: "MID", overall: 72, apps: 31, goals: 4,  starting: true  },
+    { name: "Ożóg",           position: "MID", overall: 85, apps: 30, goals: 2,  starting: true  },
+    { name: "Jurkowski",      position: "MID", overall: 69, apps: 26, goals: 1,  starting: true  },
+    { name: "Góreczny",       position: "MID", overall: 68, apps: 23, goals: 0,  starting: false },
+    { name: "Szafran",        position: "MID", overall: 67, apps: 19, goals: 0,  starting: false },
+    { name: "Gawenda",        position: "MID", overall: 66, apps: 15, goals: 1,  starting: false },
+    { name: "Miszczak",       position: "MID", overall: 64, apps: 8,  goals: 0,  starting: false },
+    { name: "Nazimek",        position: "MID", overall: 60, apps: 1,  goals: 0,  starting: false },
+    { name: "Karasiński",     position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Krawiec",        position: "MID", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Pikuta",         position: "FWD", overall: 75, apps: 15, goals: 5,  starting: true  },
+    { name: "Zając",          position: "FWD", overall: 70, apps: 23, goals: 2,  starting: true  },
+    { name: "Brytan",         position: "FWD", overall: 68, apps: 13, goals: 1,  starting: false },
+    { name: "Rubinkiewicz",   position: "FWD", overall: 66, apps: 11, goals: 1,  starting: false },
+    { name: "Sajdak",         position: "FWD", overall: 65, apps: 9,  goals: 0,  starting: false },
+    { name: "Siwucha",        position: "FWD", overall: 62, apps: 4,  goals: 0,  starting: false },
+    { name: "Ziarek",         position: "FWD", overall: 60, apps: 5,  goals: 0,  starting: false },
+    { name: "Karkut",         position: "FWD", overall: 58, apps: 1,  goals: 0,  starting: false },
+  ]
+},
+
+  {
+    club: "Zawisza Bydgoszcz",
+    season: "1993/94",
+    players: [
+      { name: "Matuszewski", position: "GK", overall: 66, apps: 29, goals: 0, starting: true },
+      { name: "Hilscher", position: "GK", overall: 60, apps: 2, goals: 0, starting: false },
+      { name: "Piechota", position: "GK", overall: 60, apps: 3, goals: 0, starting: false },
+      { name: "Arndt", position: "DEF", overall: 68, apps: 32, goals: 1, starting: true },
+      { name: "Wódkiewicz", position: "DEF", overall: 67, apps: 30, goals: 1, starting: true },
+      { name: "Rzepa", position: "DEF", overall: 65, apps: 32, goals: 0, starting: true },
+      { name: "Wesołowski", position: "DEF", overall: 65, apps: 21, goals: 0, starting: true },
+      { name: "Grzelak", position: "DEF", overall: 64, apps: 13, goals: 0, starting: false },
+      { name: "Mizia", position: "DEF", overall: 64, apps: 14, goals: 0, starting: false },
+      { name: "Szuflita", position: "DEF", overall: 63, apps: 20, goals: 0, starting: false },
+      { name: "Thiede", position: "DEF", overall: 58, apps: 2, goals: 0, starting: false },
+      { name: "Stefański", position: "MID", overall: 72, apps: 30, goals: 5, starting: true },
+      { name: "Wojciechowski", position: "MID", overall: 69, apps: 26, goals: 1, starting: true },
+      { name: "Kot", position: "MID", overall: 67, apps: 33, goals: 3, starting: true },
+      { name: "Durda", position: "MID", overall: 67, apps: 18, goals: 2, starting: true },
+      { name: "Kempa", position: "MID", overall: 66, apps: 29, goals: 2, starting: false },
+      { name: "Kołacki", position: "MID", overall: 62, apps: 4, goals: 0, starting: false },
+      { name: "Maleev", position: "MID", overall: 66, apps: 20, goals: 3, starting: false },
+      { name: "Pielesiak", position: "MID", overall: 58, apps: 1, goals: 0, starting: false },
+      { name: "Pawłuszek", position: "FWD", overall: 68, apps: 31, goals: 6, starting: true },
+      { name: "Drączkowski", position: "FWD", overall: 65, apps: 13, goals: 1, starting: false },
+      { name: "Stankiewicz", position: "FWD", overall: 65, apps: 12, goals: 2, starting: false },
+    ]
+  },
+  {
+    club: "Polonia Warszawa",
+    season: "1993/94",
+    players: [
+      { name: "Onyszko", position: "GK", overall: 70, apps: 13, goals: 0, starting: true },
+      { name: "Rutkowski", position: "GK", overall: 65, apps: 16, goals: 0, starting: false },
+      { name: "Kwiatkowski", position: "GK", overall: 63, apps: 3, goals: 0, starting: false },
+      { name: "Rejent", position: "GK", overall: 62, apps: 2, goals: 0, starting: false },
+      { name: "Dankowski", position: "DEF", overall: 69, apps: 30, goals: 2, starting: true },
+      { name: "Kowalewski", position: "DEF", overall: 67, apps: 29, goals: 5, starting: true },
+      { name: "Filaber", position: "DEF", overall: 65, apps: 26, goals: 0, starting: true },
+      { name: "Wójtowicz", position: "DEF", overall: 81, apps: 13, goals: 1, starting: true },
+      { name: "Gałuszka", position: "DEF", overall: 64, apps: 17, goals: 0, starting: false },
+      { name: "Tietz", position: "DEF", overall: 64, apps: 20, goals: 0, starting: false },
+      { name: "Żewłakow M.", position: "DEF", overall: 72, apps: 11, goals: 0, starting: false },
+      { name: "Dźwigała", position: "MID", overall: 68, apps: 31, goals: 5, starting: true },
+      { name: "Lesiak", position: "MID", overall: 67, apps: 32, goals: 5, starting: true },
+      { name: "Rowicki", position: "MID", overall: 66, apps: 30, goals: 2, starting: true },
+      { name: "Kacprzak", position: "MID", overall: 65, apps: 22, goals: 2, starting: true },
+      { name: "Jagoda", position: "MID", overall: 64, apps: 11, goals: 0, starting: false },
+      { name: "Stromecki", position: "MID", overall: 63, apps: 11, goals: 0, starting: false },
+      { name: "Rocki", position: "MID", overall: 65, apps: 15, goals: 1, starting: false },
+      { name: "Łatka", position: "FWD", overall: 66, apps: 16, goals: 1, starting: true },
+      { name: "Sawa", position: "FWD", overall: 65, apps: 23, goals: 1, starting: true },
+      { name: "Kopeć", position: "FWD", overall: 65, apps: 16, goals: 2, starting: false },
+      { name: "Kobzev", position: "FWD", overall: 68, apps: 12, goals: 1, starting: false },
+    ]
+  },
+  {
+    club: "Siarka Tarnobrzeg",
+    season: "1993/94",
+    players: [
+      { name: "Paciorkowski", position: "GK", overall: 67, apps: 20, goals: 0, starting: true },
+      { name: "Pawlak", position: "GK", overall: 65, apps: 14, goals: 0, starting: false },
+      { name: "Janowski", position: "GK", overall: 60, apps: 0, goals: 0, starting: false },
+      { name: "Tyburski", position: "DEF", overall: 68, apps: 33, goals: 5, starting: true },
+      { name: "Wilczok", position: "DEF", overall: 67, apps: 28, goals: 0, starting: true },
+      { name: "Adamus", position: "DEF", overall: 66, apps: 24, goals: 0, starting: true },
+      { name: "Porębny", position: "DEF", overall: 65, apps: 22, goals: 0, starting: true },
+      { name: "Kiełbowicz", position: "DEF", overall: 77, apps: 20, goals: 1, starting: false },
+      { name: "Żuchnik", position: "DEF", overall: 75, apps: 14, goals: 0, starting: false },
+      { name: "Boguszewski", position: "DEF", overall: 65, apps: 7, goals: 0, starting: false },
+      { name: "Stefanik", position: "MID", overall: 70, apps: 19, goals: 4, starting: true },
+      { name: "Nieradka", position: "MID", overall: 67, apps: 24, goals: 0, starting: true },
+      { name: "Woźniak", position: "MID", overall: 66, apps: 18, goals: 3, starting: true },
+      { name: "Kukiełka", position: "MID", overall: 85, apps: 20, goals: 1, starting: true },
+      { name: "Berensztajn", position: "MID", overall: 78, apps: 14, goals: 1, starting: false },
+      { name: "Wójtowicz", position: "MID", overall: 65, apps: 10, goals: 0, starting: false },
+      { name: "Kucharski", position: "FWD", overall: 72, apps: 17, goals: 6, starting: true },
+      { name: "Ząbek", position: "FWD", overall: 66, apps: 26, goals: 0, starting: true },
+      { name: "Białek", position: "FWD", overall: 65, apps: 23, goals: 2, starting: false },
+      { name: "Przypkowski", position: "FWD", overall: 64, apps: 17, goals: 0, starting: false },
+    ]
+  },
+
+{
+  club: "Warta Poznań",
+  season: "1993/94",
+  players: [
+    { name: "Pleśnierowicz",    position: "GK",  overall: 72, apps: 31, goals: 0,  starting: true  },
+    { name: "Zajda",           position: "GK",  overall: 65, apps: 3,  goals: 0,  starting: false },
+    { name: "Zabiyakin",       position: "GK",  overall: 60, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Jakołcewicz",     position: "DEF", overall: 74, apps: 28, goals: 1,  starting: true  },
+    { name: "Niewiadomski",    position: "DEF", overall: 71, apps: 31, goals: 2,  starting: true  },
+    { name: "Gajewski",        position: "DEF", overall: 70, apps: 31, goals: 1,  starting: true  },
+    { name: "Owca",            position: "DEF", overall: 79, apps: 30, goals: 4,  starting: true  },
+    { name: "Sidorski",        position: "DEF", overall: 68, apps: 31, goals: 2,  starting: false },
+    { name: "Pawlak",          position: "DEF", overall: 75, apps: 18, goals: 0,  starting: false }, // Gwiazda defensywy
+    { name: "Tomaszczak",      position: "DEF", overall: 62, apps: 8,  goals: 0,  starting: false },
+    { name: "Sytch",           position: "DEF", overall: 60, apps: 4,  goals: 0,  starting: false },
+    { name: "Konkiewicz",      position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+    { name: "Żurawski",        position: "DEF", overall: 55, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Iwan T.",         position: "MID", overall: 91, apps: 31, goals: 7,  starting: true  }, // Gwiazda zespołu
+    { name: "Pawelec",         position: "MID", overall: 70, apps: 31, goals: 0,  starting: true  },
+    { name: "Łapczyński",      position: "MID", overall: 69, apps: 28, goals: 1,  starting: true  },
+    { name: "Kiłdanowicz",     position: "MID", overall: 68, apps: 18, goals: 2,  starting: true  },
+    { name: "Rybarczyk",       position: "MID", overall: 66, apps: 17, goals: 0,  starting: false },
+    { name: "Frydryszak",      position: "MID", overall: 65, apps: 15, goals: 1,  starting: false },
+    { name: "Tęsiorowski",     position: "MID", overall: 65, apps: 16, goals: 0,  starting: false },
+    { name: "Misztur",         position: "MID", overall: 64, apps: 9,  goals: 0,  starting: false },
+    { name: "Miklosik",        position: "MID", overall: 62, apps: 5,  goals: 0,  starting: false },
+    { name: "Kucharczyk",      position: "MID", overall: 60, apps: 0,  goals: 0,  starting: false },
+
+    { name: "Prabucki",        position: "FWD", overall: 76, apps: 33, goals: 11, starting: true  },
+    { name: "Iwan M.",         position: "FWD", overall: 66, apps: 11, goals: 0,  starting: true },
+    { name: "Tierling",        position: "FWD", overall: 60, apps: 3,  goals: 0,  starting: false },
+    { name: "Wilczyński",      position: "FWD", overall: 58, apps: 0,  goals: 0,  starting: false },
+  ]
+},
+  {
+    club: "Wisła Kraków",
+    season: "1993/94",
+    players: [
+      { name: "Sarnat", position: "GK", overall: 69, apps: 16, goals: 0, starting: true },
+      { name: "Szymaszek", position: "GK", overall: 68, apps: 18, goals: 0, starting: false },
+      { name: "Mucharski", position: "GK", overall: 65, apps: 0, goals: 0, starting: false },
+      { name: "Matyja", position: "DEF", overall: 70, apps: 32, goals: 1, starting: true },
+      { name: "Gorszkow", position: "DEF", overall: 69, apps: 31, goals: 0, starting: true },
+      { name: "Włodarz", position: "DEF", overall: 68, apps: 29, goals: 1, starting: true },
+      { name: "Kaliciak", position: "DEF", overall: 77, apps: 30, goals: 0, starting: true },
+      { name: "Jamróz", position: "DEF", overall: 67, apps: 20, goals: 3, starting: false },
+      { name: "Giszka", position: "DEF", overall: 66, apps: 24, goals: 0, starting: false },
+      { name: "Marzec", position: "MID", overall: 71, apps: 24, goals: 2, starting: true },
+      { name: "Kupidura", position: "MID", overall: 69, apps: 27, goals: 4, starting: true },
+      { name: "Kozak", position: "MID", overall: 68, apps: 27, goals: 1, starting: true },
+      { name: "Moskal", position: "MID", overall: 81, apps: 22, goals: 1, starting: true },
+      { name: "Lament", position: "MID", overall: 66, apps: 22, goals: 0, starting: false },
+      { name: "Krupa", position: "MID", overall: 65, apps: 15, goals: 0, starting: false },
+      { name: "Szeliga", position: "FWD", overall: 69, apps: 31, goals: 8, starting: true },
+      { name: "Kulawik", position: "FWD", overall: 80, apps: 28, goals: 2, starting: true },
+      { name: "Lewandowski", position: "FWD", overall: 83, apps: 14, goals: 7, starting: false },
+    ]
+  },
 
 
 
@@ -13051,4 +14501,3 @@ const TEAMS_DATA = [
 ];
 
 const LEGENDARY_OVERRIDES = [];
-
