@@ -632,12 +632,12 @@ function renderPlayerList(team, availPos) {
   list.innerHTML = '';
 
   POS_ORDER.forEach(pos => {
-    const group = team.players
-      .filter(p => p.position === pos)
-      .sort((a,b) => {
-        if (a.starting !== b.starting) return a.starting ? -1 : 1;
-        return b.overall - a.overall;
-      });
+  const group = team.players
+  .filter(p => p.position === pos)
+  .sort((a,b) => {
+    if (a.starting !== b.starting) return a.starting ? -1 : 1;
+    return a.name.localeCompare(b.name, 'pl');
+  });
     if (!group.length) return;
 
     const isAvail = availPos.includes(pos);
