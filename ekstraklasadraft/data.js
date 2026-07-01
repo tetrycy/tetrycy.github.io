@@ -4709,7 +4709,7 @@ const TEAMS_DATA = [
       { name: "Jędrzejczyk",  position: "DEF", overall: 75, apps: 14, goals: 0,  starting: false },
       { name: "Kiełbowicz",   position: "DEF", overall: 73, apps: 14, goals: 1,  starting: false },
 
-      { name: "Vrdoljak",     position: "MID", overall: 76, apps: 26, goals: 5,  starting: true  },
+      { name: "Vrdoljak",     position: "MID", overall: 85, apps: 26, goals: 5,  starting: true  },
       { name: "Radović",      position: "MID", overall: 88, apps: 28, goals: 9,  starting: true  },
       { name: "Borysiuk",     position: "MID", overall: 78, apps: 26, goals: 2,  starting: true  },
       { name: "Cabral",       position: "MID", overall: 76, apps: 22, goals: 3,  starting: true  },
@@ -10653,8 +10653,8 @@ const TEAMS_DATA = [
       { name: "Hładun",        position: "GK",  overall: 74, apps: 23, goals: 0,  starting: true  },
       { name: "Burić",         position: "GK",  overall: 57, apps: 1,  goals: 0,  starting: false },
 
-      { name: "Balić",         position: "DEF", overall: 79, apps: 20, goals: 6,  starting: true  },
-      { name: "Chodyna",       position: "DEF", overall: 75, apps: 32, goals: 6,  starting: true  },
+      { name: "Balić",         position: "DEF", overall: 82, apps: 20, goals: 6,  starting: true  },
+      { name: "Chodyna",       position: "DEF", overall: 85, apps: 32, goals: 6,  starting: true  },
       { name: "Wójcicki",      position: "DEF", overall: 72, apps: 16, goals: 3,  starting: true  },
       { name: "Kopacz B.",     position: "DEF", overall: 74, apps: 15, goals: 2,  starting: true  },
       { name: "Bartolewski",   position: "DEF", overall: 70, apps: 26, goals: 6,  starting: false },
@@ -10668,7 +10668,7 @@ const TEAMS_DATA = [
       { name: "Starzyński",    position: "MID", overall: 76, apps: 27, goals: 6,  starting: true  },
       { name: "Żubrowski",     position: "MID", overall: 70, apps: 16, goals: 6,  starting: false },
       { name: "Zivec",         position: "MID", overall: 68, apps: 18, goals: 1,  starting: false },
-      { name: "Łakomy",        position: "MID", overall: 79, apps: 20, goals: 3,  starting: false },
+      { name: "Łakomy",        position: "MID", overall: 82, apps: 20, goals: 3,  starting: false },
       { name: "Scekić",        position: "MID", overall: 79, apps: 11, goals: 2,  starting: false },
 
       { name: "Podliński",     position: "FWD", overall: 68, apps: 20, goals: 0,  starting: true  },
@@ -11100,7 +11100,7 @@ const TEAMS_DATA = [
       { name: "Kłudka",        position: "DEF", overall: 70, apps: 21, goals: 3,  starting: false },
       { name: "Grzybek",       position: "DEF", overall: 59, apps: 16, goals: 1,  starting: false },
 
-      { name: "Łakomy",        position: "MID", overall: 76, apps: 34, goals: 3,  starting: true  },
+      { name: "Łakomy",        position: "MID", overall: 86, apps: 34, goals: 3,  starting: true  },
       { name: "Starzyński",    position: "MID", overall: 75, apps: 32, goals: 3,  starting: true  },
       { name: "Makowski T.",   position: "MID", overall: 76, apps: 28, goals: 5,  starting: true  },
       { name: "Pieńko",        position: "MID", overall: 72, apps: 31, goals: 2,  starting: true  },
@@ -11157,7 +11157,7 @@ const TEAMS_DATA = [
       { name: "Kruk",          position: "DEF", overall: 61, apps: 20, goals: 7,  starting: false },
 
       { name: "Wlazło",        position: "MID", overall: 83, apps: 33, goals: 6,  starting: true  },
-      { name: "Domański",      position: "MID", overall: 65, apps: 34, goals: 0,  starting: true  },
+      { name: "Domański",      position: "MID", overall: 85, apps: 34, goals: 0,  starting: true  },
       { name: "Mak M.",        position: "MID", overall: 70, apps: 25, goals: 0,  starting: true  },
       { name: "Gerbowski",     position: "MID", overall: 59, apps: 22, goals: 3,  starting: true  },
       { name: "Vallejo",       position: "MID", overall: 67, apps: 14, goals: 3,  starting: false },
@@ -12360,7 +12360,7 @@ const TEAMS_DATA = [
       { name: "Jaunzems",      position: "DEF", overall: 71, apps: 33, goals: 3,  starting: true  },
 
       { name: "Wlazło",        position: "MID", overall: 79, apps: 29, goals: 10, starting: true  },
-      { name: "Domański",      position: "MID", overall: 63, apps: 33, goals: 2,  starting: true  },
+      { name: "Domański",      position: "MID", overall: 73, apps: 33, goals: 2,  starting: true  },
       { name: "Guillaumier",   position: "MID", overall: 62, apps: 31, goals: 5,  starting: true  },
       { name: "Wołkowicz",     position: "MID", overall: 60, apps: 21, goals: 2,  starting: true  },
       { name: "Krykun",        position: "MID", overall: 68, apps: 19, goals: 0,  starting: false },
