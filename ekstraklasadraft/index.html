@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EKSTRAKLASA DRAFT 1.1</title>
+<title>EKSTRAKLASA DRAFT 1.11</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
@@ -1361,6 +1361,12 @@ const SPEED_MS = { veryslow: 5500, slow: 3500, normal: 2000, fast: 900 };
 function setSpeed(s) {
   state.speed = s;
   updateSpeedButtons();
+  // Jeśli mecz właśnie trwa, restartujemy timer z nowym tempem — bez tego zmiana
+  // nie miała żadnego efektu aż do następnego meczu.
+  if (liveTimer && state.liveStepFn) {
+    clearInterval(liveTimer);
+    liveTimer = setInterval(state.liveStepFn, SPEED_MS[s] || SPEED_MS.normal);
+  }
 }
 
 function updateSpeedButtons() {
@@ -1658,6 +1664,7 @@ function playMatch() {
   redrawLines();
   if (primer.value && primer.value.newEvents) primer.value.newEvents.forEach(applyEvent);
 
+  state.liveStepFn = step;
   liveTimer = setInterval(step, STEP_MS);
 }
 
