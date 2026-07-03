@@ -210,16 +210,16 @@ function simulateMatchV2(myRoster, oppRoster, oppLabel, tactics) {
         const { taker, fouled } = resolvePenalty(meAwarded);
         timeline.push({ minute: min, type: 'penalty', text: fmt(ST.penaltyAward[0], { p: fouled.name }) });
         if (taker.name !== fouled.name) {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyTakerMe) : rand(ST.penaltyTakerOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyTakerMe) : rand(ST.penaltyTakerOpp), { p: taker.name, team: oppLabel }) });
         }
         const outcomeRoll = Math.random();
         if (outcomeRoll < 0.76) {
           if (meAwarded) { myGoals++; timeline.push({ minute: min, type: 'goal', team: 'me', text: '↳ ' + fmt(rand(ST.penaltyScoredMe), { p: taker.name }) }); }
           else { oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', text: '↳ ' + fmt(rand(ST.penaltyScoredOpp), { p: taker.name, team: oppLabel }) }); }
         } else if (outcomeRoll < 0.88) {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
         } else {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
         }
       } else {
         timeline.push({ minute: min, type: 'flavor', text: rand(ST.flavor) });
@@ -461,16 +461,16 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
         const { taker, fouled } = resolvePenalty(meAwarded);
         timeline.push({ minute: min, type: 'penalty', text: fmt(ST.penaltyAward[0], { p: fouled.name }) });
         if (taker.name !== fouled.name) {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyTakerMe) : rand(ST.penaltyTakerOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyTakerMe) : rand(ST.penaltyTakerOpp), { p: taker.name, team: oppLabel }) });
         }
         const outcomeRoll = Math.random();
         if (outcomeRoll < 0.76) {
           if (meAwarded) { myGoals++; timeline.push({ minute: min, type: 'goal', team: 'me', text: '↳ ' + fmt(rand(ST.penaltyScoredMe), { p: taker.name }) }); }
           else { oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', text: '↳ ' + fmt(rand(ST.penaltyScoredOpp), { p: taker.name, team: oppLabel }) }); }
         } else if (outcomeRoll < 0.88) {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
         } else {
-          timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
+          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
         }
       } else {
         timeline.push({ minute: min, type: 'flavor', text: rand(ST.flavor) });
