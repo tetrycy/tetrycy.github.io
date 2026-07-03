@@ -7803,7 +7803,7 @@ const TEAMS_DATA = [
       { name: "Czerwiński",    position: "DEF", overall: 66, apps: 8,  goals: 1,  starting: false },
 
       { name: "Radović",       position: "MID", overall: 90, apps: 29, goals: 11, starting: true  },
-      { name: "Odjidja-Ofoe",  position: "MID", overall: 88, apps: 31, goals: 4,  starting: true  },
+      { name: "Odjidja-Ofoe",  position: "MID", overall: 98, apps: 31, goals: 4,  starting: true  },
       { name: "Hamalainen",    position: "MID", overall: 80, apps: 31, goals: 7,  starting: true  },
       { name: "Kucharczyk",    position: "MID", overall: 83, apps: 21, goals: 6,  starting: true  },
       { name: "Moulin",        position: "MID", overall: 79, apps: 32, goals: 2,  starting: false },
@@ -10277,7 +10277,7 @@ const TEAMS_DATA = [
       { name: "Mleczko",       position: "GK",  overall: 58, apps: 0,  goals: 0,  starting: false },
 
       { name: "Pereira J.",    position: "DEF", overall: 85, apps: 28, goals: 1,  starting: true  },
-      { name: "Rebocho",       position: "DEF", overall: 73, apps: 21, goals: 1,  starting: true  },
+      { name: "Rebocho",       position: "DEF", overall: 83, apps: 21, goals: 1,  starting: true  },
       { name: "Milić",         position: "DEF", overall: 84, apps: 25, goals: 3,  starting: true  },
       { name: "Salamon",       position: "DEF", overall: 86, apps: 25, goals: 3,  starting: true  },
       { name: "Satka",         position: "DEF", overall: 80, apps: 25, goals: 2,  starting: false },
