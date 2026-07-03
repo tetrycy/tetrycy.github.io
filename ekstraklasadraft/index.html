@@ -238,6 +238,45 @@
   .pitch-dot.current { background: var(--accent); border-color: #fff; animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 
+  /* MATCH PITCH — pasek 5 stref, podświetlany na żywo w trakcie meczu */
+  .match-pitch {
+    width: 100%; max-width: 480px; height: 280px;
+    background: var(--pitch);
+    border: 3px solid var(--white);
+    position: relative;
+    margin: 4px auto 10px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 0 24px #1a6b2a66;
+  }
+  .match-pitch::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 49.5%, var(--line) 49.5%, var(--line) 50.5%, transparent 50.5%),
+      radial-gradient(ellipse 46px 46px at 50% 50%, transparent 38px, var(--line) 38px, var(--line) 40px, transparent 40px);
+  }
+  .pitch-box {
+    position: absolute; top: 22%; bottom: 22%; width: 12%;
+    border: 2px solid var(--line); pointer-events: none; z-index: 1;
+  }
+  .pitch-box-left  { left: 0; border-left: none; }
+  .pitch-box-right { right: 0; border-right: none; }
+  .pitch-zone {
+    flex: 1; position: relative;
+    border-right: 1px solid var(--line);
+    transition: background 0.25s ease;
+  }
+  .pitch-zone:last-child { border-right: none; }
+  .pitch-zone.active { background: #f0c04055; }
+  .pitch-zone.active.goal-zone { background: #c0392b77; }
+  .zone-pct {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-hud); font-size: 8px; color: #ffffffcc;
+    background: #00000066; padding: 3px 5px; border-radius: 3px;
+    pointer-events: none; white-space: nowrap;
+  }
+
   .pitch-name { font-size: 9px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40px; text-shadow: 1px 1px 0 #000; }
 
   .slots-list { flex: 1; display: flex; flex-direction: column; gap: 3px; }
@@ -282,8 +321,12 @@
     margin-top: 10px;
     display: flex; flex-direction: column; gap: 4px;
     font-size: 16px; text-align: left;
-    max-height: 360px; overflow-y: auto;
+    max-height: 170px; overflow-y: auto;
     padding-right: 4px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    background: #0000001a;
   }
   .tl-row { padding: 3px 6px; border-left: 3px solid transparent; }
   .tl-goal-me   { border-color: var(--green-ll); background: #2d944022; color: var(--green-ll); font-weight: bold; }
@@ -291,6 +334,7 @@
   .tl-red       { border-color: var(--red); color: var(--red); font-weight: bold; }
   .tl-yellow    { border-color: var(--gold); color: var(--gold); }
   .tl-penalty   { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+  .tl-injury    { border-color: #e8944a; color: #e8944a; font-weight: bold; }
   .tl-flavor    { border-color: var(--border); color: var(--gray); }
   .tl-marker    { border: none; text-align: center; color: var(--white); font-family: var(--font-hud); font-size: 9px; padding: 8px 0; letter-spacing: 1px; }
 
@@ -298,6 +342,50 @@
   .speed-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
   .style-btn { opacity: 0.5; }
   .style-btn.active { opacity: 1; border-color: var(--gold); color: var(--gold); }
+  .tactic-btn { opacity: 0.5; }
+  .tactic-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); background: #00ccff22; }
+  .tactic-btn.reactive { opacity: 1; }
+  .tactic-btn:disabled { opacity: 0.25 !important; filter: grayscale(0.7); cursor: not-allowed; }
+
+  details {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  details summary {
+    font-family: var(--font-hud);
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    cursor: pointer;
+    outline: none;
+    list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '▶ '; display: inline-block; transition: transform 0.15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+
+  .legend-details {
+    background: #0000002a;
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+  }
+  .legend-details summary {
+    font-size: 8px;
+    color: var(--accent);
+  }
+  .legend-body {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--white);
+    line-height: 1.5;
+  }
+  .legend-body p { margin-bottom: 8px; }
+  .legend-body b { color: var(--gold); }
+  #btn-chaos:disabled { opacity: 0.3; cursor: not-allowed; }
+  #tactics-panel select { font-family: var(--font-hud); font-size: 8px; padding: 8px; background: var(--panel); color: var(--white); border: 3px solid var(--border); border-radius: 0; letter-spacing: 1px; cursor: pointer; }
 
   .lineups-wrap {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
@@ -360,10 +448,43 @@
     Losuj kluby i sezony.<br>Wybieraj zawodników.<br>Zmierz się z historią.
   </div>
   <div class="gap8">
-    <button class="btn btn-gold" onclick="startDraft()">▶ NOWA GRA</button>
+    <button class="btn btn-gold" onclick="goToDraftSetup()">▶ NOWA GRA</button>
   </div>
   <div id="title-db-info" style="font-size:16px;color:var(--gray);margin-top:8px;"></div>
   <div style="font-family:var(--font-hud);font-size:7px;color:var(--border);letter-spacing:2px;margin-top:4px;">POWERED BY TETRYCY</div>
+</div>
+
+<!-- USTAWIENIA DRAFTU -->
+<div id="screen-draft-setup" class="screen">
+  <div class="hud-bar">
+    <span>EKSTRAKLASA DRAFT</span>
+    <span>USTAWIENIA</span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">ZAKRES SEZONÓW I KLUBÓW</div>
+    <div style="font-size:15px;color:var(--gray);margin-bottom:14px;">
+      Domyślnie draft losuje z całej bazy. Możesz zawęzić pulę — pamiętaj, że przy wąskim
+      zakresie (np. jeden klub z kilkoma sezonami) te same sezony mogą się powtórzyć,
+      żeby dało się dociągnąć skład do 11 zawodników.
+    </div>
+
+    <label style="font-size:14px;color:var(--gray);">Od sezonu</label>
+    <select id="draft-season-min" onchange="updateDraftPoolCount()" style="width:100%;margin-bottom:10px;"></select>
+
+    <label style="font-size:14px;color:var(--gray);">Do sezonu</label>
+    <select id="draft-season-max" onchange="updateDraftPoolCount()" style="width:100%;margin-bottom:10px;"></select>
+
+    <label style="font-size:14px;color:var(--gray);">Tylko klub (opcjonalnie)</label>
+    <select id="draft-club-filter" onchange="updateDraftPoolCount()" style="width:100%;margin-bottom:10px;"></select>
+
+    <div id="draft-pool-count" style="font-size:15px;color:var(--gold);margin:10px 0;"></div>
+
+    <div class="gap8">
+      <button class="btn btn-gold" id="btn-confirm-draft-setup" onclick="confirmDraftSetup()">▶ ROZPOCZNIJ DRAFT</button>
+      <button class="btn btn-sm" onclick="showScreen('screen-title')">← MENU</button>
+    </div>
+  </div>
 </div>
 
 <!-- DRAFT -->
@@ -418,7 +539,7 @@
     <button class="btn btn-gold" onclick="startPlayoff('random')">🎲 TURNIEJ LOSOWY</button>
     <button class="btn btn-gold" onclick="startMundial('champions')">🌍 MUNDIAL NAJMOCNIEJSZYCH</button>
     <button class="btn btn-gold" onclick="startMundial('random')">🌍 MUNDIAL LOSOWY</button>
-    <button class="btn btn-sm" onclick="startDraft()">↺ NOWY DRAFT</button>
+    <button class="btn btn-sm" onclick="goToDraftSetup()">↺ NOWY DRAFT</button>
     <button class="btn btn-sm" onclick="showScreen('screen-title')">← MENU</button>
   </div>
 </div>
@@ -440,29 +561,33 @@
         <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);" id="po-opp-ovr">—</span>
       </div>
     </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--gray);margin:4px 0 10px;font-family:var(--font-hud);letter-spacing:0.5px;">
+      <span id="po-my-lines">OBR — · POM — · ATK —</span>
+      <span id="po-opp-lines" style="text-align:right;">OBR — · POM — · ATK —</span>
+    </div>
     <div id="po-timeline" class="match-timeline"></div>
+    <div class="match-pitch" id="match-pitch">
+      <div class="pitch-box pitch-box-left"></div>
+      <div class="pitch-box pitch-box-right"></div>
+      <div class="pitch-zone" id="zone-GOAL_ME"><span class="zone-pct" id="pct-GOAL_ME"></span></div>
+      <div class="pitch-zone" id="zone-BOX_ME"><span class="zone-pct" id="pct-BOX_ME"></span></div>
+      <div class="pitch-zone" id="zone-CENTER"><span class="zone-pct" id="pct-CENTER"></span></div>
+      <div class="pitch-zone" id="zone-BOX_OPP"><span class="zone-pct" id="pct-BOX_OPP"></span></div>
+      <div class="pitch-zone" id="zone-GOAL_OPP"><span class="zone-pct" id="pct-GOAL_OPP"></span></div>
+    </div>
+    <details class="legend-details" style="margin:4px 0 10px;">
+      <summary>ℹ️ Co pokazuje boisko?</summary>
+      <div class="legend-body">
+        <p><b>Skrajne kafle (przy bramkach)</b> — groźne sytuacje. Tu najczęściej padają gole.</p>
+        <p><b>Kafle 2. i 4.</b> (przed polami karnymi) — sytuacje niskiego zagrożenia. Gol wciąż może paść, ale rzadziej.</p>
+        <p><b>Kafel środkowy</b> — gra toczy się w środku pola, bez bezpośredniego zagrożenia dla żadnej z bramek.</p>
+      </div>
+    </details>
     <div style="margin-top:10px;font-size:18px;color:var(--gray);" id="po-commentary"></div>
   </div>
 
   <div class="gap8" style="margin-bottom:-4px;">
-    <span style="font-size:14px;color:var(--gray);align-self:center;">TEMPO:</span>
-    <button class="btn btn-sm speed-btn" id="speed-slow"   onclick="setSpeed('slow')">WOLNO</button>
-    <button class="btn btn-sm speed-btn" id="speed-normal" onclick="setSpeed('normal')">NORMALNIE</button>
-    <button class="btn btn-sm speed-btn" id="speed-fast"   onclick="setSpeed('fast')">SZYBKO</button>
     <button class="btn btn-sm" id="btn-show-lineups" onclick="toggleLineups()">👥 SKŁADY</button>
-  </div>
-
-  <div class="gap8" style="margin-bottom:-4px;">
-    <span style="font-size:14px;color:var(--gray);align-self:center;">KOMENTARZ:</span>
-    <button class="btn btn-sm style-btn" id="style-classic"   onclick="setCommentaryStyle('classic')">KLASYCZNY</button>
-    <button class="btn btn-sm style-btn" id="style-energetic" onclick="setCommentaryStyle('energetic')">ŻYWIOŁOWY</button>
-  </div>
-
-  <div class="gap8">
-    <button class="btn btn-gold" id="btn-play-match" onclick="playMatch()">▶ ROZEGRAJ MECZ</button>
-    <button class="btn btn-sm"   id="btn-skip-match" onclick="skipMatchAnimation()" style="display:none;">⏩ POMIŃ</button>
-    <button class="btn btn-sm"   id="btn-next-round" onclick="advance()" style="display:none;">NASTĘPNA RUNDA →</button>
-    <button class="btn btn-red btn-sm" id="btn-playoff-end" onclick="showScreen('screen-title')" style="display:none;">← MENU</button>
   </div>
 
   <div class="panel" id="lineups-panel" style="max-width:760px;width:100%;display:none;">
@@ -477,6 +602,78 @@
         <div id="lineup-opp-list"></div>
       </div>
     </div>
+  </div>
+
+  <details id="commentary-options-details">
+    <summary>⚙ OPCJE KOMENTARZA</summary>
+    <div class="gap8" style="margin-top:8px;">
+      <span style="font-size:14px;color:var(--gray);align-self:center;">TEMPO:</span>
+      <button class="btn btn-sm speed-btn" id="speed-veryslow" onclick="setSpeed('veryslow')">BARDZO WOLNO</button>
+      <button class="btn btn-sm speed-btn" id="speed-slow"   onclick="setSpeed('slow')">WOLNO</button>
+      <button class="btn btn-sm speed-btn" id="speed-normal" onclick="setSpeed('normal')">NORMALNIE</button>
+      <button class="btn btn-sm speed-btn" id="speed-fast"   onclick="setSpeed('fast')">SZYBKO</button>
+      <button class="btn btn-sm speed-btn" id="speed-veryfast" onclick="setSpeed('veryfast')">BŁYSKAWICZNIE</button>
+    </div>
+    <div class="gap8" style="margin-top:8px;">
+      <span style="font-size:14px;color:var(--gray);align-self:center;">KOMENTARZ:</span>
+      <button class="btn btn-sm style-btn" id="style-classic"   onclick="setCommentaryStyle('classic')">KLASYCZNY</button>
+      <button class="btn btn-sm style-btn" id="style-energetic" onclick="setCommentaryStyle('energetic')">ŻYWIOŁOWY</button>
+      <button class="btn btn-sm style-btn" id="style-waldemar" onclick="setCommentaryStyle('waldemar')">KOMENTATOR</button>
+    </div>
+  </details>
+
+  <details id="tactics-details" open>
+    <summary>⚔ TAKTYKA</summary>
+    <div class="gap8" id="tactics-panel" style="flex-wrap:wrap;margin-top:8px;">
+      <span style="font-size:14px;color:var(--gray);align-self:center;">Mentalność:</span>
+      <select id="mentality-select" onchange="onMentalityChange()">
+        <option value="DEF">Defensywna</option>
+        <option value="NEUTRAL" selected>Neutralna</option>
+        <option value="OFF">Ofensywna</option>
+      </select>
+      <span style="font-size:14px;color:var(--gray);align-self:center;">Podania:</span>
+      <select id="podania-select" onchange="onPodaniaChange()">
+        <option value="POSIADANIE">Posiadanie piłki</option>
+        <option value="NEUTRAL" selected>Neutralne</option>
+        <option value="SZYBKIE">Szybkie akcje</option>
+      </select>
+      <span style="font-size:14px;color:var(--gray);align-self:center;">Odbiór:</span>
+      <select id="agresywnosc-select" onchange="onAgresywnoscChange()">
+        <option value="AGRESYWNY">Agresywny odbiór</option>
+        <option value="NEUTRAL" selected>Neutralny</option>
+        <option value="LEKKI">Lekki</option>
+      </select>
+    </div>
+  </details>
+
+  <details id="react-details" open>
+    <summary>🗯️ ZAREAGUJ!</summary>
+    <div class="gap8" id="react-panel" style="flex-wrap:wrap;margin-top:8px;">
+      <button class="btn btn-sm tactic-btn" id="tg-busparking" onclick="toggleTactic('tg-busparking')">🚌 Parkowanie autobusu</button>
+      <button class="btn btn-sm tactic-btn" id="tg-stoper-atak" onclick="toggleTactic('tg-stoper-atak')">🔼 Wyślij stopera do ataku</button>
+      <button class="btn btn-sm tactic-btn reactive" id="btn-opierdol" onclick="triggerOpierdol()" style="border-color:var(--gold);color:var(--gold);">💪 OPIERDOL (do 65')</button>
+      <button class="btn btn-sm tactic-btn reactive" id="btn-chaos" onclick="triggerChaos()" style="border-color:var(--red);color:var(--red);">🔥 MUSIMY NA CHAOS</button>
+      <button class="btn btn-sm tactic-btn reactive" id="btn-awantura" onclick="triggerAwantura()" style="border-color:#888;color:#ccc;">🗯️ AWANTURA Z TECHNICZNYM</button>
+    </div>
+    <details class="legend-details" style="margin-top:8px;">
+      <summary>ℹ️ Co robi każda reakcja?</summary>
+      <div class="legend-body">
+        <p><b>🚌 Parkowanie autobusu</b> — przełącznik. Włączony: zupełnie przestajesz atakować, cała gra toczy się pod Twoją bramką, a rywal jest wyraźnie groźniejszy i skuteczniejszy. Mecz szybciej dobiega końca. Można wyłączyć w dowolnym momencie.</p>
+        <p><b>🔼 Wyślij stopera do ataku</b> — przełącznik. Osłabia Twoją obronę, wzmacnia atak. Widać to od razu w pasku OBR/POM/ATK. Odwracalny.</p>
+        <p><b>💪 OPIERDOL</b> — jednorazowe, tylko do 65. minuty. Daje Ci krótki, mocny zryw (więcej piłki, groźniejsze i skuteczniejsze akcje), ale w ostatnich minutach meczu odbija się to czkawką — słabsza gra, gorsza skuteczność. Kara jest mocniejsza niż nagroda.</p>
+        <p><b>🔥 MUSIMY NA CHAOS</b> — jednorazowe. Trwale osłabia Twoją obronę, ale gwarantuje Ci jedną naprawdę groźną sytuację zaraz potem. Przez chwilę po użyciu rywal też jest groźniejszy, gdy odzyska piłkę.</p>
+        <p><b>🗯️ AWANTURA Z TECHNICZNYM</b> — jednorazowe. Ucina kawałek końcówki meczu (2-4 minuty), ale w zamian tracisz możliwość jakiejkolwiek dalszej reakcji taktycznej do końca spotkania.</p>
+        <p style="color:var(--gray);">Autobus, Opierdol i Chaos wykluczają się nawzajem — naraz może działać tylko jedno z nich. Awantura blokuje wszystko.</p>
+      </div>
+    </details>
+  </details>
+
+  <div class="gap8">
+    <button class="btn btn-gold" id="btn-play-match" onclick="playMatch()">▶ ROZEGRAJ MECZ</button>
+    <button class="btn btn-sm"   id="btn-pause-match" onclick="toggleLivePause()" style="display:none;">⏸ PAUZA</button>
+    <button class="btn btn-sm"   id="btn-skip-match" onclick="skipMatchAnimation()" style="display:none;">⏩ POMIŃ</button>
+    <button class="btn btn-sm"   id="btn-next-round" onclick="advance()" style="display:none;">NASTĘPNA RUNDA →</button>
+    <button class="btn btn-red btn-sm" id="btn-playoff-end" onclick="showScreen('screen-title')" style="display:none;">← MENU</button>
   </div>
 
   <div class="panel" id="groups-panel" style="max-width:900px;width:100%;display:none;">
@@ -500,6 +697,8 @@
 </div>
 
 <script src="data.js"></script>
+<script src="komentarze.js"></script>
+<script src="silnik.js"></script>
 <script>
 
 // ── DEFINICJA SLOTÓW (uproszczona) ─────────────────────────
@@ -533,8 +732,8 @@ let state = {
   bracket: [],
   roundIdx: 0,
   myOverall: 0,
-  speed: 'normal',
-  commentaryStyle: 'classic',
+  speed: 'veryslow',
+  commentaryStyle: 'waldemar',
   tournamentPhase: 'knockout',
   mundial: null,
   mundialVariant: 'champions',
@@ -587,9 +786,82 @@ function squadSize() {
   return Object.keys(state.squad).length;
 }
 
+// ============================================================
+// FILTRY DRAFTU — zakres sezonów i/albo pojedynczy klub
+// ============================================================
+let draftFilterMinSeason = null;
+let draftFilterMaxSeason = null;
+let draftFilterClub = '';
+
+function seasonStartYear(s) { return parseInt(s.slice(0, 4), 10); }
+
+function getFilteredTeamsPool() {
+  let pool = TEAMS_DATA;
+  if (draftFilterClub) pool = pool.filter(t => t.club === draftFilterClub);
+  if (draftFilterMinSeason) {
+    const minY = seasonStartYear(draftFilterMinSeason);
+    pool = pool.filter(t => seasonStartYear(t.season) >= minY);
+  }
+  if (draftFilterMaxSeason) {
+    const maxY = seasonStartYear(draftFilterMaxSeason);
+    pool = pool.filter(t => seasonStartYear(t.season) <= maxY);
+  }
+  return pool;
+}
+
+function goToDraftSetup() {
+  const seasons = [...new Set(TEAMS_DATA.map(t => t.season))].sort();
+  const clubs = [...new Set(TEAMS_DATA.map(t => t.club))].sort();
+
+  const minSel = document.getElementById('draft-season-min');
+  const maxSel = document.getElementById('draft-season-max');
+  const clubSel = document.getElementById('draft-club-filter');
+
+  minSel.innerHTML = seasons.map(s => `<option value="${s}">${s}</option>`).join('');
+  maxSel.innerHTML = seasons.map(s => `<option value="${s}">${s}</option>`).join('');
+  minSel.value = seasons[0];
+  maxSel.value = seasons[seasons.length - 1];
+
+  clubSel.innerHTML = '<option value="">Wszystkie kluby</option>' +
+    clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+  clubSel.value = '';
+
+  updateDraftPoolCount();
+  showScreen('screen-draft-setup');
+}
+
+function updateDraftPoolCount() {
+  draftFilterMinSeason = document.getElementById('draft-season-min').value;
+  draftFilterMaxSeason = document.getElementById('draft-season-max').value;
+  draftFilterClub = document.getElementById('draft-club-filter').value;
+
+  const pool = getFilteredTeamsPool();
+  const el = document.getElementById('draft-pool-count');
+  const btn = document.getElementById('btn-confirm-draft-setup');
+
+  if (pool.length === 0) {
+    el.textContent = '⚠ Brak drużyn spełniających te kryteria — zmień zakres.';
+    el.style.color = 'var(--red)';
+    btn.disabled = true;
+  } else {
+    const repeatsWarning = pool.length < 11
+      ? ` (mniej niż 11 — niektóre sezony powtórzą się w trakcie draftu)`
+      : '';
+    el.textContent = `Dostępnych drużyn-sezonów: ${pool.length}${repeatsWarning}`;
+    el.style.color = pool.length < 11 ? 'var(--gold)' : 'var(--green-ll)';
+    btn.disabled = false;
+  }
+}
+
+function confirmDraftSetup() {
+  updateDraftPoolCount(); // upewnij się, że filtry są aktualne
+  if (getFilteredTeamsPool().length === 0) return;
+  startDraft();
+}
+
 function startDraft() {
-  const keepSpeed = state.speed || 'normal';
-  const keepStyle = state.commentaryStyle || 'classic';
+  const keepSpeed = state.speed || 'veryslow';
+  const keepStyle = state.commentaryStyle || 'waldemar';
   state = { squad:{}, rerolls:2, currentTeam:null, usedTeams:new Set(), bracket:[], roundIdx:0, myOverall:0, speed: keepSpeed, commentaryStyle: keepStyle, tournamentPhase:'knockout', mundial:null, mundialVariant:'champions' };
   showScreen('screen-draft');
   drawNextTeam();
@@ -604,8 +876,10 @@ function drawNextTeam() {
   document.getElementById('reroll-info').textContent = `${state.rerolls} lewe`;
   document.getElementById('btn-reroll').disabled = state.rerolls <= 0;
 
-  const available = TEAMS_DATA.filter(t => !state.usedTeams.has(t.club + t.season));
-  if (!available.length) { alert('Brak więcej drużyn w bazie!'); return; }
+  const basePool = getFilteredTeamsPool();
+  let available = basePool.filter(t => !state.usedTeams.has(t.club + t.season));
+  if (!available.length) available = basePool; // pula wyczerpana — pozwalamy na powtórkę sezonu
+  if (!available.length) { alert('Brak drużyn spełniających wybrane kryteria!'); return; }
   const team = rand(available);
   state.currentTeam = team;
   state.usedTeams.add(team.club + team.season);
@@ -770,137 +1044,9 @@ function showResult() {
 
 // ── PLAYOFF (DRABINKA 16 DRUŻYN) ────────────────────────────
 
-const COMMENTARY_STYLES = {
-  classic: {
-    goalFor: [
-      '{p} huknął z dystansu — nie do obrony! Gol!',
-      '{p} wykończył kontrę zimną krwią. Jest gol!',
-      '{p} główkował po dośrodkowaniu — siatka faluje!',
-      '{p} minął dwóch obrońców i pokonał bramkarza!',
-      '{p} trafił po stałym fragmencie gry!',
-      '{p} dobił po słabej interwencji bramkarza rywala!',
-      '{p} wykorzystał błąd obrony i nie dał szans bramkarzowi!',
-    ],
-    goalAgainst: [
-      '{p} ({team}) odpowiedział szybką kontrą — gol!',
-      '{p} ({team}) wykorzystał chwilę nieuwagi w Twojej defensywie.',
-      '{p} ({team}) trafił z rzutu wolnego prosto w okienko.',
-      '{p} ({team}) główkował po rzucie rożnym — bez szans dla bramkarza.',
-      '{p} ({team}) huknął z dystansu — piłka w siatce.',
-      '{p} ({team}) był najszybszy przy dobitce.',
-    ],
-    gkSaveMe: [
-      '{gk} broni strzał {p} świetną interwencją.',
-      '{gk} ratuje paradą po główce {p}.',
-      '{gk} broni strzał {p}, równie efektownie co rzut karny.',
-    ],
-    gkSaveOpp: [
-      'Twój bramkarz broni strzał {p} ({team}) — pewna interwencja.',
-      'Twój bramkarz ratuje zespół paradą po strzale {p} ({team}).',
-      'Dobry refleks bramkarza po główce {p} ({team}).',
-    ],
-    missWideMe: [
-      '{p} huknął, ale piłka poszybowała nad poprzeczką.',
-      '{p} nie trafił w światło bramki z dogodnej pozycji.',
-      '{p} trafił w poprzeczkę — pudło o centymetry.',
-      '{p} przegrał pojedynek z obrońcą tuż przed polem karnym.',
-    ],
-    missWideOpp: [
-      '{p} ({team}) nie trafił w bramkę z niezłej okazji.',
-      '{p} ({team}) trafił w słupek.',
-      'Obrona wybija piłkę sprzed linii bramkowej po strzale {p} ({team}).',
-    ],
-    flavor: [
-      'Ostra wymiana zdań między zawodnikami po starciu w środku pola.',
-      'Trener krzyczy z linii, próbując poprawić ustawienie.',
-      'VAR sprawdza sytuację podbramkową — decyzja bez zmian.',
-      'Krótka przerwa na opatrzenie kontuzjowanego zawodnika.',
-      'Tempo meczu wyraźnie rośnie w tych minutach.',
-      'Rzut rożny nie przynosi żadnego zagrożenia.',
-      'Obie drużyny grają teraz bardzo nerwowo.',
-    ],
-    penaltyAward: ['Rzut karny. Sędzia wskazuje na wapno po faulu na {p}.'],
-    penaltyScoredMe: ['{p} nie myli się z jedenastu metrów — gol.'],
-    penaltyMissedMe: ['{p} posyła piłkę nad poprzeczką. Niewykorzystana okazja.'],
-    penaltySavedMe: ['Bramkarz broni strzał {p} z jedenastu metrów.'],
-    penaltyScoredOpp: ['{p} ({team}) chłodno wykorzystuje jedenastkę.'],
-    penaltyMissedOpp: ['{p} ({team}) posyła piłkę nad poprzeczką. Unikasz straty.'],
-    penaltySavedOpp: ['Twój bramkarz broni rzut karny {p} ({team}).'],
-    yellowMe: ['🟨 Żółta kartka dla {p}.'],
-    yellowOpp: ['🟨 Żółta kartka — {p} ({team}).'],
-    redMe: ['🟥 Czerwona kartka! {p} musi opuścić boisko. Grasz w dziesiątkę. (Overall -10)'],
-    redOpp: ['🟥 Czerwona kartka dla {team}! {p} odgrywa za faul ostatniej szansy. Rywal osłabiony. (Overall -10)'],
-    win: ['Twoja drużyna zdominowała rywali od pierwszej minuty.','Solidna defensywa i błysk w ataku — zasłużone zwycięstwo.','Klasa indywidualna przesądziła o wyniku.','Efektowna wygrana. Kibice są zadowoleni.','Nie było wątpliwości co do lepszej drużyny.'],
-    draw: ['Wyrównana walka — żadna ze stron nie zasłużyła na więcej.','Remis po zaciętym boju.','Defensywy wzięły górę nad atakiem.','Sprawiedliwy podział punktów.'],
-    loss: ['Porażka boli, ale rywal był tego dnia lepszy.','Błędy w defensywie kosztowały cały mecz.','Zabrakło jakości w kluczowych momentach.','Rywal okazał się za mocny. Koniec przygody.'],
-  },
-  energetic: {
-    goalFor: [
-      '{p} ŁADUJE Z DYSTANSU — WCHODZI POD POPRZECZKĘ! GOOOL!!!',
-      '{p} OSZALAŁ! Minął całą obronę i posłał piłkę do siatki!',
-      'GŁOWA {p}! PIŁKA W SIATCE! TRYBUNY OSZALAŁY!',
-      '{p} ZIMNY JAK LÓD przy jedenastu metrach od bramki — i jest GOL!',
-      '{p} WYKOŃCZYŁ AKCJĘ STULECIA! Co za bramka!',
-      'BŁĄD OBRONY i {p} nie daruje! GOOOL dla Twojej drużyny!',
-      '{p} DOBIJA Z BLISKA — SIATKA FALUJE, KIBICE SZALEJĄ!',
-    ],
-    goalAgainst: [
-      'O NIE! {p} ({team}) WBIJA Z KONTRY jak burza!',
-      '{p} ({team}) WYKORZYSTAŁ CHWILĘ NIEUWAGI — ZIMNY PRYSZNIC dla Twojej drużyny!',
-      '{p} ({team}) STRZELA Z WOLNEGO PROSTO W OKIENKO! Niemożliwe do obrony!',
-      'GŁOWA {p} ({team})! Rożny i piłka w siatce — cios dla Twoich kibiców!',
-      '{p} ({team}) HUKNĄŁ Z DYSTANSU jak armata — bez szans!',
-      '{p} ({team}) NAJSZYBSZY przy dobitce — co za refleks!',
-    ],
-    gkSaveMe: [
-      '{gk} JAK MUR! Broni strzał {p} w stylu mistrzowskim!',
-      'NIESAMOWITA PARADA {gk} po główce {p}! Co za refleks!',
-      '{gk} RATUJE BRAMKĘ! Strzał {p} nie wystarczył!',
-    ],
-    gkSaveOpp: [
-      'TWÓJ BRAMKARZ JAK ŚCIANA! Broni strzał {p} ({team})!',
-      'NIEPRAWDOPODOBNA INTERWENCJA bramkarza po strzale {p} ({team})!',
-      'Refleks godny mistrza! Bramkarz ratuje po główce {p} ({team})!',
-    ],
-    missWideMe: [
-      '{p} ŁADUJE... I PUDŁO! Nad poprzeczką, niestety!',
-      '{p} SAM NA SAM... i nie trafia w światło bramki! Szkoda!',
-      'POPRZECZKA! {p} był o centymetry od kolejnego gola!',
-      '{p} przegrywa pojedynek tuż przed polem karnym — szansa stracona!',
-    ],
-    missWideOpp: [
-      '{p} ({team}) PUDŁUJE z dogodnej pozycji! Kamień spadł z serca!',
-      'SŁUPEK! {p} ({team}) o włos od gola — MASZ SZCZĘŚCIE!',
-      'Obrona RATUJE NA LINII strzał {p} ({team})!',
-    ],
-    flavor: [
-      'EMOCJE SIĘGAJĄ ZENITU! Stadion żyje tym meczem!',
-      'Trener KRZYCZY Z LINII jak szalony!',
-      'VAR sprawdza akcję... NAPIĘCIE ROŚNIE... decyzja bez zmian!',
-      'TEMPO MECZU SZALEJE! Obie drużyny dają z siebie wszystko!',
-      'OSTRA WYMIANA ZDAŃ w środku pola — emocje biorą górę!',
-      'Krótka przerwa na opatrzenie zawodnika — kibice w napięciu czekają.',
-      'Rzut rożny... NIC z tego nie wychodzi!',
-    ],
-    penaltyAward: ['JEDENASTKA!!! Sędzia wskazuje na wapno po faulu na {p}! STADION WSTRZYMUJE ODDECH!'],
-    penaltyScoredMe: ['{p} ZIMNY JAK GÓRA LODOWA — GOL Z JEDENASTU METRÓW!'],
-    penaltyMissedMe: ['{p} POSYŁA NAD POPRZECZKĄ! Niewykorzystana szansa!'],
-    penaltySavedMe: ['BRAMKARZ BOHATEREM! Broni strzał {p} z jedenastu metrów!'],
-    penaltyScoredOpp: ['{p} ({team}) NIE DRŻY — WBIJA JEDENASTKĘ bez litości!'],
-    penaltyMissedOpp: ['{p} ({team}) PUDŁUJE Z KARNEGO! Ulga na trybunach!'],
-    penaltySavedOpp: ['TWÓJ BRAMKARZ BOHATEREM! Broni rzut karny {p} ({team})!'],
-    yellowMe: ['🟨 ŻÓŁTA KARTKA dla {p}! Sędzia nie odpuszcza!'],
-    yellowOpp: ['🟨 ŻÓŁTA KARTKA — {p} ({team}) na cenzurowanym!'],
-    redMe: ['🟥 CZERWONA KARTKA!!! {p} MUSI ZEJŚĆ Z BOISKA! Grasz w dziesiątkę! (Overall -10)'],
-    redOpp: ['🟥 CZERWONA KARTKA dla {team}!!! {p} ODGRYWA ZA FAUL OSTATNIEJ SZANSY! Rywal osłabiony! (Overall -10)'],
-    win: ['CO ZA WIDOWISKO! Twoja drużyna ZMIAŻDŻYŁA rywali!','NIESAMOWITE ZWYCIĘSTWO! Kibice szaleją z radości!','TWOJA DRUŻYNA POKAZAŁA KLASĘ! Zasłużona wygrana!','EUFORIA NA TRYBUNACH! Co za mecz!','BRAWO! Drużyna dała z siebie WSZYSTKO i wygrała!'],
-    draw: ['REMIS PO WALCE DO OSTATNIEJ MINUTY!','Żadna ze stron nie odpuszczała — REMIS!','NERWY DO OSTATNIEJ SEKUNDY — remis!','Punkt do podziału po zaciętym boju!'],
-    loss: ['BOLESNA PORAŻKA... Rywal był dziś lepszy.','Cisza na trybunach — drużyna walczyła do końca.','ZABRAKŁO ODROBINY SZCZĘŚCIA — porażka.','Koniec marzeń... rywal okazał się zbyt silny.'],
-  },
-};
 
 function getStyle() {
-  return COMMENTARY_STYLES[state.commentaryStyle] || COMMENTARY_STYLES.classic;
+  return COMMENTARY_STYLES[state.commentaryStyle] || COMMENTARY_STYLES.waldemar;
 }
 
 function shuffleArr(arr) {
@@ -1006,8 +1152,8 @@ function autoSimulateRound(round) {
     if (r.result === 'W') { m.winner = m.home; m.score = `${r.gf}:${r.ga}`; }
     else if (r.result === 'L') { m.winner = m.away; m.score = `${r.gf}:${r.ga}`; }
     else {
-      const diff = m.home.overall - m.away.overall;
-      const homeWinsPK = Math.random() < (0.5 + diff * 0.01);
+      // Seria rzutów karnych — czysta loteria, overall nie ma tu znaczenia.
+      const homeWinsPK = Math.random() < 0.5;
       m.winner = homeWinsPK ? m.home : m.away;
       m.score = `${r.gf}:${r.ga} (k.)`;
     }
@@ -1080,6 +1226,18 @@ function resetMatchScreen(opp, myTeam) {
   renderLineups(myTeam.roster, opp.roster);
   updateSpeedButtons();
   updateCommentaryButtons();
+  resetTacticsPanel();
+  highlightZone('CENTER');
+  state.liveZoneCounts = { GOAL_ME: 0, BOX_ME: 0, CENTER: 0, BOX_OPP: 0, GOAL_OPP: 0 };
+  updateZonePercentages();
+
+  // Trzy overalle formacji (OBRONA/POMOC/ATAK) — tego samego modelu, którego używa silnik V2
+  const myL = lineAverages(myTeam.roster);
+  const oppL = lineAverages(opp.roster);
+  document.getElementById('po-my-lines').textContent =
+    `OBR ${myL.DEF.toFixed(1)} · POM ${myL.MID.toFixed(1)} · ATK ${myL.FWD.toFixed(1)}`;
+  document.getElementById('po-opp-lines').textContent =
+    `OBR ${oppL.DEF.toFixed(1)} · POM ${oppL.MID.toFixed(1)} · ATK ${oppL.FWD.toFixed(1)}`;
 }
 
 function setupKnockoutMatch() {
@@ -1358,15 +1516,21 @@ function advance() {
 
 // ── TEMPO TEKSTU / PODGLĄD SKŁADÓW / STYL KOMENTARZA ────────
 
-const SPEED_MS = { slow: 950, normal: 480, fast: 230 };
+const SPEED_MS = { veryslow: 5500, slow: 3500, normal: 2000, fast: 900, veryfast: 400 };
 
 function setSpeed(s) {
   state.speed = s;
   updateSpeedButtons();
+  // Jeśli mecz właśnie trwa, restartujemy timer z nowym tempem — bez tego zmiana
+  // nie miała żadnego efektu aż do następnego meczu.
+  if (liveTimer && state.liveStepFn) {
+    clearInterval(liveTimer);
+    liveTimer = setInterval(state.liveStepFn, SPEED_MS[s] || SPEED_MS.normal);
+  }
 }
 
 function updateSpeedButtons() {
-  ['slow','normal','fast'].forEach(s => {
+  ['veryslow','slow','normal','fast','veryfast'].forEach(s => {
     const el = document.getElementById('speed-' + s);
     if (el) el.classList.toggle('active', state.speed === s);
   });
@@ -1378,7 +1542,7 @@ function setCommentaryStyle(s) {
 }
 
 function updateCommentaryButtons() {
-  ['classic','energetic'].forEach(s => {
+  ['classic','energetic','waldemar'].forEach(s => {
     const el = document.getElementById('style-' + s);
     if (el) el.classList.toggle('active', state.commentaryStyle === s);
   });
@@ -1420,218 +1584,347 @@ function renderLineupList(elId, roster) {
   });
 }
 
-// ── SILNIK MECZU TEKSTOWEGO (styl CM 01/02) ─────────────────
-
-function weightedPick(roster, weights) {
-  if (!roster || !roster.length) return null;
-  const pool = [];
-  roster.forEach(p => {
-    const w = weights[p.pos] != null ? weights[p.pos] : 1;
-    for (let i = 0; i < w; i++) pool.push(p);
-  });
-  return pool.length ? rand(pool) : rand(roster);
-}
-
-const SCORER_WEIGHTS = { GK: 0, DEF: 1, MID: 3, FWD: 4 };
-const FOUL_WEIGHTS   = { GK: 1, DEF: 3, MID: 3, FWD: 1 };
-
-function pickScorer(roster) { return weightedPick(roster, SCORER_WEIGHTS) || { name: 'Twój zawodnik' }; }
-function pickFouler(roster) { return weightedPick(roster, FOUL_WEIGHTS) || { name: 'zawodnik' }; }
-function pickGK(roster) { return (roster && roster.find(p => p.pos === 'GK')) || { name: 'Bramkarz' }; }
+// ── SILNIK MECZU TEKSTOWEGO (V2, w silnik.js) ─────────────────
 
 // Buduje pełną sekwencję zdarzeń meczu — gole, kartki, karne, sytuacje — z realnymi nazwiskami
-function simulateMatchDetailed(myRoster, myOvrBase, oppRoster, oppOvrBase, oppLabel) {
-  const ST = getStyle();
-  let myEff = myOvrBase, oppEff = oppOvrBase;
-  let myGoals = 0, oppGoals = 0;
-  let redMe = false, redOpp = false;
-  const timeline = [];
 
-  const slotCount = 17 + Math.floor(Math.random() * 9); // 17-25 zdarzeń
-  const minutesSet = new Set();
-  while (minutesSet.size < slotCount) minutesSet.add(1 + Math.floor(Math.random() * 90));
-  const minutes = [...minutesSet].sort((a,b) => a - b);
-
-  minutes.forEach(min => {
-    const diff = myEff - oppEff;
-    const neutralRoll = Math.random();
-
-    if (neutralRoll < 0.26) {
-      // ── zdarzenie neutralne: kartka / flavor ──
-      const r = Math.random();
-      if (!redMe && r < 0.035) {
-        const p = pickFouler(myRoster);
-        redMe = true; myEff -= 10;
-        timeline.push({ minute: min, type: 'red', team: 'me', newEff: myEff, text: fmt(rand(ST.redMe), { p: p.name }) });
-      } else if (!redOpp && r < 0.07) {
-        const p = pickFouler(oppRoster);
-        redOpp = true; oppEff -= 10;
-        timeline.push({ minute: min, type: 'red', team: 'opp', newEff: oppEff, text: fmt(rand(ST.redOpp), { p: p.name, team: oppLabel }) });
-      } else if (r < 0.32) {
-        const p = pickFouler(myRoster);
-        timeline.push({ minute: min, type: 'yellow', text: fmt(rand(ST.yellowMe), { p: p.name }) });
-      } else if (r < 0.57) {
-        const p = pickFouler(oppRoster);
-        timeline.push({ minute: min, type: 'yellow', text: fmt(rand(ST.yellowOpp), { p: p.name, team: oppLabel }) });
-      } else {
-        timeline.push({ minute: min, type: 'flavor', text: rand(ST.flavor) });
-      }
-      return;
-    }
-
-    // ── zdarzenie ataku ──
-    let pMyAttack = clamp(0.5 + diff * 0.0035, 0.25, 0.75);
-    if (min > 75) {
-      if (myGoals < oppGoals) pMyAttack = clamp(pMyAttack + 0.12, 0.2, 0.85);
-      if (oppGoals < myGoals) pMyAttack = clamp(pMyAttack - 0.12, 0.15, 0.8);
-    }
-    const myTurn = Math.random() < pMyAttack;
-    const atkDiff = myTurn ? diff : -diff;
-    const pGoal = clamp(0.20 + atkDiff * 0.004, 0.08, 0.42);
-    const pPenalty = 0.045;
-    const roll = Math.random();
-
-    if (roll < pPenalty) {
-      const taker = myTurn ? pickScorer(myRoster) : pickScorer(oppRoster);
-      const fouled = taker;
-      timeline.push({ minute: min, type: 'penalty', text: fmt(ST.penaltyAward[0], { p: fouled.name }) });
-      const pConv = 0.76;
-      const outcomeRoll = Math.random();
-      if (outcomeRoll < pConv) {
-        if (myTurn) { myGoals++; timeline.push({ minute: min, type: 'goal', team: 'me', text: '↳ ' + fmt(rand(ST.penaltyScoredMe), { p: taker.name }) }); }
-        else { oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', text: '↳ ' + fmt(rand(ST.penaltyScoredOpp), { p: taker.name, team: oppLabel }) }); }
-      } else if (outcomeRoll < pConv + 0.12) {
-        timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(myTurn ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
-      } else {
-        timeline.push({ minute: min, type: 'flavor', text: '↳ ' + fmt(myTurn ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
-      }
-      return;
-    }
-
-    if (roll < pGoal) {
-      const scorer = pickScorer(myTurn ? myRoster : oppRoster);
-      if (myTurn) {
-        myGoals++;
-        timeline.push({ minute: min, type: 'goal', team: 'me', text: fmt(rand(ST.goalFor), { p: scorer.name }) });
-      } else {
-        oppGoals++;
-        timeline.push({ minute: min, type: 'goal', team: 'opp', text: fmt(rand(ST.goalAgainst), { p: scorer.name, team: oppLabel }) });
-      }
-      return;
-    }
-
-    // ── pudło lub obrona bramkarza ──
-    const shooter = pickScorer(myTurn ? myRoster : oppRoster);
-    if (Math.random() < 0.55) {
-      if (myTurn) {
-        const gk = pickGK(oppRoster);
-        timeline.push({ minute: min, type: 'flavor', text: fmt(rand(ST.gkSaveMe), { gk: gk.name, p: shooter.name }) });
-      } else {
-        const gk = pickGK(myRoster);
-        timeline.push({ minute: min, type: 'flavor', text: fmt(rand(ST.gkSaveOpp), { gk: gk.name, p: shooter.name, team: oppLabel }) });
-      }
-    } else {
-      timeline.push({ minute: min, type: 'flavor', text: fmt(myTurn ? rand(ST.missWideMe) : rand(ST.missWideOpp), { p: shooter.name, team: oppLabel }) });
-    }
-  });
-
-  // znaczniki przerwy i końca meczu
-  let htMyGoals = 0, htOppGoals = 0;
-  timeline.forEach(ev => { if (ev.minute <= 45 && ev.type === 'goal') { ev.team === 'me' ? htMyGoals++ : htOppGoals++; } });
-  let insertAt = timeline.findIndex(ev => ev.minute > 45);
-  if (insertAt === -1) insertAt = timeline.length;
-  timeline.splice(insertAt, 0, { minute: 45, type: 'marker', text: `⏱ PRZERWA — ${htMyGoals} : ${htOppGoals}` });
-  timeline.push({ minute: 90, type: 'marker', text: `⏱ KONIEC MECZU — ${myGoals} : ${oppGoals}` });
-
-  const result = myGoals > oppGoals ? 'W' : myGoals < oppGoals ? 'L' : 'D';
-  return { result, gf: myGoals, ga: oppGoals, timeline, myEffFinal: myEff, oppEffFinal: oppEff };
-}
-
-function tlClass(ev) {
-  if (ev.type === 'goal') return ev.team === 'me' ? 'tl-goal-me' : 'tl-goal-opp';
-  if (ev.type === 'red') return 'tl-red';
-  if (ev.type === 'yellow') return 'tl-yellow';
-  if (ev.type === 'penalty') return 'tl-penalty';
-  if (ev.type === 'marker') return 'tl-marker';
-  return 'tl-flavor';
-}
-
-function tlText(ev) {
-  if (ev.type === 'marker') return ev.text;
-  if (ev.text.startsWith('↳')) return ev.text;
-  return `${ev.minute}' ${ev.text}`;
-}
 
 let matchTimers = [];
 
+// ============================================================
+// TAKTYKA — czytanie stanu przycisków, trigger CHAOSU
+// ============================================================
+function readTactics() {
+  const podania = document.getElementById('podania-select').value;
+  const agresywnosc = document.getElementById('agresywnosc-select').value;
+  return {
+    mentality: document.getElementById('mentality-select').value,
+    possessionFocus: podania === 'POSIADANIE',
+    directPlay: podania === 'SZYBKIE',
+    aggressiveTackling: agresywnosc === 'AGRESYWNY',
+    lightTackling: agresywnosc === 'LEKKI',
+    busParking: document.getElementById('tg-busparking').classList.contains('active'),
+    stoperAtak: document.getElementById('tg-stoper-atak').classList.contains('active'),
+  };
+}
+
+function onPodaniaChange() {
+  // wartość jest czytana na żywo w liveStep(), nic więcej nie trzeba tu robić
+}
+function onAgresywnoscChange() {
+  // jw.
+}
+
+function toggleTactic(id) {
+  document.getElementById(id).classList.toggle('active');
+  if (id === 'tg-busparking') updateSpecialModeLocks();
+  if (id === 'tg-stoper-atak' && state.redrawLines) state.redrawLines();
+}
+
+function onMentalityChange() {
+  // wartość jest czytana na żywo w liveStep(), nic więcej nie trzeba tu robić
+}
+
+let chaosPending = false;
+function triggerChaos() {
+  if (!state.liveGen) return;
+  chaosPending = true;
+  const btn = document.getElementById('btn-chaos');
+  btn.disabled = true;
+  btn.dataset.used = '1';
+  btn.textContent = '🔥 CHAOS w toku...';
+  updateSpecialModeLocks();
+}
+
+let opierdolPending = false;
+function triggerOpierdol() {
+  if (!state.liveGen) return;
+  opierdolPending = true;
+  const btn = document.getElementById('btn-opierdol');
+  btn.disabled = true;
+  btn.dataset.used = '1';
+  btn.textContent = '💪 OPIERDOL w toku...';
+  updateSpecialModeLocks();
+}
+
+let awanturaPending = false;
+let awanturaUsedThisMatch = false;
+function triggerAwantura() {
+  if (!state.liveGen || awanturaUsedThisMatch) return;
+  awanturaPending = true;
+  awanturaUsedThisMatch = true;
+  const btn = document.getElementById('btn-awantura');
+  btn.textContent = '🗯️ AWANTURA — koniec reagowania';
+  lockAllTacticsPermanently();
+}
+
+// Po AWANTURZE nie da się już nic zmienić do końca meczu — blokujemy WSZYSTKO,
+// nie tylko trzy specjalne tryby.
+function lockAllTacticsPermanently() {
+  ['mentality-select', 'podania-select', 'agresywnosc-select', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
+    document.getElementById(id).disabled = true;
+  });
+}
+
+function highlightZone(zone) {
+  const zones = ['GOAL_ME', 'BOX_ME', 'CENTER', 'BOX_OPP', 'GOAL_OPP'];
+  zones.forEach(z => {
+    const el = document.getElementById('zone-' + z);
+    if (!el) return;
+    el.classList.remove('active', 'goal-zone');
+    if (z === zone) {
+      el.classList.add('active');
+      if (z === 'GOAL_ME' || z === 'GOAL_OPP') el.classList.add('goal-zone');
+    }
+  });
+}
+
+// Procentowy rozkład: gdzie najczęściej "toczyła się gra" — narastająco przez cały mecz.
+function trackZoneVisit(zone) {
+  if (!state.liveZoneCounts) return;
+  if (state.liveZoneCounts[zone] == null) return;
+  state.liveZoneCounts[zone]++;
+  updateZonePercentages();
+}
+
+function updateZonePercentages() {
+  const counts = state.liveZoneCounts;
+  if (!counts) return;
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  ['GOAL_ME', 'BOX_ME', 'CENTER', 'BOX_OPP', 'GOAL_OPP'].forEach(z => {
+    const el = document.getElementById('pct-' + z);
+    if (!el) return;
+    el.textContent = total > 0 ? Math.round(counts[z] / total * 100) + '%' : '';
+  });
+}
+
+function resetTacticsPanel() {
+  document.getElementById('tg-busparking').classList.remove('active');
+  document.getElementById('tg-stoper-atak').classList.remove('active');
+  document.getElementById('mentality-select').value = 'NEUTRAL';
+  document.getElementById('podania-select').value = 'NEUTRAL';
+  document.getElementById('agresywnosc-select').value = 'NEUTRAL';
+  ['mentality-select', 'podania-select', 'agresywnosc-select', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
+    document.getElementById(id).disabled = false;
+  });
+  awanturaPending = false;
+  awanturaUsedThisMatch = false;
+  document.getElementById('btn-awantura').textContent = '🗯️ AWANTURA Z TECHNICZNYM';
+  chaosPending = false;
+  const chaosBtn = document.getElementById('btn-chaos');
+  chaosBtn.disabled = false;
+  chaosBtn.textContent = '🔥 MUSIMY NA CHAOS';
+  chaosBtn.dataset.used = '0';
+  opierdolPending = false;
+  const opierdolBtn = document.getElementById('btn-opierdol');
+  opierdolBtn.disabled = false;
+  opierdolBtn.textContent = '💪 OPIERDOL (do 65\')';
+  opierdolBtn.dataset.used = '0';
+  updateSpecialModeLocks();
+}
+
+// Parkowanie autobusu / OPIERDOL / MUSIMY NA CHAOS — tylko jedno naraz.
+function updateSpecialModeLocks() {
+  if (awanturaUsedThisMatch) { lockAllTacticsPermanently(); return; } // nadrzędna blokada
+  const busActive = document.getElementById('tg-busparking').classList.contains('active');
+  const chaosBtn = document.getElementById('btn-chaos');
+  const opierdolBtn = document.getElementById('btn-opierdol');
+  const busBtn = document.getElementById('tg-busparking');
+  const chaosUsedFlag = chaosBtn.dataset.used === '1' || chaosPending;
+  const opierdolUsedFlag = opierdolBtn.dataset.used === '1' || opierdolPending;
+  chaosBtn.disabled = busActive || opierdolUsedFlag;
+  opierdolBtn.disabled = busActive || chaosUsedFlag;
+  busBtn.disabled = chaosUsedFlag || opierdolUsedFlag;
+}
+
+// ============================================================
+// MECZ NA ŻYWO — generator, taktyka zmienialna w dowolnym momencie z pauzą
+// ============================================================
+let liveTimer = null;
+let livePaused = false;
+
 function playMatch() {
   document.getElementById('btn-play-match').style.display = 'none';
+  document.getElementById('btn-pause-match').style.display = 'inline-block';
+  document.getElementById('btn-pause-match').textContent = '⏸ PAUZA';
   document.getElementById('btn-skip-match').style.display = 'inline-block';
 
   const { m, opp, myTeam } = getCurrentMatchContext();
-  const sim = simulateMatchDetailed(myTeam.roster, state.myOverall, opp.roster, opp.overall, opp.label);
-  state.currentSim = sim;
   state.currentMatch = m;
   state.currentOpp = opp;
+  state.currentMyTeam = myTeam;
 
   const timelineEl = document.getElementById('po-timeline');
   const scoreEl = document.getElementById('po-score');
-  const myOvrEl = document.getElementById('po-my-ovr');
-  const oppOvrEl = document.getElementById('po-opp-ovr');
-  let liveGF = 0, liveGA = 0;
+  const myLinesEl = document.getElementById('po-my-lines');
+  const oppLinesEl = document.getElementById('po-opp-lines');
   const STEP_MS = SPEED_MS[state.speed] || SPEED_MS.normal;
 
-  matchTimers = [];
-  sim.timeline.forEach((ev, i) => {
-    const t = setTimeout(() => {
-      if (ev.type === 'goal') {
-        if (ev.team === 'me') liveGF++; else liveGA++;
-        scoreEl.textContent = `${liveGF} : ${liveGA}`;
+  state.liveGen = simulateMatchV2Live(myTeam.roster, opp.roster, opp.label, readTactics());
+  highlightZone('CENTER');
+  state.liveMyBase = null; state.liveOppBase = null;
+  state.liveMyMods = { DEF: 0, MID: 0, FWD: 0 };
+  state.liveOppMods = { DEF: 0, MID: 0, FWD: 0 };
+  state.liveGF = 0; state.liveGA = 0;
+  state.liveZoneCounts = { GOAL_ME: 0, BOX_ME: 0, CENTER: 0, BOX_OPP: 0, GOAL_OPP: 0 };
+  state.liveResult = null;
+  livePaused = false;
+
+  function redrawLines() {
+    if (!state.liveMyBase) return;
+    const stoperOn = document.getElementById('tg-stoper-atak').classList.contains('active');
+    const defAdj = stoperOn ? -10 : 0, atkAdj = stoperOn ? 5 : 0;
+    myLinesEl.textContent = `OBR ${(state.liveMyBase.DEF + state.liveMyMods.DEF + defAdj).toFixed(1)} · POM ${(state.liveMyBase.MID + state.liveMyMods.MID).toFixed(1)} · ATK ${(state.liveMyBase.FWD + state.liveMyMods.FWD + atkAdj).toFixed(1)}`;
+    oppLinesEl.textContent = `OBR ${(state.liveOppBase.DEF + state.liveOppMods.DEF).toFixed(1)} · POM ${(state.liveOppBase.MID + state.liveOppMods.MID).toFixed(1)} · ATK ${(state.liveOppBase.FWD + state.liveOppMods.FWD).toFixed(1)}`;
+  }
+  state.redrawLines = redrawLines;
+
+  function applyEvent(ev) {
+    if (ev.type === 'goal') {
+      if (ev.team === 'me') state.liveGF++; else state.liveGA++;
+      scoreEl.textContent = `${state.liveGF} : ${state.liveGA}`;
+    }
+    if (ev.zone) { highlightZone(ev.zone); trackZoneVisit(ev.zone); }
+    if (ev.line) {
+      const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
+      const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
+      if (delta) {
+        const mods = ev.team === 'me' ? state.liveMyMods : state.liveOppMods;
+        mods[ev.line] += delta;
+        redrawLines();
+        (ev.team === 'me' ? myLinesEl : oppLinesEl).style.color = delta < 0 ? 'var(--red)' : 'var(--green-ll)';
       }
-      if (ev.type === 'red') {
-        if (ev.team === 'me') { myOvrEl.textContent = `OVR ${ev.newEff}`; myOvrEl.style.color = 'var(--red)'; }
-        else { oppOvrEl.textContent = `OVR ${ev.newEff}`; oppOvrEl.style.color = 'var(--red)'; }
+    }
+    const line = document.createElement('div');
+    line.className = `tl-row ${tlClass(ev)}`;
+    line.textContent = ev.minute != null ? tlText(ev) : ev.text;
+    timelineEl.prepend(line);
+    timelineEl.scrollTop = 0;
+  }
+
+  let eventQueue = []; // kolejka pojedynczych linii — jedna na tick, nawet gdy silnik zwróci kilka naraz
+  state.liveEventQueue = eventQueue;
+
+  function step() {
+    if (livePaused) return;
+
+    if (eventQueue.length > 0) {
+      applyEvent(eventQueue.shift());
+      return; // dokładnie jedna linijka na tick
+    }
+
+    const tactics = readTactics();
+    if (chaosPending) { tactics.triggerChaos = true; chaosPending = false; }
+    if (opierdolPending) { tactics.triggerOpierdol = true; opierdolPending = false; }
+    if (awanturaPending) { tactics.triggerAwantura = true; awanturaPending = false; }
+    const res = state.liveGen.next(tactics);
+    if (res.done) {
+      clearInterval(liveTimer);
+      liveTimer = null;
+      finishMatch(res.value, m, opp);
+      return;
+    }
+    if (res.value) {
+      if (res.value.i > 70) {
+        const opierdolBtn = document.getElementById('btn-opierdol');
+        if (!opierdolBtn.disabled) { opierdolBtn.disabled = true; opierdolBtn.textContent = '\ud83d\udcaa OPIERDOL (za pó\u017ano)'; }
+      }
+      if (res.value.newEvents && res.value.newEvents.length) {
+        eventQueue.push(...res.value.newEvents);
+        applyEvent(eventQueue.shift());
+      }
+    }
+  }
+
+  // Pierwsze wywolanie .next() bez argumentu tylko odpala generator do pierwszego yield —
+  // korzystamy z niego, zeby pobrac bazowe linie (myBase/oppBase) zanim ruszy odtwarzanie.
+  const primer = state.liveGen.next();
+  state.liveMyBase = lineAverages(myTeam.roster);
+  state.liveOppBase = lineAverages(opp.roster);
+  redrawLines();
+  if (primer.value && primer.value.newEvents) primer.value.newEvents.forEach(applyEvent);
+
+  state.liveStepFn = step;
+  liveTimer = setInterval(step, STEP_MS);
+}
+
+function toggleLivePause() {
+  livePaused = !livePaused;
+  document.getElementById('btn-pause-match').textContent = livePaused ? '▶ WZNÓW' : '⏸ PAUZA';
+}
+
+
+function skipMatchAnimation() {
+  if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+  const m = state.currentMatch, opp = state.currentOpp;
+  if (!state.liveGen) return;
+
+  const timelineEl = document.getElementById('po-timeline');
+  const tactics = readTactics(); // taktyka "zamrożona" na tym, co było ustawione w chwili pominięcia
+  if (chaosPending) { tactics.triggerChaos = true; chaosPending = false; }
+  if (opierdolPending) { tactics.triggerOpierdol = true; opierdolPending = false; }
+  if (awanturaPending) { tactics.triggerAwantura = true; awanturaPending = false; }
+
+  let finalResult = null;
+  let lastZone = null;
+  let guard = 0;
+
+  // Najpierw dociągamy to, co już czekało w kolejce (jeszcze niewyświetlone linijki).
+  if (state.liveEventQueue && state.liveEventQueue.length) {
+    state.liveEventQueue.splice(0).forEach(ev => {
+      if (ev.zone) { lastZone = ev.zone; trackZoneVisit(ev.zone); }
+      if (ev.type === 'goal') { if (ev.team === 'me') state.liveGF++; else state.liveGA++; }
+      if (ev.line) {
+        const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
+        const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
+        if (delta) (ev.team === 'me' ? state.liveMyMods : state.liveOppMods)[ev.line] += delta;
       }
       const line = document.createElement('div');
       line.className = `tl-row ${tlClass(ev)}`;
-      line.textContent = tlText(ev);
-      timelineEl.appendChild(line);
-      timelineEl.scrollTop = timelineEl.scrollHeight;
-    }, i * STEP_MS);
-    matchTimers.push(t);
-  });
+      line.textContent = ev.minute != null ? tlText(ev) : ev.text;
+      timelineEl.prepend(line);
+    });
+  }
 
-  const t2 = setTimeout(() => finishMatch(sim, m, opp), sim.timeline.length * STEP_MS + 300);
-  matchTimers.push(t2);
-}
+  while (guard++ < 300) { // zabezpieczenie przed nieskończoną pętlą — mecz ma najwyżej 100 zdarzeń
+    const res = state.liveGen.next(tactics);
+    if (res.done) { finalResult = res.value; break; }
+    if (res.value && res.value.newEvents) {
+      res.value.newEvents.forEach(ev => {
+        if (ev.zone) { lastZone = ev.zone; trackZoneVisit(ev.zone); }
+        if (ev.type === 'goal') { if (ev.team === 'me') state.liveGF++; else state.liveGA++; }
+        if (ev.line) {
+          const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
+          const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
+          if (delta) (ev.team === 'me' ? state.liveMyMods : state.liveOppMods)[ev.line] += delta;
+        }
+        const line = document.createElement('div');
+        line.className = `tl-row ${tlClass(ev)}`;
+        line.textContent = ev.minute != null ? tlText(ev) : ev.text;
+        timelineEl.prepend(line);
+      });
+    }
+  }
+  timelineEl.scrollTop = 0;
+  if (lastZone) highlightZone(lastZone);
+  if (!finalResult) finalResult = { result: state.liveGF > state.liveGA ? 'W' : state.liveGF < state.liveGA ? 'L' : 'D', gf: state.liveGF, ga: state.liveGA };
+  document.getElementById('po-score').textContent = `${finalResult.gf} : ${finalResult.ga}`;
 
-function skipMatchAnimation() {
-  matchTimers.forEach(t => clearTimeout(t));
-  matchTimers = [];
-  const sim = state.currentSim, m = state.currentMatch, opp = state.currentOpp;
-  if (!sim) return;
+  // Finalne overalle formacji, uwzględniające czerwone/kontuzje/formę z całego meczu
+  const myLinesEl = document.getElementById('po-my-lines');
+  const oppLinesEl = document.getElementById('po-opp-lines');
+  const myChanged = state.liveMyMods.DEF || state.liveMyMods.MID || state.liveMyMods.FWD;
+  const oppChanged = state.liveOppMods.DEF || state.liveOppMods.MID || state.liveOppMods.FWD;
+  state.redrawLines();
+  if (myChanged) myLinesEl.style.color = myChanged < 0 ? 'var(--red)' : 'var(--green-ll)';
+  if (oppChanged) oppLinesEl.style.color = oppChanged < 0 ? 'var(--red)' : 'var(--green-ll)';
 
-  const timelineEl = document.getElementById('po-timeline');
-  timelineEl.innerHTML = '';
-  sim.timeline.forEach(ev => {
-    const line = document.createElement('div');
-    line.className = `tl-row ${tlClass(ev)}`;
-    line.textContent = tlText(ev);
-    timelineEl.appendChild(line);
-  });
-  timelineEl.scrollTop = timelineEl.scrollHeight;
-  document.getElementById('po-score').textContent = `${sim.gf} : ${sim.ga}`;
-
-  const myOvrEl = document.getElementById('po-my-ovr');
-  const oppOvrEl = document.getElementById('po-opp-ovr');
-  if (sim.myEffFinal !== state.myOverall) { myOvrEl.textContent = `OVR ${sim.myEffFinal}`; myOvrEl.style.color = 'var(--red)'; }
-  if (sim.oppEffFinal !== opp.overall) { oppOvrEl.textContent = `OVR ${sim.oppEffFinal}`; oppOvrEl.style.color = 'var(--red)'; }
-
-  finishMatch(sim, m, opp);
+  finishMatch(finalResult, m, opp);
 }
 
 function finishMatch(sim, m, opp) {
   document.getElementById('btn-skip-match').style.display = 'none';
+  document.getElementById('btn-pause-match').style.display = 'none';
   if (state.tournamentPhase === 'groups') finishGroupMatch(sim, m, opp);
   else finishKnockoutMatch(sim, m, opp);
 }
@@ -1668,15 +1961,38 @@ function finishKnockoutMatch(sim, m, opp) {
   let wonMatch = sim.result === 'W';
 
   if (sim.result === 'D') {
-    const diff = state.myOverall - opp.overall;
-    const iWinPK = Math.random() < (0.5 + diff * 0.01);
-    const winnerPK = 3 + Math.floor(Math.random() * 3);
-    const loserPK = Math.max(0, winnerPK - 1 - Math.floor(Math.random() * 2));
-    scoreText += iWinPK ? ` (k. ${winnerPK}:${loserPK})` : ` (k. ${loserPK}:${winnerPK})`;
-    wonMatch = iWinPK;
-    resultClass = iWinPK ? 'win' : 'loss';
-    document.getElementById('po-commentary').textContent =
-      iWinPK ? 'Wygrywasz w serii rzutów karnych! 🥅' : 'Przegrywasz w serii rzutów karnych...';
+    const ST = getStyle();
+    const timelineEl = document.getElementById('po-timeline');
+
+    // Komentarz o remisie w regulaminowym czasie, zanim zaczną się karne.
+    if (timelineEl) {
+      const introLine = document.createElement('div');
+      introLine.className = 'tl-row tl-marker';
+      introLine.textContent = rand(ST.draw) + ' Teraz zadecydują rzuty karne.';
+      timelineEl.prepend(introLine);
+    }
+
+    const myRoster = Object.values(state.squad).map(s => ({ name: s.name, pos: s.pos, overall: s.overall }));
+    const shootout = simulatePenaltyShootout(myRoster, opp.roster, opp.label);
+    scoreText += shootout.iWin ? ` (k. ${shootout.myScore}:${shootout.oppScore})` : ` (k. ${shootout.oppScore}:${shootout.myScore})`;
+    wonMatch = shootout.iWin;
+    resultClass = shootout.iWin ? 'win' : 'loss';
+    document.getElementById('po-commentary').textContent = shootout.iWin ? rand(ST.win) : rand(ST.loss);
+
+    if (timelineEl) {
+      shootout.timeline.forEach(ev => {
+        const line = document.createElement('div');
+        line.className = `tl-row ${tlClass(ev)}`;
+        line.textContent = ev.text;
+        timelineEl.prepend(line);
+      });
+      // Podsumowanie komentatora PO serii karnych — najnowsza linijka, ląduje na samej górze.
+      const summaryLine = document.createElement('div');
+      summaryLine.className = `tl-row ${shootout.iWin ? 'tl-goal-me' : 'tl-goal-opp'}`;
+      summaryLine.textContent = shootout.iWin ? rand(ST.win) : rand(ST.loss);
+      timelineEl.prepend(summaryLine);
+      timelineEl.scrollTop = 0;
+    }
   } else {
     const ST = getStyle();
     document.getElementById('po-commentary').textContent =
