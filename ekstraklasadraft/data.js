@@ -11717,10 +11717,10 @@ const TEAMS_DATA = [
       { name: "Zych",          position: "GK",  overall: 83, apps: 26, goals: 0,  starting: true  },
       { name: "Komar",         position: "GK",  overall: 58, apps: 6,  goals: 0,  starting: false },
 
-      { name: "Craciun",       position: "DEF", overall: 79, apps: 29, goals: 10, starting: true  },
-      { name: "Yakuba",        position: "DEF", overall: 70, apps: 33, goals: 8,  starting: true  },
-      { name: "Mroziński",     position: "DEF", overall: 72, apps: 23, goals: 4,  starting: true  },
-      { name: "Koj",           position: "DEF", overall: 70, apps: 19, goals: 4,  starting: true  },
+      { name: "Craciun",       position: "DEF", overall: 71, apps: 29, goals: 10, starting: true  },
+      { name: "Yakuba",        position: "DEF", overall: 69, apps: 33, goals: 8,  starting: true  },
+      { name: "Mroziński",     position: "DEF", overall: 67, apps: 23, goals: 4,  starting: true  },
+      { name: "Koj",           position: "DEF", overall: 68, apps: 19, goals: 4,  starting: true  },
       { name: "Sołowiej",      position: "DEF", overall: 71, apps: 23, goals: 6,  starting: false },
       { name: "Pięczek",       position: "DEF", overall: 57, apps: 14, goals: 0,  starting: false },
 
