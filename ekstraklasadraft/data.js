@@ -11714,11 +11714,11 @@ const TEAMS_DATA = [
     club: "Puszcza Niepołomice",
     season: "2023/24",
     players: [
-      { name: "Zych",          position: "GK",  overall: 67, apps: 26, goals: 0,  starting: true  },
+      { name: "Zych",          position: "GK",  overall: 83, apps: 26, goals: 0,  starting: true  },
       { name: "Komar",         position: "GK",  overall: 58, apps: 6,  goals: 0,  starting: false },
 
       { name: "Craciun",       position: "DEF", overall: 79, apps: 29, goals: 10, starting: true  },
-      { name: "Yakuba",        position: "DEF", overall: 75, apps: 33, goals: 8,  starting: true  },
+      { name: "Yakuba",        position: "DEF", overall: 70, apps: 33, goals: 8,  starting: true  },
       { name: "Mroziński",     position: "DEF", overall: 72, apps: 23, goals: 4,  starting: true  },
       { name: "Koj",           position: "DEF", overall: 70, apps: 19, goals: 4,  starting: true  },
       { name: "Sołowiej",      position: "DEF", overall: 71, apps: 23, goals: 6,  starting: false },
