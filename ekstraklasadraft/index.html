@@ -10,7 +10,7 @@
 
 <!-- TITLE -->
 <div id="screen-title" class="screen active">
-  <div class="title-logo">EKSTRAKLASA<br>DRAFT 1.47</div>
+  <div class="title-logo">EKSTRAKLASA<br>DRAFT 1.28</div>
   <div class="title-sub">UNIWERSUM POLSKIEJ PIŁKI</div>
   <div class="pitch-preview"><div class="pitch-stripes"></div></div>
   <div style="font-size:17px;color:var(--gray);text-align:center;max-width:380px;line-height:1.6;">
@@ -550,25 +550,29 @@
   </div>
 
   <div id="tactics-details" style="display:none;">
-    <div class="gap8" id="tactics-panel" style="flex-wrap:wrap;margin-top:8px;">
-      <span style="font-size:14px;color:var(--gray);align-self:center;">Mentalność:</span>
-      <div style="display:flex;align-items:center;gap:6px;min-width:220px;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">OBRONA</span>
-        <input type="range" id="mentality-slider" min="-5" max="5" step="1" value="0" oninput="onMentalityChange(this.value)" onchange="onMentalityCommit(this.value)" style="flex:1;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">ATAK</span>
+    <div id="tactics-panel" style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <span style="font-size:14px;color:var(--gray);">Mentalność</span>
+        <span id="mentality-slider-label" style="font-family:var(--font-hud);font-size:11px;color:var(--accent);">NEUTRALNA (0)</span>
       </div>
-      <span id="mentality-slider-label" style="font-family:var(--font-hud);font-size:11px;color:var(--accent);align-self:center;">NEUTRALNA (0)</span>
-      <span style="font-size:14px;color:var(--gray);align-self:center;">Podania:</span>
-      <div style="display:flex;align-items:center;gap:6px;min-width:220px;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">POSIADANIE</span>
-        <input type="range" id="podania-slider" min="-5" max="5" step="1" value="0" onchange="onPodaniaChange(this.value)" style="flex:1;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">SZYBKIE</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">OBRONA</span>
+        <input type="range" id="mentality-slider" min="-5" max="5" step="1" value="0" oninput="onMentalityChange(this.value)" onchange="onMentalityCommit(this.value)" style="flex:1;min-width:0;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">ATAK</span>
       </div>
-      <span style="font-size:14px;color:var(--gray);align-self:center;">Odbiór:</span>
-      <div style="display:flex;align-items:center;gap:6px;min-width:220px;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">LEKKI</span>
-        <input type="range" id="agresja-slider" min="-5" max="5" step="1" value="0" onchange="onAgresywnoscChange(this.value)" style="flex:1;">
-        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);">AGRESYWNY</span>
+
+      <div style="font-size:14px;color:var(--gray);margin:14px 0 4px;">Podania</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">POSIADANIE</span>
+        <input type="range" id="podania-slider" min="-5" max="5" step="1" value="0" onchange="onPodaniaChange(this.value)" style="flex:1;min-width:0;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">SZYBKIE</span>
+      </div>
+
+      <div style="font-size:14px;color:var(--gray);margin:14px 0 4px;">Odbiór</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">LEKKI</span>
+        <input type="range" id="agresja-slider" min="-5" max="5" step="1" value="0" onchange="onAgresywnoscChange(this.value)" style="flex:1;min-width:0;">
+        <span style="font-family:var(--font-hud);font-size:9px;color:var(--gray);flex-shrink:0;">AGRESYWNY</span>
       </div>
     </div>
 
@@ -580,7 +584,7 @@
 
     <div style="font-family:var(--font-hud);font-size:8px;color:var(--gray);letter-spacing:1px;margin-top:12px;margin-bottom:4px;">JEDNORAZOWE — raz na mecz, gasną po użyciu</div>
     <div class="gap8" id="react-panel" style="flex-wrap:wrap;">
-      <button class="btn btn-sm tactic-btn reactive" id="btn-opierdol" onclick="triggerOpierdol()">OPIERDOL (do 65')</button>
+      <button class="btn btn-sm tactic-btn reactive" id="btn-opierdol" onclick="triggerOpierdol()">OCHRZAN (do 65')</button>
       <button class="btn btn-sm tactic-btn reactive" id="btn-chaos" onclick="triggerChaos()">MUSIMY NA CHAOS</button>
       <button class="btn btn-sm tactic-btn reactive" id="btn-awantura" onclick="triggerAwantura()">AWANTURA Z TECHNICZNYM</button>
     </div>
@@ -590,10 +594,10 @@
       <div class="legend-body">
         <p><b>🚌 Parkowanie autobusu</b> — przełącznik. Włączony: zupełnie przestajesz atakować, cała gra toczy się pod Twoją bramką, a rywal jest wyraźnie groźniejszy i skuteczniejszy. Mecz szybciej dobiega końca. Można wyłączyć w dowolnym momencie.</p>
         <p><b>🔼 Wyślij stopera do ataku</b> — przełącznik. Osłabia Twoją obronę, wzmacnia atak. Widać to od razu w pasku OBR/POM/ATK. Odwracalny.</p>
-        <p><b>💪 OPIERDOL</b> — jednorazowe, tylko do 65. minuty. Daje Ci krótki, mocny zryw (więcej piłki, groźniejsze i skuteczniejsze akcje), ale w ostatnich minutach meczu odbija się to czkawką — słabsza gra, gorsza skuteczność. Kara jest mocniejsza niż nagroda.</p>
+        <p><b>💪 OCHRZAN</b> — jednorazowe, tylko do 65. minuty. Daje Ci krótki, mocny zryw (więcej piłki, groźniejsze i skuteczniejsze akcje), ale w ostatnich minutach meczu odbija się to czkawką — słabsza gra, gorsza skuteczność. Kara jest mocniejsza niż nagroda.</p>
         <p><b>🔥 MUSIMY NA CHAOS</b> — jednorazowe. Trwale osłabia Twoją obronę, ale gwarantuje Ci jedną naprawdę groźną sytuację zaraz potem. Przez chwilę po użyciu rywal też jest groźniejszy, gdy odzyska piłkę.</p>
         <p><b>🗯️ AWANTURA Z TECHNICZNYM</b> — jednorazowe. Ucina kawałek końcówki meczu (2-4 minuty), ale w zamian tracisz możliwość jakiejkolwiek dalszej reakcji taktycznej do końca spotkania.</p>
-        <p style="color:var(--gray);">Autobus, Opierdol i Chaos wykluczają się nawzajem — naraz może działać tylko jedno z nich. Awantura blokuje wszystko.</p>
+        <p style="color:var(--gray);">Autobus, Ochrzan i Chaos wykluczają się nawzajem — naraz może działać tylko jedno z nich. Awantura blokuje wszystko.</p>
       </div>
     </details>
   </div>
