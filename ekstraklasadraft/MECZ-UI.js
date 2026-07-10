@@ -229,28 +229,53 @@ function getFatiguePct(name, side) {
   return entry ? entry.pct : null;
 }
 
+// Jedno źródło prawdy dla siły linii NA ŻYWO — łączy bazową siłę składu
+// (liveMyBase/liveOppBase), wszystkie modyfikatory meczowe (kartki, kontuzje,
+// forma, traits — liveMyMods/liveOppMods), zmęczenie per zawodnik (uśrednione
+// per linia) i — dla Ciebie — mentalność/stoper z suwaków. Używane zarówno
+// do pasków OBR/POM/ATK, jak i do dużego OVR nad boiskiem, żeby oba miejsca
+// ZAWSZE pokazywały to samo, spójnie.
+function computeLiveLineAverages(side) {
+  const base = side === 'me' ? state.liveMyBase : state.liveOppBase;
+  const mods = side === 'me' ? state.liveMyMods : state.liveOppMods;
+  if (!base || !mods) return null;
+  const result = { DEF: base.DEF + mods.DEF, MID: base.MID + mods.MID, FWD: base.FWD + mods.FWD };
+
+  const roster = side === 'me' ? state.liveMyRosterForOvr : state.liveOppRosterForDisplay;
+  if (roster && roster.length) {
+    const buckets = { DEF: [], MID: [], FWD: [] };
+    roster.forEach(p => {
+      const line = LINE_OF[p.pos];
+      if (!line) return;
+      const pct = getFatiguePct(p.name, side);
+      if (pct != null) buckets[line].push(pct - 100); // np. 85% sił -> -15
+    });
+    ['DEF', 'MID', 'FWD'].forEach(line => {
+      if (buckets[line].length) {
+        result[line] += buckets[line].reduce((a, b) => a + b, 0) / buckets[line].length;
+      }
+    });
+  }
+
+  if (side === 'me') {
+    const stoperOn = document.getElementById('tg-stoper-atak').classList.contains('active');
+    const mentalitySlider = document.getElementById('mentality-slider');
+    const mentality = mentalitySlider ? (parseInt(mentalitySlider.value, 10) || 0) : 0;
+    result.DEF += (stoperOn ? -10 : 0) - mentality;
+    result.FWD += (stoperOn ? 5 : 0) + mentality;
+  }
+  return result;
+}
+
 function refreshFatigueDisplay() {
   const panel = document.getElementById('lineups-panel');
   if (panel.style.display !== 'none' && panel.style.display) {
     renderMyLineupWithSwap();
     if (state.liveOppRosterForDisplay) renderLineupList('lineup-opp-list', state.liveOppRosterForDisplay, state.liveOppReservesForDisplay);
   }
-  // Ogólne overalle na górze (po-my-ovr / po-opp-ovr) też liczą się na żywo,
-  // jako średnia zmęczonych overalli z aktualnego składu na boisku.
-  if (state.liveFatigueMy && state.liveMyRosterForOvr) {
-    const avgMy = state.liveMyRosterForOvr.reduce((sum, p) => {
-      const pct = getFatiguePct(p.name, 'me');
-      return sum + (pct != null ? p.overall - (100 - pct) : p.overall);
-    }, 0) / state.liveMyRosterForOvr.length;
-    document.getElementById('po-my-ovr').textContent = `OVR ${Math.round(avgMy)}`;
-  }
-  if (state.liveFatigueOpp && state.liveOppRosterForDisplay) {
-    const avgOpp = state.liveOppRosterForDisplay.reduce((sum, p) => {
-      const pct = getFatiguePct(p.name, 'opp');
-      return sum + (pct != null ? p.overall - (100 - pct) : p.overall);
-    }, 0) / state.liveOppRosterForDisplay.length;
-    document.getElementById('po-opp-ovr').textContent = `OVR ${Math.round(avgOpp)}`;
-  }
+  // Zmęczenie feeduje też paski linii i duży OVR — to samo źródło co redrawLines(),
+  // więc karty/kontuzje/forma i zmęczenie zawsze składają się na ten sam wynik.
+  if (state.redrawLines) state.redrawLines();
 }
 
 function renderLineups(myRoster, oppRoster, oppReserves) {
@@ -596,9 +621,9 @@ function triggerOpierdol() {
   const btn = document.getElementById('btn-opierdol');
   btn.disabled = true;
   btn.dataset.used = '1';
-  btn.textContent = '💪 OPIERDOL w toku...';
+  btn.textContent = '💪 OCHRZAN w toku...';
   updateSpecialModeLocks();
-  announceTacticChange(rand(['💪 Trener robi drużynie solidny opierdol w przerwie gry!', '💪 Ostra wymiana zdań na boisku — trener żąda więcej!']));
+  announceTacticChange(rand(['💪 Trener robi drużynie solidny ochrzan w przerwie gry!', '💪 Ostra wymiana zdań na boisku — trener żąda więcej!']));
 }
 
 let awanturaPending = false;
@@ -673,7 +698,7 @@ function resetTacticsPanel() {
   opierdolPending = false;
   const opierdolBtn = document.getElementById('btn-opierdol');
   opierdolBtn.disabled = false;
-  opierdolBtn.textContent = '💪 OPIERDOL (do 65\')';
+  opierdolBtn.textContent = '💪 OCHRZAN (do 65\')';
   opierdolBtn.dataset.used = '0';
   updateSpecialModeLocks();
 }
@@ -730,13 +755,13 @@ function playMatch() {
 
   function redrawLines() {
     if (!state.liveMyBase) return;
-    const stoperOn = document.getElementById('tg-stoper-atak').classList.contains('active');
-    const mentalitySlider = document.getElementById('mentality-slider');
-    const mentality = mentalitySlider ? (parseInt(mentalitySlider.value, 10) || 0) : 0;
-    const defAdj = (stoperOn ? -10 : 0) - mentality;
-    const atkAdj = (stoperOn ? 5 : 0) + mentality;
-    myLinesEl.textContent = `OBR ${(state.liveMyBase.DEF + state.liveMyMods.DEF + defAdj).toFixed(1)} · POM ${(state.liveMyBase.MID + state.liveMyMods.MID).toFixed(1)} · ATK ${(state.liveMyBase.FWD + state.liveMyMods.FWD + atkAdj).toFixed(1)}`;
-    oppLinesEl.textContent = `OBR ${(state.liveOppBase.DEF + state.liveOppMods.DEF).toFixed(1)} · POM ${(state.liveOppBase.MID + state.liveOppMods.MID).toFixed(1)} · ATK ${(state.liveOppBase.FWD + state.liveOppMods.FWD).toFixed(1)}`;
+    const my = computeLiveLineAverages('me');
+    const opp = computeLiveLineAverages('opp');
+    if (!my || !opp) return;
+    myLinesEl.textContent = `OBR ${my.DEF.toFixed(1)} · POM ${my.MID.toFixed(1)} · ATK ${my.FWD.toFixed(1)}`;
+    oppLinesEl.textContent = `OBR ${opp.DEF.toFixed(1)} · POM ${opp.MID.toFixed(1)} · ATK ${opp.FWD.toFixed(1)}`;
+    document.getElementById('po-my-ovr').textContent = `OVR ${Math.round((my.DEF + my.MID + my.FWD) / 3)}`;
+    document.getElementById('po-opp-ovr').textContent = `OVR ${Math.round((opp.DEF + opp.MID + opp.FWD) / 3)}`;
   }
   state.redrawLines = redrawLines;
 
@@ -823,7 +848,7 @@ function playMatch() {
     if (res.value) {
       if (res.value.i > 70) {
         const opierdolBtn = document.getElementById('btn-opierdol');
-        if (!opierdolBtn.disabled) { opierdolBtn.disabled = true; opierdolBtn.textContent = 'OPIERDOL (za pó\u017ano)'; }
+        if (!opierdolBtn.disabled) { opierdolBtn.disabled = true; opierdolBtn.textContent = 'OCHRZAN (za pó\u017ano)'; }
       }
       if (res.value.fatigueMy) { state.liveFatigueMy = res.value.fatigueMy; state.liveFatigueOpp = res.value.fatigueOpp; refreshFatigueDisplay(); }
       if (res.value.newEvents && res.value.newEvents.length) {
