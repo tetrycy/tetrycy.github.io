@@ -1,18 +1,13 @@
 // ============================================================
 // SILNIK MECZOWY (V2) — czysta logika, bez UI.
-// Wymaga wczytania KOMENTARZE.JS przed tym plikiem (COMMENTARY_STYLES,
-// MEDIUM_SUBTYPES, HIGH_SUBTYPES).
-// Eksponuje: simulateMatchV2, simulateMatchV2Live (generator, do gry na
-// żywo z pauzowalną taktyką), simulatePenaltyShootout, lineAverages,
-// generalOverall, LINE_OF, tlClass, tlText.
+// Wymaga wczytania RDZEN.JS (rand, clamp, fmt) i KOMENTARZE.JS
+// (COMMENTARY_STYLES, MEDIUM_SUBTYPES, HIGH_SUBTYPES) przed tym plikiem.
+// Eksponuje: simulateMatch (szybkie mecze AI-vs-AI w tle),
+// simulateMatchV2Live (generator — JEDYNY pełny silnik, rozgrywa każdy
+// mecz gracza we wszystkich trybach), simulatePenaltyShootout,
+// lineAverages, generalOverall, LINE_OF, tlClass, tlText.
 // ============================================================
 
-function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-
-function fmt(tpl, vars) {
-  return tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] != null ? vars[k] : '');
-}
 function weightedPick(roster, weights) {
   if (!roster || !roster.length) return null;
   const pool = [];
@@ -224,228 +219,9 @@ function minuteLabelV2(i) {
 // Teksty pomocnicze dla nowych podtypów flavor/akcji (na start — do rozbudowy)
 
 
-function simulateMatchV2(myRoster, oppRoster, oppLabel, tactics) {
-  tactics = tactics || {};
-  const aggressiveTackling = !!tactics.aggressiveTackling;   // Agresywny odbiór
-  const lightTackling = !!tactics.lightTackling;              // Lekki odbiór
-  const possessionFocus = !!tactics.possessionFocus;          // Posiadanie piłki
-  const directPlay = !!tactics.directPlay;                    // Szybkie akcje
-  const busParking = !!tactics.busParking;                    // Parkowanie autobusu
-  const mentality = tactics.mentality || 'NEUTRAL';           // 'DEF' | 'NEUTRAL' | 'OFF'
-
-  const ST = getStyle();
-  const myBase = lineAverages(myRoster);
-  const oppBase = lineAverages(oppRoster);
-  // Bonus za miejsce rozgrywania meczu (patrz computeVenueBonuses) — "ziarnuje"
-  // modyfikatory linii od pierwszej minuty, dokładnie tak jak inne zdarzenia meczowe.
-  const myHomeBonus = tactics.myHomeBonus || { DEF: 0, MID: 0, FWD: 0 };
-  const oppHomeBonus = tactics.oppHomeBonus || { DEF: 0, MID: 0, FWD: 0 };
-  const myMods = { DEF: myHomeBonus.DEF, MID: myHomeBonus.MID, FWD: myHomeBonus.FWD };
-  const oppMods = { DEF: oppHomeBonus.DEF, MID: oppHomeBonus.MID, FWD: oppHomeBonus.FWD };
-  const myYellow = {}, oppYellow = {};
-  const sentOff = new Set(); // 'me:Imię' / 'opp:Imię' — pomijani przy kolejnych losowaniach faulanta
-  let formaUsed = false; // "wyjątkowa forma" — tylko raz na cały mecz
-
-  const myFatigueRoster = prepareFatigueRoster(myRoster);
-  const oppFatigueRoster = prepareFatigueRoster(oppRoster);
-  const eff = (base, mods, line, i, fatigueRoster) => {
-    const penalty = (i != null && fatigueRoster) ? fatiguePenaltyForLine(fatigueRoster, line, i) : 0;
-    return base[line] + mods[line] - penalty;
-  };
-  const pickFoulerLine = (roster, teamKey) => {
-    const pool = roster.filter(p => !sentOff.has(teamKey + ':' + p.name));
-    return weightedPick(pool.length ? pool : roster, FOUL_WEIGHTS);
-  };
-
-  let myGoals = 0, oppGoals = 0;
-  const timeline = [];
-
-  const K_MID = 19;
-  const BASE_HIGH_SHARE = 0.30;
-  const MED_GOAL_BASE = 0.013, HIGH_GOAL_BASE = 0.055;
-
-  function resolvePenalty(meAwarded) {
-    const foulRoster = meAwarded ? myRoster : oppRoster;
-    const mods = meAwarded ? myMods : oppMods;
-    const bestOutfield = (r) => { const o = r.filter(p => p.pos !== 'GK'); const pool = o.length ? o : r; return pool.reduce((b, p) => (!b || p.overall > b.overall) ? p : b, null); };
-    const designated = bestOutfield(activeRoster(foulRoster, meAwarded ? 'me' : 'opp', sentOff));
-    const fouled = pickScorer(activeRoster(foulRoster, meAwarded ? 'me' : 'opp', sentOff));
-    const taker = (fouled.name === designated.name || Math.random() < 0.35) ? fouled : designated;
-    return { meAwarded, taker, fouled };
-  }
-
-  let matchEnd = 100; // Parkowanie autobusu skraca realnie pozostałą pulę zdarzeń
-  for (let i = 1; i <= matchEnd; i++) {
-    const min = minuteLabelV2(i);
-    // Mentalność defensywna: więcej przestojów w grze, mniej realnych akcji ogółem.
-    const flavorShare = mentality === 'DEF' ? 0.30 : 0.24;
-    const r1 = Math.random();
-
-    if (r1 < flavorShare) {
-      // ── FLAVOR (24% wszystkich zdarzeń) ──
-      // Wagi przekalibrowane pod gęstość 100 zdarzeń/mecz — kontuzje/karne/czerwone
-      // muszą być rzadkie w skali PROCENTA zdarzenia, bo tych zdarzeń jest teraz dużo więcej.
-      const r2 = Math.random() * 100;
-      if (r2 < 8) {
-        // Anegdota — losowy zawodnik z boiska (z obu drużyn), czysty flavor bez konsekwencji.
-        const myActiveForAnecdote = activeRoster(myRoster, 'me', sentOff);
-        const anecdotePool = myActiveForAnecdote.concat(activeRoster(oppRoster, 'opp', sentOff));
-        const pIdx = Math.floor(Math.random() * anecdotePool.length);
-        const p = anecdotePool[pIdx];
-        const anecdoteTeam = pIdx < myActiveForAnecdote.length ? 'me' : 'opp';
-        timeline.push({ minute: min, type: 'flavor', team: anecdoteTeam, text: fmt(rand(ST.flavorAnegdota), { p: p.name }) });
-      } else if (r2 < 10) {
-        const p = pickInjured(activeRoster(oppRoster, 'opp', sentOff));
-        const impact = injuryImpact(p, oppRoster);
-        oppMods[LINE_OF[p.pos]] -= impact;
-        timeline.push({ minute: min, type: 'injury', team: 'opp', line: LINE_OF[p.pos], text: fmt(rand(ST.injuryOpp), { p: p.name, team: oppLabel, impact }) });
-      } else if (r2 < 11.5 && !formaUsed) {
-        formaUsed = true;
-        const p = activeRoster(myRoster, 'me', sentOff)[Math.floor(Math.random() * activeRoster(myRoster, 'me', sentOff).length)];
-        myMods[LINE_OF[p.pos]] += 1;
-        timeline.push({ minute: min, type: 'flavor', team: 'me', line: LINE_OF[p.pos], text: fmt(rand(ST.formaMe), { p: p.name }) });
-      } else if (r2 < 19.5) {
-        const p = pickFoulerLine(myRoster, 'me');
-        const c = (myYellow[p.name] || 0) + 1; myYellow[p.name] = c;
-        // Agresywny odbiór: dodatkowe, niezależne ryzyko, że ostry wjazd od razu skończy się czerwoną.
-        const forcedRed = aggressiveTackling && Math.random() < 0.20;
-        const avoidedRed = lightTackling && c >= 2 && Math.random() < 0.35;
-        if ((c >= 2 || forcedRed) && !avoidedRed) {
-          ['DEF','MID','FWD'].forEach(l => { myMods[l] -= 10; }); sentOff.add('me:' + p.name);
-          timeline.push({ minute: min, type: 'red', team: 'me', line: LINE_OF[p.pos], allLines: true, player: p.name, text: fmt(rand(ST.secondYellowMe || ST.redMe), { p: p.name }) });
-        } else {
-          timeline.push({ minute: min, type: 'yellow', team: 'me', player: p.name, text: fmt(rand(ST.yellowMe), { p: p.name }) });
-        }
-      } else if (r2 < 27.5) {
-        const p = pickFoulerLine(oppRoster, 'opp');
-        const c = (oppYellow[p.name] || 0) + 1; oppYellow[p.name] = c;
-        if (c >= 2) {
-          ['DEF','MID','FWD'].forEach(l => { oppMods[l] -= 10; }); sentOff.add('opp:' + p.name);
-          timeline.push({ minute: min, type: 'red', team: 'opp', line: LINE_OF[p.pos], allLines: true, player: p.name, text: fmt(rand(ST.secondYellowOpp || ST.redOpp), { p: p.name, team: oppLabel }) });
-        } else {
-          timeline.push({ minute: min, type: 'yellow', team: 'opp', player: p.name, text: fmt(rand(ST.yellowOpp), { p: p.name, team: oppLabel }) });
-        }
-      } else if (r2 < 28) {
-        const meAtFault = Math.random() < 0.5;
-        const roster = meAtFault ? myRoster : oppRoster;
-        const teamKey = meAtFault ? 'me' : 'opp';
-        const p = pickFoulerLine(roster, teamKey);
-        ['DEF','MID','FWD'].forEach(l => { (meAtFault ? myMods : oppMods)[l] -= 10; });
-        sentOff.add(teamKey + ':' + p.name);
-        timeline.push({ minute: min, type: 'red', team: teamKey, line: LINE_OF[p.pos], allLines: true, player: p.name, text: fmt(rand(meAtFault ? ST.redMe : ST.redOpp), { p: p.name, team: oppLabel }) });
-      } else if (r2 < 31) {
-        const meAwarded = Math.random() < 0.5; // czysty 50/50, zero czynników
-        const { taker, fouled } = resolvePenalty(meAwarded);
-        timeline.push({ minute: min, type: 'penalty', text: fmt(ST.penaltyAward[0], { p: fouled.name }) });
-        if (taker.name !== fouled.name) {
-          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyTakerMe) : rand(ST.penaltyTakerOpp), { p: taker.name, team: oppLabel }) });
-        }
-        const outcomeRoll = Math.random();
-        if (outcomeRoll < 0.76) {
-          if (meAwarded) { myGoals++; timeline.push({ minute: min, type: 'goal', team: 'me', scorer: taker.name, penalty: true, text: '↳ ' + fmt(rand(ST.penaltyScoredMe), { p: taker.name }) }); }
-          else { oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', scorer: taker.name, penalty: true, text: '↳ ' + fmt(rand(ST.penaltyScoredOpp), { p: taker.name, team: oppLabel }) }); }
-        } else if (outcomeRoll < 0.88) {
-          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltyMissedMe) : rand(ST.penaltyMissedOpp), { p: taker.name, team: oppLabel }) });
-        } else {
-          timeline.push({ minute: min, type: 'penalty', text: '↳ ' + fmt(meAwarded ? rand(ST.penaltySavedMe) : rand(ST.penaltySavedOpp), { p: taker.name, team: oppLabel }) });
-        }
-      } else {
-        timeline.push({ minute: min, type: 'flavor', text: rand(ST.flavor) });
-      }
-    } else {
-      // ── AKCJA (76% wszystkich zdarzeń) ──
-      let myTurn;
-      let highShare, pGoal;
-      if (busParking) {
-        // Parkowanie autobusu: zero akcji ofensywnych z Twojej strony — piłka ZAWSZE u rywala,
-        // a Ty, nie broniąc się zorganizowanie (tylko marnując czas), oddajesz mu premię.
-        myTurn = false;
-        const defendingDef = eff(myBase, myMods, 'DEF', i, myFatigueRoster);
-        highShare = clamp(BASE_HIGH_SHARE - (defendingDef - LINE_BASELINE) * 0.01 + 0.10, 0.10, 0.60);
-        const isHighThreatBP = Math.random() < highShare;
-        const atkOvrBP = eff(oppBase, oppMods, 'FWD', i, oppFatigueRoster);
-        const baseGoalBP = isHighThreatBP ? HIGH_GOAL_BASE : MED_GOAL_BASE;
-        pGoal = clamp((baseGoalBP + (atkOvrBP - LINE_BASELINE) * 0.0015) * 1.3, 0.005, 0.30);
-        const subtypeBP = rand(isHighThreatBP ? HIGH_SUBTYPES : MEDIUM_SUBTYPES);
-        if (subtypeBP !== 'atak pozycyjny') {
-          const styledIntroBP = ST.subtypeIntro && ST.subtypeIntro[subtypeBP] && ST.subtypeIntro[subtypeBP].opp;
-          const introTextBP = styledIntroBP && styledIntroBP.length
-            ? fmt(rand(styledIntroBP), { team: oppLabel })
-            : `${oppLabel}: ${subtypeBP}.`;
-          timeline.push({ minute: min, type: 'flavor', team: 'opp', text: introTextBP });
-        }
-        if (Math.random() < pGoal) {
-          const scorer = pickScorer(activeRoster(oppRoster, 'opp', sentOff));
-          oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', scorer: scorer.name, text: fmt(rand(ST.goalAgainst), { p: scorer.name, team: oppLabel }) });
-        } else {
-          const shooter = pickScorer(activeRoster(oppRoster, 'opp', sentOff));
-          if (Math.random() < 0.55) {
-            const gk = pickGK(activeRoster(myRoster, 'me', sentOff));
-            timeline.push({ minute: min, type: 'flavor', team: 'opp', text: fmt(rand(ST.gkSaveOpp), { gk: gk.name, p: shooter.name, team: oppLabel }) });
-          } else {
-            timeline.push({ minute: min, type: 'flavor', team: 'opp', text: fmt(rand(ST.missWideOpp), { p: shooter.name, team: oppLabel }) });
-          }
-        }
-        // czas leci szybciej — jedno zdarzenie "zjada" dwie minuty z puli
-        matchEnd = Math.max(i, matchEnd - 1);
-      } else {
-      let midDiff = eff(myBase, myMods, 'MID', i, myFatigueRoster) - eff(oppBase, oppMods, 'MID', i, oppFatigueRoster);
-      if (possessionFocus) midDiff += 5;   // Posiadanie piłki: częściej masz piłkę (znerfowane)
-      if (directPlay) midDiff -= 8;        // Szybkie akcje: rezygnujesz z posiadania na rzecz kierunkowej gry
-      if (mentality === 'DEF') midDiff -= 5; // Defensywnie: rzadziej to Twoja akcja (nie prasujesz wysoko)
-      const pMyBall = clamp(logisticProb(midDiff, K_MID), 0.05, 0.95);
-      const myTurn = Math.random() < pMyBall;
-
-      const defendingDef = myTurn ? eff(oppBase, oppMods, 'DEF', i, oppFatigueRoster) : eff(myBase, myMods, 'DEF', i, myFatigueRoster);
-      let highShare = clamp(BASE_HIGH_SHARE - (defendingDef - LINE_BASELINE) * 0.01, 0.10, 0.45);
-      if (mentality === 'OFF' && myTurn) highShare += 0.08;               // Ofensywnie: Twoje akcje groźniejsze
-      if (mentality === 'DEF' && myTurn) highShare -= 0.08;                // ...Twoja akcja, gdy już jest, mniej jakościowa
-      if (possessionFocus) { highShare += myTurn ? -0.08 : 0.08; }         // ...kosztem jakości Twojej i większą premią dla kontr rywala
-      if (directPlay && myTurn) highShare += 0.08;                        // Szybkie akcje: rzadziej masz piłkę, ale groźniej gdy już ją masz
-      highShare = clamp(highShare, 0.05, 0.60);
-      const isHighThreat = Math.random() < highShare;
-
-      const atkOvr = myTurn ? eff(myBase, myMods, 'FWD', i, myFatigueRoster) : eff(oppBase, oppMods, 'FWD', i, oppFatigueRoster);
-      const baseGoal = isHighThreat ? HIGH_GOAL_BASE : MED_GOAL_BASE;
-      let pGoal = clamp(baseGoal + (atkOvr - LINE_BASELINE) * 0.0015, 0.005, 0.20);
-      if (aggressiveTackling && !myTurn) pGoal *= 0.70; // Agresywny odbiór: tniesz skuteczność rywala, gdy to jego akcja
-      if (lightTackling && !myTurn) pGoal *= 1.08; // Lekki odbiór: odrobinę łatwiejsza gra rywala, w zamian za mniejsze ryzyko kartek
-
-      const subtype = rand(isHighThreat ? HIGH_SUBTYPES : MEDIUM_SUBTYPES);
-      if (subtype !== 'atak pozycyjny') {
-        const sideKey = myTurn ? 'me' : 'opp';
-        const styledIntro = ST.subtypeIntro && ST.subtypeIntro[subtype] && ST.subtypeIntro[subtype][sideKey];
-        const introText = styledIntro && styledIntro.length
-          ? fmt(rand(styledIntro), { team: oppLabel })
-          : `${myTurn ? 'Twoja drużyna' : oppLabel}: ${subtype}.`;
-        timeline.push({ minute: min, type: 'flavor', team: sideKey, text: introText });
-      }
-
-      if (Math.random() < pGoal) {
-        const scorer = pickScorer(activeRoster(myTurn ? myRoster : oppRoster, myTurn ? 'me' : 'opp', sentOff));
-        if (myTurn) { myGoals++; timeline.push({ minute: min, type: 'goal', team: 'me', scorer: scorer.name, text: fmt(rand(ST.goalFor), { p: scorer.name }) }); }
-        else { oppGoals++; timeline.push({ minute: min, type: 'goal', team: 'opp', scorer: scorer.name, text: fmt(rand(ST.goalAgainst), { p: scorer.name, team: oppLabel }) }); }
-      } else {
-        const shooter = pickScorer(activeRoster(myTurn ? myRoster : oppRoster, myTurn ? 'me' : 'opp', sentOff));
-        if (Math.random() < 0.55) {
-          const gk = pickGK(activeRoster(myTurn ? oppRoster : myRoster, myTurn ? 'opp' : 'me', sentOff));
-          timeline.push({ minute: min, type: 'flavor', team: myTurn ? 'me' : 'opp', text: fmt(myTurn ? rand(ST.gkSaveMe) : rand(ST.gkSaveOpp), { gk: gk.name, p: shooter.name, team: oppLabel }) });
-        } else {
-          timeline.push({ minute: min, type: 'flavor', team: myTurn ? 'me' : 'opp', text: fmt(myTurn ? rand(ST.missWideMe) : rand(ST.missWideOpp), { p: shooter.name, team: oppLabel }) });
-        }
-      }
-      } // koniec gałęzi "nie parkujemy autobusu"
-    }
-
-    if (i === 50) timeline.push({ minute: 'HT', type: 'marker', text: `⏱ PRZERWA — ${formatScoreText(myGoals, oppGoals)}` });
-  }
-
-  timeline.push({ minute: 'FT', type: 'marker', text: `⏱ KONIEC MECZU — ${formatScoreText(myGoals, oppGoals)}` });
-  const result = myGoals > oppGoals ? 'W' : myGoals < oppGoals ? 'L' : 'D';
-  const summaryPool = result === 'W' ? ST.win : result === 'D' ? ST.draw : ST.loss;
-  if (summaryPool && summaryPool.length) timeline.push({ minute: 'FT', type: 'flavor', text: rand(summaryPool) });
-  return { result, gf: myGoals, ga: oppGoals, timeline, myBase, myMods, oppBase, oppMods };
-}
+// (Usunięto martwą funkcję simulateMatchV2 — nieużywaną nigdzie w grze.
+// Wszystkie mecze gracza rozgrywa simulateMatchV2Live poniżej; mecze
+// AI-vs-AI w tle rozgrywa uproszczony simulateMatch wyżej.)
 
 function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
   let tactics = initialTactics || {};
@@ -505,8 +281,9 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
 
   const myFatigueRoster = prepareFatigueRoster(myRoster);
   const oppFatigueRoster = prepareFatigueRoster(oppRoster);
+  let fatigueIntensityMult = 1; // suwak INTENSYWNOŚĆ — aktualizowany co zdarzenie, patrz pętla niżej
   const eff = (base, mods, line, i, fatigueRoster) => {
-    const penalty = (i != null && fatigueRoster) ? fatiguePenaltyForLine(fatigueRoster, line, i) : 0;
+    const penalty = (i != null && fatigueRoster) ? fatiguePenaltyForLine(fatigueRoster, line, i * fatigueIntensityMult) : 0;
     return base[line] + mods[line] - penalty;
   };
   const pickFoulerLine = (roster, teamKey) => {
@@ -539,6 +316,8 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
     const busParking = !!tactics.busParking;
     const stoperAtak = !!tactics.stoperAtak;             // Wyślij stopera do ataku
     const mentality = parseInt(tactics.mentality, 10) || 0; // -5 (skrajnie defensywna) .. +5 (skrajnie ofensywna), przesuwa ATK<->OBR
+    const intensity = parseInt(tactics.intensity, 10) || 0; // -5 (spokojnie) .. +5 (na pełnych obrotach)
+    fatigueIntensityMult = clamp(1 + 0.06 * intensity, 1, 1.3); // czytane przez eff() przy każdym wywołaniu fatiguePenaltyForLine — punkt zero (intensity=0) to stan sprzed tej funkcji, bez opcji zejścia niżej
 
     // OPIERDOL — jednorazowy trigger: 10 zdarzeń podbicia, ale tylko jeśli użyty do 65. minuty
     // (i <= OPIERDOL_LATEST_I). Po tym terminie sygnał jest ignorowany.
@@ -569,7 +348,10 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
     let zoneThisEvent = 'CENTER'; // domyślnie: flavor podświetla środek boiska
     const min = minuteLabelV2(i);
     // Mentalność defensywna: więcej przestojów w grze, mniej realnych akcji ogółem.
-    const flavorShare = mentality < 0 ? 0.30 : 0.24;
+    // Intensywność: dodatnia zmniejsza udział "pustego" flavouru (więcej akcji kosztem
+    // przestojów), ujemna — odwrotnie, spokojniejszy, bardziej przestojowy mecz.
+    const flavorBaseline = mentality < 0 ? 0.30 : 0.24;
+    const flavorShare = clamp(flavorBaseline - 0.015 * Math.max(0, intensity), 0.12, flavorBaseline);
     // W oknie CHAOSU wymuszamy zdarzenie AKCJI (żeby gwarancja miała szansę się zrealizować,
     // zamiast utknąć w serii samych zdarzeń flavor).
     const forceAction = chaosGuaranteedPending && chaosWindowRemaining > 0;
@@ -599,7 +381,7 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
         const p = pickInjured(activeRoster(myRoster, 'me', sentOff));
         const impact = injuryImpact(p, myRoster);
         myMods[LINE_OF[p.pos]] -= impact;
-        timeline.push({ minute: min, type: 'injury', team: 'me', line: LINE_OF[p.pos], text: fmt(rand(ST.injuryMe || ST.injuryOpp), { p: p.name, team: oppLabel, impact }) });
+        timeline.push({ minute: min, type: 'injury', team: 'me', line: LINE_OF[p.pos], player: p.name, text: fmt(rand(ST.injuryMe || ST.injuryOpp), { p: p.name, team: oppLabel, impact }) });
       } else if (r2 < 10.75 && !flavorUsed.formaMe) {
         flavorUsed.formaMe = true;
         applyFlavorOverallChange('me', 1, ST.formaMe, min);
@@ -796,8 +578,8 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
     if (chaosWindowRemaining > 0) chaosWindowRemaining--;
     if (opierdolBoostRemaining > 0) opierdolBoostRemaining--;
     timeline.slice(startIdx).forEach(ev => { ev.zone = zoneThisEvent; });
-    const fatigueMy = myFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, i) }));
-    const fatigueOpp = oppFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, i) }));
+    const fatigueMy = myFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, i * fatigueIntensityMult) }));
+    const fatigueOpp = oppFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, i * fatigueIntensityMult) }));
     const received = yield { minute: min, i, matchEnd, myGoals, oppGoals, newEvents: timeline.slice(startIdx), done: false, fatigueMy, fatigueOpp };
     if (received !== undefined) tactics = received;
   }
@@ -807,8 +589,8 @@ function* simulateMatchV2Live(myRoster, oppRoster, oppLabel, initialTactics) {
   const summaryPool = result === 'W' ? ST.win : result === 'D' ? ST.draw : ST.loss;
   const ftStartIdx = timeline.length - 1;
   if (summaryPool && summaryPool.length) timeline.push({ minute: 'FT', type: 'flavor', text: rand(summaryPool) });
-  const finalFatigueMy = myFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, matchEnd) }));
-  const finalFatigueOpp = oppFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, matchEnd) }));
+  const finalFatigueMy = myFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, matchEnd * fatigueIntensityMult) }));
+  const finalFatigueOpp = oppFatigueRoster.map(p => ({ name: p.name, pct: fatigueStrengthPctForPlayer(p, matchEnd * fatigueIntensityMult) }));
   yield { minute: 'FT', i: matchEnd + 1, matchEnd, myGoals, oppGoals, newEvents: timeline.slice(ftStartIdx), done: true, fatigueMy: finalFatigueMy, fatigueOpp: finalFatigueOpp };
   return { result, gf: myGoals, ga: oppGoals, timeline, myBase, myMods, oppBase, oppMods };
 }
