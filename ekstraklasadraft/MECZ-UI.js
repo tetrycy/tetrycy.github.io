@@ -90,6 +90,7 @@ function resetMatchScreen(opp, myTeam, venue) {
   state.liveBenchAvailable = state.benchIds.filter(id => state.squad[id] && !activeIds.includes(id));
   state.liveIneligibleIds = new Set();
   state.replayUsedForThisMatch = false; // POWTÓRZ MECZ (traits) — jedno powtórzenie na mecz
+  state.autoSubsUsed = 0; // AUTOMATYCZNE ZMIANY — limit AUTO_SUBS_MAX na mecz (kontuzje + zmęczenie razem)
   state.matchSubPendingReserveId = null;
   // TRENING poziom 2 (per zawodnik): każdy z przypisanym poziomem 2 dostaje
   // trwałą deltę ±2 do overallu — przed policzeniem formy dnia poniżej.
@@ -430,6 +431,93 @@ function confirmMatchSub(activeId) {
   if (document.getElementById('lineup-my-list')) renderMyLineupWithSwap();
 }
 
+// ── AUTOMATYCZNE ZMIANY (opcja w ZARZĄDZAJ ZESPOŁEM) ──────────
+// Wywoływane po każdym zdarzeniu kontuzji Twojej drużyny (patrz applyEvent
+// w MECZ-UI.js). Jeśli opcja jest włączona (state.autoSubsEnabled) i na
+// ławce jest dostępny zmiennik na TEJ SAMEJ pozycji, wykonuje dokładnie tę
+// samą, nieodwracalną zamianę co ręczna zmiana w trakcie meczu — tyle że
+// automatycznie, bez klikania. Jeśli nie ma pasującego zmiennika, kontuzjowany
+// po prostu zostaje na boisku (osłabiony), tak jak dotychczas.
+const AUTO_SUBS_MAX = 3; // limit łączny — kontuzje + zmęczenie razem, na cały mecz
+
+// Wspólna, wykonawcza część automatycznej zmiany — używana zarówno przez
+// kontuzje, jak i zmęczenie. Pilnuje limitu AUTO_SUBS_MAX i dodaje linijkę
+// na oś czasu, stylizowaną tak samo jak reszta komentarza (KLASYCZNY/KOMENTATOR).
+function performAutoSub(activeId, candidateId, reason) {
+  if ((state.autoSubsUsed || 0) >= AUTO_SUBS_MAX) return false;
+  const activePlayer = state.squad[activeId];
+  const candidate = state.squad[candidateId];
+  if (!activePlayer || !candidate) return false;
+
+  state.matchSubPendingReserveId = candidateId;
+  confirmMatchSub(activeId);
+  state.autoSubsUsed = (state.autoSubsUsed || 0) + 1;
+
+  const ST = getStyle();
+  const fallback = reason === 'injury'
+    ? ['[ZMIANA] {out} → {in} (kontuzja).']
+    : ['[ZMIANA] {out} → {in} (zmęczenie).'];
+  const templates = reason === 'injury' ? (ST.autoSubInjury || fallback) : (ST.autoSubFatigue || fallback);
+  const text = fmt(rand(templates), { out: activePlayer.name, in: candidate.name });
+
+  const timelineEl = document.getElementById('po-timeline');
+  if (timelineEl) {
+    const note = document.createElement('div');
+    note.className = 'tl-row tl-tactic';
+    note.textContent = text;
+    timelineEl.prepend(note);
+    timelineEl.scrollTop = 0;
+  }
+  return true;
+}
+
+// ── AUTOMATYCZNE ZMIANY (opcja w ZARZĄDZAJ ZESPOŁEM) ──────────
+// Wywoływane po każdym zdarzeniu kontuzji Twojej drużyny (patrz applyEvent
+// w MECZ-UI.js). Jeśli opcja jest włączona i na ławce jest dostępny zmiennik
+// na TEJ SAMEJ pozycji, wykonuje dokładnie tę samą, nieodwracalną zamianę co
+// ręczna zmiana w trakcie meczu — automatycznie, do wyczerpania limitu
+// AUTO_SUBS_MAX. Jeśli nie ma pasującego zmiennika, kontuzjowany po prostu
+// zostaje na boisku (osłabiony), tak jak dotychczas.
+function autoSubForInjury(playerName) {
+  if (!state.autoSubsEnabled || !state.liveMatchRoster || !state.liveActiveIds) return;
+  if ((state.autoSubsUsed || 0) >= AUTO_SUBS_MAX) return;
+  const rosterEntry = state.liveMatchRoster.find(p => p.name === playerName);
+  const activeId = rosterEntry && rosterEntry.__slotId;
+  if (!activeId || !state.liveActiveIds.includes(activeId)) return;
+  const activePlayer = state.squad[activeId];
+  if (!activePlayer) return;
+  const candidateId = (state.liveBenchAvailable || []).find(id => state.squad[id] && state.squad[id].pos === activePlayer.pos);
+  if (!candidateId) return; // brak zmiennika na tej pozycji — kontuzjowany zostaje na boisku
+  performAutoSub(activeId, candidateId, 'injury');
+}
+
+// Wywoływane po każdej aktualizacji zmęczenia (patrz playMatch → step()).
+// Dla każdego zawodnika na boisku porównuje jego AKTUALNY, zmęczeniem
+// obniżony overall z overallem najlepszego dostępnego zmiennika na TEJ SAMEJ
+// pozycji — jeśli zmiennik jest lepszy, wchodzi na boisko. Do wyczerpania
+// wspólnego limitu AUTO_SUBS_MAX (razem z ewentualnymi zmianami przez kontuzje).
+function checkFatigueAutoSubs() {
+  if (!state.autoSubsEnabled || !state.liveMatchRoster || !state.liveActiveIds) return;
+  if ((state.autoSubsUsed || 0) >= AUTO_SUBS_MAX) return;
+  state.liveActiveIds.slice().forEach(activeId => {
+    if ((state.autoSubsUsed || 0) >= AUTO_SUBS_MAX) return;
+    const activePlayer = state.squad[activeId];
+    if (!activePlayer) return;
+    const pct = getFatiguePct(activePlayer.name, 'me');
+    if (pct == null) return; // jeszcze brak danych o zmęczeniu tego zawodnika
+    const effectiveOverall = activePlayer.overall - (100 - pct);
+    const candidates = (state.liveBenchAvailable || []).filter(id => state.squad[id] && state.squad[id].pos === activePlayer.pos);
+    if (!candidates.length) return;
+    let bestId = null, bestOverall = -Infinity;
+    candidates.forEach(id => {
+      if (state.squad[id].overall > bestOverall) { bestOverall = state.squad[id].overall; bestId = id; }
+    });
+    if (bestId != null && bestOverall > effectiveOverall) {
+      performAutoSub(activeId, bestId, 'fatigue');
+    }
+  });
+}
+
 // ── Zmiany TRWAŁE, między meczami (ekran ZARZĄDZAJ ZESPOŁEM w ZESPOL.js) ──
 function startLineupSwap(reserveId) {
   state.swapPendingReserveId = (state.swapPendingReserveId === reserveId) ? null : reserveId;
@@ -517,11 +605,13 @@ let matchTimers = [];
 function readTactics() {
   const podania = parseInt(document.getElementById('podania-slider').value, 10) || 0;
   const agresja = parseInt(document.getElementById('agresja-slider').value, 10) || 0;
+  const intensity = parseInt(document.getElementById('intensity-slider').value, 10) || 0;
   const venueBonus = state.matchVenueBonus || { my: { DEF: 0, MID: 0, FWD: 0 }, opp: { DEF: 0, MID: 0, FWD: 0 } };
   return {
     mentality: parseInt(document.getElementById('mentality-slider').value, 10) || 0,
     podania,
     agresja,
+    intensity,
     busParking: document.getElementById('tg-busparking').classList.contains('active'),
     stoperAtak: document.getElementById('tg-stoper-atak').classList.contains('active'),
     myHomeBonus: venueBonus.my,
@@ -562,12 +652,21 @@ function onAgresywnoscChange(rawValue) {
   }
 }
 
+function onIntensityChange(rawValue) {
+  const v = parseInt(rawValue, 10) || 0;
+  if (v === 0) {
+    announceTacticChange(rand(['📋 Trener wraca do normalnego tempa gry.']));
+  } else {
+    announceTacticChange(rand(['🔥 Trener podkręca tempo — gramy na pełnych obrotach, bez chwili wytchnienia!', '🔥 Zmiana: więcej biegania, więcej akcji, ale i szybciej rosnące zmęczenie.']));
+  }
+}
+
 function onMentalityChange(rawValue) {
   const v = parseInt(rawValue != null ? rawValue : document.getElementById('mentality-slider').value, 10) || 0;
   const label = document.getElementById('mentality-slider-label');
   if (label) {
     const name = v === 0 ? 'NEUTRALNA' : v > 0 ? 'OFENSYWNA' : 'DEFENSYWNA';
-    label.textContent = `${name} (${v > 0 ? '+' : ''}${v})`;
+    label.textContent = v === 0 ? 'NEUTRALNA (0)' : `${name} (+${Math.abs(v)})`;
   }
   if (state.redrawLines) state.redrawLines();
 }
@@ -641,7 +740,7 @@ function triggerAwantura() {
 }
 
 function lockAllTacticsPermanently() {
-  ['mentality-slider', 'podania-slider', 'agresja-slider', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
+  ['mentality-slider', 'podania-slider', 'agresja-slider', 'intensity-slider', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
     document.getElementById(id).disabled = true;
   });
 }
@@ -684,7 +783,8 @@ function resetTacticsPanel() {
   onMentalityChange(0);
   document.getElementById('podania-slider').value = 0;
   document.getElementById('agresja-slider').value = 0;
-  ['mentality-slider', 'podania-slider', 'agresja-slider', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
+  document.getElementById('intensity-slider').value = 0;
+  ['mentality-slider', 'podania-slider', 'agresja-slider', 'intensity-slider', 'tg-busparking', 'tg-stoper-atak', 'btn-opierdol', 'btn-chaos', 'btn-awantura'].forEach(id => {
     document.getElementById(id).disabled = false;
   });
   awanturaPending = false;
@@ -735,7 +835,6 @@ function playMatch() {
   state.currentMyTeam = myTeam;
 
   const timelineEl = document.getElementById('po-timeline');
-  const scoreEl = document.getElementById('po-score');
   const myLinesEl = document.getElementById('po-my-lines');
   const oppLinesEl = document.getElementById('po-opp-lines');
   const STEP_MS = SPEED_MS[state.speed] || SPEED_MS.normal;
@@ -766,42 +865,7 @@ function playMatch() {
   state.redrawLines = redrawLines;
 
   function applyEvent(ev) {
-    if (ev.type === 'goal') {
-      if (ev.team === 'me') state.liveGF++; else state.liveGA++;
-      scoreEl.textContent = formatScoreText(state.liveGF, state.liveGA);
-      if (ev.scorer) {
-        (ev.team === 'me' ? state.liveScorersMe : state.liveScorersOpp).push({ player: ev.scorer, minute: ev.minute, penalty: !!ev.penalty });
-        renderScoreboard();
-      }
-    }
-    if ((ev.type === 'yellow' || ev.type === 'red') && ev.player) {
-      (ev.team === 'me' ? state.liveCardsMe : state.liveCardsOpp).push({ player: ev.player, minute: ev.minute, type: ev.type });
-      renderScoreboard();
-    }
-    if (ev.zone) { highlightZone(ev.zone); trackZoneVisit(ev.zone); }
-    if (ev.line) {
-      const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
-      const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
-      if (delta) {
-        const mods = ev.team === 'me' ? state.liveMyMods : state.liveOppMods;
-        if (ev.allLines) { ['DEF','MID','FWD'].forEach(l => { mods[l] += delta; }); }
-        else { mods[ev.line] += delta; }
-        redrawLines();
-        (ev.team === 'me' ? myLinesEl : oppLinesEl).style.color = delta < 0 ? 'var(--red)' : 'var(--green-ll)';
-      }
-    }
-    const line = document.createElement('div');
-    const baseClass = tlClass(ev);
-    line.className = `tl-row ${baseClass}`;
-    applyLineClubColor(line, baseClass, ev);
-    const isPenaltyAward = ev.type === 'penalty' && !ev.text.startsWith('↳');
-    if (ev.type === 'goal') line.classList.add('tl-blink-goal');
-    if (ev.type === 'red') line.classList.add('tl-blink-red');
-    if (ev.type === 'yellow') line.classList.add('tl-blink-yellow');
-    if (isPenaltyAward) line.classList.add('tl-blink-penalty');
-    line.textContent = ev.minute != null ? tlText(ev) : ev.text;
-    if (ev.type === 'injury') line.textContent += ' ✚';
-    timelineEl.prepend(line);
+    const { isPenaltyAward } = processMatchEvent(ev, { timelineEl, live: true, onZone: highlightZone });
     timelineEl.scrollTop = 0;
 
     // Gol zawsze dostaje chwilę dramaturgii — twarda pauza ok. 1,5s, niezależnie
@@ -850,7 +914,7 @@ function playMatch() {
         const opierdolBtn = document.getElementById('btn-opierdol');
         if (!opierdolBtn.disabled) { opierdolBtn.disabled = true; opierdolBtn.textContent = 'OCHRZAN (za pó\u017ano)'; }
       }
-      if (res.value.fatigueMy) { state.liveFatigueMy = res.value.fatigueMy; state.liveFatigueOpp = res.value.fatigueOpp; refreshFatigueDisplay(); }
+      if (res.value.fatigueMy) { state.liveFatigueMy = res.value.fatigueMy; state.liveFatigueOpp = res.value.fatigueOpp; refreshFatigueDisplay(); checkFatigueAutoSubs(); }
       if (res.value.newEvents && res.value.newEvents.length) {
         eventQueue.push(...res.value.newEvents);
         applyEvent(eventQueue.shift());
@@ -906,72 +970,20 @@ function skipMatchAnimation() {
 
   // Najpierw dociągamy to, co już czekało w kolejce (jeszcze niewyświetlone linijki).
   if (state.liveEventQueue && state.liveEventQueue.length) {
-    state.liveEventQueue.splice(0).forEach(ev => {
-      if (ev.zone) { lastZone = ev.zone; trackZoneVisit(ev.zone); }
-      if (ev.type === 'goal') {
-        if (ev.team === 'me') state.liveGF++; else state.liveGA++;
-        if (ev.scorer) (ev.team === 'me' ? state.liveScorersMe : state.liveScorersOpp).push({ player: ev.scorer, minute: ev.minute, penalty: !!ev.penalty });
-      }
-      if ((ev.type === 'yellow' || ev.type === 'red') && ev.player) {
-        (ev.team === 'me' ? state.liveCardsMe : state.liveCardsOpp).push({ player: ev.player, minute: ev.minute, type: ev.type });
-      }
-      if (ev.line) {
-        const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
-        const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
-        if (delta) {
-          const mods = ev.team === 'me' ? state.liveMyMods : state.liveOppMods;
-          if (ev.allLines) { ['DEF','MID','FWD'].forEach(l => { mods[l] += delta; }); }
-          else { mods[ev.line] += delta; }
-        }
-      }
-      const line = document.createElement('div');
-      const baseClass = tlClass(ev);
-      line.className = `tl-row ${baseClass}`;
-      applyLineClubColor(line, baseClass, ev);
-      if (ev.type === 'goal') line.classList.add('tl-blink-goal');
-      if (ev.type === 'red') line.classList.add('tl-blink-red');
-      if (ev.type === 'yellow') line.classList.add('tl-blink-yellow');
-      if (ev.type === 'penalty' && !ev.text.startsWith('↳')) line.classList.add('tl-blink-penalty');
-      line.textContent = ev.minute != null ? tlText(ev) : ev.text;
-      if (ev.type === 'injury') line.textContent += ' ✚';
-      timelineEl.prepend(line);
-    });
+    state.liveEventQueue.splice(0).forEach(ev => processMatchEvent(ev, { timelineEl, live: false, onZone: z => { lastZone = z; } }));
   }
 
   while (guard++ < 300) { // zabezpieczenie przed nieskończoną pętlą — mecz ma najwyżej 100 zdarzeń
     const res = state.liveGen.next(tactics);
     if (res.done) { finalResult = res.value; break; }
-    if (res.value && res.value.newEvents) {
-      res.value.newEvents.forEach(ev => {
-        if (ev.zone) { lastZone = ev.zone; trackZoneVisit(ev.zone); }
-        if (ev.type === 'goal') {
-        if (ev.team === 'me') state.liveGF++; else state.liveGA++;
-        if (ev.scorer) (ev.team === 'me' ? state.liveScorersMe : state.liveScorersOpp).push({ player: ev.scorer, minute: ev.minute, penalty: !!ev.penalty });
+    if (res.value) {
+      // Zmęczenie aktualizujemy też w skipie — dzięki temu automatyczne zmiany
+      // zmęczeniowe (checkFatigueAutoSubs) działają tak samo jak przy oglądaniu
+      // meczu na żywo, a nie tylko wtedy, gdy gracz cierpliwie patrzy.
+      if (res.value.fatigueMy) { state.liveFatigueMy = res.value.fatigueMy; state.liveFatigueOpp = res.value.fatigueOpp; checkFatigueAutoSubs(); }
+      if (res.value.newEvents) {
+        res.value.newEvents.forEach(ev => processMatchEvent(ev, { timelineEl, live: false, onZone: z => { lastZone = z; } }));
       }
-      if ((ev.type === 'yellow' || ev.type === 'red') && ev.player) {
-        (ev.team === 'me' ? state.liveCardsMe : state.liveCardsOpp).push({ player: ev.player, minute: ev.minute, type: ev.type });
-      }
-        if (ev.line) {
-          const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
-          const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
-          if (delta) {
-            const mods = ev.team === 'me' ? state.liveMyMods : state.liveOppMods;
-            if (ev.allLines) { ['DEF','MID','FWD'].forEach(l => { mods[l] += delta; }); }
-            else { mods[ev.line] += delta; }
-          }
-        }
-        const line = document.createElement('div');
-        const baseClass = tlClass(ev);
-        line.className = `tl-row ${baseClass}`;
-        applyLineClubColor(line, baseClass, ev);
-        if (ev.type === 'goal') line.classList.add('tl-blink-goal');
-        if (ev.type === 'red') line.classList.add('tl-blink-red');
-        if (ev.type === 'yellow') line.classList.add('tl-blink-yellow');
-        if (ev.type === 'penalty' && !ev.text.startsWith('↳')) line.classList.add('tl-blink-penalty');
-        line.textContent = ev.minute != null ? tlText(ev) : ev.text;
-        if (ev.type === 'injury') line.textContent += ' ✚';
-        timelineEl.prepend(line);
-      });
     }
   }
   timelineEl.scrollTop = 0;
@@ -991,6 +1003,65 @@ function skipMatchAnimation() {
 
   state.liveGen = null;
   finishMatch(finalResult, m, opp);
+}
+
+// ── WSPÓLNA OBSŁUGA ZDARZENIA MECZOWEGO ─────────────────────
+// Jedno źródło prawdy dla wszystkich trzech ścieżek, które przetwarzają
+// zdarzenia z silnika: (1) odtwarzanie na żywo (applyEvent), (2) dociąganie
+// zaległej kolejki przy skipie, (3) pętla skipu do końca meczu. Wcześniej
+// były to trzy niemal identyczne, ręcznie kopiowane bloki — każda poprawka
+// (czerwona kartka na wszystkie linie, automatyczne zmiany...) musiała być
+// wklejana trzykrotnie i łatwo było o rozjazd.
+// options:
+//   timelineEl — kontener osi czasu (wymagany),
+//   live       — true przy odtwarzaniu na żywo (wynik/tablica/paski linii
+//                aktualizowane od razu); false przy skipie (tam robi się to
+//                raz, zbiorczo, na końcu),
+//   onZone(z)  — reakcja na strefę boiska (live: podświetl; skip: zapamiętaj).
+function processMatchEvent(ev, options) {
+  const { timelineEl, live, onZone } = options;
+  if (ev.type === 'goal') {
+    if (ev.team === 'me') state.liveGF++; else state.liveGA++;
+    if (live) document.getElementById('po-score').textContent = formatScoreText(state.liveGF, state.liveGA);
+    if (ev.scorer) {
+      (ev.team === 'me' ? state.liveScorersMe : state.liveScorersOpp).push({ player: ev.scorer, minute: ev.minute, penalty: !!ev.penalty });
+      if (live) renderScoreboard();
+    }
+  }
+  if ((ev.type === 'yellow' || ev.type === 'red') && ev.player) {
+    (ev.team === 'me' ? state.liveCardsMe : state.liveCardsOpp).push({ player: ev.player, minute: ev.minute, type: ev.type });
+    if (live) renderScoreboard();
+  }
+  if (ev.zone) { trackZoneVisit(ev.zone); if (onZone) onZone(ev.zone); }
+  if (ev.line) {
+    const impactMatch = ev.text.match(/Overall ([+-]\d+)/);
+    const delta = impactMatch ? parseInt(impactMatch[1], 10) : 0;
+    if (delta) {
+      const mods = ev.team === 'me' ? state.liveMyMods : state.liveOppMods;
+      if (ev.allLines) { ['DEF','MID','FWD'].forEach(l => { mods[l] += delta; }); }
+      else { mods[ev.line] += delta; }
+      if (live && state.redrawLines) {
+        state.redrawLines();
+        const linesEl = document.getElementById(ev.team === 'me' ? 'po-my-lines' : 'po-opp-lines');
+        if (linesEl) linesEl.style.color = delta < 0 ? 'var(--red)' : 'var(--green-ll)';
+      }
+    }
+  }
+  if (ev.type === 'injury' && ev.team === 'me' && ev.player) autoSubForInjury(ev.player);
+
+  const line = document.createElement('div');
+  const baseClass = tlClass(ev);
+  line.className = `tl-row ${baseClass}`;
+  applyLineClubColor(line, baseClass, ev);
+  const isPenaltyAward = ev.type === 'penalty' && !ev.text.startsWith('↳');
+  if (ev.type === 'goal') line.classList.add('tl-blink-goal');
+  if (ev.type === 'red') line.classList.add('tl-blink-red');
+  if (ev.type === 'yellow') line.classList.add('tl-blink-yellow');
+  if (isPenaltyAward) line.classList.add('tl-blink-penalty');
+  line.textContent = ev.minute != null ? tlText(ev) : ev.text;
+  if (ev.type === 'injury') line.textContent += ' ✚';
+  timelineEl.prepend(line);
+  return { isPenaltyAward };
 }
 
 function finishMatch(sim, m, opp) {
