@@ -102,7 +102,7 @@ function setGameSaves(list) {
 
 function defaultGameSaveName() {
   const modeLabel = {
-    knockout: 'Play-offy/Mundial', season: 'Sezon', groups: 'Faza grupowa', challenge: 'Wyzwanie',
+    knockout: 'Play-offy/Mundial', season: 'Sezon', groups: 'Faza grupowa', challenge: 'Wyzwanie', customPuchar: 'Kreator — Puchar',
   }[state.tournamentPhase] || 'Gra';
   const teamLabel = state.myClub || state.myTeamName || 'Moja Drużyna';
   return `${modeLabel} — ${teamLabel}`;
@@ -128,7 +128,16 @@ function loadGameSlot(id) {
   state = JSON.parse(JSON.stringify(entry.state, (k, v) => (v instanceof Set ? { __set: [...v] } : v)), (k, v) => (v && v.__set ? new Set(v.__set) : v));
   state.liveGen = null; // generatora meczu nigdy nie zapisujemy — nie ma trwającego meczu po wczytaniu
 
-  if (state.tournamentPhase === 'season' && state.season) {
+  if (state.tournamentPhase === 'challenge' && state.challenge) {
+    // Wyzwanie — wracamy prosto na ekran bieżącej rundy (goToChallengeRound
+    // tylko wyświetla stan z state.challenge, niczego nie regeneruje).
+    goToChallengeRound();
+  } else if (state.tournamentPhase === 'customPuchar' && state.customPuchar) {
+    // Kreator turnieju (puchar) — wznawiamy widok bieżącego meczu bez
+    // przelosowywania par/grup (setup* regenerują — te funkcje NIE).
+    if (state.customPuchar.mode === 'group') goToMyGroupMatch();
+    else showPucharKnockoutMatchInfo();
+  } else if (state.tournamentPhase === 'season' && state.season) {
     renderSeasonScreen();
     showScreen('screen-season');
   } else if (state.tournamentPhase === 'groups') {
