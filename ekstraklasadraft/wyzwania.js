@@ -172,6 +172,11 @@ function initGroupFixtures(def) {
 
 function goToChallengeRound() {
   const def = WYZWANIA.find(c => c.id === state.challenge.defId);
+  if (!def) {
+    alert('Nie można wznowić wyzwania — jego plik definicji nie jest wczytany (sprawdź sekcję WYZWANIA/ w index.html).');
+    showScreen('screen-title');
+    return;
+  }
   const ch = state.challenge;
 
   if (def.type === 'group-knockout') {
