@@ -340,14 +340,14 @@
                     { type: 'file', icon: '📄', name: 'mundialowy blog #20', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial20.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #21', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial21.html' },
                     { type: 'file', icon: '📄', name: 'Jak co środę #49', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz49.html' },
-                    { type: 'file', icon: '📄', name: 'mundialowy blog #22', target: 'https://tetrycy.github.io/olkiewiczmundial22.html' },
+                    { type: 'file', icon: '📄', name: 'mundialowy blog #22', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial22.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #23', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial23.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #24', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial24.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #25', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial25.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #26', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial26.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #27', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial27.html' },
                     { type: 'file', icon: '📄', name: 'mundialowy blog #28', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial28.html' },
-                    { type: 'file', icon: '📄', name: 'Jak co środę #50', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz50.html' }
+                    { type: 'file', icon: '📄', name: 'Jak co środę #50', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz50.html' },
                     
                     { type: 'file', icon: '📄', name: 'mundialowy blog #29', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial29.html' },
                     
@@ -361,7 +361,8 @@
                       { type: 'file', icon: '📄', name: 'mundialowy blog #34', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial34.html' },
                     
                       { type: 'file', icon: '📄', name: 'mundialowy blog #35', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial35.html' },
-                           { type: 'file', icon: '📄', name: 'Jak co środę #51', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz51.html' }
+                           { type: 'file', icon: '📄', name: 'Jak co środę #51', target: 'https://tetrycy.github.io/felietony-kuby/olkiewicz51.html' },
+                    { type: 'file', icon: '📄', name: 'mundialowy blog #36', target: 'https://tetrycy.github.io/felietony-kuby/olkiewiczmundial36.html' }
                 ]
             },
             
@@ -463,7 +464,7 @@
         
         function openItem(item) {
             if (item.type === 'file' || item.type === 'music' || item.type === 'movie' || item.type === 'game') {
-                window.open(item.target, '_blank');
+                window.location.href = item.target;
             }
         }
         
