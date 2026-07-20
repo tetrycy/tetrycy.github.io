@@ -149,22 +149,18 @@
             min-height: 100%;
             outline: none;
             color: black;
-            line-height: 1.8;
+            line-height: 1.5;
         }
-        
-        .editor p {
-            margin-bottom: 1em;
+
+        .editor:empty::before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
         }
-        
-        .editor p:last-child {
-            margin-bottom: 0;
-        }
-        
-        .reading-highlight {
-            background: rgba(255, 235, 59, 0.2);
-            transition: background 0.3s ease;
-            border-radius: 0.25rem;
-            padding: 0.25rem 0;
+
+        .editor p + p,
+        .focus-editor p + p {
+            margin-top: 0.75em;
         }
         
         /* TRYB FOCUS */
@@ -175,7 +171,7 @@
             width: 100vw;
             height: 100vh;
             background: #1a1a1a;
-            z-index: 9999;
+            z-index: 9999; /* Wyższy z-index */
             display: none;
             align-items: center;
             justify-content: center;
@@ -187,6 +183,7 @@
             display: flex;
         }
         
+        /* Ukryj wszystko inne w trybie focus */
         .focus-mode.active ~ * {
             display: none !important;
         }
@@ -202,7 +199,7 @@
         .focus-editor {
             width: 100%;
             max-width: 50rem;
-            min-height: 60vh;
+            height: 70vh;
             background: transparent;
             border: none;
             outline: none;
@@ -210,13 +207,16 @@
             font-size: 18px;
             line-height: 1.8;
             padding: 2rem;
-            resize: none;
             font-family: inherit;
-            overflow: hidden;
+            overflow: auto;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
         }
         
-        .focus-editor::placeholder {
+        .focus-editor:empty::before {
+            content: attr(data-placeholder);
             color: #666;
+            pointer-events: none;
         }
         
         .focus-mode::-webkit-scrollbar,
@@ -234,85 +234,12 @@
             scrollbar-width: none;
         }
         
-        .focus-controls {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            z-index: 10000;
-            transition: opacity 0.3s ease;
-        }
-        
-        .focus-controls.hidden-controls {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .focus-hover-zone {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 150px;
-            height: 150px;
-            z-index: 9999;
-        }
-        
-        .focus-hover-zone:hover ~ .focus-controls.hidden-controls {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .focus-controls.hidden-controls:hover {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .focus-read-btn {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0.375rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            backdrop-filter: blur(10px);
-        }
-        
-        .focus-read-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        .focus-read-btn.active {
-            background: rgba(59, 130, 246, 0.3);
-            border-color: rgba(59, 130, 246, 0.5);
-        }
-        
-        .focus-read-btn svg {
-            width: 1.25rem;
-            height: 1.25rem;
-            stroke: #e5e5e5;
-        }
-        
-        .focus-hide-btn {
-            width: 2.5rem;
-            height: 1.5rem;
-            background: transparent;
-            border: none;
-            cursor: pointer;
+        .focus-hint {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
             color: #666;
-            font-size: 0.625rem;
-            transition: color 0.2s;
-            text-align: center;
-        }
-        
-        .focus-hide-btn:hover {
-            color: #999;
+            font-size: 0.875rem;
         }
         
         .hidden {
@@ -352,30 +279,6 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 7v6h6"/>
                     <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
-                </svg>
-            </button>
-            
-            <div class="separator"></div>
-            
-            <button class="btn" id="boldBtn" title="Pogrubienie (Ctrl+B)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
-                </svg>
-            </button>
-            
-            <button class="btn" id="italicBtn" title="Kursywa (Ctrl+I)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="19" y1="4" x2="10" y2="4"/>
-                    <line x1="14" y1="20" x2="5" y2="20"/>
-                    <line x1="15" y1="4" x2="9" y2="20"/>
-                </svg>
-            </button>
-            
-            <button class="btn" id="underlineBtn" title="Podkreślenie (Ctrl+U)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
-                    <line x1="4" y1="21" x2="20" y2="21"/>
                 </svg>
             </button>
             
@@ -446,206 +349,425 @@
         </div>
         
         <div class="editor-area">
-            <div class="editor" id="editor" contenteditable="true">
+            <div class="editor" id="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Treść dokumentu" data-placeholder="Zacznij pisać swój dokument…">
                 <p>Windows 11 pozbawił mnie Wordpada, postanowiłem więc napisać swojego.</p>
                  <p> Piszpad posiada tryb Focus, umiejętność czytania tekstu, a także dwie moje ulubione czcionki.</p>
                  <p> Z czym Piszpad ma problemy, to z otwieraniem plików nienapisanych w nim. Na razie lepiej skopiować tekst i mu wkleić ręcznie.</p>
             </div>
         </div>
         
-        <input type="file" class="hidden" id="fileInput" accept=".rtf">
+        <input type="file" class="hidden" id="fileInput" accept=".rtf,.txt,text/plain,application/rtf">
     </div>
 
     <!-- TRYB FOCUS -->
     <div class="focus-mode" id="focusMode">
-        <div class="focus-hover-zone"></div>
-        <div class="focus-controls" id="focusControls">
-            <button class="focus-read-btn" id="focusReadBtn" title="Czytaj / Stop">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                </svg>
-            </button>
-            <button class="focus-hide-btn" id="focusHideBtn">ukryj</button>
-        </div>
-        <textarea class="focus-editor" id="focusEditor" placeholder=""></textarea>
+        <div class="focus-editor" id="focusEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Treść dokumentu w trybie Focus" data-placeholder="Zacznij pisać…"></div>
     </div>
 
     <script>
-        var editor, fileName, isReading, fontFamily, fontSize, speechRate, isFocusMode, undoHistory, historyIndex, readingParagraphs, currentParagraphIndex, focusControlsHidden, selectedVoice, lastCursorPosition;
-        
+        'use strict';
+
+        var editor;
+        var fileName = 'dokument.rtf';
+        var fontFamily = 'Libre Baskerville';
+        var fontSize = 12;
+        var speechRate = 1.0;
+        var isFocusMode = false;
+        var isReading = false;
+
+        var undoHistory = [];
+        var historyIndex = -1;
+        var historyTimer = null;
+        var isRestoringHistory = false;
+
+        var speechToken = 0;
+        var speechChunks = [];
+        var speechChunkIndex = 0;
+        var activeUtterance = null;
+        var availableVoices = [];
+
+        var READ_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+        var STOP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+
+        var ALLOWED_TAGS = {
+            P: 'P',
+            DIV: 'P',
+            H1: 'P',
+            H2: 'P',
+            H3: 'P',
+            H4: 'P',
+            H5: 'P',
+            H6: 'P',
+            LI: 'P',
+            BR: 'BR',
+            B: 'B',
+            STRONG: 'B',
+            I: 'I',
+            EM: 'I',
+            U: 'U'
+        };
+
+        var BLOCKED_TAGS = {
+            SCRIPT: true,
+            STYLE: true,
+            IFRAME: true,
+            OBJECT: true,
+            EMBED: true,
+            SVG: true,
+            MATH: true,
+            TEMPLATE: true
+        };
+
         function init() {
             editor = document.getElementById('editor');
-            fileName = 'dokument.rtf';
-            isReading = false;
-            fontFamily = 'Libre Baskerville';
-            fontSize = 12;
-            speechRate = 1.0;
-            isFocusMode = false;
-            undoHistory = [];
-            historyIndex = -1;
-            readingParagraphs = [];
-            currentParagraphIndex = -1;
-            focusControlsHidden = false;
-            selectedVoice = null;
-            lastCursorPosition = 0;
-            
-            // Załaduj głosy
-            loadVoices();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = loadVoices;
-            }
-            
-            saveState();
-            
+
+            bindToolbar();
+            bindEditors();
+            bindFullscreen();
+            bindSpeechVoices();
+            addAccessibleButtonNames();
+
+            replaceRootWithSafeHTML(editor, editor.innerHTML);
+            resetHistory();
+            updateStyle();
+            setReadingButton(false);
+            loadTransferredText();
+        }
+
+        function bindToolbar() {
             document.getElementById('newBtn').onclick = newDoc;
             document.getElementById('openBtn').onclick = openDoc;
             document.getElementById('saveBtn').onclick = saveDoc;
             document.getElementById('undoBtn').onclick = undo;
-            document.getElementById('boldBtn').onclick = function() { formatText('bold'); };
-            document.getElementById('italicBtn').onclick = function() { formatText('italic'); };
-            document.getElementById('underlineBtn').onclick = function() { formatText('underline'); };
             document.getElementById('searchBtn').onclick = toggleSearch;
             document.getElementById('readBtn').onclick = toggleReading;
             document.getElementById('focusBtn').onclick = toggleFocusMode;
-            
-            document.getElementById('fontSelect').onchange = function() { 
-                fontFamily = this.value; 
+
+            document.getElementById('fontSelect').onchange = function() {
+                fontFamily = this.value;
                 updateStyle();
             };
-            document.getElementById('fontSizeSelect').onchange = function() { 
-                fontSize = parseInt(this.value); 
+
+            document.getElementById('fontSizeSelect').onchange = function() {
+                fontSize = parseInt(this.value, 10);
                 updateStyle();
             };
-            document.getElementById('speechRateSelect').onchange = function() { 
-                speechRate = parseFloat(this.value); 
+
+            document.getElementById('speechRateSelect').onchange = function() {
+                speechRate = parseFloat(this.value);
             };
-            
+
             document.getElementById('findBtn').onclick = doSearch;
-            document.getElementById('closeSearchBtn').onclick = toggleSearch;
-            document.getElementById('searchInput').onkeydown = function(e) {
-                if (e.key === 'Enter') doSearch();
+            document.getElementById('closeSearchBtn').onclick = closeSearch;
+            document.getElementById('searchInput').onkeydown = function(event) {
+                if (event.key === 'Enter') doSearch();
             };
-            
+
             document.getElementById('fileInput').onchange = loadFile;
-            document.onkeydown = keyHandler;
-            
+            document.addEventListener('keydown', keyHandler);
+        }
+
+        function bindEditors() {
+            var focusEditor = document.getElementById('focusEditor');
+
             editor.addEventListener('input', function() {
-                saveState();
+                scheduleHistoryCapture();
             });
-            
-            editor.addEventListener('mouseup', updateFormatButtons);
-            editor.addEventListener('keyup', updateFormatButtons);
-            
-            updateStyle();
+
+            focusEditor.addEventListener('input', function() {
+                if (isRestoringHistory) return;
+                syncMainFromFocus();
+                scheduleHistoryCapture();
+            });
+
+            editor.addEventListener('paste', safePaste);
+            focusEditor.addEventListener('paste', safePaste);
+            editor.addEventListener('drop', safeDrop);
+            focusEditor.addEventListener('drop', safeDrop);
         }
-        
-        function loadVoices() {
-            var voices = speechSynthesis.getVoices();
-            
-            if (voices.length === 0) return;
-            
-            // Najpierw szukaj Pauliny (Windows)
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl') && voices[i].name.includes('Paulina')) {
-                    selectedVoice = voices[i];
-                    console.log('Używam głosu:', voices[i].name);
-                    return;
-                }
-            }
-            
-            // Jeśli nie ma Pauliny, wybierz PIERWSZY polski głos
-            for (var i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes('pl')) {
-                    selectedVoice = voices[i];
-                    console.log('Używam głosu:', voices[i].name);
-                    return;
-                }
-            }
-            
-            console.log('Brak polskiego głosu, używam domyślnego');
+
+        function bindFullscreen() {
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
         }
-        
-        function updateFormatButtons() {
-            var commands = ['bold', 'italic', 'underline'];
-            for (var i = 0; i < commands.length; i++) {
-                var cmd = commands[i];
-                var btn = document.getElementById(cmd + 'Btn');
-                if (btn) {
-                    if (document.queryCommandState(cmd)) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
+
+        function bindSpeechVoices() {
+            if (!('speechSynthesis' in window)) return;
+
+            refreshVoices();
+            if (window.speechSynthesis.addEventListener) {
+                window.speechSynthesis.addEventListener('voiceschanged', refreshVoices);
+            } else {
+                window.speechSynthesis.onvoiceschanged = refreshVoices;
+            }
+        }
+
+        function addAccessibleButtonNames() {
+            var buttons = document.querySelectorAll('button[title]');
+            for (var i = 0; i < buttons.length; i++) {
+                if (!buttons[i].hasAttribute('aria-label')) {
+                    buttons[i].setAttribute('aria-label', buttons[i].title.replace(/\s*\(.*/, ''));
                 }
             }
         }
-        
-        function saveState() {
-            var currentState = editor.innerHTML;
-            
-            if (undoHistory.length === 0 || undoHistory[historyIndex] !== currentState) {
-                undoHistory = undoHistory.slice(0, historyIndex + 1);
-                undoHistory.push(currentState);
-                historyIndex = undoHistory.length - 1;
-                
-                if (undoHistory.length > 50) {
-                    undoHistory = undoHistory.slice(-50);
-                    historyIndex = undoHistory.length - 1;
+
+        function sanitizeNode(node) {
+            var empty = document.createDocumentFragment();
+
+            if (node.nodeType === Node.TEXT_NODE) {
+                return document.createTextNode(node.nodeValue || '');
+            }
+
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+                return empty;
+            }
+
+            var tag = node.tagName.toUpperCase();
+            if (BLOCKED_TAGS[tag]) return empty;
+
+            var mappedTag = ALLOWED_TAGS[tag];
+            var clean = mappedTag ? document.createElement(mappedTag.toLowerCase()) : document.createDocumentFragment();
+
+            if (mappedTag !== 'BR') {
+                var children = Array.from(node.childNodes);
+                for (var i = 0; i < children.length; i++) {
+                    clean.appendChild(sanitizeNode(children[i]));
                 }
             }
+
+            return clean;
         }
-        
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                editor.innerHTML = undoHistory[historyIndex];
-                editor.focus();
-                
-                var range = document.createRange();
-                var sel = window.getSelection();
-                range.selectNodeContents(editor);
+
+        function sanitizeFragment(html) {
+            var template = document.createElement('template');
+            template.innerHTML = String(html || '');
+
+            var fragment = document.createDocumentFragment();
+            var nodes = Array.from(template.content.childNodes);
+
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].nodeType === Node.TEXT_NODE && !(nodes[i].nodeValue || '').trim()) {
+                    continue;
+                }
+                fragment.appendChild(sanitizeNode(nodes[i]));
+            }
+
+            return fragment;
+        }
+
+        function safeHTML(html) {
+            var holder = document.createElement('div');
+            holder.appendChild(sanitizeFragment(html));
+            return holder.innerHTML;
+        }
+
+        function replaceRootWithSafeHTML(root, html) {
+            root.replaceChildren(sanitizeFragment(html));
+        }
+
+        function textToFragment(text) {
+            var fragment = document.createDocumentFragment();
+            var normalized = String(text || '').replace(/\r\n?/g, '\n');
+
+            if (!normalized) return fragment;
+
+            var paragraphs = normalized.split(/\n{2,}/);
+            for (var i = 0; i < paragraphs.length; i++) {
+                var paragraph = document.createElement('p');
+                var lines = paragraphs[i].split('\n');
+
+                for (var j = 0; j < lines.length; j++) {
+                    if (j > 0) paragraph.appendChild(document.createElement('br'));
+                    paragraph.appendChild(document.createTextNode(lines[j]));
+                }
+
+                fragment.appendChild(paragraph);
+            }
+
+            return fragment;
+        }
+
+        function setDocumentFragment(fragment) {
+            editor.replaceChildren(fragment);
+
+            if (isFocusMode) {
+                replaceRootWithSafeHTML(document.getElementById('focusEditor'), editor.innerHTML);
+            }
+        }
+
+        function setDocumentFromPlainText(text) {
+            setDocumentFragment(textToFragment(text));
+        }
+
+        function safePaste(event) {
+            event.preventDefault();
+            var text = event.clipboardData ? event.clipboardData.getData('text/plain') : '';
+            insertPlainText(event.currentTarget, text);
+        }
+
+        function safeDrop(event) {
+            event.preventDefault();
+            var text = event.dataTransfer ? event.dataTransfer.getData('text/plain') : '';
+            if (text) insertPlainText(event.currentTarget, text);
+        }
+
+        function insertPlainText(root, text) {
+            root.focus();
+
+            var selection = window.getSelection();
+            var range;
+
+            if (selection.rangeCount && root.contains(selection.getRangeAt(0).startContainer)) {
+                range = selection.getRangeAt(0);
+            } else {
+                range = document.createRange();
+                range.selectNodeContents(root);
                 range.collapse(false);
-                sel.removeAllRanges();
-                sel.addRange(range);
             }
-        }
-        
-        function formatText(command) {
-            document.execCommand(command, false, null);
-            editor.focus();
-            
-            var btnId = command + 'Btn';
-            var btn = document.getElementById(btnId);
-            if (btn) {
-                var isFormatted = document.queryCommandState(command);
-                if (isFormatted) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+
+            range.deleteContents();
+
+            var fragment = document.createDocumentFragment();
+            var lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+            var lastNode = null;
+
+            for (var i = 0; i < lines.length; i++) {
+                if (i > 0) {
+                    lastNode = document.createElement('br');
+                    fragment.appendChild(lastNode);
+                }
+
+                if (lines[i]) {
+                    lastNode = document.createTextNode(lines[i]);
+                    fragment.appendChild(lastNode);
                 }
             }
-            
-            saveState();
+
+            if (!lastNode) lastNode = document.createTextNode('');
+            if (!lastNode.parentNode) fragment.appendChild(lastNode);
+
+            range.insertNode(fragment);
+            range.setStartAfter(lastNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            if (root.id === 'focusEditor') syncMainFromFocus();
+            scheduleHistoryCapture();
         }
-        
-        function keyHandler(e) {
-            if (e.ctrlKey) {
-                if (e.key === 'n') { e.preventDefault(); newDoc(); }
-                if (e.key === 's') { e.preventDefault(); saveDoc(); }
-                if (e.key === 'o') { e.preventDefault(); openDoc(); }
-                if (e.key === 'f') { e.preventDefault(); toggleSearch(); }
-                if (e.key === 'r') { e.preventDefault(); toggleReading(); }
-                if (e.key === 'z') { e.preventDefault(); undo(); }
-                if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
-                if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
-                if (e.key === 'u') { e.preventDefault(); formatText('underline'); }
+
+        function normalizedDocumentHTML() {
+            return safeHTML(editor.innerHTML);
+        }
+
+        function resetHistory() {
+            clearTimeout(historyTimer);
+            historyTimer = null;
+            undoHistory = [normalizedDocumentHTML()];
+            historyIndex = 0;
+        }
+
+        function scheduleHistoryCapture() {
+            if (isRestoringHistory) return;
+            clearTimeout(historyTimer);
+            historyTimer = setTimeout(captureHistory, 350);
+        }
+
+        function captureHistory() {
+            clearTimeout(historyTimer);
+            historyTimer = null;
+            if (isRestoringHistory) return;
+
+            var state = normalizedDocumentHTML();
+            if (undoHistory[historyIndex] === state) return;
+
+            undoHistory = undoHistory.slice(0, historyIndex + 1);
+            undoHistory.push(state);
+
+            if (undoHistory.length > 100) {
+                undoHistory.shift();
             }
-            if (e.key === 'F11') {
-                e.preventDefault();
+
+            historyIndex = undoHistory.length - 1;
+        }
+
+        function flushHistory() {
+            if (historyTimer !== null) captureHistory();
+        }
+
+        function restoreHistory(index) {
+            if (index < 0 || index >= undoHistory.length) return;
+
+            isRestoringHistory = true;
+            historyIndex = index;
+            replaceRootWithSafeHTML(editor, undoHistory[historyIndex]);
+
+            if (isFocusMode) {
+                replaceRootWithSafeHTML(document.getElementById('focusEditor'), undoHistory[historyIndex]);
+            }
+
+            isRestoringHistory = false;
+            var activeRoot = isFocusMode ? document.getElementById('focusEditor') : editor;
+            activeRoot.focus();
+            placeCaretAtEnd(activeRoot);
+        }
+
+        function undo() {
+            flushHistory();
+            if (historyIndex > 0) restoreHistory(historyIndex - 1);
+        }
+
+        function redo() {
+            flushHistory();
+            if (historyIndex < undoHistory.length - 1) restoreHistory(historyIndex + 1);
+        }
+
+        function keyHandler(event) {
+            var modifier = event.ctrlKey || event.metaKey;
+            var key = String(event.key || '').toLowerCase();
+            var target = event.target;
+            var isSearchField = target && target.id === 'searchInput';
+
+            if (modifier && key === 'z' && !isSearchField) {
+                event.preventDefault();
+                if (event.shiftKey) redo();
+                else undo();
+                return;
+            }
+
+            if (modifier && key === 'y' && !isSearchField) {
+                event.preventDefault();
+                redo();
+                return;
+            }
+
+            if (modifier) {
+                if (key === 'n') {
+                    event.preventDefault();
+                    newDoc();
+                } else if (key === 's') {
+                    event.preventDefault();
+                    saveDoc();
+                } else if (key === 'o') {
+                    event.preventDefault();
+                    openDoc();
+                } else if (key === 'f' && !isFocusMode) {
+                    event.preventDefault();
+                    toggleSearch();
+                } else if (key === 'r') {
+                    event.preventDefault();
+                    toggleReading();
+                }
+            }
+
+            if (event.key === 'F11') {
+                event.preventDefault();
                 toggleFocusMode();
             }
-            if (e.key === 'Escape') {
+
+            if (event.key === 'Escape') {
                 if (isFocusMode) {
                     exitFocusMode();
                 } else {
@@ -654,709 +776,797 @@
                 }
             }
         }
-        
+
         function newDoc() {
-            editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
+            stopReading();
+            setDocumentFragment(document.createDocumentFragment());
             fileName = 'dokument.rtf';
             document.getElementById('fileName').textContent = fileName;
-            
-            undoHistory = [];
-            historyIndex = -1;
-            saveState();
+            resetHistory();
+
+            var activeRoot = isFocusMode ? document.getElementById('focusEditor') : editor;
+            activeRoot.focus();
         }
-        
+
         function openDoc() {
-            document.getElementById('fileInput').click();
+            var input = document.getElementById('fileInput');
+            input.value = '';
+            input.click();
         }
-        
+
         function saveDoc() {
-            var html = editor.innerHTML;
-            var rtf = toRTF(html);
-            var blob = new Blob([rtf], { type: 'application/rtf' });
+            if (isFocusMode) syncMainFromFocus();
+            flushHistory();
+
+            var cleaned = normalizedDocumentHTML();
+            replaceRootWithSafeHTML(editor, cleaned);
+            if (isFocusMode) replaceRootWithSafeHTML(document.getElementById('focusEditor'), cleaned);
+
+            var rtf = toRTF(editor);
+            var blob = new Blob([rtf], { type: 'application/rtf;charset=utf-8' });
             var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
+            var link = document.createElement('a');
+
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(function() {
+                URL.revokeObjectURL(url);
+            }, 1000);
         }
-        
-        function loadFile(e) {
-            var file = e.target.files[0];
-            if (file) {
-                fileName = file.name;
-                document.getElementById('fileName').textContent = fileName;
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var rtf = e.target.result;
-                    var html = fromRTF(rtf);
-                    editor.innerHTML = html;
-                    
-                    undoHistory = [];
-                    historyIndex = -1;
-                    saveState();
-                };
-                reader.readAsText(file);
+
+        function loadFile(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+
+            reader.onload = function(loadEvent) {
+                try {
+                    var decoded = decodeOpenedFile(loadEvent.target.result);
+                    var fragment = decoded.isRTF
+                        ? parseRTFToFragment(decoded.text, decoded.encoding)
+                        : textToFragment(decoded.text);
+
+                    stopReading();
+                    setDocumentFragment(fragment);
+                    fileName = file.name;
+                    document.getElementById('fileName').textContent = fileName;
+                    resetHistory();
+                } catch (error) {
+                    console.error(error);
+                    alert('Nie udało się bezpiecznie odczytać tego pliku.');
+                }
+            };
+
+            reader.onerror = function() {
+                alert('Nie udało się odczytać pliku.');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function getTextDecoder(encoding) {
+            try {
+                return new TextDecoder(encoding);
+            } catch (error) {
+                return new TextDecoder('windows-1252');
             }
         }
-        
+
+        function decodeOpenedFile(buffer) {
+            var bytes = new Uint8Array(buffer);
+            var headerLength = Math.min(bytes.length, 8192);
+            var header = getTextDecoder('windows-1252').decode(bytes.slice(0, headerLength));
+            var isRTF = /^\s*\{\\rtf/i.test(header);
+
+            if (isRTF) {
+                var codePageMatch = header.match(/\\ansicpg(\d+)/i);
+                var codePage = codePageMatch ? codePageMatch[1] : '1252';
+                var encodingMap = {
+                    '1250': 'windows-1250',
+                    '1251': 'windows-1251',
+                    '1252': 'windows-1252',
+                    '65001': 'utf-8'
+                };
+                var encoding = encodingMap[codePage] || 'windows-1252';
+
+                return {
+                    isRTF: true,
+                    encoding: encoding,
+                    text: getTextDecoder(encoding).decode(bytes)
+                };
+            }
+
+            var plainEncoding = 'utf-8';
+            if (bytes.length >= 2 && bytes[0] === 255 && bytes[1] === 254) plainEncoding = 'utf-16le';
+            if (bytes.length >= 2 && bytes[0] === 254 && bytes[1] === 255) plainEncoding = 'utf-16be';
+
+            return {
+                isRTF: false,
+                encoding: plainEncoding,
+                text: getTextDecoder(plainEncoding).decode(bytes)
+            };
+        }
+
+        function rtfEscapeText(text) {
+            var output = '';
+
+            for (var i = 0; i < text.length; i++) {
+                var code = text.charCodeAt(i);
+                var character = text.charAt(i);
+
+                if (character === '\\' || character === '{' || character === '}') {
+                    output += '\\' + character;
+                } else if (character === '\t') {
+                    output += '\\tab ';
+                } else if (character === '\n' || character === '\r') {
+                    output += '\\line ';
+                } else if (code >= 32 && code <= 126) {
+                    output += character;
+                } else if (code > 126) {
+                    output += '\\u' + (code > 32767 ? code - 65536 : code) + '?';
+                }
+            }
+
+            return output;
+        }
+
+        function nodesToRTF(nodes) {
+            var output = '';
+
+            for (var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+
+                if (node.nodeType === Node.TEXT_NODE) {
+                    output += rtfEscapeText(node.nodeValue || '');
+                    continue;
+                }
+
+                if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+                var tag = node.tagName.toUpperCase();
+                var inner = nodesToRTF(Array.from(node.childNodes));
+
+                if (tag === 'P' || tag === 'DIV' || /^H[1-6]$/.test(tag)) {
+                    output += inner + '\\par\n';
+                } else if (tag === 'BR') {
+                    output += '\\line ';
+                } else if (tag === 'B' || tag === 'STRONG') {
+                    output += '{\\b ' + inner + '}';
+                } else if (tag === 'I' || tag === 'EM') {
+                    output += '{\\i ' + inner + '}';
+                } else if (tag === 'U') {
+                    output += '{\\ul ' + inner + '}';
+                } else {
+                    output += inner;
+                }
+            }
+
+            return output;
+        }
+
+        function toRTF(root) {
+            var font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
+            var body = nodesToRTF(Array.from(root.childNodes));
+
+            return '{\\rtf1\\ansi\\ansicpg1250\\deff0' +
+                '{\\fonttbl{\\f0\\fnil\\fcharset238 ' + font + ';}}' +
+                '\\viewkind4\\uc1\\pard\\f0\\fs' + (fontSize * 2) + ' ' +
+                body + '}';
+        }
+
+        function parseRTFToFragment(rtf, encoding) {
+            var fragment = document.createDocumentFragment();
+            var currentParagraph = null;
+            var state = {
+                bold: false,
+                italic: false,
+                underline: false,
+                skip: false,
+                uc: 1
+            };
+            var stack = [];
+            var decoder = getTextDecoder(encoding || 'windows-1252');
+
+            var destinations = {
+                fonttbl: true,
+                colortbl: true,
+                stylesheet: true,
+                info: true,
+                pict: true,
+                object: true,
+                header: true,
+                headerl: true,
+                headerr: true,
+                footer: true,
+                footerl: true,
+                footerr: true,
+                footnote: true,
+                annotation: true,
+                generator: true,
+                listtable: true,
+                listoverridetable: true,
+                latentstyles: true,
+                rsidtbl: true,
+                themedata: true,
+                colorschememapping: true,
+                datastore: true,
+                xmlopen: true,
+                xmlclose: true,
+                fldinst: true
+            };
+
+            function ensureParagraph() {
+                if (!currentParagraph) {
+                    currentParagraph = document.createElement('p');
+                    fragment.appendChild(currentParagraph);
+                }
+                return currentParagraph;
+            }
+
+            function appendText(text) {
+                if (state.skip || !text) return;
+
+                var parent = ensureParagraph();
+
+                if (state.bold) {
+                    var bold = document.createElement('b');
+                    parent.appendChild(bold);
+                    parent = bold;
+                }
+
+                if (state.italic) {
+                    var italic = document.createElement('i');
+                    parent.appendChild(italic);
+                    parent = italic;
+                }
+
+                if (state.underline) {
+                    var underline = document.createElement('u');
+                    parent.appendChild(underline);
+                    parent = underline;
+                }
+
+                parent.appendChild(document.createTextNode(text));
+            }
+
+            function appendBreak() {
+                if (!state.skip) ensureParagraph().appendChild(document.createElement('br'));
+            }
+
+            function paragraphBreak() {
+                if (state.skip) return;
+                ensureParagraph();
+                currentParagraph = null;
+            }
+
+            function skipFallback(text, index, count) {
+                var remaining = Math.max(0, count || 0);
+
+                while (remaining > 0 && index < text.length) {
+                    if (text.charAt(index) === '\\' && text.charAt(index + 1) === "'" &&
+                        /^[0-9a-f]{2}$/i.test(text.substr(index + 2, 2))) {
+                        index += 4;
+                    } else if (text.charAt(index) === '\\' && index + 1 < text.length) {
+                        index += 2;
+                    } else {
+                        index += 1;
+                    }
+                    remaining--;
+                }
+
+                return index;
+            }
+
+            var index = 0;
+
+            while (index < rtf.length) {
+                var character = rtf.charAt(index);
+
+                if (character === '{') {
+                    stack.push({
+                        bold: state.bold,
+                        italic: state.italic,
+                        underline: state.underline,
+                        skip: state.skip,
+                        uc: state.uc
+                    });
+                    index++;
+                    continue;
+                }
+
+                if (character === '}') {
+                    state = stack.pop() || state;
+                    index++;
+                    continue;
+                }
+
+                if (character !== '\\') {
+                    var textStart = index;
+                    while (index < rtf.length && rtf.charAt(index) !== '{' &&
+                        rtf.charAt(index) !== '}' && rtf.charAt(index) !== '\\') {
+                        index++;
+                    }
+
+                    appendText(rtf.slice(textStart, index).replace(/[\r\n]/g, ''));
+                    continue;
+                }
+
+                var next = rtf.charAt(index + 1);
+
+                if (next === '\\' || next === '{' || next === '}') {
+                    appendText(next);
+                    index += 2;
+                    continue;
+                }
+
+                if (next === "'") {
+                    var hexBytes = [];
+                    var hexIndex = index;
+
+                    while (rtf.charAt(hexIndex) === '\\' && rtf.charAt(hexIndex + 1) === "'" &&
+                        /^[0-9a-f]{2}$/i.test(rtf.substr(hexIndex + 2, 2))) {
+                        hexBytes.push(parseInt(rtf.substr(hexIndex + 2, 2), 16));
+                        hexIndex += 4;
+                    }
+
+                    if (!state.skip && hexBytes.length) {
+                        appendText(decoder.decode(new Uint8Array(hexBytes)));
+                    }
+
+                    index = hexIndex;
+                    continue;
+                }
+
+                if (next === '*') {
+                    state.skip = true;
+                    index += 2;
+                    continue;
+                }
+
+                if (next === '~') {
+                    appendText('\u00a0');
+                    index += 2;
+                    continue;
+                }
+
+                if (next === '_') {
+                    appendText('\u2011');
+                    index += 2;
+                    continue;
+                }
+
+                if (next === '-') {
+                    index += 2;
+                    continue;
+                }
+
+                if (!/[a-z]/i.test(next)) {
+                    index += 2;
+                    continue;
+                }
+
+                var wordStart = index + 1;
+                var cursor = wordStart;
+
+                while (/[a-z]/i.test(rtf.charAt(cursor))) cursor++;
+                var word = rtf.slice(wordStart, cursor).toLowerCase();
+
+                var sign = 1;
+                if (rtf.charAt(cursor) === '-') {
+                    sign = -1;
+                    cursor++;
+                }
+
+                var numberStart = cursor;
+                while (/\d/.test(rtf.charAt(cursor))) cursor++;
+
+                var parameter = numberStart < cursor
+                    ? sign * parseInt(rtf.slice(numberStart, cursor), 10)
+                    : null;
+
+                if (rtf.charAt(cursor) === ' ') cursor++;
+                index = cursor;
+
+                if (destinations[word]) {
+                    state.skip = true;
+                    continue;
+                }
+
+                if (word === 'bin' && parameter !== null && parameter > 0) {
+                    index = Math.min(rtf.length, index + parameter);
+                    continue;
+                }
+
+                if (word === 'uc' && parameter !== null) {
+                    state.uc = Math.max(0, parameter);
+                    continue;
+                }
+
+                if (word === 'u' && parameter !== null) {
+                    if (!state.skip) {
+                        appendText(String.fromCharCode(parameter < 0 ? parameter + 65536 : parameter));
+                    }
+                    index = skipFallback(rtf, index, state.uc);
+                    continue;
+                }
+
+                if (state.skip) continue;
+
+                if (word === 'b') {
+                    state.bold = parameter !== 0;
+                } else if (word === 'i') {
+                    state.italic = parameter !== 0;
+                } else if (word === 'ul') {
+                    state.underline = parameter !== 0;
+                } else if (word === 'ulnone') {
+                    state.underline = false;
+                } else if (word === 'plain') {
+                    state.bold = false;
+                    state.italic = false;
+                    state.underline = false;
+                } else if (word === 'par' || word === 'sect') {
+                    paragraphBreak();
+                } else if (word === 'line') {
+                    appendBreak();
+                } else if (word === 'tab') {
+                    appendText('\t');
+                } else if (word === 'emdash') {
+                    appendText('\u2014');
+                } else if (word === 'endash') {
+                    appendText('\u2013');
+                } else if (word === 'bullet') {
+                    appendText('\u2022');
+                } else if (word === 'lquote') {
+                    appendText('\u2018');
+                } else if (word === 'rquote') {
+                    appendText('\u2019');
+                } else if (word === 'ldblquote') {
+                    appendText('\u201c');
+                } else if (word === 'rdblquote') {
+                    appendText('\u201d');
+                }
+            }
+
+            if (!fragment.childNodes.length) {
+                fragment.appendChild(document.createElement('p'));
+            }
+
+            return fragment;
+        }
+
         function toggleSearch() {
             var panel = document.getElementById('searchPanel');
-            var btn = document.getElementById('searchBtn');
+
             if (panel.classList.contains('show')) {
                 closeSearch();
             } else {
                 panel.classList.add('show');
-                btn.classList.add('active');
+                document.getElementById('searchBtn').classList.add('active');
                 document.getElementById('searchInput').focus();
             }
         }
-        
+
         function closeSearch() {
             document.getElementById('searchPanel').classList.remove('show');
             document.getElementById('searchBtn').classList.remove('active');
         }
-        
+
         function doSearch() {
             var term = document.getElementById('searchInput').value;
-            if (term && window.find) {
-                window.find(term, false, false, true);
-            }
+            if (term && window.find) window.find(term, false, false, true);
         }
-        
+
         function updateStyle() {
-            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
+            var family = fontFamily === 'Times New Roman'
+                ? 'Times New Roman, serif'
+                : 'Libre Baskerville, serif';
+
             editor.style.fontFamily = family;
             editor.style.fontSize = fontSize + 'pt';
+
+            var focusEditor = document.getElementById('focusEditor');
+            focusEditor.style.fontFamily = family;
+            focusEditor.style.fontSize = fontSize + 'pt';
         }
-        
-        function getCursor() {
-            var sel = window.getSelection();
-            if (sel.rangeCount === 0) return 0;
-            var range = sel.getRangeAt(0);
-            var pre = range.cloneRange();
-            pre.selectNodeContents(editor);
-            pre.setEnd(range.startContainer, range.startOffset);
-            return pre.toString().length;
+
+        function toggleFocusMode() {
+            if (isFocusMode) exitFocusMode();
+            else enterFocusMode();
         }
-        
+
+        function enterFocusMode() {
+            if (isFocusMode) return;
+
+            flushHistory();
+            isFocusMode = true;
+
+            var focusEditor = document.getElementById('focusEditor');
+            replaceRootWithSafeHTML(focusEditor, editor.innerHTML);
+
+            document.body.classList.add('focus-active');
+            document.getElementById('focusMode').classList.add('active');
+            updateStyle();
+
+            var page = document.documentElement;
+            var request = page.requestFullscreen || page.webkitRequestFullscreen ||
+                page.msRequestFullscreen || page.mozRequestFullScreen;
+
+            if (request) {
+                try {
+                    var result = request.call(page);
+                    if (result && result.catch) {
+                        result.catch(function(error) {
+                            console.info('Tryb pełnoekranowy nie został włączony:', error);
+                        });
+                    }
+                } catch (error) {
+                    console.info('Tryb pełnoekranowy nie został włączony:', error);
+                }
+            }
+
+            setTimeout(function() {
+                focusEditor.focus();
+                placeCaretAtEnd(focusEditor);
+            }, 0);
+        }
+
+        function syncMainFromFocus() {
+            if (!isFocusMode || isRestoringHistory) return;
+            var focusEditor = document.getElementById('focusEditor');
+            editor.replaceChildren(sanitizeFragment(focusEditor.innerHTML));
+        }
+
+        function exitFocusMode(leaveFullscreen) {
+            if (!isFocusMode) return;
+
+            syncMainFromFocus();
+            flushHistory();
+            isFocusMode = false;
+
+            document.body.classList.remove('focus-active');
+            document.getElementById('focusMode').classList.remove('active');
+
+            if (leaveFullscreen !== false) {
+                var exit = document.exitFullscreen || document.webkitExitFullscreen ||
+                    document.msExitFullscreen || document.mozCancelFullScreen;
+
+                var fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement ||
+                    document.mozFullScreenElement || document.msFullscreenElement;
+
+                if (exit && fullscreenElement) {
+                    try {
+                        var result = exit.call(document);
+                        if (result && result.catch) result.catch(function() {});
+                    } catch (error) {
+                        console.info('Nie udało się zamknąć pełnego ekranu:', error);
+                    }
+                }
+            }
+
+            setTimeout(function() {
+                editor.focus();
+                placeCaretAtEnd(editor);
+            }, 0);
+        }
+
+        function handleFullscreenChange() {
+            var fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement ||
+                document.mozFullScreenElement || document.msFullscreenElement;
+
+            if (!fullscreenElement && isFocusMode) exitFocusMode(false);
+        }
+
+        function placeCaretAtEnd(root) {
+            var selection = window.getSelection();
+            var range = document.createRange();
+
+            range.selectNodeContents(root);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        function getActiveEditor() {
+            return isFocusMode ? document.getElementById('focusEditor') : editor;
+        }
+
+        function getTextFromCursor() {
+            var root = getActiveEditor();
+            var fullText = root.innerText || root.textContent || '';
+            var selection = window.getSelection();
+
+            if (!selection.rangeCount) return fullText;
+
+            var range = selection.getRangeAt(0);
+            if (!root.contains(range.startContainer)) return fullText;
+
+            var prefixRange = range.cloneRange();
+            prefixRange.selectNodeContents(root);
+            prefixRange.setEnd(range.startContainer, range.startOffset);
+
+            var holder = document.createElement('div');
+            holder.appendChild(prefixRange.cloneContents());
+            var prefix = holder.innerText || holder.textContent || '';
+
+            return fullText.substring(Math.min(prefix.length, fullText.length));
+        }
+
+        function refreshVoices() {
+            if ('speechSynthesis' in window) {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+            }
+        }
+
+        function choosePolishVoice() {
+            refreshVoices();
+
+            var polish = availableVoices.filter(function(voice) {
+                return /^pl(?:-|_)/i.test(voice.lang || '');
+            });
+
+            for (var i = 0; i < polish.length; i++) {
+                if (/paulina/i.test(polish[i].name || '')) return polish[i];
+            }
+
+            for (var j = 0; j < polish.length; j++) {
+                if (/^pl-PL$/i.test(polish[j].lang || '')) return polish[j];
+            }
+
+            return polish[0] || null;
+        }
+
+        function splitForSpeech(text, limit) {
+            var chunks = [];
+            var paragraphs = String(text || '').replace(/\r\n?/g, '\n').split(/\n+/);
+
+            for (var i = 0; i < paragraphs.length; i++) {
+                var remaining = paragraphs[i].trim();
+
+                while (remaining.length > limit) {
+                    var cut = remaining.lastIndexOf(' ', limit);
+                    if (cut < Math.floor(limit * 0.6)) cut = limit;
+
+                    chunks.push(remaining.slice(0, cut).trim());
+                    remaining = remaining.slice(cut).trim();
+                }
+
+                if (remaining) chunks.push(remaining);
+            }
+
+            return chunks;
+        }
+
+        function setReadingButton(reading) {
+            var button = document.getElementById('readBtn');
+            button.classList.toggle('active', reading);
+            button.setAttribute('aria-pressed', reading ? 'true' : 'false');
+            button.innerHTML = reading ? STOP_ICON : READ_ICON;
+        }
+
         function toggleReading() {
             if (isReading) {
                 stopReading();
-            } else {
-                startReading();
-            }
-        }
-        
-        function startReading() {
-            if (!speechSynthesis) {
-                alert('Brak obsługi czytania.');
                 return;
             }
-            
-            var allParagraphs = editor.querySelectorAll('p');
-            var cursorPos = getCursor();
-            
-            var textSoFar = 0;
-            var startParagraphIndex = 0;
-            
-            for (var i = 0; i < allParagraphs.length; i++) {
-                var paraText = allParagraphs[i].innerText || allParagraphs[i].textContent || '';
-                if (textSoFar + paraText.length >= cursorPos) {
-                    startParagraphIndex = i;
-                    break;
-                }
-                textSoFar += paraText.length;
-            }
-            
-            readingParagraphs = [];
-            for (var j = startParagraphIndex; j < allParagraphs.length; j++) {
-                var text = allParagraphs[j].innerText || allParagraphs[j].textContent || '';
-                if (text.trim()) {
-                    readingParagraphs.push({
-                        element: allParagraphs[j],
-                        text: text.trim()
-                    });
-                }
-            }
-            
-            if (readingParagraphs.length === 0) {
+
+            var text = getTextFromCursor();
+            if (!text.trim()) {
                 alert('Brak tekstu do czytania od pozycji kursora.');
                 return;
             }
-            
-            currentParagraphIndex = 0;
-            isReading = true;
-            
-            var btn = document.getElementById('readBtn');
-            btn.classList.add('active');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
-            
-            readNextParagraph();
-        }
-        
-        function readNextParagraph() {
-            if (!isReading || currentParagraphIndex >= readingParagraphs.length) {
-                stopReading();
-                return;
-            }
-            
-            var currentPara = readingParagraphs[currentParagraphIndex];
-            
-            var highlighted = editor.querySelectorAll('.reading-highlight');
-            for (var i = 0; i < highlighted.length; i++) {
-                highlighted[i].classList.remove('reading-highlight');
-            }
-            
-            currentPara.element.classList.add('reading-highlight');
-            currentPara.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            var utterance = new SpeechSynthesisUtterance(currentPara.text);
-            utterance.lang = 'pl-PL';
-            utterance.rate = speechRate;
-            utterance.pitch = 1;
-            
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-            }
-            
-            utterance.onend = function() {
-                if (isReading) {
-                    currentParagraphIndex++;
-                    readNextParagraph();
-                }
-            };
-            
-            utterance.onerror = function(e) {
-                // Ignoruj błędy spowodowane przez cancel/pause
-                if (e.error === 'canceled' || e.error === 'interrupted') {
-                    return;
-                }
-                stopReading();
-                alert('Błąd podczas czytania: ' + e.error);
-            };
-            
-            speechSynthesis.speak(utterance);
-        }
-        
-        function stopReading() {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
-            isReading = false;
-            
-            var highlighted = editor.querySelectorAll('.reading-highlight');
-            for (var i = 0; i < highlighted.length; i++) {
-                highlighted[i].classList.remove('reading-highlight');
-            }
-            
-            readingParagraphs = [];
-            currentParagraphIndex = -1;
-            
-            var btn = document.getElementById('readBtn');
-            btn.classList.remove('active');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-        }
-        
-        function toRTF(html) {
-            var font = fontFamily === 'Times New Roman' ? 'Times New Roman' : 'Libre Baskerville';
-            var rtf = '{\\rtf1\\ansi\\ansicpg1250\\deff0 {\\fonttbl {\\f0 ' + font + ';}}\\f0\\fs' + (fontSize * 2) + ' ';
-            
-            var cleanText = html
-                .replace(/<br\s*\/?>/gi, '\\line ')
-                .replace(/<\/p>/gi, '\\par ')
-                .replace(/<p[^>]*>/gi, '')
-                .replace(/<b[^>]*>(.*?)<\/b>/gi, '{\\b $1}')
-                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '{\\b $1}')
-                .replace(/<i[^>]*>(.*?)<\/i>/gi, '{\\i $1}')
-                .replace(/<em[^>]*>(.*?)<\/em>/gi, '{\\i $1}')
-                .replace(/<u[^>]*>(.*?)<\/u>/gi, '{\\ul $1}')
-                .replace(/<[^>]+>/g, '');
-            
-            cleanText = cleanText
-                .replace(/ą/g, "\\'b1")
-                .replace(/Ą/g, "\\'a1")
-                .replace(/ć/g, "\\'e6")
-                .replace(/Ć/g, "\\'c6")
-                .replace(/ę/g, "\\'ea")
-                .replace(/Ę/g, "\\'ca")
-                .replace(/ł/g, "\\'b3")
-                .replace(/Ł/g, "\\'a3")
-                .replace(/ń/g, "\\'f1")
-                .replace(/Ń/g, "\\'d1")
-                .replace(/ó/g, "\\'f3")
-                .replace(/Ó/g, "\\'d3")
-                .replace(/ś/g, "\\'9c")
-                .replace(/Ś/g, "\\'8c")
-                .replace(/ź/g, "\\'9f")
-                .replace(/Ź/g, "\\'8f")
-                .replace(/ż/g, "\\'bf")
-                .replace(/Ż/g, "\\'af");
-            
-            rtf += cleanText + '}';
-            return rtf;
-        }
-        
-        function parseRTFFormatting(text) {
-            var result = '';
-            var i = 0;
-            
-            while (i < text.length) {
-                // Szukaj początku tagu formatowania
-                if (text[i] === '{' && text[i+1] === '\\') {
-                    // Sprawdź typ formatowania
-                    var formatType = '';
-                    if (text.substr(i, 3) === '{\\b' && text[i+3] !== '0') {
-                        formatType = 'BOLD';
-                    } else if (text.substr(i, 3) === '{\\i' && text[i+3] !== '0') {
-                        formatType = 'ITALIC';
-                    } else if (text.substr(i, 4) === '{\\ul' && text[i+4] !== '0') {
-                        formatType = 'UNDERLINE';
-                    }
-                    
-                    if (formatType) {
-                        // Znajdź koniec tego bloku (licząc zagnieżdżone nawiasy)
-                        var depth = 1;
-                        var start = i + (formatType === 'UNDERLINE' ? 4 : 3);
-                        // Pomiń spacje po kodzie
-                        while (start < text.length && text[start] === ' ') start++;
-                        
-                        var j = start;
-                        var content = '';
-                        
-                        while (j < text.length && depth > 0) {
-                            if (text[j] === '{') {
-                                depth++;
-                            } else if (text[j] === '}') {
-                                depth--;
-                                if (depth === 0) break;
-                            }
-                            content += text[j];
-                            j++;
-                        }
-                        
-                        // Rekurencyjnie parsuj zawartość
-                        var parsedContent = parseRTFFormatting(content);
-                        
-                        // Dodaj markery
-                        if (formatType === 'BOLD') {
-                            result += '|||BOLD_START|||' + parsedContent + '|||BOLD_END|||';
-                        } else if (formatType === 'ITALIC') {
-                            result += '|||ITALIC_START|||' + parsedContent + '|||ITALIC_END|||';
-                        } else if (formatType === 'UNDERLINE') {
-                            result += '|||UNDERLINE_START|||' + parsedContent + '|||UNDERLINE_END|||';
-                        }
-                        
-                        i = j + 1; // Pomiń zamykający }
-                        continue;
-                    }
-                }
-                
-                result += text[i];
-                i++;
-            }
-            
-            return result;
-        }
-        
-        function fromRTF(rtf) {
-            if (rtf.indexOf('\\rtf') === -1) {
-                return '<p>' + rtf.replace(/\n/g, '</p><p>') + '</p>';
-            }
-            
-            var text = rtf;
-            
-            text = text.replace(/\\par\s*/g, '|||PARAGRAPH|||');
-            text = text.replace(/\\line\s*/g, '|||LINEBREAK|||');
-            
-            text = text
-                .replace(/\\'b1/g, 'ą').replace(/'b1/g, 'ą').replace(/\\u185\?/g, 'ą')
-                .replace(/\\'a1/g, 'Ą').replace(/'a1/g, 'Ą').replace(/\\u260\?/g, 'Ą')
-                .replace(/\\'e6/g, 'ć').replace(/'e6/g, 'ć').replace(/\\u263\?/g, 'ć')
-                .replace(/\\'c6/g, 'Ć').replace(/'c6/g, 'Ć').replace(/\\u262\?/g, 'Ć')
-                .replace(/\\'ea/g, 'ę').replace(/'ea/g, 'ę').replace(/\\u281\?/g, 'ę')
-                .replace(/\\'ca/g, 'Ę').replace(/'ca/g, 'Ę').replace(/\\u280\?/g, 'Ę')
-                .replace(/\\'b3/g, 'ł').replace(/'b3/g, 'ł').replace(/\\u322\?/g, 'ł')
-                .replace(/\\'a3/g, 'Ł').replace(/'a3/g, 'Ł').replace(/\\u321\?/g, 'Ł')
-                .replace(/\\'f1/g, 'ń').replace(/'f1/g, 'ń').replace(/\\u324\?/g, 'ń')
-                .replace(/\\'d1/g, 'Ń').replace(/'d1/g, 'Ń').replace(/\\u323\?/g, 'Ń')
-                .replace(/\\'f3/g, 'ó').replace(/'f3/g, 'ó').replace(/\\u243\?/g, 'ó')
-                .replace(/\\'d3/g, 'Ó').replace(/'d3/g, 'Ó').replace(/\\u211\?/g, 'Ó')
-                .replace(/\\'9c/g, 'ś').replace(/'9c/g, 'ś').replace(/\\u347\?/g, 'ś')
-                .replace(/\\'8c/g, 'Ś').replace(/'8c/g, 'Ś').replace(/\\u346\?/g, 'Ś')
-                .replace(/\\'9f/g, 'ź').replace(/'9f/g, 'ź').replace(/\\u378\?/g, 'ź')
-                .replace(/\\'8f/g, 'Ź').replace(/'8f/g, 'Ź').replace(/\\u377\?/g, 'Ź')
-                .replace(/\\'bf/g, 'ż').replace(/'bf/g, 'ż').replace(/\\u380\?/g, 'ż')
-                .replace(/\\'af/g, 'Ż').replace(/'af/g, 'Ż').replace(/\\u379\?/g, 'Ż')
-                .replace(/\\'84/g, '"').replace(/'84/g, '"')
-                .replace(/\\'94/g, '"').replace(/'94/g, '"')
-                .replace(/\\'96/g, '–').replace(/'96/g, '–')
-                .replace(/\\'97/g, '—').replace(/'97/g, '—');
-            
-            text = text.replace(/^\{\\rtf[^{}]*/, '');
-            text = text.replace(/\}$/, '');
-            
-            // Parsuj formatowanie z obsługą zagnieżdżonych tagów
-            text = parseRTFFormatting(text);
-            
-            text = text.replace(/\\[a-z]+\d*\s*/gi, ' ');
-            text = text.replace(/\{[^}]*\}/g, '');
-            text = text.replace(/\\/g, '');
-            
-            text = text.replace(/\s+/g, ' ').trim();
-            text = text.replace(/^\{+/, '').replace(/\}+$/, '');
-            
-            text = text.replace(/\|\|\|BOLD_START\|\|\|/g, '<strong>');
-            text = text.replace(/\|\|\|BOLD_END\|\|\|/g, '</strong>');
-            text = text.replace(/\|\|\|ITALIC_START\|\|\|/g, '<em>');
-            text = text.replace(/\|\|\|ITALIC_END\|\|\|/g, '</em>');
-            text = text.replace(/\|\|\|UNDERLINE_START\|\|\|/g, '<u>');
-            text = text.replace(/\|\|\|UNDERLINE_END\|\|\|/g, '</u>');
-            
-            var paragraphs = text.split('|||PARAGRAPH|||');
-            var html = '';
-            
-            for (var i = 0; i < paragraphs.length; i++) {
-                var para = paragraphs[i].trim();
-                if (para && para.length > 3) {
-                    para = para.replace(/\|\|\|LINEBREAK\|\|\|/g, '<br>');
-                    html += '<p>' + para + '</p>';
-                }
-            }
-            
-            if (!html || paragraphs.length < 2) {
-                text = text.replace(/\|\|\|PARAGRAPH\|\|\|/g, ' ').replace(/\|\|\|LINEBREAK\|\|\|/g, ' ');
-                
-                var sections = text.split(/\n\s*\n/);
-                if (sections.length > 1) {
-                    for (var j = 0; j < sections.length; j++) {
-                        var section = sections[j].trim();
-                        if (section) {
-                            html += '<p>' + section + '</p>';
-                        }
-                    }
-                } else {
-                    var sentences = text.split(/\.\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/);
-                    var currentPara = '';
-                    
-                    for (var k = 0; k < sentences.length; k++) {
-                        var sentence = sentences[k].trim();
-                        if (sentence) {
-                            currentPara += sentence + (k < sentences.length - 1 ? '. ' : '');
-                            
-                            if (currentPara.length > 300) {
-                                html += '<p>' + currentPara + '</p>';
-                                currentPara = '';
-                            }
-                        }
-                    }
-                    
-                    if (currentPara.trim()) {
-                        html += '<p>' + currentPara + '</p>';
-                    }
-                }
-            }
-            
-            if (!html) {
-                html = '<p>' + text + '</p>';
-            }
-            
-            return html;
-        }
-        
-        function toggleFocusMode() {
-            if (isFocusMode) {
-                exitFocusMode();
-            } else {
-                enterFocusMode();
-            }
-        }
-        
-        function enterFocusMode() {
-            isFocusMode = true;
-            
-            var focusEditor = document.getElementById('focusEditor');
-            var mainText = editor.innerText || editor.textContent || '';
-            focusEditor.value = mainText;
-            
-            // Reset pozycji kursora na początek
-            lastCursorPosition = 0;
-            
-            var family = fontFamily === 'Times New Roman' ? 'Times New Roman, serif' : 'Libre Baskerville, serif';
-            focusEditor.style.fontFamily = family;
-            
-            document.body.classList.add('focus-active');
-            
-            var focusMode = document.getElementById('focusMode');
-            focusMode.classList.add('active');
-            
-            var focusReadBtn = document.getElementById('focusReadBtn');
-            var focusHideBtn = document.getElementById('focusHideBtn');
-            var focusControls = document.getElementById('focusControls');
-            
-            // Upewnij się że kontrolki są widoczne na początku
-            focusControls.classList.remove('hidden-controls');
-            focusControlsHidden = false;
-            
-            focusReadBtn.onclick = function() {
-                if (isReading) {
-                    // Jeśli czyta → STOP
-                    stopFocusReading();
-                } else {
-                    // Jeśli nie czyta → START od aktualnej pozycji kursora
-                    focusEditor.focus();
-                    
-                    setTimeout(function() {
-                        // Odczytaj AKTUALNĄ pozycję kursora
-                        lastCursorPosition = focusEditor.selectionStart || 0;
-                        startFocusReading();
-                    }, 10);
-                }
-            };
-            
-            focusHideBtn.onclick = function() {
-                focusControls.classList.add('hidden-controls');
-                focusControlsHidden = true;
-            };
-            
-            setTimeout(function() {
-                var elem = document.documentElement;
-                
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(function(err) {
-                        console.log('Fullscreen error:', err);
-                    });
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen();
-                }
-                
-                setTimeout(function() {
-                    focusEditor.focus();
-                    focusEditor.setSelectionRange(0, 0);
-                    focusEditor.scrollTop = 0;
-                }, 100);
-                
-            }, 50);
-            
-            focusEditor.oninput = null;
-            focusEditor.oninput = function() {
-                var newContent = focusEditor.value;
-                if (newContent.trim()) {
-                    var htmlContent = '<p>' + newContent.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
-                    editor.innerHTML = htmlContent;
-                    saveState();
-                } else {
-                    editor.innerHTML = '<p>Zacznij pisać swój dokument...</p>';
-                }
-            };
-            
-            // Zapisuj pozycję kursora przy kliknięciu i pisaniu
-            focusEditor.addEventListener('mouseup', function() {
-                lastCursorPosition = focusEditor.selectionStart;
-            });
-            
-            focusEditor.addEventListener('keyup', function() {
-                lastCursorPosition = focusEditor.selectionStart;
-            });
-            
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-        }
-        
-        function startFocusReading() {
-            if (!speechSynthesis) {
-                return;
-            }
-            
-            var focusEditor = document.getElementById('focusEditor');
-            
-            // Użyj zapamiętanej pozycji kursora
-            var cursorPos = lastCursorPosition || 0;
-            var text = focusEditor.value.substring(cursorPos);
-            
-            if (!text.trim()) {
-                return;
-            }
-            
-            var utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'pl-PL';
-            utterance.rate = speechRate;
-            utterance.pitch = 1;
-            
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-            }
-            
-            var focusReadBtn = document.getElementById('focusReadBtn');
-            
-            utterance.onstart = function() {
-                isReading = true;
-                focusReadBtn.classList.add('active');
-                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
-            };
-            
-            utterance.onend = function() {
-                stopFocusReading();
-            };
-            
-            utterance.onerror = function(e) {
-                // Ignoruj błędy spowodowane przez cancel/pause
-                if (e.error === 'canceled' || e.error === 'interrupted') {
-                    return;
-                }
-                stopFocusReading();
-            };
-            
-            speechSynthesis.speak(utterance);
-        }
-        
-        function stopFocusReading() {
-            if (speechSynthesis.speaking || speechSynthesis.paused) {
-                speechSynthesis.cancel();
-            }
-            isReading = false;
-            var focusReadBtn = document.getElementById('focusReadBtn');
-            if (focusReadBtn) {
-                focusReadBtn.classList.remove('active');
-                focusReadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-            }
-        }
-        
-        function handleFullscreenChange() {
-            var isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                                document.mozFullScreenElement || document.msFullscreenElement);
-            
-            if (!isFullscreen && isFocusMode) {
-                exitFocusMode();
-            }
-        }
-        
-        function exitFocusMode() {
-            if (!isFocusMode) return;
-            
-            if (isReading) {
-                stopFocusReading();
-            }
-            
-            isFocusMode = false;
-            
-            // Przywróć kontrolki tylko jeśli nie były ukryte
-            var focusControls = document.getElementById('focusControls');
-            if (!focusControlsHidden) {
-                focusControls.classList.remove('hidden-controls');
-            }
-            // Reset stanu dla następnego wejścia
-            focusControlsHidden = false;
-            
-            document.body.classList.remove('focus-active');
-            
-            // NAPRAWIONE: Usuń event listenery (Problem 1 - memory leak)
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-            
-            if (document.exitFullscreen) {
-                document.exitFullscreen().catch(function(err) {
-                    console.log('Exit fullscreen error:', err);
-                });
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            }
-            
-            document.getElementById('focusMode').classList.remove('active');
-            
-            var focusEditor = document.getElementById('focusEditor');
-            if (focusEditor.value.trim()) {
-                var htmlContent = '<p>' + focusEditor.value.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
-                editor.innerHTML = htmlContent;
-                saveState();
-            }
-            
-            setTimeout(function() {
-                editor.focus();
-            }, 200);
-        }
-        
-        document.addEventListener('DOMContentLoaded', init);
 
-        window.addEventListener('load', function() {
-            var textToRead = localStorage.getItem('textToRead');
-            var shouldAutoRead = localStorage.getItem('autoReadText');
-            
-            if (textToRead && shouldAutoRead === 'true') {
-                var paragraphs = textToRead.split('\n\n');
-                var htmlContent = '';
-                for (var i = 0; i < paragraphs.length; i++) {
-                    var para = paragraphs[i].trim();
-                    if (para) {
-                        htmlContent += '<p>' + para + '</p>';
-                    }
+            startReadingText(text, true);
+        }
+
+        function startReadingText(text, reportErrors) {
+            if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+                if (reportErrors) alert('Ta przeglądarka nie obsługuje czytania tekstu.');
+                return;
+            }
+
+            speechToken++;
+            var token = speechToken;
+            window.speechSynthesis.cancel();
+
+            speechChunks = splitForSpeech(text, 1200);
+            speechChunkIndex = 0;
+
+            if (!speechChunks.length) return;
+
+            isReading = true;
+            setReadingButton(true);
+            speakNextChunk(token, reportErrors);
+        }
+
+        function speakNextChunk(token, reportErrors) {
+            if (token !== speechToken || !isReading) return;
+
+            if (speechChunkIndex >= speechChunks.length) {
+                finishReading(token);
+                return;
+            }
+
+            var utterance = new SpeechSynthesisUtterance(speechChunks[speechChunkIndex]);
+            var voice = choosePolishVoice();
+
+            utterance.lang = 'pl-PL';
+            utterance.rate = speechRate;
+            utterance.pitch = 1;
+            if (voice) utterance.voice = voice;
+
+            activeUtterance = utterance;
+
+            utterance.onend = function() {
+                if (token !== speechToken) return;
+                speechChunkIndex++;
+                speakNextChunk(token, reportErrors);
+            };
+
+            utterance.onerror = function(event) {
+                if (token !== speechToken) return;
+
+                var harmless = event.error === 'canceled' || event.error === 'interrupted';
+                finishReading(token);
+
+                if (reportErrors && !harmless) {
+                    alert('Nie udało się przeczytać tekstu. Sprawdź dostępność polskiego głosu.');
                 }
-                editor.innerHTML = htmlContent;
-                
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function finishReading(token) {
+            if (token !== speechToken) return;
+
+            isReading = false;
+            speechChunks = [];
+            speechChunkIndex = 0;
+            activeUtterance = null;
+            setReadingButton(false);
+        }
+
+        function stopReading() {
+            speechToken++;
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            isReading = false;
+            speechChunks = [];
+            speechChunkIndex = 0;
+            activeUtterance = null;
+            setReadingButton(false);
+        }
+
+        function loadTransferredText() {
+            try {
+                var textToRead = localStorage.getItem('textToRead');
+                var shouldAutoRead = localStorage.getItem('autoReadText');
+
+                if (!textToRead || shouldAutoRead !== 'true') return;
+
+                setDocumentFromPlainText(textToRead);
                 localStorage.removeItem('textToRead');
                 localStorage.removeItem('autoReadText');
-                
-                undoHistory = [];
-                historyIndex = -1;
-                saveState();
-                
+                resetHistory();
+
                 setTimeout(function() {
-                    if (!speechSynthesis) {
-                        return;
-                    }
-                    
                     var fullText = editor.innerText || editor.textContent || '';
-                    
-                    if (!fullText.trim()) {
-                        return;
-                    }
-                    
-                    var utterance = new SpeechSynthesisUtterance(fullText);
-                    utterance.lang = 'pl-PL';
-                    utterance.rate = speechRate;
-                    utterance.pitch = 1;
-                    
-                    if (selectedVoice) {
-                        utterance.voice = selectedVoice;
-                    }
-                    
-                    var btn = document.getElementById('readBtn');
-                    
-                    utterance.onstart = function() {
-                        isReading = true;
-                        btn.classList.add('active');
-                        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
-                    };
-                    
-                    utterance.onend = function() {
-                        stopReading();
-                    };
-                    
-                    utterance.onerror = function(e) {
-                        // Ignoruj błędy spowodowane przez cancel/pause
-                        if (e.error === 'canceled' || e.error === 'interrupted') {
-                            return;
-                        }
-                        console.error('Błąd czytania:', e.error);
-                        stopReading();
-                    };
-                    
-                    speechSynthesis.speak(utterance);
-                }, 800);
+                    if (fullText.trim()) startReadingText(fullText, false);
+                }, 300);
+            } catch (error) {
+                console.info('Nie udało się pobrać przekazanego tekstu:', error);
             }
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
