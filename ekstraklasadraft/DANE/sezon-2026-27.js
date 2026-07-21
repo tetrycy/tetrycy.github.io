@@ -27,8 +27,8 @@ window.TEAMS_DATA.push(
 
     { name: "Kozubal",           position: "MID",  overall: 90, apps: 0, goals: 0,  starting: true, "birthYear": 2004 },
     { name: "Thórdarson",        position: "MID",  overall: 75, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
-    { name: "Murawski",          position: "MID",  overall: 76, apps: 0, goals: 0,  starting: false, "birthYear": 1994 },
-    { name: "Walemark",          position: "MID",  overall: 81, apps: 0, goals: 0,  starting: true, "birthYear": 2001 },
+    { name: "Murawski",          position: "MID",  overall: 81, apps: 0, goals: 0,  starting: true, "birthYear": 1994 },
+    { name: "Walemark",          position: "MID",  overall: 81, apps: 0, goals: 0,  starting: false, "birthYear": 2001 },
     { name: "Rodríguez",         position: "MID",  overall: 78, apps: 0, goals: 0,  starting: false, "birthYear": 2001 },
     { name: "Jagiełło",          position: "MID",  overall: 75, apps: 0, goals: 0,  starting: false, "birthYear": 1997 },
 
@@ -49,14 +49,13 @@ window.TEAMS_DATA.push(
   season: "2026/27",
     "coaches": [{ "name": "Michal Gasparik" }],
   players: [
-    { name: "Schulze",           position: "GK",  overall: 62, apps: 0, goals: 0,  starting: false, "birthYear": 2003 },
-    { name: "Loska",             position: "GK",  overall: 74, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
+    { name: "Schulze",           position: "GK",  overall: 75, apps: 0, goals: 0,  starting: true, "birthYear": 2003 },
+    { name: "Loska",             position: "GK",  overall: 74, apps: 0, goals: 0,  starting: false, "birthYear": 1996 },
 
 
-    { name: "Josema",            position: "DEF",  overall: 76, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
+    { name: "Josema",            position: "DEF",  overall: 78, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
     { name: "Synoś",             position: "DEF",  overall: 72, apps: 0, goals: 0,  starting: false, "birthYear": 2007 },
-    { name: "Bochniewicz",       position: "DEF",  overall: 80, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
-    { name: "Szcześniak",        position: "DEF",  overall: 78, apps: 0, goals: 0,  starting: false, "birthYear": 2001 },
+    { name: "Bochniewicz",       position: "DEF",  overall: 80, apps: 0, goals: 0,  starting: false, "birthYear": 1996 },
     { name: "Janicki",           position: "DEF",  overall: 84, apps: 0, goals: 0,  starting: true, "birthYear": 1992 },
     { name: "Zmrzly",            position: "DEF",  overall: 72, apps: 0, goals: 0,  starting: false, "birthYear": 1999 },
     { name: "Janza",             position: "DEF",  overall: 90, apps: 0, goals: 0,  starting: true, "birthYear": 1993 },
@@ -66,7 +65,7 @@ window.TEAMS_DATA.push(
     { name: "Kubicki",           position: "MID",  overall: 85, apps: 0, goals: 0,  starting: true, "birthYear": 1995 },
     { name: "Donio",             position: "MID",  overall: 65, apps: 0, goals: 0,  starting: false, "birthYear": 2005 },
     { name: "Nongo",             position: "MID",  overall: 52, apps: 0, goals: 0,  starting: false, "birthYear": 2007 },
-    { name: "Urbański",          position: "MID",  overall: 76, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
+    { name: "Urbański",          position: "MID",  overall: 78, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
     { name: "Sadilek",           position: "MID",  overall: 79, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
     { name: "Rakoczy",           position: "MID",  overall: 71, apps: 0, goals: 0,  starting: false, "birthYear": 2002 },
     { name: "Gonzalez",           position: "MID",  overall: 84, apps: 0, goals: 0,  starting: true, "birthYear": 2005 },
@@ -76,12 +75,12 @@ window.TEAMS_DATA.push(
     { name: "Dziegielewski",     position: "FWD",  overall: 60, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
     { name: "Lukoszek",          position: "FWD",  overall: 71, apps: 0, goals: 0,  starting: false, "birthYear": 2002 },
 
-    { name: "Durdov",            position: "FWD",  overall: 79, apps: 0, goals: 0,  starting: true, "birthYear": 2007 },
-    { name: "Ismaheel",          position: "MID",  overall: 76, apps: 0, goals: 0,  starting: false, "birthYear": 2000 },
+    { name: "Durdov",            position: "FWD",  overall: 79, apps: 0, goals: 0,  starting: false, "birthYear": 2007 },
+    { name: "Ismaheel",          position: "MID",  overall: 76, apps: 0, goals: 0,  starting: true, "birthYear": 2000 },
     { name: "Federico",          position: "FWD",  overall: 79, apps: 0, goals: 0,  starting: false, "birthYear": 2002 },
 
     { name: "Sauer",             position: "FWD",  overall: 70, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
-    { name: "Prekop",            position: "FWD",  overall: 76, apps: 0, goals: 0,  starting: false, "birthYear": 1997 },
+    { name: "Prekop",            position: "FWD",  overall: 76, apps: 0, goals: 0,  starting: true, "birthYear": 1997 },
     { name: "Liseth",            position: "FWD",  overall: 76, apps: 0, goals: 0,  starting: false, "birthYear": 1997 },
     { name: "Barbosa",           position: "FWD",  overall: 72, apps: 0, goals: 0,  starting: false, "birthYear": 1999 },
     { name: "Buksa",             position: "FWD",  overall: 67, apps: 0, goals: 0,  starting: false, "birthYear": 2003 },
