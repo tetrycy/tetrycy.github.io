@@ -216,6 +216,14 @@ function goToChallengeRound() {
   }
   const ch = state.challenge;
 
+  // Stan terminalny jest częścią zapisu gry, a nie tylko chwilowym ekranem.
+  // Dzięki temu przegrany dwumecz / odpadnięcie z fazy ligowej nie może po
+  // powrocie z MECZ-HUB ani po wczytaniu zapisu otworzyć ponownie starego rywala.
+  if (ch.phase === 'finished' || ch.finished) {
+    renderFinishedChallenge();
+    return;
+  }
+
   if (def.type === 'group-knockout') {
     if (ch.phase === 'qualifying') {
       displayChallengeRoundInfo(def, def.qualifying);
@@ -570,10 +578,11 @@ function resolveGroupStageAndAdvance(def) {
   } else if (myPos === 2 && def.knockoutPaths && def.knockoutPaths.runnerUp) {
     ch.knockoutPath = 'runnerUp';
   } else {
-    document.getElementById('challenge-end-summary').textContent =
-      `Kończysz fazę grupową na ${myPos}. miejscu — to za mało, żeby awansować dalej. Koniec przygody w tym wyzwaniu.`;
-    renderSeasonTableInto('challenge-end-table', table, 2);
-    showScreen('screen-challenge-end');
+    finishChallengeWithSummary(
+      `Kończysz fazę grupową na ${myPos}. miejscu — to za mało, żeby awansować dalej. Koniec przygody w tym wyzwaniu.`,
+      table,
+      2
+    );
     return;
   }
 
@@ -628,13 +637,33 @@ function resolveChallengeTie(advanced) {
   }
 }
 
+function finishChallengeWithSummary(summary, table, advanceCount, playoffCount) {
+  const ch = state.challenge;
+  ch.phase = 'finished';
+  ch.finished = true;
+  ch.endSummary = summary;
+  ch.endTable = Array.isArray(table) ? table : null;
+  ch.endAdvanceCount = advanceCount || null;
+  ch.endPlayoffCount = playoffCount || null;
+  renderFinishedChallenge();
+}
+
+function renderFinishedChallenge() {
+  const ch = state.challenge;
+  document.getElementById('challenge-end-summary').textContent = ch.endSummary || 'Wyzwanie zakończone.';
+  if (Array.isArray(ch.endTable)) {
+    renderSeasonTableInto('challenge-end-table', ch.endTable, ch.endAdvanceCount, ch.endPlayoffCount);
+  } else {
+    document.getElementById('challenge-end-table').innerHTML = '';
+  }
+  showScreen('screen-challenge-end');
+}
+
 function finishChallenge(success) {
   const def = WYZWANIA.find(c => c.id === state.challenge.defId);
-  document.getElementById('challenge-end-summary').textContent = success
+  finishChallengeWithSummary(success
     ? `🏆 Wyzwanie ukończone! Przeprowadziłeś ${def.club} przez wszystkie rundy.`
-    : `Koniec przygody — odpadasz (${state.challenge.myAgg}:${state.challenge.oppAgg}).`;
-  document.getElementById('challenge-end-table').innerHTML = '';
-  showScreen('screen-challenge-end');
+    : `Koniec przygody — odpadasz (${state.challenge.myAgg}:${state.challenge.oppAgg}).`);
 }
 
 // ============================================================
@@ -817,6 +846,15 @@ function initSwissLeague(def) {
 function goSwissLeagueScreen(def) {
   const ch = state.challenge;
   if (!ch.swissRounds) { if (!initSwissLeague(def)) return; }
+
+  // Samonaprawa zapisu przerwanego dokładnie między rozliczeniem kolejki a
+  // zwiększeniem indeksu. Rozstrzygniętego meczu nie pokazujemy drugi raz.
+  while (ch.swissMatchIdx < ch.swissRounds.length) {
+    const currentRound = ch.swissRounds[ch.swissMatchIdx];
+    const playerMatch = currentRound.find(mt => mt.home.isPlayer || mt.away.isPlayer);
+    if (!playerMatch || !playerMatch._swissResolved) break;
+    ch.swissMatchIdx++;
+  }
   if (ch.swissMatchIdx >= ch.swissRounds.length) { resolveSwissLeagueAndAdvance(def); return; }
 
   const round = ch.swissRounds[ch.swissMatchIdx];
@@ -840,6 +878,10 @@ function goSwissLeagueScreen(def) {
 
 function finishSwissLeagueMatch(sim, m, opp, def) {
   const ch = state.challenge;
+  if (m._swissResolved) {
+    goToChallengeRound();
+    return;
+  }
   const scoreText = `${sim.gf} : ${sim.ga}`;
   const resultClass = sim.result === 'W' ? 'win' : sim.result === 'D' ? 'draw' : 'loss';
   const ST = getStyle();
@@ -865,6 +907,7 @@ function finishSwissLeagueMatch(sim, m, opp, def) {
 
   addHistoryCard('WYZWANIE — FAZA LIGOWA', `kolejka ${ch.swissMatchIdx + 1}/${ch.swissRounds.length} vs ${opp.label}`, scoreText, resultClass);
 
+  m._swissResolved = true;
   ch.swissMatchIdx++;
   // Odświeżam OD RAZU — w fazie ligowej ZAWSZE grasz swój mecz co kolejkę
   // (nie ma "bye week" jak w Sezonie), więc nie ma na co czekać. Przycisk
@@ -883,10 +926,12 @@ function resolveSwissLeagueAndAdvance(def) {
   ch.swissSeeding = table.slice(0, advancePlayoff).map((r, i) => ({ label: r.label, seed: i + 1 }));
 
   if (myPos > advancePlayoff) {
-    document.getElementById('challenge-end-summary').textContent =
-      `Kończysz fazę ligową na ${myPos}. miejscu — poza strefą baraży (top ${advancePlayoff}). Koniec przygody w tym wyzwaniu.`;
-    renderSeasonTableInto('challenge-end-table', table, advanceDirect, def.swiss.advancePlayoff || 24);
-    showScreen('screen-challenge-end');
+    finishChallengeWithSummary(
+      `Kończysz fazę ligową na ${myPos}. miejscu — poza strefą baraży (top ${advancePlayoff}). Koniec przygody w tym wyzwaniu.`,
+      table,
+      advanceDirect,
+      def.swiss.advancePlayoff || 24
+    );
     return;
   }
 
