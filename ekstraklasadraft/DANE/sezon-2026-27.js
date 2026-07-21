@@ -62,7 +62,7 @@ window.TEAMS_DATA.push(
     { name: "Sacek",             position: "FWD",  overall: 82, apps: 0, goals: 0,  starting: true, "birthYear": 1996 },
 
 
-    { name: "Kubicki",           position: "MID",  overall: 85, apps: 0, goals: 0,  starting: true, "birthYear": 1995 },
+    { name: "Kubicki",           position: "MID",  overall: 88, apps: 0, goals: 0,  starting: true, "birthYear": 1995 },
     { name: "Donio",             position: "MID",  overall: 65, apps: 0, goals: 0,  starting: false, "birthYear": 2005 },
     { name: "Nongo",             position: "MID",  overall: 52, apps: 0, goals: 0,  starting: false, "birthYear": 2007 },
     { name: "Urbański",          position: "MID",  overall: 78, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
@@ -71,7 +71,7 @@ window.TEAMS_DATA.push(
     { name: "Gonzalez",           position: "MID",  overall: 84, apps: 0, goals: 0,  starting: true, "birthYear": 2005 },
 
 
-    { name: "Khlan",             position: "MID",  overall: 87, apps: 0, goals: 0,  starting: true, "birthYear": 2003 },
+    { name: "Khlan",             position: "MID",  overall: 90, apps: 0, goals: 0,  starting: true, "birthYear": 2003 },
     { name: "Dziegielewski",     position: "FWD",  overall: 60, apps: 0, goals: 0,  starting: false, "birthYear": 2004 },
     { name: "Lukoszek",          position: "FWD",  overall: 71, apps: 0, goals: 0,  starting: false, "birthYear": 2002 },
 
