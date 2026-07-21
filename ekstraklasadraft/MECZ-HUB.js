@@ -101,10 +101,14 @@ function goToHubAfterMatch() {
     }
     state.replayDecisionMade = false;
     _origFinishMatch(sim, m, opp);
-    // Dopiero TERAZ — po tym, jak dany tryb gry zaktualizował swoje tabele/
-    // drabinki i przygotował swój przycisk kontynuacji na hubie — wracamy
-    // z zamkniętego środowiska meczu na ten hub.
-    goToHubAfterMatch();
+    // Część trybów sama wybiera ekran po rozliczeniu meczu — przede wszystkim
+    // ekran końcowy po odpadnięciu lub zdobyciu trofeum. Nie wolno go wtedy
+    // przykrywać zwykłym hubem, bo wygląda to jak powtórzenie tej samej rundy
+    // i pozwala ponownie uruchomić już rozstrzygnięty mecz. Do domyślnego huba
+    // wracamy tylko wtedy, gdy router trybu zostawił gracza na ekranie meczu.
+    if (!state.currentScreenId || state.currentScreenId === 'screen-match') {
+      goToHubAfterMatch();
+    }
   };
 })();
 
