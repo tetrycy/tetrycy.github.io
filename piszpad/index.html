@@ -78,10 +78,38 @@
             gap: 0.75rem;
         }
 
+        .timer-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            flex-shrink: 0;
+            color: #6b7280;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-display {
+            min-width: 4.4rem;
+            text-align: center;
+            font-size: 0.78rem;
+        }
+
+        .timer-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 0.25rem;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .timer-btn:hover { background: #e5e7eb; color: #111827; }
+
         .filename {
             font-size: 0.875rem;
             color: #6b7280;
         }
+        .filename.dirty { color: #b45309; }
+        .filename.dirty::before { content: '● '; }
 
         .wordcount {
             font-size: 0.8rem;
@@ -130,6 +158,25 @@
             outline: none;
             color: black;
             line-height: 1.5;
+        }
+        /*
+         * Enter tworzy osobny blok, a Shift+Enter pozostaje zwykłym <br>.
+         * Odstęp dodajemy tylko pomiędzy sąsiednimi akapitami, dzięki czemu
+         * pierwsza linia nie odsuwa się od górnej krawędzi edytora.
+         */
+        .editor > :is(p, div) {
+            margin: 0;
+        }
+        .editor > :is(p, div) + :is(p, div) {
+            margin-top: 0.8em;
+        }
+        .editor .reading-paragraph {
+            background: #eff6ff;
+            border-radius: 0.2rem;
+            outline: 0.22rem solid #eff6ff;
+        }
+        .editor::highlight(piszpad-reading) {
+            background: #dbeafe;
         }
         .editor:empty::before,
         .focus-editor:empty::before {
@@ -220,14 +267,19 @@
 
         /* dziedziczenie kolorów w focus editorze */
         .focus-editor * { color: inherit; }
-
-        .focus-hint {
-            position: fixed;
-            bottom: 1.5rem; right: 1.5rem;
-            color: #444;
-            font-size: 0.8rem;
-            font-family: system-ui, sans-serif;
-            pointer-events: none;
+        .focus-editor > :is(p, div) {
+            margin: 0;
+        }
+        .focus-editor > :is(p, div) + :is(p, div) {
+            margin-top: 0.8em;
+        }
+        .focus-editor .reading-paragraph {
+            background: rgba(96, 165, 250, 0.16);
+            border-radius: 0.2rem;
+            outline: 0.22rem solid rgba(96, 165, 250, 0.16);
+        }
+        .focus-editor::highlight(piszpad-reading) {
+            background: rgba(96, 165, 250, 0.28);
         }
 
         .focus-wordcount {
@@ -236,7 +288,6 @@
             color: #444;
             font-size: 0.8rem;
             font-family: system-ui, sans-serif;
-            pointer-events: none;
         }
 
         .hidden { display: none; }
@@ -248,6 +299,78 @@
             display: flex;
             gap: 0.5rem;
             align-items: center;
+        }
+
+        .focus-widget,
+        .focus-widget-main {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .focus-widget {
+            position: relative;
+        }
+        .focus-widget-hide {
+            position: absolute;
+            top: calc(100% + 0.3rem);
+            right: 0;
+            z-index: 2;
+            border: 0;
+            border-radius: 0.25rem;
+            background: #171717;
+            color: #777;
+            cursor: pointer;
+            padding: 0.22rem 0.38rem;
+            font: 0.68rem/1 system-ui, sans-serif;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s, color 0.18s;
+        }
+        .focus-wordcount .focus-widget-hide {
+            top: auto;
+            right: auto;
+            bottom: calc(100% + 0.3rem);
+            left: 0;
+        }
+        .focus-widget:hover > .focus-widget-hide,
+        .focus-widget:focus-within > .focus-widget-hide {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .focus-widget-hide:hover,
+        .focus-widget-hide:focus-visible {
+            color: #ccc;
+        }
+        .focus-widget-reveal {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 1px solid #333;
+            border-radius: 999px;
+            background: transparent;
+            color: #555;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font: 0.72rem/1 system-ui, sans-serif;
+            transition: color 0.18s, border-color 0.18s;
+        }
+        .focus-widget-reveal:hover,
+        .focus-widget-reveal:focus-visible {
+            color: #bbb;
+            border-color: #777;
+        }
+        .focus-widget.is-hidden > .focus-widget-main,
+        .focus-widget.is-hidden > .focus-widget-hide {
+            display: none;
+        }
+        .focus-widget.is-hidden > .focus-widget-reveal {
+            display: flex;
+        }
+        .focus-widget.is-hidden:hover > .focus-widget-main,
+        .focus-widget.is-hidden:focus-within > .focus-widget-main {
+            display: flex;
         }
 
         .focus-tool-btn {
@@ -271,6 +394,45 @@
             border-color: #60a5fa;
         }
         .focus-tool-btn svg { width: 16px; height: 16px; }
+        .focus-timer {
+            min-width: 4.6rem;
+            color: #888;
+            text-align: center;
+            font: 0.78rem/1 system-ui, sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wav-status {
+            position: fixed;
+            left: 50%;
+            bottom: 1.25rem;
+            z-index: 8500;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: calc(100% - 2rem);
+            padding: 0.7rem 0.85rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: #111827;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+        }
+        .wav-status.show { display: flex; }
+        .wav-status.success { background: #166534; }
+        .wav-status.cancelled { background: #4b5563; }
+        .wav-cancel {
+            flex-shrink: 0;
+            padding: 0.35rem 0.65rem;
+            border: 1px solid #9ca3af;
+            border-radius: 0.25rem;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+        }
+        .wav-cancel:hover { background: rgba(255,255,255,0.12); }
 
         /* ============ TELEFONY I WĄSKIE EKRANY ============ */
         @media (max-width: 700px) {
@@ -332,6 +494,12 @@
                 padding: 0.25rem 0.25rem 0;
                 justify-content: space-between;
                 gap: 0.5rem;
+            }
+
+            .timer-btn {
+                width: 36px;
+                height: 36px;
+                touch-action: manipulation;
             }
 
             .filename {
@@ -403,19 +571,26 @@
                 touch-action: manipulation;
             }
 
-            .focus-hint,
+            .wav-status {
+                bottom: 0.75rem;
+                width: calc(100% - 1.5rem);
+                justify-content: space-between;
+            }
+
             .focus-wordcount {
                 bottom: 0.75rem;
-                max-width: 46%;
+                max-width: calc(100% - 1.5rem);
                 font-size: 0.7rem;
             }
 
-            .focus-hint {
-                right: 0.75rem;
-                text-align: right;
-            }
-
             .focus-wordcount { left: 0.75rem; }
+        }
+
+        @media (hover: none) {
+            .focus-widget:not(.is-hidden) > .focus-widget-hide {
+                opacity: 0.82;
+                pointer-events: auto;
+            }
         }
 
         @media (max-width: 380px) {
@@ -540,6 +715,11 @@
             </button>
 
             <div class="toolbar-right">
+                <div class="timer-controls" aria-label="Timer sesji pisania">
+                    <button class="timer-btn" id="timerToggleBtn" title="Uruchom timer">▶</button>
+                    <span class="timer-display" id="timerDisplay">00:00:00</span>
+                    <button class="timer-btn" id="timerResetBtn" title="Wyzeruj timer">↺</button>
+                </div>
                 <span class="wordcount" id="wordCount">0 słów · 0 znaków</span>
                 <span class="filename" id="fileName">dokument.rtf</span>
             </div>
@@ -571,16 +751,54 @@
         <div class="focus-editor" id="focusEditor" contenteditable="true" spellcheck="true"
              role="textbox" aria-multiline="true" aria-label="Treść dokumentu w trybie Focus"
              data-placeholder="Zacznij pisać…"></div>
-        <div class="focus-hint">Esc — wyjdź z trybu Focus</div>
-        <div class="focus-wordcount" id="focusWordCount"></div>
+        <div class="focus-wordcount focus-widget" id="focusWordCountWidget">
+            <div class="focus-widget-main">
+                <span id="focusWordCount"></span>
+            </div>
+            <button class="focus-widget-hide" type="button" aria-label="Ukryj licznik słów">Ukryj</button>
+            <button class="focus-widget-reveal" type="button" aria-label="Pokaż licznik słów"
+                    title="Pokaż licznik słów">•••</button>
+        </div>
         <div class="focus-toolbar" id="focusToolbar">
+            <div class="focus-widget" id="focusTimerWidget">
+                <div class="focus-widget-main">
+                    <span class="focus-timer" id="focusTimerDisplay">00:00:00</span>
+                    <button class="focus-tool-btn" id="focusTimerToggleBtn" title="Uruchom timer">
+                        <span aria-hidden="true">▶</span>
+                    </button>
+                    <button class="focus-tool-btn" id="focusTimerResetBtn" title="Wyzeruj timer">
+                        <span aria-hidden="true">↺</span>
+                    </button>
+                </div>
+                <button class="focus-widget-hide" type="button" aria-label="Ukryj timer">Ukryj</button>
+                <button class="focus-widget-reveal" type="button" aria-label="Pokaż timer"
+                        title="Pokaż timer">•••</button>
+            </div>
             <button class="focus-tool-btn" id="focusReadBtn" title="Czytaj od kursora (Ctrl+R)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 </svg>
             </button>
+            <div class="focus-widget" id="focusExitWidget">
+                <div class="focus-widget-main">
+                    <button class="focus-tool-btn" id="focusExitBtn" title="Wyjdź z trybu Focus (Esc)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <button class="focus-widget-hide" type="button" aria-label="Ukryj przycisk wyjścia">Ukryj</button>
+                <button class="focus-widget-reveal" type="button" aria-label="Pokaż przycisk wyjścia"
+                        title="Pokaż przycisk wyjścia">•••</button>
+            </div>
         </div>
+    </div>
+
+    <div class="wav-status" id="wavStatus" role="status" aria-live="polite">
+        <span id="wavStatusText">Generowanie WAV…</span>
+        <button class="wav-cancel" id="cancelWavBtn">Przerwij</button>
     </div>
 
     <!-- Modal potwierdzenia -->
@@ -611,6 +829,19 @@
         var speechToken = 0;
         var speechChunks = [];
         var speechChunkIndex = 0;
+        var activeSpeechParagraphIndex = -1;
+        var cleanSnapshot = null;
+        var isDirty = false;
+        var draftTimer = null;
+        var focusSelection = null;
+        var wavAbortController = null;
+        var wavStatusTimer = null;
+        var timerElapsedMs = 0;
+        var timerStartedAt = null;
+        var timerInterval = null;
+        var isTimerRunning = false;
+        var DRAFT_KEY = 'piszpadDraftV2';
+        var MAX_WAV_CHARACTERS = 40000;
 
         /* wyszukiwanie */
         var searchMatches  = [];
@@ -640,15 +871,29 @@
                 wavButton.title = 'Jak zapisać dokument jako WAV';
             }
             document.getElementById('focusReadBtn').onclick = toggleReading;
+            document.getElementById('focusExitBtn').onclick = function() {
+                exitFocusMode();
+            };
+            document.getElementById('cancelWavBtn').onclick = cancelWav;
+            document.getElementById('timerToggleBtn').onclick = toggleTimer;
+            document.getElementById('timerResetBtn').onclick = resetTimer;
+            document.getElementById('focusTimerToggleBtn').onclick = toggleTimer;
+            document.getElementById('focusTimerResetBtn').onclick = resetTimer;
+            bindFocusWidgetVisibility();
 
             document.getElementById('fontSelect').onchange = function() {
-                fontFamily = this.value; updateStyle();
+                fontFamily = this.value;
+                updateStyle();
+                refreshDirtyState();
             };
             document.getElementById('fontSizeSelect').onchange = function() {
-                fontSize = parseInt(this.value); updateStyle();
+                fontSize = parseInt(this.value);
+                updateStyle();
+                refreshDirtyState();
             };
             document.getElementById('speechRateSelect').onchange = function() {
                 speechRate = parseFloat(this.value);
+                if (isDirty) scheduleDraftSave();
             };
 
             document.getElementById('findNextBtn').onclick = function() { searchStep(1); };
@@ -664,13 +909,16 @@
 
             document.getElementById('fileInput').onchange = loadFile;
             document.addEventListener('keydown', keyHandler);
+            window.addEventListener('beforeunload', protectUnsavedDocument);
 
             editor.addEventListener('input', function() {
+                if (isReading) stopReading();
                 scheduleHistoryCapture();
                 updateWordCount();
                 if (document.getElementById('searchPanel').classList.contains('show')) {
-                    buildSearchMatches();
+                    closeSearch();
                 }
+                refreshDirtyState();
             });
 
             editor.addEventListener('paste', safePaste);
@@ -680,9 +928,11 @@
             focusEditor.addEventListener('drop', safeDrop);
             focusEditor.addEventListener('input', function() {
                 if (!isFocusMode || isRestoringHistory) return;
+                if (isReading) stopReading();
                 syncMainFromFocus();
                 scheduleHistoryCapture();
                 updateFocusWordCount();
+                refreshDirtyState();
             });
 
             bindSpeechVoices();
@@ -690,7 +940,9 @@
             addAccessibleButtonNames();
 
             updateStyle();
-            loadTransferredText();
+            updateTimerDisplay();
+            setDocumentClean(true);
+            if (!loadTransferredText()) offerDraftRestore();
         }
 
         /* ===== Bezpieczne wstawianie treści ===== */
@@ -771,6 +1023,140 @@
             updateWordCount();
         }
 
+        /* ===== Ochrona niezapisanej pracy ===== */
+        function documentSnapshot() {
+            return JSON.stringify({
+                html: normalizedDocumentHTML(),
+                fontFamily: fontFamily,
+                fontSize: fontSize
+            });
+        }
+
+        function setDirtyIndicator(dirty) {
+            isDirty = dirty;
+            fileNameEl.classList.toggle('dirty', dirty);
+            fileNameEl.title = dirty
+                ? 'Dokument zawiera niezapisane zmiany'
+                : 'Dokument zapisany';
+        }
+
+        function setDocumentClean(preserveDraft) {
+            cleanSnapshot = documentSnapshot();
+            setDirtyIndicator(false);
+            clearTimeout(draftTimer);
+            draftTimer = null;
+            if (!preserveDraft) clearDraft();
+        }
+
+        function refreshDirtyState() {
+            var dirty = cleanSnapshot === null || documentSnapshot() !== cleanSnapshot;
+            setDirtyIndicator(dirty);
+            if (dirty) scheduleDraftSave();
+            else clearDraft();
+        }
+
+        function scheduleDraftSave() {
+            clearTimeout(draftTimer);
+            draftTimer = setTimeout(persistDraftNow, 700);
+        }
+
+        function persistDraftNow() {
+            clearTimeout(draftTimer);
+            draftTimer = null;
+            if (!isDirty) return;
+
+            var html = normalizedDocumentHTML();
+            if (html.length > 1500000) return;
+
+            try {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                    html: html,
+                    fileName: fileNameEl.textContent || 'dokument.rtf',
+                    fontFamily: fontFamily,
+                    fontSize: fontSize,
+                    speechRate: speechRate,
+                    savedAt: Date.now()
+                }));
+            } catch (error) {
+                console.info('Nie udało się zapisać lokalnej kopii roboczej:', error);
+            }
+        }
+
+        function clearDraft() {
+            try {
+                localStorage.removeItem(DRAFT_KEY);
+            } catch (error) {
+                console.info('Nie udało się usunąć lokalnej kopii roboczej:', error);
+            }
+        }
+
+        function readDraft() {
+            try {
+                var raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return null;
+                var draft = JSON.parse(raw);
+                return draft && typeof draft.html === 'string' ? draft : null;
+            } catch (error) {
+                clearDraft();
+                return null;
+            }
+        }
+
+        function offerDraftRestore() {
+            var draft = readDraft();
+            if (!draft) return;
+
+            var savedLabel = '';
+            if (draft.savedAt) {
+                try {
+                    savedLabel = '\n\nKopia z: '
+                        + new Date(draft.savedAt).toLocaleString('pl-PL');
+                } catch (ignored) {}
+            }
+
+            showConfirm(
+                'Odzyskać kopię roboczą?',
+                'Piszpad znalazł niezapisany dokument z poprzedniej sesji.'
+                    + savedLabel,
+                function() { restoreDraft(draft); },
+                {
+                    okText: 'Przywróć',
+                    cancelText: 'Usuń kopię',
+                    kind: 'primary',
+                    onCancel: clearDraft
+                }
+            );
+        }
+
+        function restoreDraft(draft) {
+            stopReading();
+            replaceRootWithSafeHTML(editor, draft.html);
+            fileNameEl.textContent = draft.fileName || 'dokument.rtf';
+
+            if (draft.fontFamily === 'Times New Roman'
+                || draft.fontFamily === 'Libre Baskerville') {
+                fontFamily = draft.fontFamily;
+            }
+            if (isSupportedFontSize(draft.fontSize)) fontSize = Number(draft.fontSize);
+            if (isSupportedSpeechRate(draft.speechRate)) speechRate = Number(draft.speechRate);
+
+            syncStyleControls();
+            updateStyle();
+            updateWordCount();
+            resetHistory();
+            cleanSnapshot = null;
+            refreshDirtyState();
+            editor.focus();
+            placeCursorAtEnd(editor);
+        }
+
+        function protectUnsavedDocument(event) {
+            if (!isDirty) return;
+            persistDraftNow();
+            event.preventDefault();
+            event.returnValue = '';
+        }
+
         function safePaste(event) {
             event.preventDefault();
             var text = event.clipboardData ? event.clipboardData.getData('text/plain') : '';
@@ -784,6 +1170,7 @@
         }
 
         function insertPlainText(root, text) {
+            if (isReading) stopReading();
             root.focus();
             var selection = window.getSelection();
             var range;
@@ -825,6 +1212,7 @@
             scheduleHistoryCapture();
             updateWordCount();
             if (isFocusMode) updateFocusWordCount();
+            refreshDirtyState();
         }
 
         /* ===== Historia undo/redo ===== */
@@ -873,6 +1261,7 @@
             }
             isRestoringHistory = false;
             updateWordCount();
+            refreshDirtyState();
 
             var active = isFocusMode ? document.getElementById('focusEditor') : editor;
             active.focus();
@@ -906,6 +1295,70 @@
             var focusEditor = document.getElementById('focusEditor');
             var c = countText(focusEditor);
             focusWordCountEl.textContent = c.words + ' słów · ' + c.chars + ' znaków';
+        }
+
+        /* ===== Timer sesji ===== */
+        function currentTimerMs() {
+            return timerElapsedMs
+                + (isTimerRunning && timerStartedAt ? Date.now() - timerStartedAt : 0);
+        }
+
+        function formatTimer(milliseconds) {
+            var totalSeconds = Math.floor(Math.max(0, milliseconds) / 1000);
+            var hours = Math.floor(totalSeconds / 3600);
+            var minutes = Math.floor((totalSeconds % 3600) / 60);
+            var seconds = totalSeconds % 60;
+            return [hours, minutes, seconds].map(function(value) {
+                return String(value).padStart(2, '0');
+            }).join(':');
+        }
+
+        function updateTimerDisplay() {
+            var value = formatTimer(currentTimerMs());
+            document.getElementById('timerDisplay').textContent = value;
+            document.getElementById('focusTimerDisplay').textContent = value;
+
+            var symbol = isTimerRunning ? 'Ⅱ' : '▶';
+            var label = isTimerRunning ? 'Wstrzymaj timer' : 'Uruchom timer';
+            var mainButton = document.getElementById('timerToggleBtn');
+            var focusButton = document.getElementById('focusTimerToggleBtn');
+            mainButton.textContent = symbol;
+            focusButton.innerHTML = '<span aria-hidden="true">' + symbol + '</span>';
+            [mainButton, focusButton].forEach(function(button) {
+                button.title = label;
+                button.setAttribute('aria-label', label);
+                button.setAttribute('aria-pressed', isTimerRunning ? 'true' : 'false');
+                button.classList.toggle('active', isTimerRunning);
+            });
+        }
+
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+            timerStartedAt = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerDisplay, 250);
+            updateTimerDisplay();
+        }
+
+        function pauseTimer() {
+            if (!isTimerRunning) return;
+            timerElapsedMs += Date.now() - timerStartedAt;
+            timerStartedAt = null;
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            updateTimerDisplay();
+        }
+
+        function toggleTimer() {
+            isTimerRunning ? pauseTimer() : startTimer();
+        }
+
+        function resetTimer() {
+            timerElapsedMs = 0;
+            if (isTimerRunning) timerStartedAt = Date.now();
+            updateTimerDisplay();
         }
 
         /* ===== Skróty klawiszowe ===== */
@@ -944,7 +1397,8 @@
         }
 
         /* ===== Modal potwierdzenia ===== */
-        function showConfirm(title, msg, onOk) {
+        function showConfirm(title, msg, onOk, options) {
+            options = options || {};
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmMsg').textContent   = msg;
             var modal = document.getElementById('confirmModal');
@@ -952,9 +1406,9 @@
             var cancelBtn = document.getElementById('confirmCancel');
 
             cancelBtn.style.display = '';
-            cancelBtn.textContent = 'Anuluj';
-            okBtn.textContent = 'Kontynuuj';
-            okBtn.className = 'modal-btn danger';
+            cancelBtn.textContent = options.cancelText || 'Anuluj';
+            okBtn.textContent = options.okText || 'Kontynuuj';
+            okBtn.className = 'modal-btn ' + (options.kind || 'danger');
             modal.classList.add('show');
 
             function close() {
@@ -963,7 +1417,10 @@
                 cancelBtn.onclick = null;
             }
             okBtn.onclick     = function() { close(); onOk(); };
-            cancelBtn.onclick = close;
+            cancelBtn.onclick = function() {
+                close();
+                if (options.onCancel) options.onCancel();
+            };
         }
 
         function showInfo(title, msg) {
@@ -991,8 +1448,7 @@
         /* ===== Operacje na dokumencie ===== */
         function confirmNewDoc() {
             if (isFocusMode) exitFocusMode();
-            var hasContent = (editor.innerText || '').trim().length > 0;
-            if (!hasContent) { newDoc(); return; }
+            if (!isDirty) { newDoc(); return; }
             showConfirm(
                 'Nowy dokument',
                 'Niezapisane zmiany zostaną utracone. Kontynuować?',
@@ -1005,10 +1461,25 @@
             setDocumentFragment(document.createDocumentFragment());
             fileNameEl.textContent = 'dokument.rtf';
             resetHistory();
+            setDocumentClean();
             (isFocusMode ? document.getElementById('focusEditor') : editor).focus();
         }
 
         function openDoc() {
+            if (isFocusMode) exitFocusMode();
+            if (!isDirty) {
+                chooseFile();
+                return;
+            }
+            showConfirm(
+                'Otworzyć inny dokument?',
+                'Obecny dokument zawiera niezapisane zmiany. Zostaną zastąpione po wybraniu nowego pliku.',
+                chooseFile,
+                { okText: 'Wybierz plik' }
+            );
+        }
+
+        function chooseFile() {
             var input = document.getElementById('fileInput');
             input.value = '';
             input.click();
@@ -1033,6 +1504,7 @@
             a.click();
             a.remove();
             setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            setDocumentClean();
         }
 
         function isLocalWavMode() {
@@ -1058,6 +1530,29 @@
             );
         }
 
+        function showWavStatus(message, mode, canCancel) {
+            clearTimeout(wavStatusTimer);
+            wavStatusTimer = null;
+            var status = document.getElementById('wavStatus');
+            var cancelButton = document.getElementById('cancelWavBtn');
+            document.getElementById('wavStatusText').textContent = message;
+            status.className = 'wav-status show' + (mode ? ' ' + mode : '');
+            cancelButton.style.display = canCancel ? '' : 'none';
+        }
+
+        function hideWavStatusLater(delay) {
+            clearTimeout(wavStatusTimer);
+            wavStatusTimer = setTimeout(function() {
+                document.getElementById('wavStatus').classList.remove('show');
+            }, delay);
+        }
+
+        function cancelWav() {
+            if (!wavAbortController) return;
+            showWavStatus('Anulowanie generowania…', 'cancelled', false);
+            wavAbortController.abort();
+        }
+
         async function saveWav() {
             if (isFocusMode) syncMainFromFocus();
             if (isReading) stopReading();
@@ -1067,15 +1562,32 @@
                 alert('Brak tekstu do zapisania jako WAV.');
                 return;
             }
+            if (text.length > MAX_WAV_CHARACTERS) {
+                alert(
+                    'Dokument jest zbyt długi do bezpiecznego zapisu WAV.\n\n'
+                    + 'Limit: ' + MAX_WAV_CHARACTERS.toLocaleString('pl-PL')
+                    + ' znaków.\nDokument: '
+                    + text.length.toLocaleString('pl-PL') + ' znaków.'
+                );
+                return;
+            }
 
             var button = document.getElementById('wavBtn');
             var oldTitle = button.title;
+            wavAbortController = 'AbortController' in window
+                ? new AbortController()
+                : null;
             button.disabled = true;
             button.classList.add('active');
             button.title = 'Generowanie pliku WAV…';
+            showWavStatus(
+                'Generowanie WAV… Dłuższy tekst może potrwać kilka minut.',
+                '',
+                !!wavAbortController
+            );
 
             try {
-                var response = await fetch('/generate', {
+                var requestOptions = {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1085,7 +1597,9 @@
                         text: text,
                         rate: speechRate
                     })
-                });
+                };
+                if (wavAbortController) requestOptions.signal = wavAbortController.signal;
+                var response = await fetch('/generate', requestOptions);
 
                 if (!response.ok) {
                     var details = 'Nie udało się wygenerować nagrania.';
@@ -1106,14 +1620,24 @@
                 link.click();
                 link.remove();
                 setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                showWavStatus('WAV jest gotowy i został pobrany.', 'success', false);
+                hideWavStatusLater(3500);
             } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    showWavStatus('Generowanie WAV zostało przerwane.', 'cancelled', false);
+                    hideWavStatusLater(2500);
+                    return;
+                }
                 console.error(error);
+                document.getElementById('wavStatus').classList.remove('show');
                 alert(
                     'Nie udało się zapisać WAV.\n\n'
+                    + (error && error.message ? error.message + '\n\n' : '')
                     + 'Uruchom Piszpad przez plik „Uruchom-Piszpad.bat” '
                     + 'i pozostaw otwarte jego okno.'
                 );
             } finally {
+                wavAbortController = null;
                 button.disabled = false;
                 button.classList.remove('active');
                 button.title = oldTitle;
@@ -1127,6 +1651,7 @@
             reader.onload = function(ev) {
                 try {
                     var decoded = decodeOpenedFile(ev.target.result);
+                    if (decoded.isRTF) applyRTFDocumentSettings(decoded.text);
                     var fragment = decoded.isRTF
                         ? parseRTFToFragment(decoded.text, decoded.encoding)
                         : textToFragment(decoded.text);
@@ -1136,7 +1661,10 @@
                     fileNameEl.textContent = decoded.isRTF
                         ? file.name
                         : file.name.replace(/\.[^.]+$/, '') + '.rtf';
+                    syncStyleControls();
+                    updateStyle();
                     resetHistory();
+                    setDocumentClean();
                 } catch (error) {
                     console.error(error);
                     alert('Nie udało się bezpiecznie odczytać tego pliku.');
@@ -1173,12 +1701,14 @@
             var marks = editor.querySelectorAll('mark.search-highlight');
             if (marks.length === 0) return;
             var savedHistoryIndex = historyIndex;
+            var savedSelection = captureSelectionOffsets(editor);
             marks.forEach(function(mark) {
                 var parent = mark.parentNode;
                 parent.replaceChild(document.createTextNode(mark.textContent), mark);
                 parent.normalize();
             });
             historyIndex = savedHistoryIndex;
+            restoreSelectionOffsets(editor, savedSelection);
         }
 
         function buildSearchMatches() {
@@ -1319,23 +1849,140 @@
             return isFocusMode ? document.getElementById('focusEditor') : editor;
         }
 
-        function getTextFromCursor() {
-            var root = getActiveEditor();
-            var fullText = root.innerText || root.textContent || '';
-            var selection = window.getSelection();
-            if (!selection.rangeCount) return fullText;
+        function isSpeechParagraphElement(node) {
+            return node && node.nodeType === Node.ELEMENT_NODE
+                && /^(P|DIV|H[1-6]|LI|PRE|BLOCKQUOTE)$/.test(node.tagName);
+        }
 
-            var range = selection.getRangeAt(0);
-            if (!root.contains(range.startContainer)) return fullText;
+        function getSpeechParagraphs(root) {
+            var paragraphs = [];
+            var inlineStart = null;
+            var inlineEnd = null;
 
-            var prefixRange = range.cloneRange();
-            prefixRange.selectNodeContents(root);
-            prefixRange.setEnd(range.startContainer, range.startOffset);
+            function flushInlineParagraph() {
+                if (!inlineStart || !inlineEnd) return;
+                var range = document.createRange();
+                range.setStartBefore(inlineStart);
+                range.setEndAfter(inlineEnd);
+                paragraphs.push({
+                    element: null,
+                    range: range,
+                    scrollTarget: inlineStart.parentElement || root
+                });
+                inlineStart = null;
+                inlineEnd = null;
+            }
 
+            Array.from(root.childNodes).forEach(function(node) {
+                if (isSpeechParagraphElement(node)) {
+                    flushInlineParagraph();
+                    var range = document.createRange();
+                    range.selectNodeContents(node);
+                    paragraphs.push({
+                        element: node,
+                        range: range,
+                        scrollTarget: node
+                    });
+                    return;
+                }
+
+                if (!inlineStart) inlineStart = node;
+                inlineEnd = node;
+            });
+            flushInlineParagraph();
+
+            if (!paragraphs.length) {
+                var rootRange = document.createRange();
+                rootRange.selectNodeContents(root);
+                paragraphs.push({
+                    element: root,
+                    range: rootRange,
+                    scrollTarget: root
+                });
+            }
+            return paragraphs;
+        }
+
+        function renderedTextFromRange(range, root) {
             var holder = document.createElement('div');
-            holder.appendChild(prefixRange.cloneContents());
-            var prefix = holder.innerText || holder.textContent || '';
-            return fullText.substring(Math.min(prefix.length, fullText.length));
+            holder.style.position = 'fixed';
+            holder.style.left = '-100000px';
+            holder.style.top = '0';
+            holder.style.width = Math.max(root.clientWidth || 400, 100) + 'px';
+            holder.style.whiteSpace = 'pre-wrap';
+            holder.style.visibility = 'hidden';
+            holder.appendChild(range.cloneContents());
+            document.body.appendChild(holder);
+            var text = holder.innerText || holder.textContent || '';
+            holder.remove();
+            return text;
+        }
+
+        function paragraphContainsPoint(paragraph, node, offset) {
+            try {
+                return paragraph.range.comparePoint(node, offset) === 0;
+            } catch (error) {
+                return paragraph.element
+                    ? paragraph.element.contains(node)
+                    : false;
+            }
+        }
+
+        function buildSpeechChunksFromEditor(useSelection) {
+            var root = getActiveEditor();
+            var paragraphs = getSpeechParagraphs(root);
+            var selection = window.getSelection();
+            var selectedRange = useSelection && selection.rangeCount
+                ? selection.getRangeAt(0)
+                : null;
+            var startIndex = 0;
+            var selectionInside = false;
+
+            if (selectedRange && root.contains(selectedRange.startContainer)) {
+                for (var i = 0; i < paragraphs.length; i++) {
+                    if (paragraphContainsPoint(
+                        paragraphs[i],
+                        selectedRange.startContainer,
+                        selectedRange.startOffset
+                    )) {
+                        startIndex = i;
+                        selectionInside = true;
+                        break;
+                    }
+                }
+            }
+
+            var chunks = [];
+            for (var paragraphIndex = startIndex;
+                paragraphIndex < paragraphs.length;
+                paragraphIndex++) {
+                var speechRange = paragraphs[paragraphIndex].range.cloneRange();
+                if (paragraphIndex === startIndex && selectionInside) {
+                    try {
+                        speechRange.setStart(
+                            selectedRange.startContainer,
+                            selectedRange.startOffset
+                        );
+                    } catch (ignored) {}
+                }
+
+                splitForSpeech(
+                    renderedTextFromRange(speechRange, root),
+                    1200
+                ).forEach(function(text) {
+                    chunks.push({
+                        text: text,
+                        paragraphIndex: paragraphIndex
+                    });
+                });
+            }
+            return chunks;
+        }
+
+        function getTextFromCursor() {
+            return buildSpeechChunksFromEditor(true).map(function(chunk) {
+                return chunk.text;
+            }).join('\n');
         }
 
         function splitForSpeech(text, limit) {
@@ -1370,15 +2017,22 @@
                 return;
             }
 
-            var text = getTextFromCursor();
-            if (!text.trim()) {
+            var chunks = buildSpeechChunksFromEditor(true);
+            if (!chunks.length) {
                 alert('Brak tekstu do czytania od pozycji kursora.');
                 return;
             }
-            startReadingText(text, true);
+            startReadingChunks(chunks, true);
         }
 
         function startReadingText(text, reportErrors) {
+            var chunks = splitForSpeech(text, 1200).map(function(chunk) {
+                return { text: chunk, paragraphIndex: -1 };
+            });
+            startReadingChunks(chunks, reportErrors);
+        }
+
+        function startReadingChunks(chunks, reportErrors) {
             if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
                 if (reportErrors) alert('Ta przeglądarka nie obsługuje czytania tekstu.');
                 return;
@@ -1387,7 +2041,8 @@
             speechToken++;
             var token = speechToken;
             speechSynthesis.cancel();
-            speechChunks = splitForSpeech(text, 1200);
+            clearSpeechHighlight();
+            speechChunks = chunks;
             speechChunkIndex = 0;
 
             if (!speechChunks.length) return;
@@ -1403,7 +2058,9 @@
                 return;
             }
 
-            var utterance = new SpeechSynthesisUtterance(speechChunks[speechChunkIndex]);
+            var chunk = speechChunks[speechChunkIndex];
+            highlightSpeechParagraph(chunk.paragraphIndex);
+            var utterance = new SpeechSynthesisUtterance(chunk.text);
             var voice = choosePolishVoice();
             utterance.lang = 'pl-PL';
             utterance.rate = speechRate;
@@ -1428,11 +2085,57 @@
             speechSynthesis.speak(utterance);
         }
 
+        function removeSpeechHighlight() {
+            document.querySelectorAll('.reading-paragraph').forEach(function(paragraph) {
+                paragraph.classList.remove('reading-paragraph');
+            });
+            if (window.CSS && CSS.highlights) {
+                CSS.highlights.delete('piszpad-reading');
+            }
+        }
+
+        function highlightSpeechParagraph(paragraphIndex) {
+            var changed = paragraphIndex !== activeSpeechParagraphIndex;
+            removeSpeechHighlight();
+            activeSpeechParagraphIndex = paragraphIndex;
+            if (paragraphIndex < 0) return;
+
+            var root = getActiveEditor();
+            var paragraphs = getSpeechParagraphs(root);
+            var paragraph = paragraphs[paragraphIndex];
+            if (!paragraph) return;
+
+            if (paragraph.element && paragraph.element !== root) {
+                paragraph.element.classList.add('reading-paragraph');
+            } else if (window.CSS && CSS.highlights && 'Highlight' in window) {
+                CSS.highlights.set(
+                    'piszpad-reading',
+                    new Highlight(paragraph.range)
+                );
+            } else {
+                root.classList.add('reading-paragraph');
+            }
+
+            if (changed && paragraph.scrollTarget
+                && paragraph.scrollTarget.scrollIntoView) {
+                paragraph.scrollTarget.scrollIntoView({
+                    block: 'center',
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function clearSpeechHighlight() {
+            removeSpeechHighlight();
+            activeSpeechParagraphIndex = -1;
+        }
+
         function finishReading(token) {
             if (token !== speechToken) return;
             isReading = false;
             speechChunks = [];
             speechChunkIndex = 0;
+            clearSpeechHighlight();
             setReadingButtons(false);
         }
 
@@ -1442,10 +2145,27 @@
             isReading = false;
             speechChunks = [];
             speechChunkIndex = 0;
+            clearSpeechHighlight();
             setReadingButtons(false);
         }
 
         /* ===== TRYB FOCUS ===== */
+        function bindFocusWidgetVisibility() {
+            document.querySelectorAll('.focus-widget').forEach(function(widget) {
+                var hideButton = widget.querySelector('.focus-widget-hide');
+                var revealButton = widget.querySelector('.focus-widget-reveal');
+
+                hideButton.addEventListener('click', function() {
+                    widget.classList.add('is-hidden');
+                    revealButton.setAttribute('aria-expanded', 'false');
+                });
+                revealButton.addEventListener('click', function() {
+                    widget.classList.remove('is-hidden');
+                    revealButton.setAttribute('aria-expanded', 'true');
+                });
+            });
+        }
+
         function bindFullscreen() {
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -1459,6 +2179,7 @@
 
         function enterFocusMode() {
             if (isFocusMode) return;
+            focusSelection = captureSelectionOffsets(editor);
             closeSearch();
             flushHistory();
             isFocusMode = true;
@@ -1471,6 +2192,7 @@
 
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            if (isReading) highlightSpeechParagraph(activeSpeechParagraphIndex);
 
             var page = document.documentElement;
             var request = page.requestFullscreen || page.webkitRequestFullscreen
@@ -1486,8 +2208,19 @@
 
             setTimeout(function() {
                 focusEditor.focus();
-                placeCursorAtStart(focusEditor);
-                overlay.scrollTop = 0;
+                if (!restoreSelectionOffsets(focusEditor, focusSelection)) {
+                    placeCursorAtEnd(focusEditor);
+                }
+                var selection = window.getSelection();
+                if (selection.rangeCount) {
+                    var activeRange = selection.getRangeAt(0);
+                    var activeNode = activeRange.startContainer.nodeType === Node.ELEMENT_NODE
+                        ? activeRange.startContainer
+                        : activeRange.startContainer.parentElement;
+                    if (activeNode && activeNode.scrollIntoView) {
+                        activeNode.scrollIntoView({ block: 'center' });
+                    }
+                }
             }, 0);
         }
 
@@ -1500,6 +2233,7 @@
 
         function exitFocusMode(leaveFullscreen) {
             if (!isFocusMode) return;
+            focusSelection = captureSelectionOffsets(document.getElementById('focusEditor'));
             syncMainFromFocus();
             flushHistory();
             isFocusMode = false;
@@ -1526,7 +2260,9 @@
 
             setTimeout(function() {
                 editor.focus();
-                placeCursorAtEnd(editor);
+                if (!restoreSelectionOffsets(editor, focusSelection)) {
+                    placeCursorAtEnd(editor);
+                }
             }, 0);
         }
 
@@ -1537,6 +2273,66 @@
         }
 
         /* ===== Pomocnicze ===== */
+        function captureSelectionOffsets(root) {
+            var selection = window.getSelection();
+            if (!selection.rangeCount) return null;
+            var range = selection.getRangeAt(0);
+            if (!root.contains(range.startContainer)
+                || !root.contains(range.endContainer)) return null;
+
+            var startRange = document.createRange();
+            startRange.selectNodeContents(root);
+            startRange.setEnd(range.startContainer, range.startOffset);
+
+            var endRange = document.createRange();
+            endRange.selectNodeContents(root);
+            endRange.setEnd(range.endContainer, range.endOffset);
+
+            return {
+                start: startRange.toString().length,
+                end: endRange.toString().length
+            };
+        }
+
+        function textPositionToPoint(root, offset) {
+            var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            var remaining = Math.max(0, offset);
+            var node;
+            var lastText = null;
+
+            while ((node = walker.nextNode())) {
+                lastText = node;
+                if (remaining <= node.nodeValue.length) {
+                    return { node: node, offset: remaining };
+                }
+                remaining -= node.nodeValue.length;
+            }
+
+            if (lastText) {
+                return { node: lastText, offset: lastText.nodeValue.length };
+            }
+            return { node: root, offset: root.childNodes.length };
+        }
+
+        function restoreSelectionOffsets(root, offsets) {
+            if (!offsets) return false;
+            var start = textPositionToPoint(root, offsets.start);
+            var end = textPositionToPoint(root, offsets.end);
+            var range = document.createRange();
+            var selection = window.getSelection();
+
+            try {
+                range.setStart(start.node, start.offset);
+                range.setEnd(end.node, end.offset);
+            } catch (error) {
+                return false;
+            }
+
+            selection.removeAllRanges();
+            selection.addRange(range);
+            return true;
+        }
+
         function placeCursorAtEnd(el) {
             var range = document.createRange();
             var sel   = window.getSelection();
@@ -1572,6 +2368,40 @@
             }
         }
 
+        function decodePlainText(bytes) {
+            if (bytes.length >= 2 && bytes[0] === 255 && bytes[1] === 254) {
+                return {
+                    encoding: 'utf-16le',
+                    text: getTextDecoder('utf-16le').decode(bytes)
+                };
+            }
+            if (bytes.length >= 2 && bytes[0] === 254 && bytes[1] === 255) {
+                return {
+                    encoding: 'utf-16be',
+                    text: getTextDecoder('utf-16be').decode(bytes)
+                };
+            }
+            if (bytes.length >= 3 && bytes[0] === 239
+                && bytes[1] === 187 && bytes[2] === 191) {
+                return {
+                    encoding: 'utf-8',
+                    text: getTextDecoder('utf-8').decode(bytes)
+                };
+            }
+
+            try {
+                return {
+                    encoding: 'utf-8',
+                    text: new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+                };
+            } catch (error) {
+                return {
+                    encoding: 'windows-1250',
+                    text: getTextDecoder('windows-1250').decode(bytes)
+                };
+            }
+        }
+
         function decodeOpenedFile(buffer) {
             var bytes = new Uint8Array(buffer);
             var header = getTextDecoder('windows-1252')
@@ -1595,14 +2425,45 @@
                 };
             }
 
-            var plainEncoding = 'utf-8';
-            if (bytes.length >= 2 && bytes[0] === 255 && bytes[1] === 254) plainEncoding = 'utf-16le';
-            if (bytes.length >= 2 && bytes[0] === 254 && bytes[1] === 255) plainEncoding = 'utf-16be';
+            var plain = decodePlainText(bytes);
             return {
                 isRTF: false,
-                encoding: plainEncoding,
-                text: getTextDecoder(plainEncoding).decode(bytes)
+                encoding: plain.encoding,
+                text: plain.text
             };
+        }
+
+        function isSupportedFontSize(value) {
+            var number = Number(value);
+            return [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36]
+                .indexOf(number) !== -1;
+        }
+
+        function isSupportedSpeechRate(value) {
+            return [0.75, 1, 1.25, 1.5, 2].indexOf(Number(value)) !== -1;
+        }
+
+        function syncStyleControls() {
+            document.getElementById('fontSelect').value = fontFamily;
+            document.getElementById('fontSizeSelect').value = String(fontSize);
+            document.getElementById('speechRateSelect').value = String(speechRate);
+        }
+
+        function applyRTFDocumentSettings(rtf) {
+            var header = String(rtf || '').slice(0, 12000);
+            if (/Libre Baskerville/i.test(header)) {
+                fontFamily = 'Libre Baskerville';
+            } else if (/Times New Roman/i.test(header)) {
+                fontFamily = 'Times New Roman';
+            }
+
+            var bodyStart = header.search(/\\pard\b/i);
+            var bodyHeader = bodyStart >= 0 ? header.slice(bodyStart) : header;
+            var sizeMatch = bodyHeader.match(/\\fs(\d+)/i);
+            if (sizeMatch) {
+                var points = Number(sizeMatch[1]) / 2;
+                if (isSupportedFontSize(points)) fontSize = points;
+            }
         }
 
         function rtfEscapeText(text) {
@@ -1660,6 +2521,7 @@
             var body = nodesToRTF(Array.from(root.childNodes));
             return '{\\rtf1\\ansi\\ansicpg1250\\deff0'
                 + '{\\fonttbl{\\f0\\fnil\\fcharset238 ' + font + ';}}'
+                + '{\\*\\generator Piszpad;}'
                 + '\\viewkind4\\uc1\\pard\\f0\\fs' + (fontSize * 2) + ' '
                 + body + '}';
         }
@@ -1881,19 +2743,22 @@
             try {
                 var textToRead = localStorage.getItem('textToRead');
                 var shouldAutoRead = localStorage.getItem('autoReadText');
-                if (!textToRead || shouldAutoRead !== 'true') return;
+                if (!textToRead || shouldAutoRead !== 'true') return false;
 
                 setDocumentFragment(textToFragment(textToRead));
                 localStorage.removeItem('textToRead');
                 localStorage.removeItem('autoReadText');
                 resetHistory();
+                refreshDirtyState();
 
                 setTimeout(function() {
-                    var fullText = editor.innerText || editor.textContent || '';
-                    if (fullText.trim()) startReadingText(fullText, false);
+                    var chunks = buildSpeechChunksFromEditor(false);
+                    if (chunks.length) startReadingChunks(chunks, false);
                 }, 300);
+                return true;
             } catch (error) {
                 console.info('Nie udało się pobrać przekazanego tekstu:', error);
+                return false;
             }
         }
 
